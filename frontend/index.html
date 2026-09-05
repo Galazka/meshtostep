@@ -203,7 +203,6 @@
         <div class="nav-logo">MeshToStep</div>
         <div class="nav-tabs" id="navTabs">
             <button class="nav-tab active" onclick="switchTab('converter')" data-tab="converter" data-i18n="navConverter">Konwerter</button>
-            <button class="nav-tab" onclick="switchTab('pricing')" data-tab="pricing" data-i18n="navPricing">Cennik</button>
             <button class="nav-tab" onclick="switchTab('myfiles')" data-tab="myfiles" data-i18n="navMyFiles">Moje pliki</button>
             <button class="nav-tab" onclick="switchTab('howitworks')" data-tab="howitworks" data-i18n="navHowItWorks">Jak to dziala</button>
             <button class="nav-tab" onclick="switchTab('faq')" data-tab="faq" data-i18n="navFAQ">Pomoc FAQ</button>
@@ -281,39 +280,6 @@
         </div>
     </div>
 
-    <div class="tab-panel" id="panel-pricing">
-        <div class="section-header">
-            <h2 data-i18n="pricingTitle">Cennik</h2>
-            <p data-i18n="pricingDesc">Prosty cennik bez abonamentu. Plac tylko tyle, ile potrzebujesz.</p>
-        </div>
-        <div class="pricing-grid">
-            <div class="price-card">
-                <h3 data-i18n="priceFreeH3">Darmowe</h3>
-                <div class="price" style="color:var(--text)">$0</div>
-                <ul><li data-i18n="pf1">3 konwersje na start</li><li data-i18n="pf2">Max 50 MB / plik</li><li data-i18n="pf3">Tryb Auto</li></ul>
-                <button class="btn-price btn-price-outline" onclick="showModal('register')" data-i18n="pfBtn">Zaloz konto</button>
-            </div>
-            <div class="price-card featured">
-                <h3>Start 5</h3>
-                <div class="price">$0.99</div>
-                <ul><li data-i18n="ps1">5 konwersji</li><li data-i18n="ps2">Wszystkie tryby</li><li data-i18n="ps3">Linki udostepniania</li><li data-i18n="ps4">Podglad 3D</li></ul>
-                <button class="btn-price btn-price-primary" onclick="doPayment('start_5')" data-i18n="psBtn">Kup teraz</button>
-            </div>
-            <div class="price-card">
-                <h3 data-i18n="pricePack25H3">Pakiet 25</h3>
-                <div class="price">$2.99</div>
-                <ul><li data-i18n="pp1">25 konwersji</li><li data-i18n="pp2">Priorytetowa kolejka</li><li data-i18n="pp3">API access</li><li data-i18n="pp4">Admin panel</li></ul>
-                <button class="btn-price btn-price-primary" onclick="doPayment('pack_25')" data-i18n="ppBtn">Kup teraz</button>
-            </div>
-            <div class="price-card">
-                <h3 data-i18n="pricePack100H3">Pakiet 100</h3>
-                <div class="price">$7.99</div>
-                <ul><li data-i18n="ppl1">100 konwersji</li><li data-i18n="ppl2">Priorytetowa kolejka</li><li data-i18n="ppl3">API access</li><li data-i18n="ppl4">Admin panel</li></ul>
-                <button class="btn-price btn-price-primary" onclick="doPayment('pack_100')" data-i18n="pplBtn">Kup teraz</button>
-            </div>
-        </div>
-    </div>
-
     <div class="tab-panel" id="panel-myfiles">
         <div class="page-heading">
             <h2 data-i18n="myFilesTitle">Moje pliki</h2>
@@ -362,7 +328,7 @@
         <div class="footer-inner">
             <div class="footer-brand">MeshToStep<p>Zaawansowana konwersja &middot; STL do STEP</p></div>
             <div class="footer-links">
-                <div class="footer-col"><h4 data-i18n="footerProduct">Produkt</h4><a href="#" onclick="switchTab('converter')" data-i18n="navConverter">Konwerter</a><a href="#" onclick="switchTab('pricing')" data-i18n="navPricing">Cennik</a><a href="#" onclick="switchTab('howitworks')" data-i18n="navHowItWorks">Jak to dziala</a></div>
+                <div class="footer-col"><h4 data-i18n="footerProduct">Produkt</h4><a href="#" onclick="switchTab('converter')" data-i18n="navConverter">Konwerter</a><a href="#" onclick="switchTab('howitworks')" data-i18n="navHowItWorks">Jak to dziala</a></div>
                 <div class="footer-col"><h4 data-i18n="footerLegal">Prawne</h4><a href="regulamin.html" data-i18n="footerRegulamin">Regulamin</a><a href="prywatnosc.html" data-i18n="footerPrivacy">Polityka prywatnosci</a></div>
                 <div class="footer-col"><h4 data-i18n="footerContact">Kontakt</h4><a href="mailto:support@meshtostep.com">support@meshtostep.com</a><a href="mailto:kontakt@meshtostep.com">kontakt@meshtostep.com</a></div>
             </div>
@@ -501,10 +467,10 @@
             hiwS3Title: 'Pobierz STEP', hiwS3Desc: 'Gotowy plik STEP gotowy do importu w CAD. Porownaj przed i po w interaktywnym podgladzie 3D.',
             faqTitle: 'Najczesciej zadawane pytania',
             faqQ1: 'Jakie formaty mesh sa obslugiwane?', faqA1: 'Obslugujemy pliki STL, 3MF i OBJ. Maksymalny rozmiar pliku to 200 MB. Pliki binary i ASCII sa wspierane rowniez.',
-            faqQ2: 'Co to sa kredyty i jak dzialaja?', faqA2: 'Jedna konwersja = 1 kredyt. Nowi uzytkownicy otrzymuja 3 kredyty za darmo. Kolejne kredyty kupujesz w pakietach: 5 za $0.99, 25 za $2.99, 100 za $7.99. Kredyty nie wygadaja.',
-            faqQ3: 'Czy moge odzyskac srodki?', faqA3: 'Tak, masz 14 dni na zwrot srodkow od momentu zakupu, pod warunkiem ze nie wykorzystales kredytow z danego pakietu. Skontaktuj sie z nami aby zainicjowac zwrot.',
-            faqQ4: 'Jak dlugo przechowujecie moje pliki?', faqA4: 'Pliki zrodlowe (mesh) sa usuwane po 30 dniach od przeslania. Pliki STEP sa rowniez usuwane po 30 dniach. Linki do udostepniania wygadaja po 7 dniach.',
-            faqQ5: 'Czy oferujecie API?', faqA5: 'Tak, MeshToStep oferuje REST API. Wymaga konta z pakietem 25 lub 100. Pelna dokumentacja API jest dostepna pod /docs na serwerze.',
+            faqQ2: 'Czy konwersja jest naprawde darmowa?', faqA2: 'Tak, konwersje sa w 100% darmowe i nielimitowane. Konto jest opcjonalne i sluzy tylko do przechowywania plikow (30 dni domsslnie, przedluzalne przez klikanie w reklamy).',
+            faqQ3: 'Jak dlugo przechowujecie moje pliki?', faqA3: 'Anonimowe: 7 dni. Zalogowani: 30 dni domyslnie. Klikniecie w reklame przedluza o 7 dni (max 180 dni). Premium: dozywotnio.',
+            faqQ4: 'Co sie stanie jak zablokuje reklamy?', faqA4: 'Nic. Serwis dziala normalnie bez reklam. Jedynym ograniczeniem jest brak mozliwosci przedluzenia przechowywania plikow przez klikanie w reklamy.',
+            faqQ5: 'Czy dostepna jest dokumentacja API?', faqA5: 'Tak, REST API jest dostepne. Pelna dokumentacja OpenAPI jest pod /docs na serwerze.',
             faqQ6: 'Jak sie skontaktowac z wsparciem?', faqA6: 'Napisz do nas na support@meshtostep.com. Odpowiadamy w ciagu 24 godzin w jezyku polskim lub angielskim.',
             footerProduct: 'Produkt', footerLegal: 'Prawne', footerContact: 'Kontakt',
             footerRegulamin: 'Regulamin', footerPrivacy: 'Polityka prywatnosci',
@@ -565,10 +531,10 @@
             hiwS3Title: 'Download STEP', hiwS3Desc: 'The finished STEP file is ready to import into any CAD software. Compare before and after in the interactive 3D viewer.',
             faqTitle: 'Frequently asked questions',
             faqQ1: 'Which mesh formats are supported?', faqA1: 'We support STL, 3MF, and OBJ files. Maximum file size is 200 MB. Both binary and ASCII files are supported.',
-            faqQ2: 'What are credits and how do they work?', faqA2: 'One conversion = 1 credit. New users get 3 free credits. Additional credits are available in packs: 5 for $0.99, 25 for $2.99, 100 for $7.99. Credits do not expire.',
-            faqQ3: 'Can I get a refund?', faqA3: 'Yes, you have 14 days to request a refund from the moment of purchase, provided you have not used the credits from that pack. Contact us to initiate a refund.',
-            faqQ4: 'How long do you keep my files?', faqA4: 'Source files (mesh) are deleted 30 days after upload. STEP files are also deleted after 30 days. Share links expire after 7 days.',
-            faqQ5: 'Do you offer an API?', faqA5: 'Yes, MeshToStep offers a REST API. It requires an account with the Pack 25 or Pack 100 plan. Full API documentation is available at /docs on the server.',
+            faqQ2: 'Is conversion really free?', faqA2: 'Yes, conversions are 100% free and unlimited. An account is optional and only used for file storage (30 days by default, extendable by clicking ads).',
+            faqQ3: 'How long do you keep my files?', faqA3: 'Anonymous: 7 days. Logged-in: 30 days by default. Clicking an ad extends storage by 7 days (max 180 days). Premium: forever.',
+            faqQ4: 'What happens if I block ads?', faqA4: 'Nothing. The Service works normally without ads. The only limitation is no file retention extension via ad clicks.',
+            faqQ5: 'Is API documentation available?', faqA5: 'Yes, REST API is available. Full documentation is at /docs on the server.',
             faqQ6: 'How can I contact support?', faqA6: 'Write to us at support@meshtostep.com. We respond within 24 hours in Polish or English.',
             footerProduct: 'Product', footerLegal: 'Legal', footerContact: 'Contact',
             footerRegulamin: 'Terms of Service', footerPrivacy: 'Privacy Policy',

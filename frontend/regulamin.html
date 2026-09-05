@@ -30,7 +30,7 @@ footer{border-top:1px solid var(--border);text-align:center;padding:24px;color:v
 <nav class="nav"><a class="logo" href="index.html">MeshToStep</a><a class="back" href="index.html">&larr; Back / Powrot</a></nav>
 <main>
 <h1>Regulamin / Terms of Service</h1>
-<p class="sub">Ostatnia aktualizacja / Last update: 2024-01-01</p>
+<p class="sub">Ostatnia aktualizacja / Last update: 2026-09-05</p>
 <div class="lang-switch">
 <button id="btn-pl" class="active" onclick="showLang('pl')">Polski</button>
 <button id="btn-en" onclick="showLang('en')">English</button>
@@ -40,52 +40,32 @@ footer{border-top:1px solid var(--border);text-align:center;padding:24px;color:v
 <div class="lang-sec active" id="sec-pl">
 <h2 class="sec">1. Definicje</h2>
 <ul>
-<li><strong>Serwis</strong> - platforma MeshToStep dostepna pod adresem meshtostep.com, umozliwiajaca konwersje plikow mesh do formatu STEP.</li>
+<li><strong>Serwis</strong> - platforma MeshToStep, umozliwiajaca darmowa konwersje plikow mesh do formatu STEP.</li>
 <li><strong>Operator</strong> - MeshToStep sp. z o.o. [adres do uzupelnienia], NIP: [do uzupelnienia], REGON: [do uzupelnienia], e-mail: kontakt@meshtostep.com.</li>
 <li><strong>Uzytkownik</strong> - osoba fizyczna, prawna lub jednostka organizacyjna korzystajaca z Serwisu.</li>
-<li><strong>Kredyt</strong> - jednostka rozliczeniowa uprawniajaca do wykonania jednej konwersji pliku.</li>
-<li><strong>Pakiet</strong> - zestaw kredytow: Start 5 (5 konwersji, $0.99), Pakiet 25 (25 konwersji, $2.99), Pakiet 100 (100 konwersji, $7.99).</li>
-<li><strong>Konto</strong> - indywidualny dostep Uzytkownika do Serwisu, wymagajacy rejestracji adresem e-mail i haslem.</li>
+<li><strong>Konto</strong> - indywidualny dostep Uzytkownika do Serwisu, wymagajacy rejestracji adresem e-mail i haslem. Konto slizy do przechowywania plikow.</li>
 </ul>
 
 <h2 class="sec">2. Opis uslugi</h2>
-<p>Serwis umozliwia konwersje plikow mesh (STL, 3MF, OBJ, max 200 MB/plik) do edytowalnego formatu STEP przy uzyciu zaawansowanego silnika konwersji z automatyczna optymalizacja geometrii. Uslugi dodatkowe: podglad 3D, linki do udostepniania STEP (wygasaja po 7 dniach), kod embed iframe (/e/), REST API dla kont z pakietem 25/100. Nowi Uzytkownicy otrzymuja 3 darmowe kredyty na start.</p>
+<p>Serwis umozliwia <strong>darmowa i nielimitowana</strong> konwersje plikow mesh (STL, 3MF, OBJ, max 200 MB/plik) do edytowalnego formatu STEP przy uzyciu zaawansowanego silnika konwersji z automatyczna optymalizacja geometrii. Uslugi dodatkowe: podglad 3D, linki do udostepniania STEP, kod embed iframe (/e/). Rejestracja nie jest wymagana do konwersji. Konto jest opcjonalne i sluzy do przechowywania plikow.</p>
 
-<h2 class="sec">3. Kredyty</h2>
+<h2 class="sec">3. Reklamy</h2>
 <ul>
-<li>1 konwersja = 1 kredyt, niezaleznie od rozmiaru pliku i trybu.</li>
-<li>Kredyty sa przypisane do Konta, nie wygasaja i nie sa transferowalne.</li>
-<li>Kredyty darmowe (3) przyznawane sa jednorazowo przy rejestracji.</li>
-<li>Wyczerpanie kredytow wymaga zakupu pakietu.</li>
+<li>Serwis jest darmowy dzieki wyswietlaniu reklam (m.in. Google AdSense).</li>
+<li>Klikniecie w reklame przedluza przechowywanie plikow o 7 dni (maksymalnie do 180 dni).</li>
+<li>Zablokowanie reklam (adblock) nie ogranicza funkcjonalnosci Serwisu, ale uniemozliwia przedluzenie przechowywania.</li>
 </ul>
 
-<h2 class="sec">4. Platnosci przez Stripe</h2>
+<h2 class="sec">4. Przechowywanie plikow</h2>
 <ul>
-<li>Wszystkie platnosci przetwarzane sa przez Stripe (Stripe Payments Europe, Ltd.). Operator nie przechowuje danych kart platniczych.</li>
-<li>Ceny w USD: Start 5 - $0.99, Pakiet 25 - $2.99, Pakiet 100 - $7.99. Ceny zawieraja wszystkie podatki, o ile obowiazujace przepisy nie stanowia inaczej.</li>
-<li>Po pomyslnym zaksiiegowaniu platnosci kredyty dodawane sa do Konta automatycznie.</li>
-<li>Faktury/paragony wystawiane sa elektronicznie na adres e-mail Konta.</li>
-<li>Uzytkownik musi byc zalogowany aby dokonac zakupu (POST /api/payments/checkout).</li>
-</ul>
-
-<h2 class="sec">5. Odstapienie i zwroty (14 dni)</h2>
-<ul>
-<li>Zgodnie z prawem UE, konsument ma 14 dni od zakupu na zwrot srodkow za niewykorzystane kredyty - bez podania przyczyny.</li>
-<li>Zwrot przysluguje za Pakiet, z ktorego nie wykorzystano ZADNEGO kredytu.</li>
-<li>Aby zainicjowac zwrot, napisz na support@meshtostep.com z adresu Konta, podajac ID platnosci.</li>
-<li>Zwrot realizowany jest ta sama metoda platnosci (Stripe refund) w ciagu 14 dni od zgloszenia.</li>
-<li>Po rozpoczeciu korzystania (wykorzystaniu >=1 kredytu z pakietu) prawo do zwrotu za ten pakiet wygasa.</li>
-</ul>
-
-<h2 class="sec">6. Przechowywanie plikow</h2>
-<ul>
-<li>Pliki zrodlowe (mesh) usuwane sa 30 dni po przeslaniu.</li>
-<li>Pliki wynikowe STEP usuwane sa 30 dni po konwersji.</li>
-<li>Linki udostepniania wygasaja po 7 dniach (expires_days=7).</li>
+<li>Pliki anonimowe (bez konta) usuwane sa 7 dni po przeslaniu.</li>
+<li>Pliki zalogowanych Uzytkownikow przechowywane sa 30 dni od przeslania.</li>
+<li>Klikniecie w reklame przedluza przechowywanie o 7 dni (maksymalnie do 180 dni).</li>
+<li>Linki udostepniania wygasaja zgodnie z ustawieniem przy tworzeniu (7 dni, 30 dni lub bez limitu).</li>
 <li>Uzytkownik zobowiazany jest pobrac wynik niezwlocznie po konwersji.</li>
 </ul>
 
-<h2 class="sec">7. Tresci zabronione</h2>
+<h2 class="sec">5. Tresci zabronione</h2>
 <p>Zabronione jest przesylanie plikow:</p>
 <ul>
 <li>naruszajacych prawa autorskie, patentowe, znaki towarowe osob trzecich;</li>
@@ -93,22 +73,21 @@ footer{border-top:1px solid var(--border);text-align:center;padding:24px;color:v
 <li>zawierajacych malware lub majacych na celu obciazenie/naruszenie infrastruktury Serwisu;</li>
 <li>o charakterze bezprawnym (pornografia dziecieca, materialy terrorystyczne, itp.).</li>
 </ul>
-<p>Naruszenie skutkuje blokada Konta bez zwrotu niewykorzystanych kredytow.</p>
+<p>Naruszenie skutkuje blokada Konta.</p>
 
-<h2 class="sec">8. Odpowiedzialnosc</h2>
+<h2 class="sec">6. Odpowiedzialnosc</h2>
 <ul>
 <li>Serwis swiadczony jest w modelu "as is". Operator nie gwarantuje, ze kazda konwersja zakonczy sie sukcesem - zlozonosc geometrii moze uniemozliwic utworzenie bryly.</li>
 <li>Operator nie ponosi odpowiedzialnosci za szkody posrednie, utracone korzysci ani za wykorzystanie plikow STEP w produkcji.</li>
-<li>Maksymalna odpowiedzialnosc Operatora ograniczona jest do wartosci ostatniego zakupionego Pakietu.</li>
 <li>Uzytkownik ponosi pelna odpowiedzialnosc za prawa do przesylanych plikow.</li>
 </ul>
 
-<h2 class="sec">9. RODO / Dane osobowe</h2>
-<p>Administratorem danych jest Operator (kontakt: kontakt@meshtostep.com). Przetwarzamy: adres e-mail, hash hasla, historie konwersji, logi platnosci (bez danych kart), adres IP i geolokalizacje przyblizona. Podstawa: wykonanie umowy (art. 6 ust. 1 lit. b RODO) oraz prawnie uzasadniony interes (bezpieczenstwo, statystyki). Prawa: dostep, sprostowanie, usuniecie, ograniczenie, przenoszenie, sprzeciw, skarga do PUODO. Szczegoly: Polityka Prywatnosci.</p>
+<h2 class="sec">7. RODO / Dane osobowe</h2>
+<p>Administratorem danych jest Operator (kontakt: kontakt@meshtostep.com). Przetwarzamy: adres e-mail, hash hasla, historie konwersji, adres IP i geolokalizacje przyblizona. Podstawa: wykonanie umowy (art. 6 ust. 1 lit. b RODO) oraz prawnie uzasadniony interes (bezpieczenstwo, statystyki). Prawa: dostep, sprostowanie, usuniecie, ograniczenie, przenoszenie, sprzeciw, skarga do PUODO. Szczegoly: Polityka Prywatnosci.</p>
 
-<h2 class="sec">10. Postanowienia koncowe</h2>
+<h2 class="sec">8. Postanowienia koncowe</h2>
 <ul>
-<li>Regulamin wchodzi w zycie z dniem publikacji. Zmiany ogłaszane sa z 14-dniowym wyprzedzeniem e-mail.</li>
+<li>Regulamin wchodzi w zycie z dniem publikacji. Zmiany oglaszane sa z 14-dniowym wyprzedzeniem e-mail.</li>
 <li>W sprawach nieuregulowanych stosuje sie prawo polskie.</li>
 <li>Sadem wlasciwym dla konsumentow jest sad miejsca zamieszkania konsumenta; dla przedsiebiorcow - sad siedziby Operatora.</li>
 <li>Kontakt: support@meshtostep.com (PL/EN, odpowiedz do 24h), kontakt@meshtostep.com.</li>
@@ -119,52 +98,32 @@ footer{border-top:1px solid var(--border);text-align:center;padding:24px;color:v
 <div class="lang-sec" id="sec-en">
 <h2 class="sec">1. Definitions</h2>
 <ul>
-<li><strong>Service</strong> - the MeshToStep platform at meshtostep.com enabling mesh-to-STEP file conversion.</li>
+<li><strong>Service</strong> - the MeshToStep platform enabling free mesh-to-STEP file conversion.</li>
 <li><strong>Operator</strong> - MeshToStep sp. z o.o. [address TBD], e-mail: kontakt@meshtostep.com.</li>
 <li><strong>User</strong> - any natural or legal person using the Service.</li>
-<li><strong>Credit</strong> - a billing unit entitling the holder to one file conversion.</li>
-<li><strong>Pack</strong> - a credit bundle: Start 5 (5 conversions, $0.99), Pack 25 (25 conversions, $2.99), Pack 100 (100 conversions, $7.99).</li>
-<li><strong>Account</strong> - an individual User access requiring e-mail + password registration.</li>
+<li><strong>Account</strong> - an individual User access requiring e-mail + password registration. Accounts are used for file storage.</li>
 </ul>
 
 <h2 class="sec">2. Service Description</h2>
-<p>The Service converts mesh files (STL, 3MF, OBJ, max 200 MB/file) into editable STEP format using an advanced conversion engine with automatic geometry optimization. Extra features: interactive 3D viewer, STEP share links (expire after 7 days), iframe embed code (/e/), REST API for Pack 25/100 accounts. New Users receive 3 free credits.</p>
+<p>The Service provides <strong>free and unlimited</strong> conversion of mesh files (STL, 3MF, OBJ, max 200 MB/file) into editable STEP format using an advanced conversion engine with automatic geometry optimization. Extra features: interactive 3D viewer, STEP share links, iframe embed code (/e/). Registration is not required for conversion. An account is optional and serves for file storage.</p>
 
-<h2 class="sec">3. Credits</h2>
+<h2 class="sec">3. Advertising</h2>
 <ul>
-<li>1 conversion = 1 credit, regardless of file size or mode.</li>
-<li>Credits are bound to the Account, do not expire, and are non-transferable.</li>
-<li>3 free credits are granted once at registration.</li>
-<li>Depleted credits require purchasing a Pack.</li>
+<li>The Service is free thanks to displayed ads (including Google AdSense).</li>
+<li>Clicking an ad extends file storage by 7 days (up to a maximum of 180 days).</li>
+<li>Blocking ads (adblock) does not limit Service functionality but prevents storage extension.</li>
 </ul>
 
-<h2 class="sec">4. Payments via Stripe</h2>
+<h2 class="sec">4. File Retention</h2>
 <ul>
-<li>All payments are processed by Stripe (Stripe Payments Europe, Ltd.). The Operator never stores card data.</li>
-<li>Prices in USD: Start 5 - $0.99, Pack 25 - $2.99, Pack 100 - $7.99. Prices include all applicable taxes unless stated otherwise.</li>
-<li>Credits are added automatically after successful payment.</li>
-<li>Receipts are issued electronically to the Account e-mail.</li>
-<li>You must be logged in to purchase (POST /api/payments/checkout).</li>
-</ul>
-
-<h2 class="sec">5. Withdrawal and Refunds (14 days)</h2>
-<ul>
-<li>Under EU law, consumers have 14 days from purchase to a refund for unused credits - no reason required.</li>
-<li>A refund is available for any Pack from which NO credits have been used.</li>
-<li>To request a refund, write to support@meshtostep.com from your Account e-mail with the payment ID.</li>
-<li>Refunds use the original payment method (Stripe refund) within 14 days of the request.</li>
-<li>Using &ge;1 credit from a pack voids the refund right for that pack.</li>
-</ul>
-
-<h2 class="sec">6. File Retention</h2>
-<ul>
-<li>Source (mesh) files are deleted 30 days after upload.</li>
-<li>Result STEP files are deleted 30 days after conversion.</li>
-<li>Share links expire after 7 days (expires_days=7).</li>
+<li>Anonymous files (no account) are deleted 7 days after upload.</li>
+<li>Logged-in User files are stored for 30 days from upload.</li>
+<li>Clicking an ad extends storage by 7 days (maximum 180 days).</li>
+<li>Share links expire per the setting at creation (7 days, 30 days, or no limit).</li>
 <li>Users must download results promptly after conversion.</li>
 </ul>
 
-<h2 class="sec">7. Prohibited Content</h2>
+<h2 class="sec">5. Prohibited Content</h2>
 <p>Uploading files is prohibited that:</p>
 <ul>
 <li>infringe third-party copyright, patents, or trademarks;</li>
@@ -172,20 +131,19 @@ footer{border-top:1px solid var(--border);text-align:center;padding:24px;color:v
 <li>contain malware or aim to disrupt the Service infrastructure;</li>
 <li>are otherwise unlawful (CSAM, terrorist content, etc.).</li>
 </ul>
-<p>Violation results in Account suspension without refund of unused credits.</p>
+<p>Violation results in Account suspension.</p>
 
-<h2 class="sec">8. Liability</h2>
+<h2 class="sec">6. Liability</h2>
 <ul>
 <li>The Service is provided "as is". The Operator does not guarantee every conversion succeeds - complex geometry may prevent solid creation.</li>
 <li>The Operator is not liable for indirect damages, lost profits, or use of STEP files in production.</li>
-<li>Maximum liability is limited to the value of the last purchased Pack.</li>
 <li>Users bear full responsibility for rights to uploaded files.</li>
 </ul>
 
-<h2 class="sec">9. GDPR / Personal Data</h2>
-<p>Data controller: the Operator (kontakt@meshtostep.com). We process: e-mail, password hash, conversion history, payment logs (no card data), IP and approximate geolocation. Basis: contract performance (Art. 6(1)(b) GDPR) and legitimate interest (security, analytics). Rights: access, rectification, erasure, restriction, portability, objection, complaint to the supervisory authority. Details: Privacy Policy.</p>
+<h2 class="sec">7. GDPR / Personal Data</h2>
+<p>Data controller: the Operator (kontakt@meshtostep.com). We process: e-mail, password hash, conversion history, IP and approximate geolocation. Basis: contract performance (Art. 6(1)(b) GDPR) and legitimate interest (security, analytics). Rights: access, rectification, erasure, restriction, portability, objection, complaint to the supervisory authority. Details: Privacy Policy.</p>
 
-<h2 class="sec">10. Final Provisions</h2>
+<h2 class="sec">8. Final Provisions</h2>
 <ul>
 <li>These Terms take effect on publication. Changes are announced 14 days in advance by e-mail.</li>
 <li>Polish law applies to matters not covered herein.</li>
@@ -194,7 +152,7 @@ footer{border-top:1px solid var(--border);text-align:center;padding:24px;color:v
 </ul>
 </div>
 </main>
-<footer>&copy; 2024 MeshToStep &middot; <a href="index.html">MeshToStep</a> &middot; <a href="prywatnosc.html">Polityka prywatnosci / Privacy Policy</a></footer>
+<footer>&copy; 2026 MeshToStep &middot; <a href="index.html">MeshToStep</a> &middot; <a href="prywatnosc.html">Polityka prywatnosci / Privacy Policy</a></footer>
 <script>
 function showLang(l){
   document.getElementById('sec-pl').classList.toggle('active', l==='pl');
