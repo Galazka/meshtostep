@@ -113,7 +113,10 @@ def download(job_uuid: str, format: str = "step", db: Session = Depends(get_db))
     job = db.query(models.Job).filter(models.Job.uuid == job_uuid, models.Job.status == "done").first()
     if not job:
         raise HTTPException(404, "Job nie znaleziony")
-    path = job.result_step_path
+    if format == "stl" and job.result_stl_path and os.path.exists(job.result_stl_path):
+        path = job.result_stl_path
+    else:
+        path = job.result_step_path
     if not path or not os.path.exists(path):
         raise HTTPException(404, "Plik nie istnieje")
     return FileResponse(
@@ -137,9 +140,10 @@ def stl_preview(job_uuid: str, db: Session = Depends(get_db)):
     # Try the stored STL path first, then find any .stl in the job dir
     if stl_path and os.path.exists(stl_path):
         return FileResponse(stl_path, media_type="model/stl")
-    for f in src_dir.iterdir():
-        if f.suffix.lower() == ".stl":
-            return FileResponse(str(f), media_type="model/stl")
+    if src_dir.exists():
+        for f in src_dir.iterdir():
+            if f.suffix.lower() == ".stl":
+                return FileResponse(str(f), media_type="model/stl")
     raise HTTPException(404, "STL preview niedostępny")
 
 
@@ -250,6 +254,9 @@ def delete_my_job(
         raise HTTPException(404, "Job not found")
     if job.user_id != user.id and not user.is_admin:
         raise HTTPException(403, "Not your job")
+    # Delete share links first (FK constraint)
+    db.query(models.ShareLink).filter(models.ShareLink.job_id == job.id).delete()
+    # Delete files from disk
     jobs_dir = Path(settings.DATA_DIR) / "files"
     job_dir = jobs_dir / job.uuid
     if job_dir.is_dir():

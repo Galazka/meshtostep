@@ -244,6 +244,7 @@ def delete_job(
     job = db.query(models.Job).filter(models.Job.id == job_id).first()
     if not job:
         raise HTTPException(404, "Job not found")
+    db.query(models.ShareLink).filter(models.ShareLink.job_id == job.id).delete()
     jobs_dir = os.path.join(settings.DATA_DIR, "files")
     job_dir = os.path.join(jobs_dir, job.uuid)
     if os.path.isdir(job_dir):
