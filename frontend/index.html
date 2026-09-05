@@ -141,6 +141,21 @@
         .modal .btn-auth:hover { background: var(--primary-hover); }
         .modal .switch { color: var(--text-secondary); font-size: 13px; margin-top: 16px; text-align: center; }
         .modal .switch a { cursor: pointer; font-weight: 500; }
+        .modal .auth-error { display: none; background: var(--err-bg); border: 1px solid #fecaca; color: var(--err); padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 12px; line-height: 1.5; }
+        .modal .auth-error.show { display: block; }
+        .register-extra { display: none; }
+        .register-extra.show { display: block; }
+        .pw-strength { margin-bottom: 12px; }
+        .pw-strength-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+        .pw-strength-fill { height: 100%; width: 0; border-radius: 2px; transition: width .3s, background .3s; }
+        .pw-rules { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+        .auth-checkbox { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 13px; color: var(--text-secondary); line-height: 1.4; }
+        .auth-checkbox input[type="checkbox"] { margin-top: 2px; flex-shrink: 0; width: auto; accent-color: var(--primary); }
+        .auth-checkbox label { cursor: pointer; }
+        .auth-checkbox label a { font-weight: 500; }
+        .forgot-link { display: none; text-align: right; margin-top: -8px; margin-bottom: 12px; }
+        .forgot-link a { font-size: 12px; color: var(--text-muted); cursor: pointer; }
+        .forgot-link a:hover { color: var(--primary); text-decoration: underline; }
         .section-header { text-align: center; padding: 48px 24px 8px; }
         .section-header h2 { font-size: 28px; font-weight: 800; }
         .section-header p { color: var(--text-secondary); font-size: 16px; margin-top: 8px; }
@@ -329,9 +344,30 @@
     <div class="modal-bg" id="authModal">
         <div class="modal">
             <h2 id="modalTitle" data-i18n="authLoginTitle">Zaloguj sie</h2>
+            <div class="auth-error" id="authError"></div>
             <input id="authEmail" type="email" data-i18n-placeholder="authEmailPh" placeholder="email">
             <input id="authPass" type="password" data-i18n-placeholder="authPassPh" placeholder="haslo">
+            <div class="register-extra" id="registerExtra">
+                <div class="pw-strength" id="pwStrength">
+                    <div class="pw-strength-bar"><div class="pw-strength-fill" id="pwStrengthFill"></div></div>
+                    <div class="pw-rules" data-i18n="authPasswordRules">Min. 8 znakow: wielka, mala, cyfra, znak specjalny</div>
+                </div>
+                <input id="authPassConfirm" type="password" data-i18n-placeholder="authPassConfirm" placeholder="powtorz haslo">
+                <div class="auth-checkbox">
+                    <input type="checkbox" id="authTerms">
+                    <label for="authTerms"><span data-i18n="authTerms">Akceptuje <a href="regulamin.html" target="_blank">regulamin</a></span></label>
+                </div>
+                <div class="auth-checkbox">
+                    <input type="checkbox" id="authPrivacy">
+                    <label for="authPrivacy"><span data-i18n="authPrivacy">Akceptuje <a href="prywatnosc.html" target="_blank">polityke prywatnosci</a></span></label>
+                </div>
+                <div class="auth-checkbox">
+                    <input type="checkbox" id="authMarketing">
+                    <label for="authMarketing"><span data-i18n="authMarketing">Chce otrzymywac informacje o nowosciach (opcjonalne)</span></label>
+                </div>
+            </div>
             <button class="btn-auth" id="authSubmit" onclick="doAuth()" data-i18n="authLoginBtn">Zaloguj</button>
+            <div class="forgot-link" id="forgotLink"><a onclick="alert('TODO: reset password')" data-i18n="authForgot">Zapomniales hasla?</a></div>
             <div class="switch" id="authSwitch"><span data-i18n="authNoAccount">Nie masz konta?</span> <a onclick="toggleAuth()" data-i18n="authFreeSignup">Zaloz za darmo</a></div>
         </div>
     </div>
@@ -399,6 +435,14 @@
             authLoginBtn: 'Zaloguj', authRegisterBtn: 'Zaloz konto',
             authNoAccount: 'Nie masz konta?', authFreeSignup: 'Zaloz za darmo',
             authHasAccount: 'Masz konto?', authLoginLink: 'Zaloguj sie',
+            authTerms: 'Akceptuje <a href="regulamin.html" target="_blank">regulamin</a>',
+            authPrivacy: 'Akceptuje <a href="prywatnosc.html" target="_blank">polityke prywatnosci</a>',
+            authMarketing: 'Chce otrzymywac informacje o nowosciach (opcjonalne)',
+            authPasswordRules: 'Min. 8 znakow: wielka, mala, cyfra, znak specjalny',
+            authForgot: 'Zapomniales hasla?', authPassConfirm: 'powtorz haslo',
+            authErrMismatch: 'Hasla sie nie zgadzaja',
+            authErrTerms: 'Zaakceptuj regulamin',
+            authErrPrivacy: 'Zaakceptuj polityke prywatnosci',
             resultDone: 'Gotowe! {faces} scianek STEP \u00b7 {time}s',
             resultError: 'Blad: {msg}',
             shareLinkPrompt: 'Skopiuj link:', downloadText: 'Pobierz', shareText: 'Udostepnij',
@@ -446,6 +490,14 @@
             authLoginBtn: 'Log in', authRegisterBtn: 'Sign up',
             authNoAccount: "Don't have an account?", authFreeSignup: 'Sign up for free',
             authHasAccount: 'Have an account?', authLoginLink: 'Log in',
+            authTerms: 'I accept the <a href="regulamin.html" target="_blank">terms of service</a>',
+            authPrivacy: 'I accept the <a href="prywatnosc.html" target="_blank">privacy policy</a>',
+            authMarketing: 'Send me product news (optional)',
+            authPasswordRules: 'Min. 8 characters: uppercase, lowercase, digit, special character',
+            authForgot: 'Forgot password?', authPassConfirm: 'repeat password',
+            authErrMismatch: 'Passwords do not match',
+            authErrTerms: 'Accept the terms of service',
+            authErrPrivacy: 'Accept the privacy policy',
             resultDone: 'Done! {faces} STEP faces \u00b7 {time}s',
             resultError: 'Error: {msg}',
             shareLinkPrompt: 'Copy link:', downloadText: 'Download', shareText: 'Share',
@@ -679,19 +731,89 @@
         document.getElementById('authSwitch').innerHTML =
             (mode === 'login' ? t('authNoAccount') : t('authHasAccount')) +
             ' <a onclick="toggleAuth()">' + (mode === 'login' ? t('authFreeSignup') : t('authLoginLink')) + '</a>';
+        const regExtra = document.getElementById('registerExtra');
+        const forgotLink = document.getElementById('forgotLink');
+        if (mode === 'register') {
+            regExtra.classList.add('show');
+            forgotLink.style.display = 'none';
+        } else {
+            regExtra.classList.remove('show');
+            forgotLink.style.display = 'block';
+        }
+        hideAuthError();
+        document.getElementById('authPass').value = '';
+        if (mode === 'register') {
+            document.getElementById('authPassConfirm').value = '';
+            document.getElementById('authTerms').checked = false;
+            document.getElementById('authPrivacy').checked = false;
+            document.getElementById('authMarketing').checked = false;
+            updatePwStrength('');
+        }
     }
     function toggleAuth() { showModal(authMode==='login'?'register':'login'); }
     function closeModal() { document.getElementById('authModal').classList.remove('show'); }
 
+    function showAuthError(msg) {
+        const el = document.getElementById('authError');
+        el.textContent = msg;
+        el.classList.add('show');
+    }
+    function hideAuthError() {
+        const el = document.getElementById('authError');
+        el.classList.remove('show');
+        el.textContent = '';
+    }
+
+    function updatePwStrength(pw) {
+        const fill = document.getElementById('pwStrengthFill');
+        if (!pw) { fill.style.width = '0'; fill.style.background = 'transparent'; return; }
+        let score = 0;
+        if (pw.length >= 8) score++;
+        if (/[A-Z]/.test(pw)) score++;
+        if (/[a-z]/.test(pw)) score++;
+        if (/[0-9]/.test(pw)) score++;
+        if (/[^A-Za-z0-9]/.test(pw)) score++;
+        const pct = (score / 5) * 100;
+        fill.style.width = pct + '%';
+        fill.style.background = score <= 2 ? '#dc2626' : score <= 3 ? '#d97706' : '#059669';
+    }
+
+    document.getElementById('authPass').addEventListener('input', function() {
+        if (authMode === 'register') updatePwStrength(this.value);
+    });
+
     async function doAuth() {
         const email = document.getElementById('authEmail').value;
         const pass = document.getElementById('authPass').value;
-        const ep = authMode==='register' ? '/api/auth/register' : '/api/auth/login';
-        const r = await fetch(ep, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password:pass})});
-        const d = await r.json();
-        if (!r.ok) { alert(d.detail || 'Error'); return; }
-        token = d.token; localStorage.setItem('mt_token', token);
-        closeModal(); fetchUser();
+        hideAuthError();
+
+        if (!email || !pass) { showAuthError('Email and password are required'); return; }
+
+        if (authMode === 'register') {
+            const passConfirm = document.getElementById('authPassConfirm').value;
+            const terms = document.getElementById('authTerms').checked;
+            const privacy = document.getElementById('authPrivacy').checked;
+
+            if (!passConfirm) { showAuthError('Please confirm your password'); return; }
+            if (pass !== passConfirm) { showAuthError(t('authErrMismatch')); return; }
+            if (!terms) { showAuthError(t('authErrTerms')); return; }
+            if (!privacy) { showAuthError(t('authErrPrivacy')); return; }
+        }
+
+        const ep = authMode === 'register' ? '/api/auth/register' : '/api/auth/login';
+        const body = authMode === 'register'
+            ? { email, password: pass, password_confirm: document.getElementById('authPassConfirm').value,
+                terms_accepted: true, privacy_accepted: true,
+                marketing_consent: document.getElementById('authMarketing').checked }
+            : { email, password: pass };
+
+        try {
+            const r = await fetch(ep, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
+            const d = await r.json();
+            if (!r.ok) { showAuthError(d.detail || 'Error'); return; }
+            token = d.token; localStorage.setItem('mt_token', token);
+            closeModal(); fetchUser();
+        } catch(e) { showAuthError('Network error'); }
     }
 
     async function fetchUser() {

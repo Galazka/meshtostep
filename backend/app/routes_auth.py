@@ -65,6 +65,10 @@ def _validate_password(pw: str):
 class RegisterReq(BaseModel):
     email: EmailStr
     password: str
+    password_confirm: str
+    terms_accepted: bool  # wymagane: regulamin
+    privacy_accepted: bool  # wymagane: polityka prywatnosci
+    marketing_consent: bool = False  # opcjonalne
 
     @field_validator("password")
     @classmethod
@@ -98,10 +102,19 @@ class ResetConfirmReq(BaseModel):
 def register(body: RegisterReq, request: Request, db: Session = Depends(get_db)):
     _rate_limit(_get_ip(request))
 
+    # Walidacja RODO
+    if not body.terms_accepted:
+        raise HTTPException(422, "Musisz zaakceptowac regulamin")
+    if not body.privacy_accepted:
+        raise HTTPException(422, "Musisz zaakceptowac polityke prywatnosci")
+    if body.password != body.password_confirm:
+        raise HTTPException(422, "Hasla sie nie zgadzaja")
+
     email_lower = body.email.lower().strip()
     if db.query(models.User).filter(models.User.email == email_lower).first():
         raise HTTPException(409, "Email juz zarejestrowany")
 
+    now = datetime.utcnow()
     token = secrets.token_urlsafe(48)
     user = models.User(
         email=email_lower,
@@ -109,6 +122,11 @@ def register(body: RegisterReq, request: Request, db: Session = Depends(get_db))
         credits=settings.FREE_CREDITS,
         verification_token=token,
         email_verified=not settings.EMAIL_VERIFICATION_REQUIRED,
+        terms_accepted_at=now,
+        privacy_accepted_at=now,
+        marketing_consent=body.marketing_consent,
+        registered_ip=_get_ip(request),
+        register_user_agent=(request.headers.get("user-agent") or "")[:512],
     )
     db.add(user)
     db.commit()

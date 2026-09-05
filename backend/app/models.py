@@ -23,6 +23,12 @@ class User(Base):
     locked_until = Column(DateTime, nullable=True)
     reset_token = Column(String(64), nullable=True)
     reset_expires = Column(DateTime, nullable=True)
+    # -- RODO: zgody i audyt --
+    terms_accepted_at = Column(DateTime, nullable=True)  # kiedy zaakceptowal regulamin
+    privacy_accepted_at = Column(DateTime, nullable=True)  # kiedy zaakceptowal polityke
+    marketing_consent = Column(Boolean, default=False)  # zgoda marketingowa (opcjonalna)
+    registered_ip = Column(String(64), nullable=True)  # IP rejestracji (audyt)
+    register_user_agent = Column(String(512), nullable=True)  # UA rejestracji (audyt)
 
     jobs = relationship("Job", back_populates="user")
     shares = relationship("ShareLink", back_populates="user")

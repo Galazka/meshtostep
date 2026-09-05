@@ -101,9 +101,13 @@ def preprocess(mesh):
         print("decimate fail: %s" % str(e)[:80])
     return mesh
 
-def convert(stl_path, step_path, tolerance=0.1):
+def convert(src_path, step_path, tolerance=0.1):
+    import Part
     doc = App.newDocument("Conv")
-    mesh = Mesh.Mesh(stl_path)
+
+    # Mesh.read() handles STL, 3MF, OBJ; Mesh.Mesh() only handles STL
+    mesh = Mesh.Mesh()
+    mesh.read(src_path)
     print("Loaded: %d pts, %d faces" % (mesh.CountPoints, mesh.CountFacets))
     mesh = preprocess(mesh)
     shape = Part.Shape()
