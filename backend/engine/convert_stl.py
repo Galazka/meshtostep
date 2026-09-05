@@ -8,7 +8,8 @@ Modes:
   ultra  - mergeFacets + decimate (500)
   smooth - Taubin smoothing + decimate (for decorative models)
   s+auto - Taubin + mergeFacets + decimate (1000)
-Pipeline: smooth? -> decimate -> makeShapeFromMesh -> makeSolid -> removeSplitter -> exportStep
+Pipeline: smooth? -> decimate -> makeShapeFromMesh -> makeSolid? -> removeSplitter? -> exportStep
+Fallback: if makeSolid fails, try exportShape directly from shape/shell.
 """
 import os
 import numpy as np
@@ -110,17 +111,74 @@ def convert(src_path, step_path, tolerance=0.1):
     mesh.read(src_path)
     print("Loaded: %d pts, %d faces" % (mesh.CountPoints, mesh.CountFacets))
     mesh = preprocess(mesh)
+
+    # Try higher tolerance for non-watertight meshes
+    tol = max(tolerance, 0.1)
     shape = Part.Shape()
-    shape.makeShapeFromMesh(mesh.Topology, tolerance)
-    print("Shape: %s, valid=%s" % (shape.ShapeType, shape.isValid()))
-    solid = Part.makeSolid(shape)
-    print("Solid: %s, valid=%s" % (solid.ShapeType, solid.isValid()))
-    refined = solid.removeSplitter()
-    print("Refined: %s, %d faces, valid=%s" % (refined.ShapeType, len(refined.Faces), refined.isValid()))
-    refined.exportStep(step_path)
-    print("Exported: " + step_path)
+    shape.makeShapeFromMesh(mesh.Topology, tol)
+    print("Shape: %s, valid=%s, closed=%s" % (shape.ShapeType, shape.isValid(), shape.isClosed()))
+
+    # Strategy 1: makeSolid -> removeSplitter -> exportStep
+    try:
+        solid = Part.makeSolid(shape)
+        print("Solid: %s, valid=%s" % (solid.ShapeType, solid.isValid()))
+        if solid.isValid() and solid.ShapeType == "Solid":
+            refined = solid.removeSplitter()
+            print("Refined: %s, %d faces, valid=%s" % (refined.ShapeType, len(refined.Faces), refined.isValid()))
+            refined.exportStep(step_path)
+            print("Exported: " + step_path)
+            App.closeDocument("Conv")
+            return True
+    except Exception as e:
+        print("makeSolid/removeSplitter failed: %s" % str(e)[:200])
+
+    # Strategy 2: try exportStep directly on shape (if it has solids/compsolids)
+    try:
+        shape.exportStep(step_path)
+        print("Exported via shape.exportStep: " + step_path)
+        App.closeDocument("Conv")
+        return True
+    except Exception as e:
+        print("shape.exportStep failed: %s" % str(e)[:200])
+
+    # Strategy 3: try to build a shell from faces and export
+    try:
+        faces = shape.Faces
+        if len(faces) > 0:
+            shell = Part.makeShell(faces)
+            print("Shell: %d faces, valid=%s" % (len(shell.Faces), shell.isValid()))
+            shell.exportStep(step_path)
+            print("Exported via shell: " + step_path)
+            App.closeDocument("Conv")
+            return True
+    except Exception as e:
+        print("shell export failed: %s" % str(e)[:200])
+
+    # Strategy 4: try with higher tolerance
+    try:
+        shape2 = Part.Shape()
+        shape2.makeShapeFromMesh(mesh.Topology, 0.5)
+        solid2 = Part.makeSolid(shape2)
+        if solid2.isValid():
+            solid2.exportStep(step_path)
+            print("Exported via high-tolerance: " + step_path)
+            App.closeDocument("Conv")
+            return True
+    except Exception as e:
+        print("high-tolerance fallback failed: %s" % str(e)[:200])
+
+    # Strategy 5: export as raw STEP from shape
+    try:
+        Part.export([shape], step_path)
+        print("Exported via Part.export: " + step_path)
+        App.closeDocument("Conv")
+        return True
+    except Exception as e:
+        print("Part.export failed: %s" % str(e)[:200])
+
+    print("ALL STRATEGIES FAILED - mesh may be non-manifold or degenerate")
     App.closeDocument("Conv")
-    return True
+    return False
 
 _src = os.environ.get("FC_SRC", "")
 _dst = os.environ.get("FC_DST", "")
