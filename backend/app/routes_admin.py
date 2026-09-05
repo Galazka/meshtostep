@@ -1,4 +1,6 @@
 """Admin routes: stats, geo stats, users, per-user detail, credit adjustments."""
+import os
+import shutil
 from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -8,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from . import models
 from .auth import require_admin
+from .config import settings
 from .database import get_db
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
@@ -215,13 +218,39 @@ def user_detail(
 # ── Admin jobs list ─────────────────────────────────────────────────
 @router.get("/jobs")
 def list_jobs(admin: models.User = Depends(require_admin), db: Session = Depends(get_db)):
-    jobs = db.query(models.Job).order_by(models.Job.created_at.desc()).limit(100).all()
+    jobs = (
+        db.query(models.Job)
+        .join(models.User, models.Job.user_id == models.User.id, isouter=True)
+        .order_by(models.Job.created_at.desc())
+        .limit(100)
+        .all()
+    )
     return [{
         "id": j.id, "uuid": j.uuid, "user_id": j.user_id,
+        "user_email": j.user.email if j.user else None,
         "filename": j.original_filename, "status": j.status, "mode": j.mode,
         "faces": j.result_faces, "processing_time_s": j.processing_time_s,
         "created_at": str(j.created_at),
     } for j in jobs]
+
+
+# ── Delete job ───────────────────────────────────────────────────────
+@router.delete("/jobs/{job_id}")
+def delete_job(
+    job_id: int,
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    job = db.query(models.Job).filter(models.Job.id == job_id).first()
+    if not job:
+        raise HTTPException(404, "Job not found")
+    jobs_dir = os.path.join(settings.DATA_DIR, "files")
+    job_dir = os.path.join(jobs_dir, job.uuid)
+    if os.path.isdir(job_dir):
+        shutil.rmtree(job_dir, ignore_errors=True)
+    db.delete(job)
+    db.commit()
+    return {"ok": True}
 
 
 # ── Credit adjustment ───────────────────────────────────────────────

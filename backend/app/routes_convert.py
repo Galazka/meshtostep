@@ -232,4 +232,26 @@ def list_jobs(user: models.User = Depends(require_user), db: Session = Depends(g
         models.Job.user_id == user.id
     ).order_by(models.Job.created_at.desc()).limit(50).all()
     return [{"id": j.id, "uuid": j.uuid, "filename": j.original_filename, "status": j.status,
-             "mode": j.mode, "faces": j.result_faces, "created_at": str(j.created_at)} for j in jobs]
+             "mode": j.mode, "faces": j.result_faces, "processing_time_s": j.processing_time_s,
+             "created_at": str(j.created_at)} for j in jobs]
+
+
+# --- User delete own job ---
+@router.delete("/jobs/{job_id}")
+def delete_my_job(
+    job_id: int,
+    user: models.User = Depends(require_user),
+    db: Session = Depends(get_db),
+):
+    job = db.query(models.Job).filter(models.Job.id == job_id).first()
+    if not job:
+        raise HTTPException(404, "Job not found")
+    if job.user_id != user.id and not user.is_admin:
+        raise HTTPException(403, "Not your job")
+    jobs_dir = Path(settings.DATA_DIR) / "files"
+    job_dir = jobs_dir / job.uuid
+    if job_dir.is_dir():
+        shutil.rmtree(job_dir, ignore_errors=True)
+    db.delete(job)
+    db.commit()
+    return {"ok": True}

@@ -150,6 +150,26 @@
         .pw-strength-fill { height: 100%; width: 0; border-radius: 2px; transition: width .3s, background .3s; }
         .pw-rules { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
         .auth-checkbox { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; font-size: 13px; color: var(--text-secondary); line-height: 1.4; }
+        .job-row { cursor: pointer; transition: background .1s; }
+        .job-row:hover { background: var(--primary-light); }
+        .job-modal-bg { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.5); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
+        .job-modal-bg.show { display: flex; }
+        .job-modal { background: #fff; border-radius: 16px; width: 800px; max-width: 95vw; max-height: 90vh; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.2); display: flex; flex-direction: column; }
+        .job-modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid #e2e8f0; }
+        .job-modal-head h3 { font-size: 16px; font-weight: 700; color: #1e293b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .job-modal-meta { font-size: 13px; color: #64748b; padding: 10px 24px 0; }
+        .job-preview-wrap { background: #f7f9fc; border: 1px solid #f1f5f9; border-radius: 8px; margin: 12px 24px 0; min-height: 400px; max-height: 55vh; position: relative; overflow: hidden; }
+        .job-preview-canvas { width: 100%; height: 100%; min-height: 400px; }
+        .job-preview-canvas canvas { display: block; }
+        .job-actions { display: flex; gap: 10px; padding: 16px 24px; border-top: 1px solid #e2e8f0; margin-top: 12px; flex-wrap: wrap; }
+        .modal-close { background: none; border: none; font-size: 20px; color: #94a3b8; cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: all .15s; }
+        .modal-close:hover { color: #1e293b; background: #f7f9fc; }
+        .btn-primary { display: inline-block; padding: 10px 20px; background: #1a56db; color: #fff; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; font-family: inherit; transition: all .15s; }
+        .btn-primary:hover { background: #1648b8; }
+        .btn-outline { display: inline-block; padding: 10px 20px; background: #fff; color: #1a56db; border: 1px solid #e2e8f0; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; font-family: inherit; transition: all .15s; }
+        .btn-outline:hover { border-color: #1a56db; background: #e8eefb; }
+        .btn-danger { display: inline-block; padding: 10px 20px; background: #fff; color: #dc2626; border: 1px solid #fecaca; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; font-family: inherit; transition: all .15s; }
+        .btn-danger:hover { background: #fef2f2; }
         .auth-checkbox input[type="checkbox"] { margin-top: 2px; flex-shrink: 0; width: auto; accent-color: var(--primary); }
         .auth-checkbox label { cursor: pointer; }
         .auth-checkbox label a { font-weight: 500; }
@@ -372,6 +392,25 @@
         </div>
     </div>
 
+    <div class="job-modal-bg" id="jobModal">
+        <div class="job-modal">
+            <div class="job-modal-head">
+                <h3 id="jobModalTitle">Podglad</h3>
+                <button class="modal-close" onclick="closeJobModal()">&times;</button>
+            </div>
+            <div class="job-modal-meta" id="jobModalMeta"></div>
+            <div class="job-preview-wrap">
+                <div class="job-preview-canvas" id="jobPreviewCanvas"></div>
+            </div>
+            <div class="job-actions">
+                <button class="btn-primary" id="jobDlStep" style="display:none" data-i18n="jobDlStep">Pobierz STEP</button>
+                <button class="btn-outline" id="jobDlStl" style="display:none" data-i18n="jobDlStl">Pobierz STL</button>
+                <button class="btn-outline" id="jobShareBtn" style="display:none" data-i18n="jobShare">Udostepnij</button>
+                <button class="btn-danger" id="jobDeleteBtn" data-i18n="jobDelete">Usun</button>
+            </div>
+        </div>
+    </div>
+
     <script type="importmap">
     {
         "imports": {
@@ -446,7 +485,10 @@
             resultDone: 'Gotowe! {faces} scianek STEP \u00b7 {time}s',
             resultError: 'Blad: {msg}',
             shareLinkPrompt: 'Skopiuj link:', downloadText: 'Pobierz', shareText: 'Udostepnij',
-            langLabel: 'EN'
+            langLabel: 'EN',
+            jobDlStep: 'Pobierz STEP', jobDlStl: 'Pobierz STL', jobDelete: 'Usun',
+            jobShare: 'Udostepnij', jobPreview: 'Podglad 3D',
+            jobStatus: 'Status', jobMode: 'Tryb', jobDeleteConfirm: 'Usunac to przetworzenie?'
         },
         en: {
             navConverter: 'Converter', navPricing: 'Pricing', navMyFiles: 'My Files',
@@ -501,7 +543,10 @@
             resultDone: 'Done! {faces} STEP faces \u00b7 {time}s',
             resultError: 'Error: {msg}',
             shareLinkPrompt: 'Copy link:', downloadText: 'Download', shareText: 'Share',
-            langLabel: 'PL'
+            langLabel: 'PL',
+            jobDlStep: 'Download STEP', jobDlStl: 'Download STL', jobDelete: 'Delete',
+            jobShare: 'Share', jobPreview: '3D Preview',
+            jobStatus: 'Status', jobMode: 'Mode', jobDeleteConfirm: 'Delete this conversion?'
         }
     };
 
@@ -714,8 +759,9 @@
             }
             document.getElementById('myFilesEmpty').style.display = 'none';
             document.getElementById('myFilesTable').style.display = 'block';
+            _myJobsData = d;
             document.querySelector('#jobs tbody').innerHTML = d.map(j =>
-                '<tr><td>' + j.id + '</td><td>' + j.filename + '</td><td class="status-' + j.status + '">' + j.status + '</td><td>' + (j.mode||'-') + '</td><td>' + (j.faces||'-') + '</td><td>' + (j.processing_time_s||'-') + 's</td><td>' + (j.created_at||'').slice(0,16) + '</td></tr>'
+                '<tr class="job-row" onclick="openJobModal(' + j.id + ')" title="' + t('jobPreview') + '"><td>' + j.id + '</td><td>' + j.filename + '</td><td class="status-' + j.status + '">' + j.status + '</td><td>' + (j.mode||'-') + '</td><td>' + (j.faces||'-') + '</td><td>' + (j.processing_time_s||'-') + 's</td><td>' + (j.created_at||'').slice(0,16) + '</td></tr>'
             ).join('');
         } catch(e) {
             document.getElementById('myFilesEmpty').style.display = 'block';
@@ -836,6 +882,146 @@
 
     function logout() { token=null; localStorage.removeItem('mt_token'); location.reload(); }
     function showMyJobs() { switchTab('myfiles'); }
+
+    /* ═══════ JOB PREVIEW MODAL (Moje pliki) ═══════ */
+    let _myJobsData = [];
+    let _job3Renderer = null, _job3Controls = null, _job3AnimId = null;
+
+    function openJobModal(jobId) {
+        const j = _myJobsData.find(x => x.id === jobId);
+        if (!j) return;
+        const modal = document.getElementById('jobModal');
+        modal.classList.add('show');
+        document.getElementById('jobModalTitle').textContent = j.filename || ('Job #' + j.id);
+        const date = (j.created_at || '').slice(0, 16);
+        document.getElementById('jobModalMeta').textContent =
+            t('jobStatus') + ': ' + j.status + '  •  ' + t('jobMode') + ': ' + (j.mode || '—') + '  •  ' + date;
+        const dlStep = document.getElementById('jobDlStep');
+        const dlStl = document.getElementById('jobDlStl');
+        const shareBtn = document.getElementById('jobShareBtn');
+        const delBtn = document.getElementById('jobDeleteBtn');
+        const done = j.status === 'done';
+        dlStep.style.display = done ? '' : 'none';
+        dlStl.style.display = done ? '' : 'none';
+        shareBtn.style.display = done ? '' : 'none';
+        dlStep.onclick = () => window.open('/api/download/' + j.uuid + '?format=step', '_blank');
+        dlStl.onclick = () => window.open('/api/download/' + j.uuid + '?format=stl', '_blank');
+        shareBtn.onclick = () => doShare(j.id);
+        delBtn.onclick = () => deleteMyJob(j.id);
+        loadJobModalSTL('/api/stl-preview/' + j.uuid);
+    }
+
+    function closeJobModal() {
+        document.getElementById('jobModal').classList.remove('show');
+        if (_job3AnimId) cancelAnimationFrame(_job3AnimId);
+        _job3AnimId = null;
+        if (_job3Renderer) { _job3Renderer.dispose(); _job3Renderer = null; }
+        if (_job3Controls) { try { _job3Controls.dispose(); } catch(e) {} _job3Controls = null; }
+        const c = document.getElementById('jobPreviewCanvas');
+        if (c) c.innerHTML = '';
+    }
+
+    function _jobModalDeps(cb, errCb) {
+        const T = window.THREE, OC = window._OrbitControls, SL = window._STLLoader;
+        if (T && OC && SL) { cb(T, OC, SL); return; }
+        let tries = 0;
+        const iv = setInterval(() => {
+            const T2 = window.THREE, OC2 = window._OrbitControls, SL2 = window._STLLoader;
+            tries++;
+            if (T2 && OC2 && SL2) { clearInterval(iv); cb(T2, OC2, SL2); }
+            else if (tries > 50) { clearInterval(iv); errCb && errCb(); }
+        }, 200);
+    }
+
+    function showJobModalErr() {
+        const c = document.getElementById('jobPreviewCanvas');
+        if (c) c.innerHTML =
+            '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#64748b">Podglad niedostepny</div>';
+    }
+
+    function loadJobModalSTL(url) {
+        const container = document.getElementById('jobPreviewCanvas');
+        container.innerHTML = '';
+        const req = new XMLHttpRequest();
+        req.open('GET', url);
+        if (token) req.setRequestHeader('Authorization', 'Bearer ' + token);
+        req.responseType = 'arraybuffer';
+        req.onload = function() {
+            if (req.status !== 200 || !req.response) { showJobModalErr(); return; }
+            const data = req.response;
+            _jobModalDeps(function(T, OC, SL) {
+                const w = container.clientWidth || 740;
+                const h = Math.min(window.innerHeight * 0.5, 480) || 400;
+                container.innerHTML = '';
+                const scene = new T.Scene();
+                scene.background = new T.Color(0xf7f9fc);
+                const camera = new T.PerspectiveCamera(45, w / h, 0.1, 10000);
+                const renderer = new T.WebGLRenderer({ antialias: true });
+                renderer.setSize(w, h);
+                renderer.setPixelRatio(window.devicePixelRatio || 1);
+                container.appendChild(renderer.domElement);
+                scene.add(new T.AmbientLight(0xffffff, 0.7));
+                const dl = new T.DirectionalLight(0xffffff, 0.9);
+                dl.position.set(1, 1, 1);
+                scene.add(dl);
+                const controls = new OC(camera, renderer.domElement);
+                controls.enableDamping = true;
+                controls.target.set(0, 0, 0);
+                _job3Renderer = renderer;
+                _job3Controls = controls;
+                try {
+                    const loader = new SL();
+                    const geometry = loader.parse(data);
+                    geometry.computeBoundingBox();
+                    const box = geometry.boundingBox;
+                    const center = new T.Vector3();
+                    box.getCenter(center);
+                    geometry.translate(-center.x, -center.y, -center.z);
+                    const size = new T.Vector3();
+                    box.getSize(size);
+                    const maxDim = Math.max(size.x, size.y, size.z) || 1;
+                    const mat = new T.MeshPhongMaterial({ color: 0x1a56db, specular: 0x111111, shininess: 30 });
+                    const mesh = new T.Mesh(geometry, mat);
+                    mesh.scale.setScalar(100 / maxDim);
+                    scene.add(mesh);
+                    camera.position.set(80, 60, 80);
+                    camera.lookAt(0, 0, 0);
+                    controls.update();
+                    function animate() {
+                        _job3AnimId = requestAnimationFrame(animate);
+                        controls.update();
+                        renderer.render(scene, camera);
+                    }
+                    animate();
+                } catch(e) { showJobModalErr(); }
+            }, showJobModalErr);
+        };
+        req.onerror = showJobModalErr;
+        req.send();
+    }
+
+    async function deleteMyJob(jobId) {
+        if (!confirm(t('jobDeleteConfirm'))) return;
+        try {
+            const r = await fetch('/api/jobs/' + jobId, {
+                method: 'DELETE',
+                headers: token ? {'Authorization': 'Bearer ' + token} : {}
+            });
+            if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || 'Error'); }
+            closeJobModal();
+            loadMyJobs();
+        } catch(e) { alert(e.message); }
+    }
+
+    document.getElementById('jobModal').addEventListener('click', function(e) {
+        if (e.target === this) closeJobModal();
+    });
+    document.getElementById('authModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') { closeJobModal(); closeModal(); }
+    });
     </script>
 </body>
 </html>

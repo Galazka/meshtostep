@@ -137,6 +137,20 @@
         .geo-bar-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width .4s; }
         .geo-bar-count { min-width: 36px; font-size: 12px; font-weight: 600; color: var(--text-muted); text-align: right; }
 
+        /* ── JOB MODAL ── */
+        .job-modal-bg { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.5); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
+        .job-modal-bg.show { display: flex; }
+        .job-modal { background: var(--card); border: 1px solid var(--border); border-radius: 16px; width: 800px; max-width: 95vw; max-height: 90vh; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.2); display: flex; flex-direction: column; }
+        .job-modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); gap: 12px; }
+        .job-modal-head h3 { font-size: 16px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .job-modal-meta { font-size: 13px; color: var(--text-muted); padding: 10px 24px 0; }
+        .job-preview-wrap { background: var(--bg-alt); border: 1px solid var(--border-light); border-radius: 8px; margin: 12px 24px 0; min-height: 400px; max-height: 55vh; position: relative; overflow: hidden; }
+        .job-preview-canvas { width: 100%; height: 100%; min-height: 400px; }
+        .job-preview-canvas canvas { display: block; }
+        .job-actions { display: flex; gap: 10px; padding: 16px 24px; border-top: 1px solid var(--border); margin-top: 12px; flex-wrap: wrap; }
+        .btn-sm.ghost { background: var(--card); color: var(--primary); border: 1px solid var(--border); }
+        .btn-sm.ghost:hover { border-color: var(--primary); background: var(--primary-light); }
+
         /* ── TOAST ── */
         .toast { position: fixed; bottom: 24px; right: 24px; background: var(--text); color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; z-index: 1000; opacity: 0; transform: translateY(10px); transition: all .3s; pointer-events: none; }
         .toast.show { opacity: 1; transform: translateY(0); }
@@ -357,8 +371,47 @@
         </div>
     </div>
 
+    <!-- JOB PREVIEW MODAL -->
+    <div class="job-modal-bg" id="jobModal">
+        <div class="job-modal">
+            <div class="job-modal-head">
+                <h3 id="jobModalTitle">Podglad</h3>
+                <button class="modal-close" onclick="closeJobModal()">&times;</button>
+            </div>
+            <div class="job-modal-meta" id="jobModalMeta"></div>
+            <div class="job-preview-wrap">
+                <div class="job-preview-canvas" id="jobPreviewCanvas"></div>
+            </div>
+            <div class="job-actions">
+                <button class="btn-sm primary" id="jobDlStep" data-i18n="jobDlStep">Pobierz STEP</button>
+                <button class="btn-sm success" id="jobDlStl" data-i18n="jobDlStl">Pobierz STL</button>
+                <button class="btn-sm ghost" id="jobShareBtn" data-i18n="jobShare">Udostepnij</button>
+                <button class="btn-sm danger" id="jobDeleteBtn" data-i18n="jobDelete">Usun</button>
+            </div>
+        </div>
+    </div>
+
     <!-- TOAST -->
     <div class="toast" id="toast"></div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+        window.THREE = THREE;
+        window._OrbitControls = OrbitControls;
+        window._STLLoader = STLLoader;
+        window.__threeReady = true;
+        window.dispatchEvent(new Event('three-ready'));
+    </script>
 
     <script>
     /* ═══════════════════════ I18N ═══════════════════════ */
@@ -392,7 +445,11 @@
             creditSuccess: 'Kredyty zaktualizowane', creditError: 'Blad regulacji kredytow',
             authError: 'Blad logowania. Sprawdz dane.', authAdminOnly: 'Dostep tylko dla administratorow.',
             emptyUsers: 'Brak uzytkownikow do wyswietlenia', emptyJobs: 'Brak przetworzen do wyswietlenia',
-            emptyGeo: 'Brak danych geolokalizacji'
+            emptyGeo: 'Brak danych geolokalizacji',
+            jobDlStep: 'Pobierz STEP', jobDlStl: 'Pobierz STL', jobDelete: 'Usun',
+            jobShare: 'Udostepnij', jobPreview: 'Podglad 3D',
+            jobStatus: 'Status', jobUser: 'Uzytkownik',
+            jobDeleteConfirm: 'Usunac to przetworzenie? Tej operacji nie mozna cofnuc.'
         },
         en: {
             navBack: 'Back', navTitle: 'Admin Panel', navAdminBadge: 'ADMIN',
@@ -423,7 +480,11 @@
             creditSuccess: 'Credits updated', creditError: 'Credit adjustment failed',
             authError: 'Login failed. Check your credentials.', authAdminOnly: 'Admin access required.',
             emptyUsers: 'No users to display', emptyJobs: 'No jobs to display',
-            emptyGeo: 'No geolocation data'
+            emptyGeo: 'No geolocation data',
+            jobDlStep: 'Download STEP', jobDlStl: 'Download STL', jobDelete: 'Delete',
+            jobShare: 'Share', jobPreview: '3D Preview',
+            jobStatus: 'Status', jobUser: 'User',
+            jobDeleteConfirm: 'Delete this conversion? This action cannot be undone.'
         }
     };
 
@@ -672,6 +733,160 @@
         btn.disabled = false;
     }
 
+    /* ═══════════════════════ JOB PREVIEW MODAL ═══════════════════════ */
+    let _jobThreeRenderer = null, _jobThreeScene = null, _jobThreeCamera = null,
+        _jobThreeControls = null, _jobThreeAnimId = null;
+    let _currentJob = null;
+
+    function _waitFor(filename_, deps, check, timeout) {
+        return new Promise(function(resolve, reject) {
+            for (const d of deps) { if (!d()) { reject(new Error('Brak: ' + filename_)); return; } }
+            resolve(true);
+        });
+    }
+
+    function openJobModal(jobId) {
+        const j = _allJobsData.find(x => x.id === jobId);
+        if (!j) return;
+        _currentJob = j;
+        const modal = document.getElementById('jobModal');
+        modal.classList.add('show');
+        const title = document.getElementById('jobModalTitle');
+        title.textContent = j.filename || ('Job #' + j.id);
+        const userLbl = j.user_email || (j.user_id != null ? ('#' + j.user_id) : 'anon');
+        const date = j.created_at ? new Date(j.created_at).toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-US') : '—';
+        document.getElementById('jobModalMeta').textContent =
+            t('jobUser') + ': ' + userLbl + '  •  ' + t('jobStatus') + ': ' + j.status +
+            '  •  ' + t('thMode') + ': ' + (j.mode || '—') + '  •  ' + date;
+
+        const dlStep = document.getElementById('jobDlStep');
+        const dlStl = document.getElementById('jobDlStl');
+        const shareBtn = document.getElementById('jobShareBtn');
+        const delBtn = document.getElementById('jobDeleteBtn');
+        const done = j.status === 'done';
+        dlStep.style.display = done ? '' : 'none';
+        dlStl.style.display = done ? '' : 'none';
+        shareBtn.style.display = done ? '' : 'none';
+        dlStep.onclick = () => window.open('/api/download/' + j.uuid + '?format=step', '_blank');
+        dlStl.onclick = () => window.open('/api/download/' + j.uuid + '?format=stl', '_blank');
+        shareBtn.onclick = () => doAdminShare(j.id);
+        delBtn.onclick = () => deleteJob(j.id);
+
+        loadJobSTL('/api/stl-preview/' + j.uuid);
+    }
+
+    function closeJobModal() {
+        document.getElementById('jobModal').classList.remove('show');
+        if (_jobThreeAnimId) cancelAnimationFrame(_jobThreeAnimId);
+        _jobThreeAnimId = null;
+        if (_jobThreeRenderer) { _jobThreeRenderer.dispose(); _jobThreeRenderer = null; }
+        if (_jobThreeControls) { try { _jobThreeControls.dispose(); } catch(e) {} _jobThreeControls = null; }
+        _jobThreeScene = null; _jobThreeCamera = null; _currentJob = null;
+        const canvas = document.getElementById('jobPreviewCanvas');
+        if (canvas) canvas.innerHTML = '';
+    }
+
+    function _threeDeps(cb) {
+        const T = window.THREE;
+        const OC = window._OrbitControls, SL = window._STLLoader;
+        if (T && OC && SL) { cb(T, OC, SL); return; }
+        let tries = 0;
+        const iv = setInterval(() => {
+            const T2 = window.THREE;
+            const OC2 = window._OrbitControls, SL2 = window._STLLoader;
+            tries++;
+            if (T2 && OC2 && SL2) { clearInterval(iv); cb(T2, OC2, SL2); }
+            else if (tries > 50) { clearInterval(iv); showJobPreviewErr(); }
+        }, 200);
+    }
+
+    function showJobPreviewErr() {
+        const container = document.getElementById('jobPreviewCanvas');
+        if (container) container.innerHTML =
+            '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">Podglad niedostepny</div>';
+    }
+
+    function loadJobSTL(url) {
+        const container = document.getElementById('jobPreviewCanvas');
+        container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">' + t('loading') + '</div>';
+        const req = new XMLHttpRequest();
+        req.open('GET', url);
+        if (token) req.setRequestHeader('Authorization', 'Bearer ' + token);
+        req.responseType = 'arraybuffer';
+        req.onload = function() {
+            if (req.status !== 200 || !req.response) { showJobPreviewErr(); return; }
+            const data = req.response;
+            _threeDeps(function(T, OC, SL) {
+                const w = container.clientWidth || 740;
+                const h = Math.min(window.innerHeight * 0.5, 480) || 400;
+                container.innerHTML = '';
+                const scene = new T.Scene();
+                scene.background = new T.Color(0xf7f9fc);
+                const camera = new T.PerspectiveCamera(45, w / h, 0.1, 10000);
+                const renderer = new T.WebGLRenderer({ antialias: true });
+                renderer.setSize(w, h);
+                renderer.setPixelRatio(window.devicePixelRatio || 1);
+                container.appendChild(renderer.domElement);
+                scene.add(new T.AmbientLight(0xffffff, 0.7));
+                const dl = new T.DirectionalLight(0xffffff, 0.9);
+                dl.position.set(1, 1, 1);
+                scene.add(dl);
+                const controls = new OC(camera, renderer.domElement);
+                controls.enableDamping = true;
+                controls.target.set(0, 0, 0);
+                _jobThreeRenderer = renderer;
+                _jobThreeScene = scene;
+                _jobThreeCamera = camera;
+                _jobThreeControls = controls;
+                try {
+                    const loader = new SL();
+                    const geometry = loader.parse(data);
+                    geometry.computeBoundingBox();
+                    const box = geometry.boundingBox;
+                    const center = new T.Vector3();
+                    box.getCenter(center);
+                    geometry.translate(-center.x, -center.y, -center.z);
+                    const size = new T.Vector3();
+                    box.getSize(size);
+                    const maxDim = Math.max(size.x, size.y, size.z) || 1;
+                    const mat = new T.MeshPhongMaterial({ color: 0x1a56db, specular: 0x111111, shininess: 30 });
+                    const mesh = new T.Mesh(geometry, mat);
+                    mesh.scale.setScalar(100 / maxDim);
+                    scene.add(mesh);
+                    camera.position.set(80, 60, 80);
+                    camera.lookAt(0, 0, 0);
+                    controls.update();
+                    function animate() {
+                        _jobThreeAnimId = requestAnimationFrame(animate);
+                        controls.update();
+                        renderer.render(scene, camera);
+                    }
+                    animate();
+                } catch(e) { showJobPreviewErr(); }
+            });
+        };
+        req.onerror = showJobPreviewErr;
+        req.send();
+    }
+
+    async function doAdminShare(jobId) {
+        try {
+            const d = await api('/api/share', { method: 'POST', body: { job_id: jobId, fmt: 'step', expires_days: 7 } });
+            prompt('Link:', d.url);
+        } catch(e) { toast(e.message, 'error'); }
+    }
+
+    async function deleteJob(jobId) {
+        if (!confirm(t('jobDeleteConfirm'))) return;
+        try {
+            await api('/api/admin/jobs/' + jobId, { method: 'DELETE' });
+            toast(t('jobDelete'), 'success');
+            closeJobModal();
+            loadJobs();
+            loadStats();
+        } catch(e) { toast(e.message, 'error'); }
+    }
+
     /* ═══════════════════════ JOBS ═══════════════════════ */
     let _jobsData = [];
     let _allJobsData = [];
@@ -709,7 +924,7 @@
             const st = j.status === 'done' ? 'done' : j.status === 'error' ? 'error' : 'pending';
             const date = j.created_at ? new Date(j.created_at).toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-US') : '—';
             const time = j.processing_time_s != null ? j.processing_time_s + 's' : '—';
-            return '<tr>' +
+            return '<tr onclick="openJobModal(' + j.id + ')" title="' + t('jobPreview') + '">' +
                 '<td>' + j.id + '</td>' +
                 '<td class="cell-ellipsis">' + esc(j.user_email || j.user_id || '—') + '</td>' +
                 '<td class="cell-ellipsis">' + esc(j.filename || '—') + '</td>' +
@@ -782,10 +997,13 @@
     document.getElementById('userModal').addEventListener('click', function(e) {
         if (e.target === this) closeModal();
     });
+    document.getElementById('jobModal').addEventListener('click', function(e) {
+        if (e.target === this) closeJobModal();
+    });
 
     /* Keyboard shortcuts */
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeModal();
+        if (e.key === 'Escape') { closeModal(); closeJobModal(); }
     });
 
     /* Enter key on login form */
