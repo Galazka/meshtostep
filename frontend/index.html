@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MeshToStep — STL do STEP w kilka sekund</title>
+    <style>
+        :root { --bg:#08080f; --card:#111118; --accent:#00f0ff; --accent2:#ff00ff; --ok:#00ff88; --err:#ff4444; --dim:#666; --border:#1a1a2e; --text:#eee; }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font:15px/1.6 'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+        a{color:var(--accent);text-decoration:none}
+        .nav{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);max-width:1100px;margin:0 auto}
+        .nav-logo{font-size:20px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .nav-links{display:flex;gap:16px;align-items:center;font-size:13px}
+        .nav-links a,.nav-links button{background:none;border:none;color:var(--dim);cursor:pointer;font-size:13px}
+        .nav-links a:hover,.nav-links button:hover{color:var(--text)}
+        .nav-links .credits-badge{background:rgba(0,240,255,.12);color:var(--accent);padding:4px 10px;border-radius:20px;font-weight:600;font-size:12px}
+        .hero{text-align:center;padding:64px 24px 40px;max-width:700px;margin:0 auto}
+        .hero h1{font-size:36px;font-weight:800;line-height:1.2;margin-bottom:12px}
+        .hero h1 span{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .hero p{color:var(--dim);font-size:16px;margin-bottom:24px}
+        .hero .pricing{display:inline-block;background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.25);border-radius:8px;padding:8px 20px;color:var(--ok);font-weight:600;font-size:14px;margin-bottom:32px}
+        .converter{max-width:700px;margin:0 auto 60px;padding:0 24px}
+        .drop-zone{border:2px dashed var(--border);border-radius:16px;padding:48px 24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--card)}
+        .drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent);background:rgba(0,240,255,.03)}
+        .drop-icon{font-size:48px;margin-bottom:8px}
+        .drop-text{color:var(--dim)}.drop-text strong{color:var(--accent)}
+        .file-info{margin-top:12px;display:none}.file-info.show{display:block}
+        .file-name{font-weight:600}.file-size{color:var(--dim);font-size:13px}
+        .opts{display:none;margin-top:16px;display:none;gap:12px;align-items:center;flex-wrap:wrap}
+        .opts.show{display:flex}
+        .opts select,.opts button{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer}
+        .btn{display:none;margin-top:16px;padding:12px 32px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;font-weight:700;font-size:15px;border:none;border-radius:8px;cursor:pointer;transition:opacity .2s}
+        .btn:hover{opacity:.85}.btn:disabled{opacity:.4}.btn.show{display:inline-block}
+        .progress{display:none;margin-top:16px}.progress.show{display:block}
+        .progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+        .progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s}
+        .progress-text{font-size:12px;color:var(--dim);margin-top:4px}
+        .result{display:none;margin-top:20px;padding:16px;border-radius:12px;font-size:14px}
+        .result.ok{display:block;background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.2);color:var(--ok)}
+        .result.err{display:block;background:rgba(255,68,68,.06);border:1px solid rgba(255,68,68,.2);color:var(--err)}
+        .result .dl-link{display:inline-block;margin-top:8px;padding:8px 20px;background:rgba(0,240,255,.12);border-radius:6px;color:var(--accent);font-weight:600}
+        .result .share-btn{margin-left:8px;padding:8px 16px;background:rgba(255,0,255,.12);border-radius:6px;color:var(--accent2);border:none;cursor:pointer;font-weight:600;font-size:13px}
+        .features{max-width:900px;margin:0 auto 60px;padding:0 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+        .feat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px}
+        .feat h3{font-size:14px;color:var(--accent);margin-bottom:6px}
+        .feat p{color:var(--dim);font-size:13px}
+        .footer{text-align:center;padding:32px;border-top:1px solid var(--border);color:var(--dim);font-size:12px}
+        @media(max-width:640px){.features{grid-template-columns:1fr}}
+        /* Auth modal */
+        .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;justify-content:center;align-items:center}
+        .modal-bg.show{display:flex}
+        .modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;width:360px;max-width:90vw}
+        .modal h2{font-size:20px;margin-bottom:16px}
+        .modal input{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:12px;font-size:14px}
+        .modal .btn{width:100%;display:block!important;text-align:center}
+        .modal .switch{color:var(--dim);font-size:13px;margin-top:12px;text-align:center}
+        .modal .switch a{cursor:pointer}
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-logo">MeshToStep</div>
+        <div class="nav-links" id="navLinks">
+            <a href="#features">Jak działa?</a>
+            <a href="#pricing">Cennik</a>
+            <span id="authBtns">
+                <button onclick="showModal('login')">Zaloguj</button>
+                <button onclick="showModal('register')" style="color:var(--accent)">Załóż konto</button>
+            </span>
+            <span id="userPanel" style="display:none">
+                <span class="credits-badge" id="creditsBadge">3 kredyty</span>
+                <button onclick="showMyJobs()">Moje konwersje</button>
+                <button onclick="logout()">Wyloguj</button>
+            </span>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <h1>Przekonwertuj <span>STL → STEP</span><br>w kilka sekund</h1>
+        <p>Wgraj plik mesh. Pobierz edytowalny bryłę STEP.<br>FreeCAD headless + automatyczna optymalizacja geometrii.</p>
+        <div class="pricing">5 konwersji za 50 gr · 3 darmowe na start</div>
+    </div>
+
+    <div class="converter">
+        <div class="drop-zone" id="dropZone">
+            <div class="drop-icon">📁</div>
+            <p class="drop-text">Przeciągnij plik <strong>STL/3MF/OBJ</strong> tutaj<br>lub kliknij by wybrać</p>
+            <input type="file" id="fileInput" accept=".stl,.3mf,.obj" hidden>
+            <div class="file-info" id="fileInfo">
+                <div class="file-name" id="fileName"></div>
+                <div class="file-size" id="fileSize"></div>
+            </div>
+        </div>
+        <div class="opts" id="optsWrap">
+            <select id="modeSelect">
+                <option value="auto">Auto — balans detale/rozmiar</option>
+                <option value="ultra">Ultra — min. ścianek</option>
+                <option value="smooth">Gładki — Taubin + decymacja</option>
+                <option value="light">Lekko — tylko scala koplanarne</option>
+                <option value="off">Bez optymalizacji</option>
+            </select>
+        </div>
+        <div class="progress" id="progress">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            <div class="progress-text" id="progressText">Przesyłanie...</div>
+        </div>
+        <button class="btn" id="convertBtn" onclick="doConvert()">⚡ Konwertuj</button>
+        <div class="result" id="result"></div>
+    </div>
+
+    <div class="features" id="features">
+        <div class="feat"><h3>🔧 FreeCAD headless</h3><p>Open CASCADE w tle — makeSolid + removeSplitter + decymacja. Żadnych limitów Personal.</p></div>
+        <div class="feat"><h3>🎯 5 trybów</h3><p>Auto, Ultra, Smooth (Taubin), Lekko, Off. Wybierz balans między jakością a rozmiarem.</p></div>
+        <div class="feat"><h3>🔗 Udostępnianie</h3><p>Generuj linki do pobrania STEP. Podgląd online, limity pobrań, wygaśnięcie.</p></div>
+        <div class="feat"><h3>💳 Kredyty</h3><p>3 darmowe na start. Potem 5 konwersji za 50 gr. Bez abonamentu.</p></div>
+        <div class="feat"><h3>👁 Podgląd 3D</h3><p>Porównaj przed i po. Three.js inline viewer w przeglądarce.</p></div>
+        <div class="feat"><h3>🚀 API</h3><p>REST API dla integracji. Upload → convert → download. OpenAPI docs included.</p></div>
+    </div>
+
+    <div id="pricing" class="features">
+        <div class="feat"><h3>Darmowe</h3><p style="font-size:24px;font-weight:800;color:var(--ok);margin:8px 0">0 zł</p><p>3 konwersje na start<br>Max 50 MB/plik<br>Auto mode</p></div>
+        <div class="feat" style="border-color:var(--accent)"><h3>Start 5</h3><p style="font-size:24px;font-weight:800;color:var(--accent);margin:8px 0">50 gr</p><p>5 konwersji<br>Wszystkie tryby<br>Linki udostępniania<br>Podgląd 3D</p></div>
+        <div class="feat"><h3>Pakiet 25</h3><p style="font-size:24px;font-weight:800;color:var(--accent2);margin:8px 0">1.99 zł</p><p>25 konwersji<br>Priorytetowa kolejka<br>API access<br>Admin panel</p></div>
+    </div>
+
+    <footer class="footer">MeshToStep · FreeCAD headless · Built for makers who hate faceted STEP files</footer>
+
+    <!-- Auth modal -->
+    <div class="modal-bg" id="authModal">
+        <div class="modal">
+            <h2 id="modalTitle">Zaloguj się</h2>
+            <input id="authEmail" type="email" placeholder="email">
+            <input id="authPass" type="password" placeholder="hasło">
+            <button class="btn show" id="authSubmit" onclick="doAuth()">Zaloguj</button>
+            <div class="switch" id="authSwitch">Nie masz konta? <a onclick="toggleAuth()">Załóż za darmo</a></div>
+        </div>
+    </div>
+
+    <script>
+        let token = localStorage.getItem('mt_token');
+        let selectedFile = null;
+        let authMode = 'login';
+
+        // Init
+        if (token) fetchUser();
+        setupDropZone();
+
+        function setupDropZone() {
+            const d = document.getElementById('dropZone');
+            const inp = document.getElementById('fileInput');
+            d.addEventListener('click', () => inp.click());
+            d.addEventListener('dragover', e => { e.preventDefault(); d.classList.add('drag-over'); });
+            d.addEventListener('dragleave', () => d.classList.remove('drag-over'));
+            d.addEventListener('drop', e => { e.preventDefault(); d.classList.remove('drag-over'); pickFile(e.dataTransfer.files[0]); });
+            inp.addEventListener('change', () => pickFile(inp.files[0]));
+        }
+
+        function pickFile(f) {
+            if (!f) return;
+            selectedFile = f;
+            document.getElementById('fileName').textContent = f.name;
+            document.getElementById('fileSize').textContent = (f.size/1024/1024).toFixed(2) + ' MB';
+            document.getElementById('fileInfo').classList.add('show');
+            document.getElementById('optsWrap').classList.add('show');
+            document.getElementById('convertBtn').classList.add('show');
+            document.getElementById('result').style.display = 'none';
+        }
+
+        async function doConvert() {
+            if (!selectedFile) return;
+            const btn = document.getElementById('convertBtn');
+            btn.disabled = true; btn.textContent = '⏳ Konwertuję...';
+            document.getElementById('progress').classList.add('show');
+            let pct = 0;
+            const iv = setInterval(() => {
+                pct = Math.min(pct + 2 + Math.random()*3, 92);
+                document.getElementById('progressFill').style.width = pct + '%';
+                document.getElementById('progressText').textContent = pct < 30 ? 'Przesyłanie...' : pct < 60 ? 'FreeCAD konwersja...' : 'Prawie gotowe...';
+            }, 200);
+            const fd = new FormData();
+            fd.append('file', selectedFile);
+            fd.append('mode', document.getElementById('modeSelect').value);
+            try {
+                const r = await fetch('/api/convert', {
+                    method: 'POST', body: fd,
+                    headers: token ? {'Authorization': 'Bearer ' + token} : {}
+                });
+                clearInterval(iv);
+                document.getElementById('progressFill').style.width = '100%';
+                if (!r.ok) { const e = await r.json(); throw new Error(e.detail || 'Błąd'); }
+                const d = await r.json();
+                document.getElementById('result').className = 'result ok';
+                document.getElementById('result').innerHTML = `✅ Gotowe! ${d.faces} ścianek STEP · ${d.time_s}s<br>
+                    <a class="dl-link" href="/api/download/${d.uuid}">⬇ Pobierz ${d.filename}</a>
+                    <button class="share-btn" onclick="doShare(${d.job_id})">🔗 Udostępnij</button>`;
+                document.getElementById('result').style.display = 'block';
+                if (d.credits_remaining !== null) updateCredits(d.credits_remaining);
+            } catch(e) {
+                clearInterval(iv);
+                document.getElementById('result').className = 'result err';
+                document.getElementById('result').innerHTML = '❌ ' + e.message;
+                document.getElementById('result').style.display = 'block';
+            }
+            btn.disabled = false; btn.textContent = '⚡ Konwertuj';
+            document.getElementById('progress').classList.remove('show');
+        }
+
+        async function doShare(jobId) {
+            const fd = new FormData(); fd.append('job_id', jobId); fd.append('fmt', 'step'); fd.append('expires_days', 7);
+            const r = await fetch('/api/share', {method:'POST', body:fd, headers: token?{'Authorization':'Bearer '+token}:{}});
+            if (r.ok) { const d = await r.json(); prompt('Skopiuj link:', d.url); }
+        }
+
+        // Auth
+        function showModal(mode) { authMode = mode; document.getElementById('authModal').classList.add('show'); document.getElementById('modalTitle').textContent = mode==='login'?'Zaloguj się':'Załóż konto (3 darmowe)'; document.getElementById('authSubmit').textContent = mode==='login'?'Zaloguj':'Załóż konto'; document.getElementById('authSwitch').innerHTML = mode==='login'?'Nie masz konta? <a onclick="toggleAuth()">Załóż za darmo</a':'Masz konto? <a onclick="toggleAuth()">Zaloguj się</a>'; }
+        function toggleAuth() { showModal(authMode==='login'?'register':'login'); }
+        function closeModal() { document.getElementById('authModal').classList.remove('show'); }
+        async function doAuth() {
+            const email = document.getElementById('authEmail').value;
+            const pass = document.getElementById('authPass').value;
+            const ep = authMode==='register' ? '/api/auth/register' : '/api/auth/login';
+            const r = await fetch(ep, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password:pass})});
+            const d = await r.json();
+            if (!r.ok) { alert(d.detail || 'Błąd'); return; }
+            token = d.token; localStorage.setItem('mt_token', token);
+            closeModal(); fetchUser();
+        }
+        async function fetchUser() {
+            if (!token) return;
+            const r = await fetch('/api/auth/me', {headers:{'Authorization':'Bearer '+token}});
+            if (!r.ok) { token=null; localStorage.removeItem('mt_token'); return; }
+            const d = await r.json();
+            document.getElementById('authBtns').style.display='none';
+            document.getElementById('userPanel').style.display='inline';
+            updateCredits(d.credits);
+            if (d.is_admin) document.getElementById('navLinks').innerHTML += ' <a href="/admin">Admin</a>';
+        }
+        function updateCredits(n) { document.getElementById('creditsBadge').textContent = n + ' kredyt' + (n===1?'':'y'); }
+        function logout() { token=null; localStorage.removeItem('mt_token'); location.reload(); }
+    </script>
+</body>
+</html>

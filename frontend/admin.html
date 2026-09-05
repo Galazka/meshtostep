@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin — MeshToStep</title>
+<style>
+body{font:14px/1.5 system-ui;background:#08080f;color:#eee;margin:0;padding:24px}
+table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px}
+th,td{padding:8px 12px;border-bottom:1px solid #1a1a2e;text-align:left}
+th{color:#00f0ff;font-weight:600}
+.stats{display:flex;gap:16px;flex-wrap:wrap;margin:16px 0}
+.stat{background:#111;border:1px solid #1a1a2e;border-radius:12px;padding:16px 20px;min-width:140px}
+.stat .num{font-size:28px;font-weight:800;color:#00f0ff}
+.stat .label{color:#666;font-size:12px}
+h1{font-size:22px;margin-bottom:4px}
+a{color:#00f0ff}
+.ok{color:#00ff88}.err{color:#ff4444}.pending{color:#ffaa00}
+</style></head>
+<body>
+<h1>🔧 MeshToStep Admin</h1>
+<p><a href="/">← Back</a> · <a onclick="loadAll()">Refresh</a></p>
+<div class="stats" id="stats"></div>
+<h2>Użytkownicy</h2>
+<table id="users"><thead><tr><th>ID</th><th>Email</th><th>Kredyty</th><th>Admin</th><th>Created</th></tr></thead><tbody></tbody></table>
+<h2>Konwersje</h2>
+<table id="jobs"><thead><tr><th>ID</th><th>User</th><th>Plik</th><th>Status</th><th>Mode</th><th>Faces</th><th>Czas</th><th>Created</th></tr></thead><tbody></tbody></table>
+<script>
+const token = localStorage.getItem('mt_token');
+const H = {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'};
+
+async function api(path) {
+    const r = await fetch(path, {headers: H});
+    if (!r.ok) { alert('Auth error'); throw r; }
+    return r.json();
+}
+
+async function loadStats() {
+    const d = await api('/api/admin/stats');
+    document.getElementById('stats').innerHTML = [
+        ['Użytkownicy', d.users], ['Konwersje', d.jobs_total], ['Sukces', d.jobs_done],
+        ['Błędy', d.jobs_error], ['Kredyty sprzedane', d.credits_sold],
+        ['Przychód', d.revenue_pln + ' zł'], ['Aktywne linki', d.shares_active], ['Pobrania', d.total_downloads]
+    ].map(([l,n]) => `<div class="stat"><div class="num">${n}</div><div class="label">${l}</div></div>`).join('');
+}
+
+async function loadUsers() {
+    const d = await api('/api/admin/users');
+    document.querySelector('#users tbody').innerHTML = d.map(u =>
+        `<tr><td>${u.id}</td><td>${u.email}</td><td>${u.credits}</td><td>${u.is_admin?'✓':''}</td><td>${u.created_at?.slice(0,10)}</td></tr>`
+    ).join('');
+}
+
+async function loadJobs() {
+    const d = await api('/api/admin/jobs');
+    document.querySelector('#jobs tbody').innerHTML = d.map(j =>
+        `<tr><td>${j.id}</td><td>${j.user_id||'anon'}</td><td>${j.filename}</td><td class="${j.status==='done'?'ok':j.status==='error'?'err':'pending'}">${j.status}</td><td>${j.mode}</td><td>${j.faces||'-'}</td><td>${j.processing_time_s||'-'}s</td><td>${j.created_at?.slice(0,16)}</td></tr>`
+    ).join('');
+}
+
+function loadAll() { loadStats(); loadUsers(); loadJobs(); }
+loadAll();
+</script></body></html>
