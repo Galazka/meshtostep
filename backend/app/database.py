@@ -27,10 +27,37 @@ def get_db():
         db.close()
 
 
+def _migrate_columns():
+    """Add missing columns to existing tables (SQLite + PostgreSQL safe)."""
+    from sqlalchemy import text, inspect
+    is_pg = not settings.DATABASE_URL.startswith("sqlite")
+    with engine.connect() as conn:
+        inspector = inspect(engine)
+        existing = {col["name"] for col in inspector.get_columns("users")}
+        new_cols = {
+            "terms_accepted_at": "TIMESTAMP" if is_pg else "DATETIME",
+            "privacy_accepted_at": "TIMESTAMP" if is_pg else "DATETIME",
+            "marketing_consent": "BOOLEAN DEFAULT FALSE",
+            "registered_ip": "VARCHAR(45)" if is_pg else "VARCHAR(45)",
+            "register_user_agent": "TEXT",
+        }
+        for col, dtype in new_cols.items():
+            if col not in existing:
+                conn.execute(text(f'ALTER TABLE users ADD COLUMN {col} {dtype}'))
+                print(f"[MeshToStep] Added column users.{col}")
+        conn.commit()
+
+
 def init_db():
     from . import models
     from .config import settings
     models.Base.metadata.create_all(bind=engine)
+
+    # Migrate missing columns for GDPR fields
+    try:
+        _migrate_columns()
+    except Exception as e:
+        print(f"[MeshToStep] Migration warning: {e}")
 
     # Seed credit packs
     db = SessionLocal()
