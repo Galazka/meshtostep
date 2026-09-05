@@ -29,19 +29,13 @@ for d in [JOBS_DIR, PREVIEWS_DIR, SHARES_DIR]:
 async def convert_file(
     file: UploadFile = File(...),
     mode: str = Form("auto"),
-    user: models.User = Depends(get_current_user),
+    user: models.User = Depends(get_current_user),  # optional
     db: Session = Depends(get_db),
 ):
     t0 = time.time()
     ext = Path(file.filename).suffix.lower()
     if ext not in (".stl", ".3mf", ".obj"):
         raise HTTPException(400, "Obsługiwane: .stl, .3mf, .obj")
-
-    # Check credits
-    if user:
-        if user.credits < 1:
-            raise HTTPException(402, "Brak kredytów. Dokup pakiet.")
-    # anon gets 1 free conversion (no account needed)
 
     # Save upload
     job_uuid = uuid.uuid4().hex[:12]
@@ -67,12 +61,6 @@ async def convert_file(
     db.commit()
     db.refresh(job)
 
-    # Deduct credit
-    if user:
-        user.credits -= 1
-        job.credits_used = 1
-        db.commit()
-
     # Convert
     out_step = str(job_dir / (Path(file.filename).stem + ".step"))
     result = convert(str(src), out_step, mode=mode)
@@ -84,6 +72,7 @@ async def convert_file(
         job.result_size_bytes = result["result_size"]
         job.processing_time_s = round(time.time() - t0, 1)
         job.completed_at = datetime.utcnow()
+        job.credits_used = 0  # free conversion
         db.commit()
 
         return {
@@ -94,17 +83,12 @@ async def convert_file(
             "step_size_kb": result["result_size"] // 1024,
             "time_s": job.processing_time_s,
             "mode": mode,
-            "credits_remaining": user.credits if user else None,
             "filename": Path(file.filename).stem + ".step",
         }
     else:
         job.status = "error"
         job.error_msg = result["error"][:2000]
         db.commit()
-        # Refund credit
-        if user:
-            user.credits += 1
-            db.commit()
         raise HTTPException(500, result["error"][:500])
 
 

@@ -258,6 +258,7 @@
                     <button class="admin-tab active" onclick="switchAdminTab('users')" data-tab="users" data-i18n="tabUsers">Uzytkownicy</button>
                     <button class="admin-tab" onclick="switchAdminTab('jobs')" data-tab="jobs" data-i18n="tabJobs">Przetworzenia</button>
                     <button class="admin-tab" onclick="switchAdminTab('geo')" data-tab="geo" data-i18n="tabGeo">Statystyki geolokalizacji</button>
+                    <button class="admin-tab" onclick="switchAdminTab('ads')" data-tab="ads">Reklamy</button>
                 </div>
 
                 <!-- USERS TAB -->
@@ -324,6 +325,30 @@
                         <div class="geo-col">
                             <h3 data-i18n="geoCities">Miasta</h3>
                             <div id="geoCities"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ADS TAB -->
+                <div class="tab-content" id="tab-ads">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Sloty reklamowe</h2>
+                            <p class="subtitle">Zarządzaj miejscami na reklamy i kodem AdSense</p>
+                        </div>
+                        <div class="panel-body padded">
+                            <button class="btn primary" onclick="openAdSlotModal(null)" style="margin-bottom:16px">+ Dodaj slot</button>
+                            <div style="max-height:500px;overflow-y:auto;">
+                                <table class="admin-table" id="adsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th><th>Nazwa</th><th>Slot key</th><th>Typ</th>
+                                            <th>Aktywny</th><th>Wyświetlenia</th><th>Kliknięcia</th><th>Akcje</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adsBody"></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -593,6 +618,7 @@
         document.querySelectorAll('.tab-content').forEach(p => p.classList.remove('active'));
         document.getElementById('tab-' + name).classList.add('active');
         if (name === 'geo' && !_geoLoaded) loadGeoStats();
+        if (name === 'ads' && !_adsLoaded) { loadAdSlots(); _adsLoaded = true; }
     }
 
     /* ═══════════════════════ STATS ═══════════════════════ */
@@ -1018,6 +1044,82 @@
     document.getElementById('creditAmount').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') adjustCredits();
     });
+
+    /* ── ADS MANAGEMENT ─────────────────────────────────────────── */
+    let _allAdSlots = [];
+    async function loadAdSlots() {
+        try {
+            const d = await api('/api/ads/admin/slots');
+            _allAdSlots = d;
+            document.getElementById('adsBody').innerHTML = d.map(s =>
+                '<tr>' +
+                '<td>' + s.id + '</td><td>' + (s.name||'') + '</td><td><code>' + s.slot_key + '</code></td>' +
+                '<td>' + s.ad_type + '</td>' +
+                '<td><span style="color:' + (s.is_active ? 'var(--ok)' : 'var(--err)') + '">' + (s.is_active ? 'TAK' : 'NIE') + '</span></td>' +
+                '<td>' + (s.impressions||0) + '</td><td>' + (s.clicks||0) + '</td>' +
+                '<td>' +
+                    '<button class="btn-sm" onclick="toggleAdSlot(' + s.id + ')">' + (s.is_active ? 'Wyłącz' : 'Włącz') + '</button> ' +
+                    '<button class="btn-sm" onclick="openAdSlotModal(_allAdSlots.find(x=>x.id===' + s.id + '))">Edytuj</button> ' +
+                    '<button class="btn-sm danger" onclick="deleteAdSlot(' + s.id + ')">Usuń</button>' +
+                '</td></tr>'
+            ).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:24px">Brak slotów reklamowych</td></tr>';
+        } catch(e) { console.error('loadAdSlots:', e); }
+    }
+
+    async function toggleAdSlot(id) {
+        try { await api('/api/ads/admin/slots/' + id + '/toggle', {method:'POST'}); loadAdSlots(); }
+        catch(e) { alert(e.message); }
+    }
+
+    async function deleteAdSlot(id) {
+        if (!confirm('Usunąć slot reklamowy?')) return;
+        try { await api('/api/ads/admin/slots/' + id, {method:'DELETE'}); loadAdSlots(); }
+        catch(e) { alert(e.message); }
+    }
+
+    function openAdSlotModal(slot) {
+        const isNew = !slot;
+        const modal = document.getElementById('userModal');
+        modal.classList.add('show');
+        document.getElementById('modalContent').style.display = 'block';
+        document.getElementById('modalLoading').style.display = 'none';
+        document.getElementById('modalBody').innerHTML =
+            '<h3 style="margin-bottom:16px">' + (isNew ? 'Nowy slot reklamowy' : 'Edytuj slot') + '</h3>' +
+            '<div style="display:grid;gap:12px;max-width:600px">' +
+            '<label>Nazwa: <input type="text" id="adName" value="' + (slot?.name||'') + '" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px"></label>' +
+            '<label>Slot key: <input type="text" id="adSlotKey" value="' + (slot?.slot_key||'') + '" placeholder="after_convert" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px"></label>' +
+            '<label>Typ: <select id="adType" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px">' +
+                '<option value="adsense"' + (slot?.ad_type==='adsense'?' selected':'') + '>AdSense</option>' +
+                '<option value="custom"' + (slot?.ad_type==='custom'?' selected':'') + '>Custom HTML</option>' +
+                '<option value="image"' + (slot?.ad_type==='image'?' selected':'') + '>Image</option>' +
+            '</select></label>' +
+            '<label>Kolejność: <input type="number" id="adSort" value="' + (slot?.sort_order||0) + '" style="width:100px;padding:8px;border:1px solid var(--border);border-radius:6px"></label>' +
+            '<label><input type="checkbox" id="adActive"' + (slot?.is_active!==false?' checked':'') + '> Aktywny</label>' +
+            '<label>Kod reklamy (HTML/JS):<textarea id="adCode" rows="8" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:12px">' + (slot?.ad_code||'').replace(/</g,'&lt;') + '</textarea></label>' +
+            '<div style="display:flex;gap:8px">' +
+            '<button class="btn primary" onclick="saveAdSlot(' + (slot?.id||'null') + ')">' + (isNew ? 'Dodaj' : 'Zapisz') + '</button>' +
+            '<button class="btn" onclick="document.getElementById(\'userModal\').classList.remove(\'show\')">Anuluj</button>' +
+            '</div></div>';
+    }
+
+    async function saveAdSlot(id) {
+        const body = {
+            name: document.getElementById('adName').value,
+            slot_key: document.getElementById('adSlotKey').value,
+            ad_code: document.getElementById('adCode').value,
+            ad_type: document.getElementById('adType').value,
+            sort_order: parseInt(document.getElementById('adSort').value) || 0,
+            is_active: document.getElementById('adActive').checked,
+        };
+        try {
+            if (id) { await api('/api/ads/admin/slots/' + id, {method:'PUT', body}); }
+            else { await api('/api/ads/admin/slots', {method:'POST', body}); }
+            document.getElementById('userModal').classList.remove('show');
+            loadAdSlots();
+        } catch(e) { alert(e.message); }
+    }
+
+    if (window.location.search.includes('tab=ads')) switchAdminTab('ads');
     </script>
 </body>
 </html>

@@ -52,7 +52,20 @@ def _migrate_columns():
         if "show_author" not in existing_share:
             conn.execute(text("ALTER TABLE share_links ADD COLUMN show_author BOOLEAN DEFAULT TRUE"))
             print("[MeshToStep] Added column share_links.show_author")
+        # -- users: retention_days --
+        if "retention_days" not in existing:
+            conn.execute(text("ALTER TABLE users ADD COLUMN retention_days INTEGER DEFAULT 30"))
+            print("[MeshToStep] Added column users.retention_days")
         conn.commit()
+
+    # Create ad_slots table if not exists
+    try:
+        if not inspect(engine).has_table("ad_slots"):
+            from .models import AdSlot
+            AdSlot.__table__.create(engine)
+            print("[MeshToStep] Created ad_slots table")
+    except Exception as e:
+        print(f"[MeshToStep] ad_slots migration: {e}")
 
 
 def init_db():

@@ -38,7 +38,9 @@
         .nav-tab:hover { color: var(--text); background: var(--bg-alt); text-decoration: none; }
         .nav-tab.active { color: var(--primary); background: var(--primary-light); }
         .nav-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-        .credits-badge { background: var(--primary-light); color: var(--primary); padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .ad-slot { display: block; margin: 24px auto; max-width: 728px; min-height: 90px; text-align: center; }
+        .retention-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--primary-light); color: var(--primary); padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; margin-right: 8px; }
+        .retention-badge button { background: none; border: none; color: var(--primary); cursor: pointer; font-size: 11px; text-decoration: underline; padding: 0; font-family: inherit; }
         .lang-toggle { background: var(--bg-alt) !important; border: 1px solid var(--border) !important; border-radius: 6px; padding: 6px 12px !important; font-weight: 600; color: var(--text-secondary) !important; cursor: pointer; font-family: inherit; font-size: 13px; transition: all .15s; }
         .lang-toggle:hover { border-color: var(--primary) !important; color: var(--primary) !important; }
         .nav-auth button { background: none; border: none; padding: 6px 14px; font-size: 14px; font-weight: 500; color: var(--text-secondary); cursor: pointer; border-radius: 6px; transition: all .15s; font-family: inherit; }
@@ -86,6 +88,10 @@
         .result .dl-link:hover { background: var(--primary-hover); }
         .result .share-btn { margin-left: 8px; padding: 8px 16px; background: var(--primary-light); border-radius: 6px; color: var(--primary); border: none; cursor: pointer; font-weight: 600; font-size: 13px; font-family: inherit; }
         .result .embed-btn { margin-left: 8px; padding: 8px 16px; background: var(--bg-alt); border-radius: 6px; color: var(--text-secondary); border: 1px solid var(--border); cursor: pointer; font-weight: 600; font-size: 13px; font-family: inherit; }
+        .result-card .result-faces { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .result-card .result-faces strong { font-size: 22px; }
+        .result-card .result-meta { font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; }
+        .result-card .result-actions { display: flex; flex-wrap: wrap; gap: 8px; }
         #viewer3d { display: none; width: 100%; height: 400px; border-radius: var(--radius); margin-top: 16px; background: var(--bg-alt); border: 1px solid var(--border); }
         .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; max-width: 1000px; margin: 40px auto 60px; }
         .price-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px 24px; text-align: center; transition: box-shadow .2s; }
@@ -209,7 +215,7 @@
                     <button onclick="showModal('register')" class="btn-signup" data-i18n="navSignup">Zaloz konto</button>
                 </span>
                 <span id="userPanel" style="display:none">
-                    <span class="credits-badge" id="creditsBadge">3 kredyty</span>
+                    <span class="retention-badge" id="retentionBadge"><span id="retentionText"></span> <button onclick="extendRetention()" data-i18n="adExtendRetention">Przedłuż klikając w reklamy</button></span>
                     <button onclick="showMyJobs()" data-i18n="navMyConversions">Moje konwersje</button>
                     <button onclick="logout()" data-i18n="navLogout">Wyloguj</button>
                 </span>
@@ -222,7 +228,7 @@
         <div class="hero">
             <h1 data-i18n="heroTitle">Przekonwertuj <span class="hl">STL &rarr; STEP</span><br>w kilka sekund</h1>
             <p data-i18n="heroDesc">Wgraj plik mesh. Pobierz edytowalna bryle STEP.<br>Nasz autorski silnik konwersji + automatyczna optymalizacja geometrii.</p>
-            <div class="pricing-tag" data-i18n="heroPricing">5 konwersji za $0.99 &middot; 3 darmowe na start</div>
+            <div class="pricing-tag" data-i18n="heroPricing">Za darmo. Bez limitu konwersji.</div>
         </div>
         <div class="trust">
             <div class="trust-badge">
@@ -231,7 +237,7 @@
             </div>
             <div class="trust-badge">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-                <span data-i18n="trustDelete">Pliki usuwane po 30 dniach</span>
+                <span data-i18n="trustDelete">Darmowe przechowywanie</span>
             </div>
             <div class="trust-badge">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
@@ -242,6 +248,7 @@
                 <span data-i18n="trustSupport">Wsparcie PL EN</span>
             </div>
         </div>
+        <div class="ad-slot" data-slot="hero_bottom"></div>
         <div class="converter">
             <div class="drop-zone" id="dropZone">
                 <div class="drop-icon">
@@ -270,6 +277,7 @@
             <button class="btn-primary" id="convertBtn" onclick="doConvert()" data-i18n="convertBtn">Konwertuj</button>
             <div class="result" id="result"></div>
             <div id="viewer3d"></div>
+            <div class="ad-slot" data-slot="after_convert"></div>
         </div>
     </div>
 
@@ -349,6 +357,7 @@
         </div>
     </div>
 
+    <div class="ad-slot" data-slot="page_bottom"></div>
     <footer class="footer">
         <div class="footer-inner">
             <div class="footer-brand">MeshToStep<p>Zaawansowana konwersja &middot; STL do STEP</p></div>
@@ -469,8 +478,8 @@
             navMyConversions: 'Moje konwersje', navLogout: 'Wyloguj',
             heroTitle: 'Przekonwertuj <span class="hl">STL \u2192 STEP</span><br>w kilka sekund',
             heroDesc: 'Wgraj plik mesh. Pobierz edytowalna bryle STEP.<br>Nasz autorski silnik konwersji + automatyczna optymalizacja geometrii.',
-            heroPricing: '5 konwersji za $0.99 \u00b7 3 darmowe na start',
-            trustStripe: 'Bezpieczne platnosci Stripe', trustDelete: 'Pliki usuwane po 30 dniach',
+            heroPricing: 'Za darmo. Bez limitu konwersji.',
+            trustStripe: 'Bezpieczne platnosci Stripe', trustDelete: 'Darmowe przechowywanie',
             trustRODO: 'RODO', trustSupport: 'Wsparcie PL EN',
             dropText: 'Przeciagnij plik <strong>STL/3MF/OBJ</strong> tutaj<br>lub kliknij by wybrac',
             modeAuto: 'Auto \u2014 balans detale/rozmiar', modeUltra: 'Ultra \u2014 min. scianek',
@@ -520,7 +529,11 @@
             langLabel: 'EN',
             jobDlStep: 'Pobierz STEP', jobDlStl: 'Pobierz STL', jobDelete: 'Usun',
             jobShare: 'Udostepnij', jobPreview: 'Podglad 3D',
-            jobStatus: 'Status', jobMode: 'Tryb', jobDeleteConfirm: 'Usunac to przetworzenie?'
+            jobStatus: 'Status', jobMode: 'Tryb', jobDeleteConfirm: 'Usunac to przetworzenie?',
+            freeConversion: 'Za darmo. Bez limitu konwersji.',
+            adExtendRetention: 'Przedłuż klikając w reklamy',
+            retentionInfo: 'Przechowywanie: {days} dni',
+            faceCount: 'Scianki'
         },
         en: {
             navConverter: 'Converter', navPricing: 'Pricing', navMyFiles: 'My Files',
@@ -529,8 +542,8 @@
             navMyConversions: 'My conversions', navLogout: 'Logout',
             heroTitle: 'Convert <span class="hl">STL \u2192 STEP</span><br>in seconds',
             heroDesc: 'Upload a mesh file. Download an editable STEP solid.<br>Our proprietary conversion engine + automatic geometry optimization.',
-            heroPricing: '5 conversions for $0.99 \u00b7 3 free to start',
-            trustStripe: 'Secure payments via Stripe', trustDelete: 'Files deleted after 30 days',
+            heroPricing: 'Free. Unlimited conversions.',
+            trustStripe: 'Secure payments via Stripe', trustDelete: 'Free storage',
             trustRODO: 'GDPR', trustSupport: 'Support PL EN',
             dropText: 'Drag <strong>STL/3MF/OBJ</strong> file here<br>or click to choose',
             modeAuto: 'Auto \u2014 balance detail / size', modeUltra: 'Ultra \u2014 min. faces',
@@ -580,7 +593,11 @@
             langLabel: 'PL',
             jobDlStep: 'Download STEP', jobDlStl: 'Download STL', jobDelete: 'Delete',
             jobShare: 'Share', jobPreview: '3D Preview',
-            jobStatus: 'Status', jobMode: 'Mode', jobDeleteConfirm: 'Delete this conversion?'
+            jobStatus: 'Status', jobMode: 'Mode', jobDeleteConfirm: 'Delete this conversion?',
+            freeConversion: 'Free. Unlimited conversions.',
+            adExtendRetention: 'Extend by clicking ads',
+            retentionInfo: 'Storage: {days} days',
+            faceCount: 'Faces'
         }
     };
 
@@ -637,6 +654,7 @@
     applyI18n();
     if (token) fetchUser();
     setupDropZone();
+    loadAdSlots();
 
     function setupDropZone() {
         const d = document.getElementById('dropZone');
@@ -730,12 +748,19 @@
             if (!r.ok) { const e = await r.json(); throw new Error(e.detail || 'Error'); }
             const d = await r.json();
             document.getElementById('result').className = 'result ok';
-            document.getElementById('result').innerHTML = t('resultDone', {faces: d.faces, time: d.time_s}) + '<br>' +
+            const stlSz = (selectedFile.size/1024/1024).toFixed(2);
+            const stepSz = d.step_size_mb != null ? Number(d.step_size_mb).toFixed(2) : '—';
+            document.getElementById('result').innerHTML =
+                '<div class="result-card">' +
+                '<div class="result-faces">' + t('faceCount') + ': <strong>' + d.faces + '</strong></div>' +
+                '<div class="result-meta">' + t('jobMode') + ': ' + (d.mode || document.getElementById('modeSelect').value) +
+                ' &middot; ' + t('thTime') + ': ' + d.time_s + 's &middot; STL: ' + stlSz + ' MB &middot; STEP: ' + stepSz + ' MB</div>' +
+                '<div class="result-actions">' +
                 '<a class="dl-link" href="/api/download/' + d.uuid + '">' + t('downloadText') + ' ' + d.filename + '</a>' +
                 '<button class="share-btn" onclick="doShare(' + d.job_id + ')">' + t('shareText') + '</button>' +
-                '<button class="embed-btn" onclick="doEmbed(' + d.job_id + ')">Embed</button>';
+                '<button class="embed-btn" onclick="doEmbed(' + d.job_id + ')">Embed</button>' +
+                '</div></div>';
             document.getElementById('result').style.display = 'block';
-            if (d.credits_remaining !== null) updateCredits(d.credits_remaining);
             loadSTLIntoViewer('/api/stl-preview/' + d.uuid);
         } catch(e) {
             clearInterval(iv);
@@ -935,15 +960,48 @@
         const d = await r.json();
         document.getElementById('authBtns').style.display='none';
         document.getElementById('userPanel').style.display='inline';
-        updateCredits(d.credits);
+        const retentionBadge = document.getElementById('retentionBadge');
+        const retentionText = document.getElementById('retentionText');
+        if (d.retention_days != null) {
+            retentionText.textContent = t('retentionInfo', {days: d.retention_days});
+            retentionBadge.style.display = 'inline-flex';
+        } else {
+            retentionBadge.style.display = 'none';
+        }
         if (d.is_admin) document.getElementById('navLinks').innerHTML += ' <a href="/admin" style="color:var(--text-secondary);font-size:13px;font-weight:500;margin-left:8px">Admin</a>';
     }
 
-    function updateCredits(n) {
-        const word = currentLang === 'pl'
-            ? (n === 1 ? 'kredyt' : 'kredyty')
-            : (n === 1 ? 'credit' : 'credits');
-        document.getElementById('creditsBadge').textContent = n + ' ' + word;
+    async function extendRetention() {
+        try {
+            const r = await fetch('/api/ads/extend', {method: 'POST', headers: token ? {'Authorization': 'Bearer ' + token} : {}});
+            if (r.ok) {
+                const d = await r.json();
+                if (d.retention_days != null) {
+                    document.getElementById('retentionText').textContent = t('retentionInfo', {days: d.retention_days});
+                    document.getElementById('retentionBadge').style.display = 'inline-flex';
+                }
+            }
+        } catch(e) {}
+    }
+
+    async function loadAdSlots() {
+        try {
+            const r = await fetch('/api/ads/slots');
+            if (!r.ok) return;
+            const d = await r.json();
+            const slots = d.slots || d;
+            if (Array.isArray(slots)) {
+                slots.forEach(s => {
+                    const el = document.querySelector('.ad-slot[data-slot="' + s.slot + '"]');
+                    if (el && s.ad_code) el.innerHTML = s.ad_code;
+                });
+            } else {
+                for (const [slot, code] of Object.entries(slots)) {
+                    const el = document.querySelector('.ad-slot[data-slot="' + slot + '"]');
+                    if (el && code) el.innerHTML = code;
+                }
+            }
+        } catch(e) {}
     }
 
     function logout() { token=null; localStorage.removeItem('mt_token'); location.reload(); }

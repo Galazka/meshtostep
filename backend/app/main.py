@@ -18,6 +18,7 @@ from .routes_convert import router as convert_router
 from .routes_admin import router as admin_router
 from .routes_share import router as share_router
 from .routes_payments import router as payments_router
+from .routes_ads import router as ads_router
 
 app = FastAPI(title="MeshToStep", version="1.0.0")
 
@@ -43,14 +44,17 @@ async def security_middleware(request: Request, call_next):
     response.headers["X-XSS-Protection"] = "1; mode=block"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
 
-    # CSP — allow Three.js from unpkg
+    # CSP — allow Three.js from unpkg + Google AdSense
     csp = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' "
+        "https://unpkg.com https://cdn.jsdelivr.net "
+        "https://pagead2.googlesyndication.com https://www.googletagmanager.com; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "font-src 'self' https://fonts.gstatic.com; "
         "img-src 'self' data: https:; "
         "connect-src 'self'; "
+        "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; "
         "frame-ancestors 'self'; "
         "worker-src 'self' blob:; "
     )
@@ -122,6 +126,7 @@ app.include_router(convert_router)
 app.include_router(admin_router)
 app.include_router(share_router)
 app.include_router(payments_router)
+app.include_router(ads_router)
 
 
 @app.get("/api/health")
@@ -162,7 +167,6 @@ def admin_page():
     from fastapi.responses import FileResponse
     return FileResponse(str(FRONTEND_DIR / "admin.html"))
 
-
 if FRONTEND_DIR.exists():
     app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
 
@@ -173,20 +177,3 @@ def startup():
     os.makedirs(settings.DATA_DIR, exist_ok=True)
     init_db()
     print("[MeshToStep] DB ready, app started")
-    print(f"[MeshToStep] FreeCAD: ", end="")
-    try:
-        from .engine import find_freecad
-        print(find_freecad())
-    except FileNotFoundError:
-        print("NOT FOUND — conversions will fail")
-    print(f"[MeshToStep] Database: {settings.DATABASE_URL[:40]}...")
-
-    # Run cleanup on startup
-    try:
-        from .cleanup import cleanup_old_files, cleanup_expired_shares
-        old = cleanup_old_files(days=30)
-        expired = cleanup_expired_shares()
-        if old or expired:
-            print(f"[MeshToStep] Cleanup: {old} old jobs, {expired} expired shares")
-    except Exception as e:
-        print(f"[MeshToStep] Cleanup error: {e}")

@@ -12,9 +12,10 @@ class User(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
-    credits = Column(Integer, default=3, nullable=False)  # 3 free on signup
+    credits = Column(Integer, default=3, nullable=False)  # 3 free on signup (legacy, unused in free mode)
     is_admin = Column(Boolean, default=False)
     keep_files_forever = Column(Boolean, default=False)  # premium: files not deleted after 30d
+    retention_days = Column(Integer, default=30)  # file retention: 30 default, +7 per ad click, max 180
     created_at = Column(DateTime, default=datetime.utcnow)
     last_login = Column(DateTime)
     # -- hardening --
@@ -145,3 +146,19 @@ class CreditAdjustment(Base):
 
     user = relationship("User", back_populates="credit_adjustments", foreign_keys=[user_id])
     admin = relationship("User", foreign_keys=[admin_id])
+
+
+class AdSlot(Base):
+    """Ad slots for monetization (AdSense etc.). Managed via admin panel."""
+    __tablename__ = "ad_slots"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(100), nullable=False)  # "Banner pod konwerterem"
+    slot_key = Column(String(50), unique=True, nullable=False)  # "hero_bottom", "after_convert"
+    ad_code = Column(Text, nullable=False)  # HTML/JS snippet
+    ad_type = Column(String(20), default="adsense")  # adsense / custom / image
+    sort_order = Column(Integer, default=0)
+    is_active = Column(Boolean, default=True)
+    impressions = Column(Integer, default=0)
+    clicks = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
