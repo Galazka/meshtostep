@@ -137,7 +137,8 @@ def health():
     # DB check
     try:
         db = SessionLocal()
-        db.execute("SELECT 1" if hasattr(db, 'execute') else None)
+        from sqlalchemy import text
+        db.execute(text("SELECT 1"))
         db.close()
         db_ok = True
     except Exception:
