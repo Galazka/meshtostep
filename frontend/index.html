@@ -3,241 +3,717 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>MeshToStep — STL do STEP w kilka sekund</title>
+    <title>MeshToStep - STL do STEP w kilka sekund</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --bg:#08080f; --card:#111118; --accent:#00f0ff; --accent2:#ff00ff; --ok:#00ff88; --err:#ff4444; --dim:#666; --border:#1a1a2e; --text:#eee; }
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font:15px/1.6 'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-        a{color:var(--accent);text-decoration:none}
-        .nav{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);max-width:1100px;margin:0 auto}
-        .nav-logo{font-size:20px;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-        .nav-links{display:flex;gap:16px;align-items:center;font-size:13px}
-        .nav-links a,.nav-links button{background:none;border:none;color:var(--dim);cursor:pointer;font-size:13px}
-        .nav-links a:hover,.nav-links button:hover{color:var(--text)}
-        .nav-links .credits-badge{background:rgba(0,240,255,.12);color:var(--accent);padding:4px 10px;border-radius:20px;font-weight:600;font-size:12px}
-        .hero{text-align:center;padding:64px 24px 40px;max-width:700px;margin:0 auto}
-        .hero h1{font-size:36px;font-weight:800;line-height:1.2;margin-bottom:12px}
-        .hero h1 span{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-        .hero p{color:var(--dim);font-size:16px;margin-bottom:24px}
-        .hero .pricing{display:inline-block;background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.25);border-radius:8px;padding:8px 20px;color:var(--ok);font-weight:600;font-size:14px;margin-bottom:32px}
-        .converter{max-width:700px;margin:0 auto 60px;padding:0 24px}
-        .drop-zone{border:2px dashed var(--border);border-radius:16px;padding:48px 24px;text-align:center;cursor:pointer;transition:all .2s;background:var(--card)}
-        .drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent);background:rgba(0,240,255,.03)}
-        .drop-icon{font-size:48px;margin-bottom:8px}
-        .drop-text{color:var(--dim)}.drop-text strong{color:var(--accent)}
-        .file-info{margin-top:12px;display:none}.file-info.show{display:block}
-        .file-name{font-weight:600}.file-size{color:var(--dim);font-size:13px}
-        .opts{display:none;margin-top:16px;display:none;gap:12px;align-items:center;flex-wrap:wrap}
-        .opts.show{display:flex}
-        .opts select,.opts button{background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer}
-        .btn{display:none;margin-top:16px;padding:12px 32px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#000;font-weight:700;font-size:15px;border:none;border-radius:8px;cursor:pointer;transition:opacity .2s}
-        .btn:hover{opacity:.85}.btn:disabled{opacity:.4}.btn.show{display:inline-block}
-        .progress{display:none;margin-top:16px}.progress.show{display:block}
-        .progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
-        .progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s}
-        .progress-text{font-size:12px;color:var(--dim);margin-top:4px}
-        .result{display:none;margin-top:20px;padding:16px;border-radius:12px;font-size:14px}
-        .result.ok{display:block;background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.2);color:var(--ok)}
-        .result.err{display:block;background:rgba(255,68,68,.06);border:1px solid rgba(255,68,68,.2);color:var(--err)}
-        .result .dl-link{display:inline-block;margin-top:8px;padding:8px 20px;background:rgba(0,240,255,.12);border-radius:6px;color:var(--accent);font-weight:600}
-        .result .share-btn{margin-left:8px;padding:8px 16px;background:rgba(255,0,255,.12);border-radius:6px;color:var(--accent2);border:none;cursor:pointer;font-weight:600;font-size:13px}
-        .features{max-width:900px;margin:0 auto 60px;padding:0 24px;display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-        .feat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px}
-        .feat h3{font-size:14px;color:var(--accent);margin-bottom:6px}
-        .feat p{color:var(--dim);font-size:13px}
-        .footer{text-align:center;padding:32px;border-top:1px solid var(--border);color:var(--dim);font-size:12px}
-        @media(max-width:640px){.features{grid-template-columns:1fr}}
-        /* Auth modal */
-        .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;justify-content:center;align-items:center}
-        .modal-bg.show{display:flex}
-        .modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;width:360px;max-width:90vw}
-        .modal h2{font-size:20px;margin-bottom:16px}
-        .modal input{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:12px;font-size:14px}
-        .modal .btn{width:100%;display:block!important;text-align:center}
-        .modal .switch{color:var(--dim);font-size:13px;margin-top:12px;text-align:center}
-        .modal .switch a{cursor:pointer}
+        :root {
+            --primary: #1a56db;
+            --primary-hover: #1648b8;
+            --primary-light: #e8eefb;
+            --bg: #ffffff;
+            --bg-alt: #f7f9fc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --ok: #059669;
+            --ok-bg: #ecfdf5;
+            --err: #dc2626;
+            --err-bg: #fef2f2;
+            --radius: 10px;
+            --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+            --shadow-md: 0 4px 6px rgba(0,0,0,.05), 0 2px 4px rgba(0,0,0,.04);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh; }
+        a { color: var(--primary); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .nav { display: flex; align-items: center; justify-content: space-between; padding: 0 32px; height: 64px; border-bottom: 1px solid var(--border); max-width: 1200px; margin: 0 auto; position: sticky; top: 0; background: var(--bg); z-index: 100; }
+        .nav-logo { font-size: 20px; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; flex-shrink: 0; }
+        .nav-tabs { display: flex; gap: 4px; align-items: center; }
+        .nav-tab { background: none; border: none; padding: 8px 16px; font-size: 14px; font-weight: 500; color: var(--text-secondary); cursor: pointer; border-radius: 6px; transition: all .15s; font-family: inherit; }
+        .nav-tab:hover { color: var(--text); background: var(--bg-alt); text-decoration: none; }
+        .nav-tab.active { color: var(--primary); background: var(--primary-light); }
+        .nav-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+        .credits-badge { background: var(--primary-light); color: var(--primary); padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .lang-toggle { background: var(--bg-alt) !important; border: 1px solid var(--border) !important; border-radius: 6px; padding: 6px 12px !important; font-weight: 600; color: var(--text-secondary) !important; cursor: pointer; font-family: inherit; font-size: 13px; transition: all .15s; }
+        .lang-toggle:hover { border-color: var(--primary) !important; color: var(--primary) !important; }
+        .nav-auth button { background: none; border: none; padding: 6px 14px; font-size: 14px; font-weight: 500; color: var(--text-secondary); cursor: pointer; border-radius: 6px; transition: all .15s; font-family: inherit; }
+        .nav-auth button:hover { color: var(--text); background: var(--bg-alt); }
+        .nav-auth .btn-signup { color: var(--primary); font-weight: 600; }
+        .nav-auth .btn-signup:hover { background: var(--primary-light); }
+        .tab-panel { display: none; max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+        .tab-panel.active { display: block; }
+        .hero { text-align: center; padding: 64px 24px 40px; max-width: 720px; margin: 0 auto; }
+        .hero h1 { font-size: 38px; font-weight: 800; line-height: 1.2; margin-bottom: 16px; color: var(--text); letter-spacing: -0.5px; }
+        .hero h1 .hl { color: var(--primary); }
+        .hero p { color: var(--text-secondary); font-size: 16px; margin-bottom: 24px; }
+        .hero .pricing-tag { display: inline-block; background: var(--ok-bg); border: 1px solid #bbf7d0; border-radius: 8px; padding: 8px 20px; color: var(--ok); font-weight: 600; font-size: 14px; margin-bottom: 32px; }
+        .trust { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; padding: 20px 24px 40px; max-width: 900px; margin: 0 auto; }
+        .trust-badge { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--text-secondary); background: var(--bg-alt); border: 1px solid var(--border); border-radius: 24px; padding: 6px 16px; }
+        .trust-badge svg { flex-shrink: 0; }
+        .converter { max-width: 680px; margin: 0 auto 60px; padding: 0 24px; }
+        .drop-zone { border: 2px dashed var(--border); border-radius: var(--radius); padding: 48px 24px; text-align: center; cursor: pointer; transition: all .2s; background: var(--bg-alt); }
+        .drop-zone:hover, .drop-zone.drag-over { border-color: var(--primary); background: var(--primary-light); }
+        .drop-icon { margin-bottom: 12px; }
+        .drop-icon svg { width: 48px; height: 48px; color: var(--text-muted); }
+        .drop-text { color: var(--text-secondary); font-size: 15px; }
+        .drop-text strong { color: var(--text); }
+        .file-info { margin-top: 12px; display: none; }
+        .file-info.show { display: block; }
+        .file-name { font-weight: 600; font-size: 14px; }
+        .file-size { color: var(--text-muted); font-size: 13px; }
+        .opts { display: none; margin-top: 16px; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .opts.show { display: flex; }
+        .opts select { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px; font-size: 14px; font-family: inherit; cursor: pointer; appearance: auto; }
+        .opts select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+        .btn-primary { display: none; margin-top: 16px; padding: 12px 32px; background: var(--primary); color: #fff; font-weight: 600; font-size: 15px; border: none; border-radius: 8px; cursor: pointer; transition: background .15s; font-family: inherit; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+        .btn-primary.show { display: inline-block; }
+        .progress { display: none; margin-top: 16px; }
+        .progress.show { display: block; }
+        .progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+        .progress-fill { height: 100%; width: 0; background: var(--primary); transition: width .3s; border-radius: 2px; }
+        .progress-text { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+        .result { display: none; margin-top: 20px; padding: 16px; border-radius: var(--radius); font-size: 14px; }
+        .result.ok { display: block; background: var(--ok-bg); border: 1px solid #bbf7d0; color: var(--ok); }
+        .result.err { display: block; background: var(--err-bg); border: 1px solid #fecaca; color: var(--err); }
+        .result .dl-link { display: inline-block; margin-top: 8px; padding: 8px 20px; background: var(--primary); border-radius: 6px; color: #fff; font-weight: 600; text-decoration: none; }
+        .result .dl-link:hover { background: var(--primary-hover); }
+        .result .share-btn { margin-left: 8px; padding: 8px 16px; background: var(--primary-light); border-radius: 6px; color: var(--primary); border: none; cursor: pointer; font-weight: 600; font-size: 13px; font-family: inherit; }
+        .result .embed-btn { margin-left: 8px; padding: 8px 16px; background: var(--bg-alt); border-radius: 6px; color: var(--text-secondary); border: 1px solid var(--border); cursor: pointer; font-weight: 600; font-size: 13px; font-family: inherit; }
+        #viewer3d { display: none; width: 100%; height: 400px; border-radius: var(--radius); margin-top: 16px; background: var(--bg-alt); border: 1px solid var(--border); }
+        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; max-width: 1000px; margin: 40px auto 60px; }
+        .price-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px 24px; text-align: center; transition: box-shadow .2s; }
+        .price-card:hover { box-shadow: var(--shadow-md); }
+        .price-card.featured { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+        .price-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .price-card .price { font-size: 32px; font-weight: 800; color: var(--primary); margin: 12px 0; }
+        .price-card ul { list-style: none; margin: 16px 0 24px; text-align: left; }
+        .price-card li { padding: 6px 0; font-size: 14px; color: var(--text-secondary); }
+        .price-card li::before { content: "\2713"; color: var(--ok); font-weight: 700; margin-right: 8px; }
+        .btn-price { display: inline-block; padding: 10px 28px; border-radius: 8px; font-weight: 600; font-size: 14px; border: none; cursor: pointer; font-family: inherit; transition: all .15s; }
+        .btn-price-primary { background: var(--primary); color: #fff; }
+        .btn-price-primary:hover { background: var(--primary-hover); }
+        .btn-price-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+        .btn-price-outline:hover { background: var(--primary-light); }
+        .my-files-empty { text-align: center; padding: 64px 24px; color: var(--text-muted); }
+        .my-files-empty svg { width: 48px; height: 48px; margin-bottom: 16px; color: var(--text-muted); }
+        .jobs-table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+        .jobs-table th, .jobs-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+        .jobs-table th { color: var(--text-muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+        .status-done { color: var(--ok); font-weight: 500; }
+        .status-error { color: var(--err); font-weight: 500; }
+        .status-pending { color: #d97706; font-weight: 500; }
+        .how-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; max-width: 900px; margin: 40px auto 60px; }
+        .step { text-align: center; padding: 24px; }
+        .step-num { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; background: var(--primary); color: #fff; font-weight: 700; font-size: 20px; margin-bottom: 16px; }
+        .step h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .step p { color: var(--text-secondary); font-size: 14px; }
+        .faq-list { max-width: 800px; margin: 40px auto 60px; }
+        .faq-item { border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 8px; overflow: hidden; }
+        .faq-q { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: var(--bg); cursor: pointer; font-weight: 600; font-size: 15px; color: var(--text); border: none; width: 100%; text-align: left; font-family: inherit; transition: background .15s; }
+        .faq-q:hover { background: var(--bg-alt); }
+        .faq-q .arrow { transition: transform .2s; font-size: 12px; color: var(--text-muted); }
+        .faq-item.open .faq-q .arrow { transform: rotate(180deg); }
+        .faq-a { display: none; padding: 0 20px 16px; font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+        .faq-item.open .faq-a { display: block; }
+        .footer { border-top: 1px solid var(--border); padding: 32px; max-width: 1200px; margin: 0 auto; }
+        .footer-inner { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 24px; }
+        .footer-brand { font-weight: 700; font-size: 16px; color: var(--primary); }
+        .footer-brand p { color: var(--text-muted); font-size: 13px; margin-top: 4px; font-weight: 400; }
+        .footer-links { display: flex; gap: 32px; }
+        .footer-col h4 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .5px; }
+        .footer-col a { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; }
+        .footer-col a:hover { color: var(--primary); }
+        .footer-bottom { text-align: center; color: var(--text-muted); font-size: 12px; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-light); }
+        .modal-bg { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.5); backdrop-filter: blur(4px); z-index: 999; justify-content: center; align-items: center; }
+        .modal-bg.show { display: flex; }
+        .modal { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 32px; width: 400px; max-width: 90vw; box-shadow: 0 20px 60px rgba(0,0,0,.15); }
+        .modal h2 { font-size: 22px; font-weight: 700; margin-bottom: 20px; }
+        .modal input { width: 100%; padding: 10px 14px; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 8px; color: var(--text); margin-bottom: 12px; font-size: 14px; font-family: inherit; }
+        .modal input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+        .modal .btn-auth { width: 100%; display: block !important; text-align: center; padding: 12px; background: var(--primary); color: #fff; font-weight: 600; font-size: 15px; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; transition: background .15s; }
+        .modal .btn-auth:hover { background: var(--primary-hover); }
+        .modal .switch { color: var(--text-secondary); font-size: 13px; margin-top: 16px; text-align: center; }
+        .modal .switch a { cursor: pointer; font-weight: 500; }
+        .section-header { text-align: center; padding: 48px 24px 8px; }
+        .section-header h2 { font-size: 28px; font-weight: 800; }
+        .section-header p { color: var(--text-secondary); font-size: 16px; margin-top: 8px; }
+        .page-heading { padding: 40px 24px 0; max-width: 1200px; margin: 0 auto; }
+        .page-heading h2 { font-size: 28px; font-weight: 800; }
+        .page-heading p { color: var(--text-secondary); font-size: 15px; margin-top: 4px; }
+        @media (max-width: 768px) {
+            .nav { padding: 0 16px; flex-wrap: wrap; height: auto; padding-top: 12px; padding-bottom: 12px; gap: 8px; }
+            .nav-tabs { display: none; }
+            .how-steps { grid-template-columns: 1fr; }
+            .pricing-grid { grid-template-columns: 1fr; }
+            .footer-inner { flex-direction: column; }
+            .footer-links { flex-direction: column; gap: 16px; }
+        }
     </style>
 </head>
 <body>
     <nav class="nav">
         <div class="nav-logo">MeshToStep</div>
-        <div class="nav-links" id="navLinks">
-            <a href="#features">Jak działa?</a>
-            <a href="#pricing">Cennik</a>
-            <span id="authBtns">
-                <button onclick="showModal('login')">Zaloguj</button>
-                <button onclick="showModal('register')" style="color:var(--accent)">Załóż konto</button>
-            </span>
-            <span id="userPanel" style="display:none">
-                <span class="credits-badge" id="creditsBadge">3 kredyty</span>
-                <button onclick="showMyJobs()">Moje konwersje</button>
-                <button onclick="logout()">Wyloguj</button>
-            </span>
+        <div class="nav-tabs" id="navTabs">
+            <button class="nav-tab active" onclick="switchTab('converter')" data-tab="converter" data-i18n="navConverter">Konwerter</button>
+            <button class="nav-tab" onclick="switchTab('pricing')" data-tab="pricing" data-i18n="navPricing">Cennik</button>
+            <button class="nav-tab" onclick="switchTab('myfiles')" data-tab="myfiles" data-i18n="navMyFiles">Moje pliki</button>
+            <button class="nav-tab" onclick="switchTab('howitworks')" data-tab="howitworks" data-i18n="navHowItWorks">Jak to dziala</button>
+            <button class="nav-tab" onclick="switchTab('faq')" data-tab="faq" data-i18n="navFAQ">Pomoc FAQ</button>
+        </div>
+        <div class="nav-right">
+            <div class="nav-auth" id="navLinks">
+                <span id="authBtns">
+                    <button onclick="showModal('login')" data-i18n="navLogin">Zaloguj</button>
+                    <button onclick="showModal('register')" class="btn-signup" data-i18n="navSignup">Zaloz konto</button>
+                </span>
+                <span id="userPanel" style="display:none">
+                    <span class="credits-badge" id="creditsBadge">3 kredyty</span>
+                    <button onclick="showMyJobs()" data-i18n="navMyConversions">Moje konwersje</button>
+                    <button onclick="logout()" data-i18n="navLogout">Wyloguj</button>
+                </span>
+            </div>
+            <button class="lang-toggle" id="langToggle" onclick="toggleLang()">EN</button>
         </div>
     </nav>
 
-    <div class="hero">
-        <h1>Przekonwertuj <span>STL → STEP</span><br>w kilka sekund</h1>
-        <p>Wgraj plik mesh. Pobierz edytowalny bryłę STEP.<br>FreeCAD headless + automatyczna optymalizacja geometrii.</p>
-        <div class="pricing">5 konwersji za 50 gr · 3 darmowe na start</div>
-    </div>
-
-    <div class="converter">
-        <div class="drop-zone" id="dropZone">
-            <div class="drop-icon">📁</div>
-            <p class="drop-text">Przeciągnij plik <strong>STL/3MF/OBJ</strong> tutaj<br>lub kliknij by wybrać</p>
-            <input type="file" id="fileInput" accept=".stl,.3mf,.obj" hidden>
-            <div class="file-info" id="fileInfo">
-                <div class="file-name" id="fileName"></div>
-                <div class="file-size" id="fileSize"></div>
+    <div class="tab-panel active" id="panel-converter">
+        <div class="hero">
+            <h1 data-i18n="heroTitle">Przekonwertuj <span class="hl">STL &rarr; STEP</span><br>w kilka sekund</h1>
+            <p data-i18n="heroDesc">Wgraj plik mesh. Pobierz edytowalna bryle STEP.<br>FreeCAD headless + automatyczna optymalizacja geometrii.</p>
+            <div class="pricing-tag" data-i18n="heroPricing">5 konwersji za $0.99 &middot; 3 darmowe na start</div>
+        </div>
+        <div class="trust">
+            <div class="trust-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span data-i18n="trustStripe">Bezpieczne platnosci Stripe</span>
+            </div>
+            <div class="trust-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                <span data-i18n="trustDelete">Pliki usuwane po 30 dniach</span>
+            </div>
+            <div class="trust-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+                <span data-i18n="trustRODO">RODO</span>
+            </div>
+            <div class="trust-badge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                <span data-i18n="trustSupport">Wsparcie PL EN</span>
             </div>
         </div>
-        <div class="opts" id="optsWrap">
-            <select id="modeSelect">
-                <option value="auto">Auto — balans detale/rozmiar</option>
-                <option value="ultra">Ultra — min. ścianek</option>
-                <option value="smooth">Gładki — Taubin + decymacja</option>
-                <option value="light">Lekko — tylko scala koplanarne</option>
-                <option value="off">Bez optymalizacji</option>
-            </select>
+        <div class="converter">
+            <div class="drop-zone" id="dropZone">
+                <div class="drop-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                </div>
+                <p class="drop-text"><span data-i18n="dropText">Przeciagnij plik <strong>STL/3MF/OBJ</strong> tutaj<br>lub kliknij by wybrac</span></p>
+                <input type="file" id="fileInput" accept=".stl,.3mf,.obj" hidden>
+                <div class="file-info" id="fileInfo">
+                    <div class="file-name" id="fileName"></div>
+                    <div class="file-size" id="fileSize"></div>
+                </div>
+            </div>
+            <div class="opts" id="optsWrap">
+                <select id="modeSelect">
+                    <option value="auto" data-i18n="modeAuto">Auto &mdash; balans detale/rozmiar</option>
+                    <option value="ultra" data-i18n="modeUltra">Ultra &mdash; min. scianek</option>
+                    <option value="smooth" data-i18n="modeSmooth">Gladki &mdash; Taubin + decymacja</option>
+                    <option value="light" data-i18n="modeLight">Lekko &mdash; scala koplanarne</option>
+                    <option value="off" data-i18n="modeOff">Bez optymalizacji</option>
+                </select>
+            </div>
+            <div class="progress" id="progress">
+                <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+                <div class="progress-text" id="progressText" data-i18n="progressUploading">Przesylanie...</div>
+            </div>
+            <button class="btn-primary" id="convertBtn" onclick="doConvert()" data-i18n="convertBtn">Konwertuj</button>
+            <div class="result" id="result"></div>
+            <div id="viewer3d"></div>
         </div>
-        <div class="progress" id="progress">
-            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-            <div class="progress-text" id="progressText">Przesyłanie...</div>
+    </div>
+
+    <div class="tab-panel" id="panel-pricing">
+        <div class="section-header">
+            <h2 data-i18n="pricingTitle">Cennik</h2>
+            <p data-i18n="pricingDesc">Prosty cennik bez abonamentu. Plac tylko tyle, ile potrzebujesz.</p>
         </div>
-        <button class="btn" id="convertBtn" onclick="doConvert()">⚡ Konwertuj</button>
-        <div class="result" id="result"></div>
+        <div class="pricing-grid">
+            <div class="price-card">
+                <h3 data-i18n="priceFreeH3">Darmowe</h3>
+                <div class="price" style="color:var(--text)">$0</div>
+                <ul><li data-i18n="pf1">3 konwersje na start</li><li data-i18n="pf2">Max 50 MB / plik</li><li data-i18n="pf3">Tryb Auto</li></ul>
+                <button class="btn-price btn-price-outline" onclick="showModal('register')" data-i18n="pfBtn">Zaloz konto</button>
+            </div>
+            <div class="price-card featured">
+                <h3>Start 5</h3>
+                <div class="price">$0.99</div>
+                <ul><li data-i18n="ps1">5 konwersji</li><li data-i18n="ps2">Wszystkie tryby</li><li data-i18n="ps3">Linki udostepniania</li><li data-i18n="ps4">Podglad 3D</li></ul>
+                <button class="btn-price btn-price-primary" onclick="doPayment('start_5')" data-i18n="psBtn">Kup teraz</button>
+            </div>
+            <div class="price-card">
+                <h3 data-i18n="pricePack25H3">Pakiet 25</h3>
+                <div class="price">$2.99</div>
+                <ul><li data-i18n="pp1">25 konwersji</li><li data-i18n="pp2">Priorytetowa kolejka</li><li data-i18n="pp3">API access</li><li data-i18n="pp4">Admin panel</li></ul>
+                <button class="btn-price btn-price-primary" onclick="doPayment('pack_25')" data-i18n="ppBtn">Kup teraz</button>
+            </div>
+            <div class="price-card">
+                <h3 data-i18n="pricePack100H3">Pakiet 100</h3>
+                <div class="price">$7.99</div>
+                <ul><li data-i18n="ppl1">100 konwersji</li><li data-i18n="ppl2">Priorytetowa kolejka</li><li data-i18n="ppl3">API access</li><li data-i18n="ppl4">Admin panel</li></ul>
+                <button class="btn-price btn-price-primary" onclick="doPayment('pack_100')" data-i18n="pplBtn">Kup teraz</button>
+            </div>
+        </div>
     </div>
 
-    <div class="features" id="features">
-        <div class="feat"><h3>🔧 FreeCAD headless</h3><p>Open CASCADE w tle — makeSolid + removeSplitter + decymacja. Żadnych limitów Personal.</p></div>
-        <div class="feat"><h3>🎯 5 trybów</h3><p>Auto, Ultra, Smooth (Taubin), Lekko, Off. Wybierz balans między jakością a rozmiarem.</p></div>
-        <div class="feat"><h3>🔗 Udostępnianie</h3><p>Generuj linki do pobrania STEP. Podgląd online, limity pobrań, wygaśnięcie.</p></div>
-        <div class="feat"><h3>💳 Kredyty</h3><p>3 darmowe na start. Potem 5 konwersji za 50 gr. Bez abonamentu.</p></div>
-        <div class="feat"><h3>👁 Podgląd 3D</h3><p>Porównaj przed i po. Three.js inline viewer w przeglądarce.</p></div>
-        <div class="feat"><h3>🚀 API</h3><p>REST API dla integracji. Upload → convert → download. OpenAPI docs included.</p></div>
+    <div class="tab-panel" id="panel-myfiles">
+        <div class="page-heading">
+            <h2 data-i18n="myFilesTitle">Moje pliki</h2>
+            <p data-i18n="myFilesDesc">Twoje ostatnie konwersje i pobrane pliki.</p>
+        </div>
+        <div id="myFilesContent" style="padding:24px 0">
+            <div class="my-files-empty" id="myFilesEmpty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                <p data-i18n="myFilesEmpty">Zaloguj sie, aby zobaczyc swoje pliki</p>
+            </div>
+            <div id="myFilesTable" style="display:none;max-width:1000px">
+                <table class="jobs-table" id="jobs">
+                    <thead><tr><th>ID</th><th data-i18n="thFile">Plik</th><th data-i18n="thStatus">Status</th><th>Mode</th><th data-i18n="thFaces">Scianki</th><th data-i18n="thTime">Czas</th><th data-i18n="thDate">Data</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
-    <div id="pricing" class="features">
-        <div class="feat"><h3>Darmowe</h3><p style="font-size:24px;font-weight:800;color:var(--ok);margin:8px 0">0 zł</p><p>3 konwersje na start<br>Max 50 MB/plik<br>Auto mode</p></div>
-        <div class="feat" style="border-color:var(--accent)"><h3>Start 5</h3><p style="font-size:24px;font-weight:800;color:var(--accent);margin:8px 0">50 gr</p><p>5 konwersji<br>Wszystkie tryby<br>Linki udostępniania<br>Podgląd 3D</p></div>
-        <div class="feat"><h3>Pakiet 25</h3><p style="font-size:24px;font-weight:800;color:var(--accent2);margin:8px 0">1.99 zł</p><p>25 konwersji<br>Priorytetowa kolejka<br>API access<br>Admin panel</p></div>
+    <div class="tab-panel" id="panel-howitworks">
+        <div class="section-header">
+            <h2 data-i18n="hiwTitle">Jak to dziala</h2>
+            <p data-i18n="hiwDesc">Trzy proste kroki do pliku STEP.</p>
+        </div>
+        <div class="how-steps">
+            <div class="step"><div class="step-num">1</div><h3 data-i18n="hiwS1Title">Wgraj mesh</h3><p data-i18n="hiwS1Desc">Przeciagnij plik STL, 3MF lub OBJ do okna konwertera. Obslugujemy pliki do 200 MB.</p></div>
+            <div class="step"><div class="step-num">2</div><h3 data-i18n="hiwS2Title">FreeCAD konwertuje</h3><p data-i18n="hiwS2Desc">Nasz serwer uruchamia FreeCAD headless z Open CASCADE. Automatyczna optymalizacja geometrii w tle.</p></div>
+            <div class="step"><div class="step-num">3</div><h3 data-i18n="hiwS3Title">Pobierz STEP</h3><p data-i18n="hiwS3Desc">Gotowy plik STEP gotowy do importu w CAD. Porownaj przed i po w podgladzie 3D.</p></div>
+        </div>
     </div>
 
-    <footer class="footer">MeshToStep · FreeCAD headless · Built for makers who hate faceted STEP files</footer>
+    <div class="tab-panel" id="panel-faq">
+        <div class="section-header"><h2 data-i18n="faqTitle">Najczesciej zadawane pytania</h2></div>
+        <div class="faq-list">
+            <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ1">Jakie formaty mesh sa obslugiwane?</span><span class="arrow">&#9660;</span></button><div class="faq-a" data-i18n="faqA1">Obslugujemy pliki STL, 3MF i OBJ. Maksymalny rozmiar pliku to 200 MB. Pliki binary i ASCII sa wspierane rowniez.</div></div>
+            <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ2">Co to sa kredyty i jak dzialaja?</span><span class="arrow">&#9660;</span></button><div class="faq-a" data-i18n="faqA2">Jedna konwersja = 1 kredyt. Nowi uzytkownicy otrzymuja 3 kredyty za darmo. Kolejne kredyty kupujesz w pakietach: 5 za $0.99, 25 za $2.99, 100 za $7.99. Kredyty nie wygadaja.</div></div>
+            <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ3">Czy moge odzyskac srodki?</span><span class="arrow">&#9660;</span></button><div class="faq-a" data-i18n="faqA3">Tak, masz 14 dni na zwrot srodkow od momentu zakupu, pod warunkiem ze nie wykorzystales kredytow z danego pakietu. Skontaktuj sie z nami aby zainicjowac zwrot.</div></div>
+            <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ4">Jak dlugo przechowujecie moje pliki?</span><span class="arrow">&#9660;</span></button><div class="faq-a" data-i18n="faqA4">Pliki zrodlowe (mesh) sa usuwane po 30 dniach od przeslania. Pliki STEP sa rowniez usuwane po 30 dniach. Linki do udostepniania wygadaja po 7 dniach.</div></div>
+            <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ5">Czy oferujecie API?</span><span class="arrow">&#9660;</span></button><div class="faq-a" data-i18n="faqA5">Tak, MeshToStep oferuje REST API. Wymaga konta z pakietem 25 lub 100. Dokuemntacja OpenAPI jest dostepna pod /docs na serwerze.</div></div>
+            <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ6">Jak sie skontaktowac z wsparciem?</span><span class="arrow">&#9660;</span></button><div class="faq-a" data-i18n="faqA6">Napisz do nas na support@meshtostep.com. Odpowiadamy w ciagu 24 godzin w jezyku polskim lub angielskim.</div></div>
+        </div>
+    </div>
 
-    <!-- Auth modal -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-brand">MeshToStep<p>FreeCAD headless &middot; STL do STEP</p></div>
+            <div class="footer-links">
+                <div class="footer-col"><h4 data-i18n="footerProduct">Produkt</h4><a href="#" onclick="switchTab('converter')" data-i18n="navConverter">Konwerter</a><a href="#" onclick="switchTab('pricing')" data-i18n="navPricing">Cennik</a><a href="#" onclick="switchTab('howitworks')" data-i18n="navHowItWorks">Jak to dziala</a></div>
+                <div class="footer-col"><h4 data-i18n="footerLegal">Prawne</h4><a href="regulamin.html" data-i18n="footerRegulamin">Regulamin</a><a href="prywatnosc.html" data-i18n="footerPrivacy">Polityka prywatnosci</a></div>
+                <div class="footer-col"><h4 data-i18n="footerContact">Kontakt</h4><a href="mailto:support@meshtostep.com">support@meshtostep.com</a><a href="mailto:kontakt@meshtostep.com">kontakt@meshtostep.com</a></div>
+            </div>
+        </div>
+        <div class="footer-bottom">&copy; 2024 MeshToStep &middot; Wszelkie prawa zastrzezone</div>
+    </footer>
+
     <div class="modal-bg" id="authModal">
         <div class="modal">
-            <h2 id="modalTitle">Zaloguj się</h2>
-            <input id="authEmail" type="email" placeholder="email">
-            <input id="authPass" type="password" placeholder="hasło">
-            <button class="btn show" id="authSubmit" onclick="doAuth()">Zaloguj</button>
-            <div class="switch" id="authSwitch">Nie masz konta? <a onclick="toggleAuth()">Załóż za darmo</a></div>
+            <h2 id="modalTitle" data-i18n="authLoginTitle">Zaloguj sie</h2>
+            <input id="authEmail" type="email" data-i18n-placeholder="authEmailPh" placeholder="email">
+            <input id="authPass" type="password" data-i18n-placeholder="authPassPh" placeholder="haslo">
+            <button class="btn-auth" id="authSubmit" onclick="doAuth()" data-i18n="authLoginBtn">Zaloguj</button>
+            <div class="switch" id="authSwitch"><span data-i18n="authNoAccount">Nie masz konta?</span> <a onclick="toggleAuth()" data-i18n="authFreeSignup">Zaloz za darmo</a></div>
         </div>
     </div>
 
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+        window.THREE = THREE;
+        window._OrbitControls = OrbitControls;
+        window._STLLoader = STLLoader;
+        window.__threeReady = true;
+        window.dispatchEvent(new Event('three-ready'));
+    </script>
+
     <script>
-        let token = localStorage.getItem('mt_token');
-        let selectedFile = null;
-        let authMode = 'login';
-
-        // Init
-        if (token) fetchUser();
-        setupDropZone();
-
-        function setupDropZone() {
-            const d = document.getElementById('dropZone');
-            const inp = document.getElementById('fileInput');
-            d.addEventListener('click', () => inp.click());
-            d.addEventListener('dragover', e => { e.preventDefault(); d.classList.add('drag-over'); });
-            d.addEventListener('dragleave', () => d.classList.remove('drag-over'));
-            d.addEventListener('drop', e => { e.preventDefault(); d.classList.remove('drag-over'); pickFile(e.dataTransfer.files[0]); });
-            inp.addEventListener('change', () => pickFile(inp.files[0]));
+    const I18N = {
+        pl: {
+            navConverter: 'Konwerter', navPricing: 'Cennik', navMyFiles: 'Moje pliki',
+            navHowItWorks: 'Jak to dziala', navFAQ: 'Pomoc FAQ',
+            navLogin: 'Zaloguj', navSignup: 'Zaloz konto',
+            navMyConversions: 'Moje konwersje', navLogout: 'Wyloguj',
+            heroTitle: 'Przekonwertuj <span class="hl">STL \u2192 STEP</span><br>w kilka sekund',
+            heroDesc: 'Wgraj plik mesh. Pobierz edytowalna bryle STEP.<br>FreeCAD headless + automatyczna optymalizacja geometrii.',
+            heroPricing: '5 konwersji za $0.99 \u00b7 3 darmowe na start',
+            trustStripe: 'Bezpieczne platnosci Stripe', trustDelete: 'Pliki usuwane po 30 dniach',
+            trustRODO: 'RODO', trustSupport: 'Wsparcie PL EN',
+            dropText: 'Przeciagnij plik <strong>STL/3MF/OBJ</strong> tutaj<br>lub kliknij by wybrac',
+            modeAuto: 'Auto \u2014 balans detale/rozmiar', modeUltra: 'Ultra \u2014 min. scianek',
+            modeSmooth: 'Gladki \u2014 Taubin + decymacja', modeLight: 'Lekko \u2014 scala koplanarne',
+            modeOff: 'Bez optymalizacji',
+            progressUploading: 'Przesylanie...', progressConverting: 'FreeCAD konwersja...',
+            progressAlmostDone: 'Prawie gotowe...',
+            convertBtn: 'Konwertuj', convertingBtn: 'Konwertuje...',
+            pricingTitle: 'Cennik', pricingDesc: 'Prosty cennik bez abonamentu. Plac tylko tyle, ile potrzebujesz.',
+            priceFreeH3: 'Darmowe', pf1: '3 konwersje na start', pf2: 'Max 50 MB / plik', pf3: 'Tryb Auto', pfBtn: 'Zaloz konto',
+            pricePack25H3: 'Pakiet 25', pp1: '25 konwersji', pp2: 'Priorytetowa kolejka', pp3: 'API access', pp4: 'Admin panel', ppBtn: 'Kup teraz',
+            pricePack100H3: 'Pakiet 100', ppl1: '100 konwersji', ppl2: 'Priorytetowa kolejka', ppl3: 'API access', ppl4: 'Admin panel', pplBtn: 'Kup teraz',
+            ps1: '5 konwersji', ps2: 'Wszystkie tryby', ps3: 'Linki udostepniania', ps4: 'Podglad 3D', psBtn: 'Kup teraz',
+            myFilesTitle: 'Moje pliki', myFilesDesc: 'Twoje ostatnie konwersje i pobrane pliki.', myFilesEmpty: 'Zaloguj sie, aby zobaczyc swoje pliki',
+            thFile: 'Plik', thStatus: 'Status', thFaces: 'Scianki', thTime: 'Czas', thDate: 'Data',
+            hiwTitle: 'Jak to dziala', hiwDesc: 'Trzy proste kroki do pliku STEP.',
+            hiwS1Title: 'Wgraj mesh', hiwS1Desc: 'Przeciagnij plik STL, 3MF lub OBJ do okna konwertera. Obslugujemy pliki do 200 MB.',
+            hiwS2Title: 'FreeCAD konwertuje', hiwS2Desc: 'Nasz serwer uruchamia FreeCAD headless z Open CASCADE. Automatyczna optymalizacja geometrii w tle.',
+            hiwS3Title: 'Pobierz STEP', hiwS3Desc: 'Gotowy plik STEP gotowy do importu w CAD. Porownaj przed i po w podgladzie 3D.',
+            faqTitle: 'Najczesciej zadawane pytania',
+            faqQ1: 'Jakie formaty mesh sa obslugiwane?', faqA1: 'Obslugujemy pliki STL, 3MF i OBJ. Maksymalny rozmiar pliku to 200 MB. Pliki binary i ASCII sa wspierane rowniez.',
+            faqQ2: 'Co to sa kredyty i jak dzialaja?', faqA2: 'Jedna konwersja = 1 kredyt. Nowi uzytkownicy otrzymuja 3 kredyty za darmo. Kolejne kredyty kupujesz w pakietach: 5 za $0.99, 25 za $2.99, 100 za $7.99. Kredyty nie wygadaja.',
+            faqQ3: 'Czy moge odzyskac srodki?', faqA3: 'Tak, masz 14 dni na zwrot srodkow od momentu zakupu, pod warunkiem ze nie wykorzystales kredytow z danego pakietu. Skontaktuj sie z nami aby zainicjowac zwrot.',
+            faqQ4: 'Jak dlugo przechowujecie moje pliki?', faqA4: 'Pliki zrodlowe (mesh) sa usuwane po 30 dniach od przeslania. Pliki STEP sa rowniez usuwane po 30 dniach. Linki do udostepniania wygadaja po 7 dniach.',
+            faqQ5: 'Czy oferujecie API?', faqA5: 'Tak, MeshToStep oferuje REST API. Wymaga konta z pakietem 25 lub 100. Dokuemntacja OpenAPI jest dostepna pod /docs na serwerze.',
+            faqQ6: 'Jak sie skontaktowac z wsparciem?', faqA6: 'Napisz do nas na support@meshtostep.com. Odpowiadamy w ciagu 24 godzin w jezyku polskim lub angielskim.',
+            footerProduct: 'Produkt', footerLegal: 'Prawne', footerContact: 'Kontakt',
+            footerRegulamin: 'Regulamin', footerPrivacy: 'Polityka prywatnosci',
+            authLoginTitle: 'Zaloguj sie', authRegisterTitle: 'Zaloz konto (3 darmowe)',
+            authEmailPh: 'email', authPassPh: 'haslo',
+            authLoginBtn: 'Zaloguj', authRegisterBtn: 'Zaloz konto',
+            authNoAccount: 'Nie masz konta?', authFreeSignup: 'Zaloz za darmo',
+            authHasAccount: 'Masz konto?', authLoginLink: 'Zaloguj sie',
+            resultDone: 'Gotowe! {faces} scianek STEP \u00b7 {time}s',
+            resultError: 'Blad: {msg}',
+            shareLinkPrompt: 'Skopiuj link:', downloadText: 'Pobierz', shareText: 'Udostepnij',
+            langLabel: 'EN'
+        },
+        en: {
+            navConverter: 'Converter', navPricing: 'Pricing', navMyFiles: 'My Files',
+            navHowItWorks: 'How it works', navFAQ: 'Help FAQ',
+            navLogin: 'Login', navSignup: 'Sign up',
+            navMyConversions: 'My conversions', navLogout: 'Logout',
+            heroTitle: 'Convert <span class="hl">STL \u2192 STEP</span><br>in seconds',
+            heroDesc: 'Upload a mesh file. Download an editable STEP solid.<br>FreeCAD headless + automatic geometry optimization.',
+            heroPricing: '5 conversions for $0.99 \u00b7 3 free to start',
+            trustStripe: 'Secure payments via Stripe', trustDelete: 'Files deleted after 30 days',
+            trustRODO: 'GDPR', trustSupport: 'Support PL EN',
+            dropText: 'Drag <strong>STL/3MF/OBJ</strong> file here<br>or click to choose',
+            modeAuto: 'Auto \u2014 balance detail / size', modeUltra: 'Ultra \u2014 min. faces',
+            modeSmooth: 'Smooth \u2014 Taubin + decimation', modeLight: 'Light \u2014 merge coplanar only',
+            modeOff: 'No optimization',
+            progressUploading: 'Uploading...', progressConverting: 'FreeCAD conversion...',
+            progressAlmostDone: 'Almost done...',
+            convertBtn: 'Convert', convertingBtn: 'Converting...',
+            pricingTitle: 'Pricing', pricingDesc: 'Simple pricing, no subscription. Pay only for what you need.',
+            priceFreeH3: 'Free', pf1: '3 conversions to start', pf2: 'Max 50 MB / file', pf3: 'Auto mode', pfBtn: 'Sign up',
+            pricePack25H3: 'Pack 25', pp1: '25 conversions', pp2: 'Priority queue', pp3: 'API access', pp4: 'Admin panel', ppBtn: 'Buy now',
+            pricePack100H3: 'Pack 100', ppl1: '100 conversions', ppl2: 'Priority queue', ppl3: 'API access', ppl4: 'Admin panel', pplBtn: 'Buy now',
+            ps1: '5 conversions', ps2: 'All modes', ps3: 'Share links', ps4: '3D preview', psBtn: 'Buy now',
+            myFilesTitle: 'My Files', myFilesDesc: 'Your recent conversions and downloads.', myFilesEmpty: 'Log in to see your files',
+            thFile: 'File', thStatus: 'Status', thFaces: 'Faces', thTime: 'Time', thDate: 'Date',
+            hiwTitle: 'How it works', hiwDesc: 'Three simple steps to a STEP file.',
+            hiwS1Title: 'Upload mesh', hiwS1Desc: 'Drag an STL, 3MF, or OBJ file into the converter. We support files up to 200 MB.',
+            hiwS2Title: 'FreeCAD converts', hiwS2Desc: 'Our server runs FreeCAD headless with Open CASCADE. Automatic geometry optimization in the background.',
+            hiwS3Title: 'Download STEP', hiwS3Desc: 'The finished STEP file is ready to import into any CAD software. Compare before and after in the 3D preview.',
+            faqTitle: 'Frequently asked questions',
+            faqQ1: 'Which mesh formats are supported?', faqA1: 'We support STL, 3MF, and OBJ files. Maximum file size is 200 MB. Both binary and ASCII files are supported.',
+            faqQ2: 'What are credits and how do they work?', faqA2: 'One conversion = 1 credit. New users get 3 free credits. Additional credits are available in packs: 5 for $0.99, 25 for $2.99, 100 for $7.99. Credits do not expire.',
+            faqQ3: 'Can I get a refund?', faqA3: 'Yes, you have 14 days to request a refund from the moment of purchase, provided you have not used the credits from that pack. Contact us to initiate a refund.',
+            faqQ4: 'How long do you keep my files?', faqA4: 'Source files (mesh) are deleted 30 days after upload. STEP files are also deleted after 30 days. Share links expire after 7 days.',
+            faqQ5: 'Do you offer an API?', faqA5: 'Yes, MeshToStep offers a REST API. It requires an account with the Pack 25 or Pack 100 plan. OpenAPI documentation is available at /docs on the server.',
+            faqQ6: 'How can I contact support?', faqA6: 'Write to us at support@meshtostep.com. We respond within 24 hours in Polish or English.',
+            footerProduct: 'Product', footerLegal: 'Legal', footerContact: 'Contact',
+            footerRegulamin: 'Terms of Service', footerPrivacy: 'Privacy Policy',
+            authLoginTitle: 'Log in', authRegisterTitle: 'Sign up (3 free)',
+            authEmailPh: 'email', authPassPh: 'password',
+            authLoginBtn: 'Log in', authRegisterBtn: 'Sign up',
+            authNoAccount: "Don't have an account?", authFreeSignup: 'Sign up for free',
+            authHasAccount: 'Have an account?', authLoginLink: 'Log in',
+            resultDone: 'Done! {faces} STEP faces \u00b7 {time}s',
+            resultError: 'Error: {msg}',
+            shareLinkPrompt: 'Copy link:', downloadText: 'Download', shareText: 'Share',
+            langLabel: 'PL'
         }
+    };
 
-        function pickFile(f) {
-            if (!f) return;
-            selectedFile = f;
-            document.getElementById('fileName').textContent = f.name;
-            document.getElementById('fileSize').textContent = (f.size/1024/1024).toFixed(2) + ' MB';
-            document.getElementById('fileInfo').classList.add('show');
-            document.getElementById('optsWrap').classList.add('show');
-            document.getElementById('convertBtn').classList.add('show');
-            document.getElementById('result').style.display = 'none';
+    let currentLang = localStorage.getItem('mt_lang') || (navigator.language.startsWith('pl') ? 'pl' : 'en');
+
+    function t(key, replacements) {
+        let val = (I18N[currentLang] && I18N[currentLang][key]) || (I18N.en && I18N.en[key]) || key;
+        if (replacements) { for (const [k, v] of Object.entries(replacements)) { val = val.replace('{' + k + '}', v); } }
+        return val;
+    }
+
+    function applyI18n() {
+        document.documentElement.lang = currentLang;
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n'); const val = t(key); if (val) el.innerHTML = val;
+        });
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-i18n-placeholder'); const val = t(key); if (val) el.placeholder = val;
+        });
+        document.getElementById('langToggle').textContent = t('langLabel');
+    }
+
+    function toggleLang() {
+        currentLang = currentLang === 'pl' ? 'en' : 'pl';
+        localStorage.setItem('mt_lang', currentLang);
+        applyI18n();
+        if (document.getElementById('userPanel').style.display !== 'none') {
+            const nb = document.getElementById('navLinks');
+            const admLink = nb.querySelector('a[href="/admin"]');
+            if (admLink) admLink.textContent = 'Admin';
         }
+    }
 
-        async function doConvert() {
-            if (!selectedFile) return;
-            const btn = document.getElementById('convertBtn');
-            btn.disabled = true; btn.textContent = '⏳ Konwertuję...';
-            document.getElementById('progress').classList.add('show');
-            let pct = 0;
-            const iv = setInterval(() => {
-                pct = Math.min(pct + 2 + Math.random()*3, 92);
-                document.getElementById('progressFill').style.width = pct + '%';
-                document.getElementById('progressText').textContent = pct < 30 ? 'Przesyłanie...' : pct < 60 ? 'FreeCAD konwersja...' : 'Prawie gotowe...';
-            }, 200);
-            const fd = new FormData();
-            fd.append('file', selectedFile);
-            fd.append('mode', document.getElementById('modeSelect').value);
-            try {
-                const r = await fetch('/api/convert', {
-                    method: 'POST', body: fd,
-                    headers: token ? {'Authorization': 'Bearer ' + token} : {}
-                });
-                clearInterval(iv);
-                document.getElementById('progressFill').style.width = '100%';
-                if (!r.ok) { const e = await r.json(); throw new Error(e.detail || 'Błąd'); }
+    function switchTab(name) {
+        document.querySelectorAll('.nav-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        const panel = document.getElementById('panel-' + name);
+        if (panel) panel.classList.add('active');
+        if (name === 'myfiles') loadMyJobs();
+        window.scrollTo(0, 0);
+    }
+
+    function toggleFaq(btn) {
+        const item = btn.closest('.faq-item');
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+        if (!isOpen) item.classList.add('open');
+    }
+
+    let token = localStorage.getItem('mt_token');
+    let selectedFile = null;
+    let authMode = 'login';
+
+    applyI18n();
+    if (token) fetchUser();
+    setupDropZone();
+
+    function setupDropZone() {
+        const d = document.getElementById('dropZone');
+        const inp = document.getElementById('fileInput');
+        d.addEventListener('click', () => inp.click());
+        d.addEventListener('dragover', e => { e.preventDefault(); d.classList.add('drag-over'); });
+        d.addEventListener('dragleave', () => d.classList.remove('drag-over'));
+        d.addEventListener('drop', e => { e.preventDefault(); d.classList.remove('drag-over'); pickFile(e.dataTransfer.files[0]); });
+        inp.addEventListener('change', () => pickFile(inp.files[0]));
+    }
+
+    function pickFile(f) {
+        if (!f) return;
+        selectedFile = f;
+        document.getElementById('fileName').textContent = f.name;
+        document.getElementById('fileSize').textContent = (f.size/1024/1024).toFixed(2) + ' MB';
+        document.getElementById('fileInfo').classList.add('show');
+        document.getElementById('optsWrap').classList.add('show');
+        document.getElementById('convertBtn').classList.add('show');
+        document.getElementById('result').style.display = 'none';
+        document.getElementById('viewer3d').style.display = 'none';
+    }
+
+    let _threeScene, _threeCamera, _threeRenderer, _threeControls, _threeAnim;
+    function init3DViewer(container) {
+        if (_threeRenderer) {
+            cancelAnimationFrame(_threeAnim);
+            _threeRenderer.dispose();
+            _threeControls && _threeControls.dispose();
+            container.innerHTML = '';
+        }
+        const W = container.clientWidth || 700, H = container.clientHeight || 400;
+        _threeScene = new THREE.Scene();
+        _threeScene.background = new THREE.Color(0xf7f9fc);
+        _threeCamera = new THREE.PerspectiveCamera(50, W / H, 0.1, 1000);
+        _threeCamera.position.set(0, 40, 60);
+        _threeRenderer = new THREE.WebGLRenderer({ antialias: true });
+        _threeRenderer.setSize(W, H);
+        _threeRenderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(_threeRenderer.domElement);
+        _threeControls = new OrbitControls(_threeCamera, _threeRenderer.domElement);
+        _threeControls.enableDamping = true;
+        _threeScene.add(new THREE.AmbientLight(0xffffff, 0.8));
+        const d1 = new THREE.DirectionalLight(0xffffff, 0.8); d1.position.set(30,50,30); _threeScene.add(d1);
+        const d2 = new THREE.DirectionalLight(0x1a56db, 0.3); d2.position.set(-20,10,-30); _threeScene.add(d2);
+        _threeScene.add(new THREE.GridHelper(100, 20, 0xe2e8f0, 0xf1f5f9));
+        function animate() { _threeAnim = requestAnimationFrame(animate); _threeControls.update(); _threeRenderer.render(_threeScene, _threeCamera); }
+        animate();
+    }
+
+    function loadSTLIntoViewer(url) {
+        const container = document.getElementById('viewer3d');
+        container.style.display = 'block';
+        init3DViewer(container);
+        const loader = new window._STLLoader();
+        loader.load(url, function(geometry) {
+            geometry.computeBoundingBox();
+            const bb = geometry.boundingBox, center = new THREE.Vector3();
+            bb.getCenter(center); geometry.translate(-center.x, -center.y, -center.z);
+            const size = new THREE.Vector3(); bb.getSize(size);
+            const mx = Math.max(size.x, size.y, size.z);
+            if (mx > 0) geometry.scale(30/mx, 30/mx, 30/mx);
+            const mat = new THREE.MeshPhongMaterial({ color: 0x1a56db, specular: 0x93b8ea, shininess: 40 });
+            const mesh = new THREE.Mesh(geometry, mat);
+            mesh.rotation.x = -Math.PI / 2;
+            _threeScene.add(mesh);
+        });
+    }
+
+    async function doConvert() {
+        if (!selectedFile) return;
+        const btn = document.getElementById('convertBtn');
+        btn.disabled = true; btn.textContent = t('convertingBtn');
+        document.getElementById('progress').classList.add('show');
+        let pct = 0;
+        const iv = setInterval(() => {
+            pct = Math.min(pct + 2 + Math.random()*3, 92);
+            document.getElementById('progressFill').style.width = pct + '%';
+            document.getElementById('progressText').textContent = pct < 30 ? t('progressUploading') : pct < 60 ? t('progressConverting') : t('progressAlmostDone');
+        }, 200);
+        const fd = new FormData();
+        fd.append('file', selectedFile);
+        fd.append('mode', document.getElementById('modeSelect').value);
+        try {
+            const r = await fetch('/api/convert', {
+                method: 'POST', body: fd,
+                headers: token ? {'Authorization': 'Bearer ' + token} : {}
+            });
+            clearInterval(iv);
+            document.getElementById('progressFill').style.width = '100%';
+            if (!r.ok) { const e = await r.json(); throw new Error(e.detail || 'Error'); }
+            const d = await r.json();
+            document.getElementById('result').className = 'result ok';
+            document.getElementById('result').innerHTML = t('resultDone', {faces: d.faces, time: d.time_s}) + '<br>' +
+                '<a class="dl-link" href="/api/download/' + d.uuid + '">' + t('downloadText') + ' ' + d.filename + '</a>' +
+                '<button class="share-btn" onclick="doShare(' + d.job_id + ')">' + t('shareText') + '</button>' +
+                '<button class="embed-btn" onclick="doEmbed(' + d.job_id + ')">Embed</button>';
+            document.getElementById('result').style.display = 'block';
+            if (d.credits_remaining !== null) updateCredits(d.credits_remaining);
+            loadSTLIntoViewer('/api/stl-preview/' + d.uuid);
+        } catch(e) {
+            clearInterval(iv);
+            document.getElementById('result').className = 'result err';
+            document.getElementById('result').innerHTML = t('resultError', {msg: e.message});
+            document.getElementById('result').style.display = 'block';
+        }
+        btn.disabled = false; btn.textContent = t('convertBtn');
+        document.getElementById('progress').classList.remove('show');
+    }
+
+    async function doShare(jobId) {
+        const fd = new FormData(); fd.append('job_id', jobId); fd.append('fmt', 'step'); fd.append('expires_days', 7);
+        const r = await fetch('/api/share', {method:'POST', body:fd, headers: token?{'Authorization':'Bearer '+token}:{}});
+        if (r.ok) { const d = await r.json(); prompt(t('shareLinkPrompt'), d.url); }
+    }
+
+    function doEmbed(jobId) {
+        const code = '<iframe src="/e/' + jobId + '" width="800" height="500" frameborder="0" allowfullscreen></iframe>';
+        prompt('Embed iframe code:', code);
+    }
+
+    async function doPayment(plan) {
+        try {
+            const r = await fetch('/api/payments/checkout', {
+                method: 'POST',
+                headers: {...(token ? {'Authorization': 'Bearer ' + token} : {}), 'Content-Type': 'application/json'},
+                body: JSON.stringify({plan})
+            });
+            if (r.ok) {
                 const d = await r.json();
-                document.getElementById('result').className = 'result ok';
-                document.getElementById('result').innerHTML = `✅ Gotowe! ${d.faces} ścianek STEP · ${d.time_s}s<br>
-                    <a class="dl-link" href="/api/download/${d.uuid}">⬇ Pobierz ${d.filename}</a>
-                    <button class="share-btn" onclick="doShare(${d.job_id})">🔗 Udostępnij</button>`;
-                document.getElementById('result').style.display = 'block';
-                if (d.credits_remaining !== null) updateCredits(d.credits_remaining);
-            } catch(e) {
-                clearInterval(iv);
-                document.getElementById('result').className = 'result err';
-                document.getElementById('result').innerHTML = '❌ ' + e.message;
-                document.getElementById('result').style.display = 'block';
+                if (d.url) window.location.href = d.url;
+            } else {
+                alert('Please log in to purchase credits.');
+                showModal('login');
             }
-            btn.disabled = false; btn.textContent = '⚡ Konwertuj';
-            document.getElementById('progress').classList.remove('show');
-        }
+        } catch(e) { alert('Payment error: ' + e.message); }
+    }
 
-        async function doShare(jobId) {
-            const fd = new FormData(); fd.append('job_id', jobId); fd.append('fmt', 'step'); fd.append('expires_days', 7);
-            const r = await fetch('/api/share', {method:'POST', body:fd, headers: token?{'Authorization':'Bearer '+token}:{}});
-            if (r.ok) { const d = await r.json(); prompt('Skopiuj link:', d.url); }
+    async function loadMyJobs() {
+        if (!token) {
+            document.getElementById('myFilesEmpty').style.display = 'block';
+            document.getElementById('myFilesTable').style.display = 'none';
+            return;
         }
+        try {
+            const r = await fetch('/api/jobs', {headers:{'Authorization': 'Bearer '+token}});
+            if (!r.ok) { document.getElementById('myFilesEmpty').style.display = 'block'; document.getElementById('myFilesTable').style.display = 'none'; return; }
+            const d = await r.json();
+            if (!d.length) {
+                document.getElementById('myFilesEmpty').style.display = 'block';
+                document.getElementById('myFilesEmpty').querySelector('p').textContent = t('myFilesEmpty');
+                document.getElementById('myFilesTable').style.display = 'none';
+                return;
+            }
+            document.getElementById('myFilesEmpty').style.display = 'none';
+            document.getElementById('myFilesTable').style.display = 'block';
+            document.querySelector('#jobs tbody').innerHTML = d.map(j =>
+                '<tr><td>' + j.id + '</td><td>' + j.filename + '</td><td class="status-' + j.status + '">' + j.status + '</td><td>' + (j.mode||'-') + '</td><td>' + (j.faces||'-') + '</td><td>' + (j.processing_time_s||'-') + 's</td><td>' + (j.created_at||'').slice(0,16) + '</td></tr>'
+            ).join('');
+        } catch(e) {
+            document.getElementById('myFilesEmpty').style.display = 'block';
+            document.getElementById('myFilesTable').style.display = 'none';
+        }
+    }
 
-        // Auth
-        function showModal(mode) { authMode = mode; document.getElementById('authModal').classList.add('show'); document.getElementById('modalTitle').textContent = mode==='login'?'Zaloguj się':'Załóż konto (3 darmowe)'; document.getElementById('authSubmit').textContent = mode==='login'?'Zaloguj':'Załóż konto'; document.getElementById('authSwitch').innerHTML = mode==='login'?'Nie masz konta? <a onclick="toggleAuth()">Załóż za darmo</a':'Masz konto? <a onclick="toggleAuth()">Zaloguj się</a>'; }
-        function toggleAuth() { showModal(authMode==='login'?'register':'login'); }
-        function closeModal() { document.getElementById('authModal').classList.remove('show'); }
-        async function doAuth() {
-            const email = document.getElementById('authEmail').value;
-            const pass = document.getElementById('authPass').value;
-            const ep = authMode==='register' ? '/api/auth/register' : '/api/auth/login';
-            const r = await fetch(ep, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password:pass})});
-            const d = await r.json();
-            if (!r.ok) { alert(d.detail || 'Błąd'); return; }
-            token = d.token; localStorage.setItem('mt_token', token);
-            closeModal(); fetchUser();
-        }
-        async function fetchUser() {
-            if (!token) return;
-            const r = await fetch('/api/auth/me', {headers:{'Authorization':'Bearer '+token}});
-            if (!r.ok) { token=null; localStorage.removeItem('mt_token'); return; }
-            const d = await r.json();
-            document.getElementById('authBtns').style.display='none';
-            document.getElementById('userPanel').style.display='inline';
-            updateCredits(d.credits);
-            if (d.is_admin) document.getElementById('navLinks').innerHTML += ' <a href="/admin">Admin</a>';
-        }
-        function updateCredits(n) { document.getElementById('creditsBadge').textContent = n + ' kredyt' + (n===1?'':'y'); }
-        function logout() { token=null; localStorage.removeItem('mt_token'); location.reload(); }
+    function showModal(mode) {
+        authMode = mode;
+        document.getElementById('authModal').classList.add('show');
+        document.getElementById('modalTitle').textContent = mode === 'login' ? t('authLoginTitle') : t('authRegisterTitle');
+        document.getElementById('authSubmit').textContent = mode === 'login' ? t('authLoginBtn') : t('authRegisterBtn');
+        document.getElementById('authSwitch').innerHTML =
+            (mode === 'login' ? t('authNoAccount') : t('authHasAccount')) +
+            ' <a onclick="toggleAuth()">' + (mode === 'login' ? t('authFreeSignup') : t('authLoginLink')) + '</a>';
+    }
+    function toggleAuth() { showModal(authMode==='login'?'register':'login'); }
+    function closeModal() { document.getElementById('authModal').classList.remove('show'); }
+
+    async function doAuth() {
+        const email = document.getElementById('authEmail').value;
+        const pass = document.getElementById('authPass').value;
+        const ep = authMode==='register' ? '/api/auth/register' : '/api/auth/login';
+        const r = await fetch(ep, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password:pass})});
+        const d = await r.json();
+        if (!r.ok) { alert(d.detail || 'Error'); return; }
+        token = d.token; localStorage.setItem('mt_token', token);
+        closeModal(); fetchUser();
+    }
+
+    async function fetchUser() {
+        if (!token) return;
+        const r = await fetch('/api/auth/me', {headers:{'Authorization':'Bearer '+token}});
+        if (!r.ok) { token=null; localStorage.removeItem('mt_token'); return; }
+        const d = await r.json();
+        document.getElementById('authBtns').style.display='none';
+        document.getElementById('userPanel').style.display='inline';
+        updateCredits(d.credits);
+        if (d.is_admin) document.getElementById('navLinks').innerHTML += ' <a href="/admin" style="color:var(--text-secondary);font-size:13px;font-weight:500;margin-left:8px">Admin</a>';
+    }
+
+    function updateCredits(n) {
+        const word = currentLang === 'pl'
+            ? (n === 1 ? 'kredyt' : 'kredyty')
+            : (n === 1 ? 'credit' : 'credits');
+        document.getElementById('creditsBadge').textContent = n + ' ' + word;
+    }
+
+    function logout() { token=null; localStorage.removeItem('mt_token'); location.reload(); }
+    function showMyJobs() { switchTab('myfiles'); }
     </script>
 </body>
 </html>

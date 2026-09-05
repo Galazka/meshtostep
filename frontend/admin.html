@@ -1,61 +1,292 @@
 <!DOCTYPE html>
 <html lang="pl">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin — MeshToStep</title>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin - MeshToStep</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-body{font:14px/1.5 system-ui;background:#08080f;color:#eee;margin:0;padding:24px}
-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px}
-th,td{padding:8px 12px;border-bottom:1px solid #1a1a2e;text-align:left}
-th{color:#00f0ff;font-weight:600}
+:root{--primary:#1a56db;--primary-light:#e8eefb;--bg:#fff;--bg-alt:#f7f9fc;--card:#fff;--border:#e2e8f0;--text:#1e293b;--muted:#64748b;--ok:#059669;--err:#dc2626;--warn:#d97706;--accent2:#7c3aed;--radius:10px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font:14px/1.6 'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:0}
+h1{font-size:22px;font-weight:800;margin-bottom:4px}
+h2{margin-top:32px;border-top:1px solid var(--border);padding-top:16px;font-size:18px;font-weight:700}
+h3{font-size:15px;font-weight:700;margin:20px 0 8px}
+a{color:var(--primary)}
+.container{max-width:1200px;margin:0 auto;padding:24px}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);background:var(--bg)}
+.top-bar a{color:var(--muted);font-size:14px;text-decoration:none;font-weight:500}
+.top-bar a:hover{color:var(--primary)}
 .stats{display:flex;gap:16px;flex-wrap:wrap;margin:16px 0}
-.stat{background:#111;border:1px solid #1a1a2e;border-radius:12px;padding:16px 20px;min-width:140px}
-.stat .num{font-size:28px;font-weight:800;color:#00f0ff}
-.stat .label{color:#666;font-size:12px}
-h1{font-size:22px;margin-bottom:4px}
-a{color:#00f0ff}
-.ok{color:#00ff88}.err{color:#ff4444}.pending{color:#ffaa00}
-</style></head>
+.stat{background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;min-width:140px}
+.stat .num{font-size:28px;font-weight:800;color:var(--primary)}
+.stat .label{color:var(--muted);font-size:12px}
+table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px}
+th,td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:left}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.5px;background:var(--bg-alt)}
+td{color:var(--text)}
+.tab-bar{display:flex;gap:0;margin:16px 0}
+.tab{padding:10px 20px;background:var(--bg-alt);border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:13px;font-weight:500;font-family:inherit}
+.tab:first-child{border-radius:8px 0 0 8px}
+.tab:last-child{border-radius:0 8px 8px 0}
+.tab.active{background:var(--primary-light);color:var(--primary);border-color:var(--primary);font-weight:600}
+.section{display:none}.section.active{display:block}
+.ok{color:var(--ok);font-weight:500}.err{color:var(--err);font-weight:500}.pending{color:var(--warn);font-weight:500}
+.user-detail{background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-top:16px}
+.user-detail .field{margin-bottom:8px;font-size:14px}
+.user-detail .field strong{color:var(--primary);min-width:140px;display:inline-block}
+.sub-table{margin-top:12px}
+.sub-table th{color:var(--accent2);font-size:12px}
+.sub-table td{font-size:12px}
+.btn-adj{padding:6px 14px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit}
+.btn-grant{background:var(--ok-bg);color:var(--ok)}
+.btn-revoke{background:var(--err-bg);color:var(--err)}
+.btn-back{background:var(--primary-light);color:var(--primary);padding:6px 14px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-family:inherit;font-weight:500}
+.btn-back:hover{background:var(--primary);color:#fff}
+.adj-dialog{display:none;margin-top:12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+.adj-dialog.show{display:block}
+.adj-dialog input,.adj-dialog textarea{width:100%;padding:8px 12px;background:var(--bg-alt);border:1px solid var(--border);border-radius:6px;color:var(--text);margin-bottom:8px;font-size:13px;box-sizing:border-box;font-family:inherit}
+.adj-dialog textarea{height:60px;resize:vertical}
+.adj-dialog .btn-submit{padding:8px 20px;border-radius:6px;border:none;background:var(--primary);color:#fff;font-weight:600;cursor:pointer;font-size:13px;font-family:inherit}
+.adj-dialog .btn-submit:hover{opacity:.9}
+select{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:inherit;font-size:13px}
+</style>
+</head>
 <body>
-<h1>🔧 MeshToStep Admin</h1>
-<p><a href="/">← Back</a> · <a onclick="loadAll()">Refresh</a></p>
-<div class="stats" id="stats"></div>
-<h2>Użytkownicy</h2>
-<table id="users"><thead><tr><th>ID</th><th>Email</th><th>Kredyty</th><th>Admin</th><th>Created</th></tr></thead><tbody></tbody></table>
-<h2>Konwersje</h2>
-<table id="jobs"><thead><tr><th>ID</th><th>User</th><th>Plik</th><th>Status</th><th>Mode</th><th>Faces</th><th>Czas</th><th>Created</th></tr></thead><tbody></tbody></table>
+<div class="top-bar">
+<h1>MeshToStep Admin</h1>
+<div><a href="/">&larr; Back to site</a> &middot; <a onclick="loadAll()" style="cursor:pointer">Refresh</a></div>
+</div>
+<div class="container">
+
+<div class="tab-bar">
+    <div class="tab active" onclick="showTab('stats')" data-tab="stats">Stats</div>
+    <div class="tab" onclick="showTab('geo')" data-tab="geo">Geo</div>
+    <div class="tab" onclick="showTab('users')" data-tab="users">Users</div>
+    <div class="tab" onclick="showTab('jobs')" data-tab="jobs">Jobs</div>
+</div>
+
+<div class="section active" id="sec-stats">
+    <div class="stats" id="stats"></div>
+</div>
+
+<div class="section" id="sec-geo">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <span style="color:var(--muted);font-size:13px">Period:</span>
+        <select id="geoPeriod" onchange="loadGeo()"><option value="7">7 days</option><option value="30" selected>30 days</option><option value="90">90 days</option></select>
+    </div>
+    <div class="stats" id="geoStats"></div>
+    <h3 style="color:var(--primary);margin-top:16px">Countries</h3><div id="geoCountries"></div>
+    <h3 style="color:var(--accent2);margin-top:16px">Cities</h3><div id="geoCities"></div>
+    <h3 style="color:var(--ok);margin-top:16px">Daily Requests</h3><div id="geoDaily"></div>
+</div>
+
+<div class="section" id="sec-users">
+    <div id="userListView">
+        <h2>Users</h2>
+        <table id="users"><thead><tr><th>ID</th><th>Email</th><th>Credits</th><th>Admin</th><th>Last Login</th><th>Action</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div id="userDetailView" style="display:none">
+        <button class="btn-back" onclick="closeUserDetail()">&larr; Back to users</button>
+        <div id="userDetailContent"></div>
+    </div>
+</div>
+
+<div class="section" id="sec-jobs">
+    <h2>Conversions</h2>
+    <table id="jobs"><thead><tr><th>ID</th><th>User</th><th>File</th><th>Status</th><th>Mode</th><th>Faces</th><th>Time</th><th>Created</th></tr></thead><tbody></tbody></table>
+</div>
+
+<div class="adj-dialog" id="adjDialog">
+    <h3 style="margin:0 0 12px 0;color:var(--primary);font-size:15px" id="adjTitle">Adjust Credits</h3>
+    <input id="adjAmount" type="number" placeholder="Amount (+ to grant, - to revoke)" min="-1000" max="1000">
+    <textarea id="adjReason" placeholder="Reason (optional but recommended)"></textarea>
+    <div style="display:flex;gap:8px">
+        <button class="btn-submit" onclick="submitAdjust()">Submit</button>
+        <button class="btn-submit" style="background:var(--bg-alt);color:var(--muted);border:1px solid var(--border)" onclick="closeAdjDialog()">Cancel</button>
+    </div>
+</div>
+
+</div>
+
 <script>
 const token = localStorage.getItem('mt_token');
 const H = {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'};
+let currentAdjUserId = null;
 
-async function api(path) {
-    const r = await fetch(path, {headers: H});
-    if (!r.ok) { alert('Auth error'); throw r; }
+async function api(path, opts = {}) {
+    const r = await fetch(path, {headers: H, ...opts});
+    if (!r.ok) { alert('Auth error ' + r.status); throw r; }
     return r.json();
+}
+
+function showTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('sec-' + name).classList.add('active');
+    if (name === 'geo') loadGeo();
+    if (name === 'users' && !document.getElementById('userDetailView').style.display.includes('block')) loadUsers();
+    if (name === 'jobs') loadJobs();
 }
 
 async function loadStats() {
     const d = await api('/api/admin/stats');
     document.getElementById('stats').innerHTML = [
-        ['Użytkownicy', d.users], ['Konwersje', d.jobs_total], ['Sukces', d.jobs_done],
-        ['Błędy', d.jobs_error], ['Kredyty sprzedane', d.credits_sold],
-        ['Przychód', d.revenue_pln + ' zł'], ['Aktywne linki', d.shares_active], ['Pobrania', d.total_downloads]
-    ].map(([l,n]) => `<div class="stat"><div class="num">${n}</div><div class="label">${l}</div></div>`).join('');
+        ['Users', d.users], ['Conversions', d.jobs_total], ['Done', d.jobs_done],
+        ['Errors', d.jobs_error], ['Credits sold', d.credits_sold],
+        ['Revenue', '$' + (d.revenue_usd || 0).toFixed(2)], ['Active shares', d.shares_active],
+        ['Downloads', d.total_downloads], ['Share views', d.total_share_views || 0]
+    ].map(([l,n]) => '<div class="stat"><div class="num">' + n + '</div><div class="label">' + l + '</div></div>').join('');
+}
+
+async function loadGeo() {
+    const days = document.getElementById('geoPeriod').value;
+    try {
+        const d = await api('/api/admin/geo?days=' + days);
+        document.getElementById('geoStats').innerHTML = [
+            ['Requests', d.total_requests], ['Unique IPs', d.unique_ips]
+        ].map(([l,n]) => '<div class="stat"><div class="num">' + n + '</div><div class="label">' + l + '</div></div>').join('');
+
+        if (d.countries.length === 0) {
+            document.getElementById('geoCountries').innerHTML = '<p style="color:var(--muted);font-size:13px">No geo data yet</p>';
+            document.getElementById('geoCities').innerHTML = '<p style="color:var(--muted);font-size:13px">No geo data yet</p>';
+            document.getElementById('geoDaily').innerHTML = '<p style="color:var(--muted);font-size:13px">No geo data yet</p>';
+            return;
+        }
+        const maxC = d.countries[0]?.count || 1;
+        document.getElementById('geoCountries').innerHTML = d.countries.slice(0, 15).map(c =>
+            '<div style="display:flex;align-items:center;gap:8px;margin:3px 0">' +
+            '<span style="width:80px;text-align:right;font-size:12px;color:var(--muted)">' + c.country + '</span>' +
+            '<div style="height:16px;background:var(--primary);border-radius:4px;width:' + Math.max(2, (c.count/maxC)*400) + 'px"></div>' +
+            '<span style="font-size:12px;color:var(--primary);font-weight:600">' + c.count + '</span></div>'
+        ).join('');
+
+        const maxCity = d.cities[0]?.count || 1;
+        document.getElementById('geoCities').innerHTML = d.cities.slice(0, 15).map(c =>
+            '<div style="display:flex;align-items:center;gap:8px;margin:3px 0">' +
+            '<span style="width:120px;text-align:right;font-size:12px;color:var(--muted)">' + c.city + ', ' + c.country + '</span>' +
+            '<div style="height:16px;background:var(--accent2);border-radius:4px;width:' + Math.max(2, (c.count/maxCity)*400) + 'px"></div>' +
+            '<span style="font-size:12px;color:var(--accent2);font-weight:600">' + c.count + '</span></div>'
+        ).join('');
+
+        const maxD = Math.max(...d.daily.map(x => x.count), 1);
+        document.getElementById('geoDaily').innerHTML = '<div style="display:flex;align-items:flex-end;gap:3px;height:100px;margin-top:8px">' +
+            d.daily.reverse().map(x =>
+                '<div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:8px">' +
+                '<span style="font-size:9px;color:var(--ok)">' + x.count + '</span>' +
+                '<div style="width:100%;height:' + Math.max(2, (x.count/maxD)*80) + 'px;background:var(--ok);border-radius:2px 2px 0 0"></div>' +
+                '<span style="font-size:8px;color:var(--muted);writing-mode:vertical-lr;transform:rotate(180deg);max-height:40px;overflow:hidden">' + x.date.slice(5) + '</span></div>'
+            ).join('') + '</div>';
+    } catch(e) {
+        document.getElementById('geoStats').innerHTML = '<p style="color:var(--err)">Failed to load geo data</p>';
+    }
 }
 
 async function loadUsers() {
     const d = await api('/api/admin/users');
     document.querySelector('#users tbody').innerHTML = d.map(u =>
-        `<tr><td>${u.id}</td><td>${u.email}</td><td>${u.credits}</td><td>${u.is_admin?'✓':''}</td><td>${u.created_at?.slice(0,10)}</td></tr>`
+        '<tr><td>' + u.id + '</td><td>' + u.email + '</td><td>' + u.credits + '</td><td>' + (u.is_admin ? '\u2713' : '') + '</td>' +
+        '<td>' + (u.last_login && u.last_login !== 'None' ? u.last_login.slice(0,16) : '-') + '</td>' +
+        '<td><button class="btn-adj btn-grant" onclick="showUserDetail(' + u.id + ')">Details</button> ' +
+        '<button class="btn-adj btn-grant" onclick="openAdjDialog(' + u.id + ', \'' + u.email + '\', 1)">+ Add</button> ' +
+        '<button class="btn-adj btn-revoke" onclick="openAdjDialog(' + u.id + ', \'' + u.email + '\', -1)">- Revoke</button></td></tr>'
     ).join('');
+}
+
+async function showUserDetail(userId) {
+    const d = await api('/api/admin/users/' + userId);
+    const s = d.stats;
+    document.getElementById('userDetailView').style.display = 'block';
+    document.getElementById('userListView').style.display = 'none';
+    document.getElementById('adjDialog').className = 'adj-dialog';
+
+    document.getElementById('userDetailContent').innerHTML =
+        '<div class="user-detail">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">' +
+        '<h2 style="margin:0;color:var(--primary)">' + d.email + '</h2>' +
+        '<div><button class="btn-adj btn-grant" onclick="openAdjDialog(' + d.id + ', \'' + d.email + '\', 1)">+ Add Credits</button> ' +
+        '<button class="btn-adj btn-revoke" onclick="openAdjDialog(' + d.id + ', \'' + d.email + '\', -1)">- Revoke Credits</button></div></div>' +
+        '<div class="stats">' +
+        '<div class="stat"><div class="num">' + d.credits + '</div><div class="label">Credits</div></div>' +
+        '<div class="stat"><div class="num">' + s.total_conversions + '</div><div class="label">Conversions</div></div>' +
+        '<div class="stat"><div class="num" style="color:var(--ok)">' + s.conversions_done + '</div><div class="label">Done</div></div>' +
+        '<div class="stat"><div class="num" style="color:var(--err)">' + s.conversions_error + '</div><div class="label">Errors</div></div>' +
+        '<div class="stat"><div class="num">' + s.total_shares + '</div><div class="label">Shares</div></div>' +
+        '<div class="stat"><div class="num">' + s.total_downloads + '</div><div class="label">Downloads</div></div>' +
+        '<div class="stat"><div class="num">' + s.total_share_views + '</div><div class="label">Share Views</div></div>' +
+        '</div>' +
+        '<div class="field"><strong>ID:</strong> ' + d.id + (d.is_admin ? ' Admin' : '') + '</div>' +
+        '<div class="field"><strong>Created:</strong> ' + (d.created_at?.slice(0,19)||'-') + '</div>' +
+        '<div class="field"><strong>Last login:</strong> ' + (d.last_login && d.last_login !== 'None' ? d.last_login.slice(0,19) : '-') + '</div>' +
+        '<div class="field"><strong>Last activity:</strong> ' + (d.last_activity && d.last_activity !== 'None' ? d.last_activity.slice(0,19) : '-') + '</div>' +
+        '<div class="field"><strong>Last IP:</strong> ' + (d.last_ip || '-') + '</div>' +
+        '<div class="field"><strong>Last location:</strong> ' + (d.last_city && d.last_country ? d.last_city + ', ' + d.last_country : (d.last_country || '-')) + '</div>' +
+        (d.adjustments.length ?
+        '<h3 style="color:var(--accent2);margin-top:20px;margin-bottom:8px">Credit Adjustments</h3>' +
+        '<table class="sub-table"><thead><tr><th>Date</th><th>Amount</th><th>Before</th><th>After</th><th>Admin</th><th>Reason</th></tr></thead><tbody>' +
+        d.adjustments.map(a => '<tr><td>' + (a.created_at?.slice(0,16)||'-') + '</td>' +
+            '<td style="color:' + (a.amount > 0 ? 'var(--ok)' : 'var(--err)') + ';font-weight:600">' + (a.amount > 0 ? '+' : '') + a.amount + '</td>' +
+            '<td>' + a.credits_before + '</td><td>' + a.credits_after + '</td><td>#' + a.admin_id + '</td><td>' + (a.reason || '-') + '</td></tr>').join('') +
+        '</tbody></table>' : '') +
+        (d.payments.length ?
+        '<h3 style="color:var(--primary);margin-top:20px;margin-bottom:8px">Payments</h3>' +
+        '<table class="sub-table"><thead><tr><th>Date</th><th>Amount</th><th>Credits</th><th>Status</th></tr></thead><tbody>' +
+        d.payments.map(p => '<tr><td>' + (p.created_at?.slice(0,16)||'-') + '</td><td>$' + (p.amount_usd || 0).toFixed(2) + '</td>' +
+            '<td>+' + p.credits_granted + '</td><td class="' + (p.status === 'completed' ? 'ok' : p.status === 'failed' ? 'err' : 'pending') + '">' + p.status + '</td></tr>').join('') +
+        '</tbody></table>' : '') +
+        (d.recent_jobs.length ?
+        '<h3 style="color:var(--primary);margin-top:20px;margin-bottom:8px">Recent Jobs</h3>' +
+        '<table class="sub-table"><thead><tr><th>Date</th><th>File</th><th>Status</th><th>Mode</th></tr></thead><tbody>' +
+        d.recent_jobs.map(j => '<tr><td>' + (j.created_at?.slice(0,16)||'-') + '</td><td>' + j.filename + '</td>' +
+            '<td class="' + (j.status === 'done' ? 'ok' : j.status === 'error' ? 'err' : 'pending') + '">' + j.status + '</td><td>' + j.mode + '</td></tr>').join('') +
+        '</tbody></table>' : '') +
+        '</div>';
+}
+
+function closeUserDetail() {
+    document.getElementById('userDetailView').style.display = 'none';
+    document.getElementById('userListView').style.display = 'block';
+}
+
+function openAdjDialog(userId, email, defaultSign) {
+    currentAdjUserId = userId;
+    const amountEl = document.getElementById('adjAmount');
+    amountEl.value = '';
+    amountEl.placeholder = defaultSign > 0 ? '+ credits to grant' : '- credits to revoke';
+    document.getElementById('adjReason').value = '';
+    document.getElementById('adjTitle').textContent = 'Adjust credits for ' + email;
+    document.getElementById('adjDialog').className = 'adj-dialog show';
+}
+
+function closeAdjDialog() { document.getElementById('adjDialog').className = 'adj-dialog'; currentAdjUserId = null; }
+
+async function submitAdjust() {
+    if (!currentAdjUserId) return;
+    const amount = parseInt(document.getElementById('adjAmount').value);
+    const reason = document.getElementById('adjReason').value;
+    if (isNaN(amount) || amount === 0) { alert('Enter a valid amount'); return; }
+    try {
+        const d = await api('/api/admin/users/' + currentAdjUserId + '/credits', {
+            method: 'POST', body: JSON.stringify({amount, reason})
+        });
+        alert('Done. Credits now: ' + d.credits);
+        closeAdjDialog(); loadUsers();
+        if (document.getElementById('userDetailView').style.display.includes('block')) showUserDetail(currentAdjUserId);
+    } catch(e) { alert('Error adjusting credits'); }
 }
 
 async function loadJobs() {
     const d = await api('/api/admin/jobs');
     document.querySelector('#jobs tbody').innerHTML = d.map(j =>
-        `<tr><td>${j.id}</td><td>${j.user_id||'anon'}</td><td>${j.filename}</td><td class="${j.status==='done'?'ok':j.status==='error'?'err':'pending'}">${j.status}</td><td>${j.mode}</td><td>${j.faces||'-'}</td><td>${j.processing_time_s||'-'}s</td><td>${j.created_at?.slice(0,16)}</td></tr>`
+        '<tr><td>' + j.id + '</td><td>' + (j.user_id||'anon') + '</td><td>' + j.filename + '</td>' +
+        '<td class="' + (j.status==='done'?'ok':j.status==='error'?'err':'pending') + '">' + j.status + '</td>' +
+        '<td>' + j.mode + '</td><td>' + (j.faces||'-') + '</td><td>' + (j.processing_time_s||'-') + 's</td>' +
+        '<td>' + (j.created_at?.slice(0,16)||'') + '</td></tr>'
     ).join('');
 }
 
-function loadAll() { loadStats(); loadUsers(); loadJobs(); }
+function loadAll() { loadStats(); loadUsers(); }
 loadAll();
-</script></body></html>
+</script>
+</body>
+</html>

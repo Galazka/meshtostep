@@ -123,6 +123,26 @@ def download(job_uuid: str, format: str = "step", db: Session = Depends(get_db))
     )
 
 
+@router.get("/stl-preview/{job_uuid}")
+def stl_preview(job_uuid: str, db: Session = Depends(get_db)):
+    """Return the original STL (or source mesh) for Three.js preview."""
+    job = db.query(models.Job).filter(
+        models.Job.uuid == job_uuid, models.Job.status == "done"
+    ).first()
+    if not job:
+        raise HTTPException(404, "Job nie znaleziony")
+
+    stl_path = job.result_stl_path
+    src_dir = JOBS_DIR / job_uuid
+    # Try the stored STL path first, then find any .stl in the job dir
+    if stl_path and os.path.exists(stl_path):
+        return FileResponse(stl_path, media_type="model/stl")
+    for f in src_dir.iterdir():
+        if f.suffix.lower() == ".stl":
+            return FileResponse(str(f), media_type="model/stl")
+    raise HTTPException(404, "STL preview niedostępny")
+
+
 # --- Share links ---
 @router.post("/share")
 def create_share(
