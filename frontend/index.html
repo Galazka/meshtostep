@@ -238,9 +238,22 @@
 
     <div class="tab-panel active" id="panel-converter">
         <div class="hero">
-            <h1 data-i18n="heroTitle">Przekonwertuj <span class="hl">STL &rarr; STEP</span><br>w kilka sekund</h1>
-            <p data-i18n="heroDesc">Wgraj plik mesh. Pobierz edytowalna bryle STEP.<br>Nasz autorski silnik konwersji + automatyczna optymalizacja geometrii.</p>
-            <div class="pricing-tag" data-i18n="heroPricing">Za darmo. Bez limitu konwersji.</div>
+            <h1><span class="hl">Hosting modeli 3D</span> + <span style="white-space:nowrap">STL &rarr; STEP</span></h1>
+            <p style="max-width:640px;margin:0 auto 16px">Wgraj <strong>STL / 3MF / OBJ</strong> — zobacz w 3D na telefonie, przekonwertuj do <strong>STEP</strong> dla CAD, udostępnij <strong>jednym linkiem</strong> na Printables / MakerWorld / w slicerze. <strong>3dhosty.com/u/twój-nick/nazwa-modelu</strong></p>
+            <div class="pricing-tag">Za darmo · 500 MB · Bez instalacji · Działa na telefonie</div>
+            <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px">
+              <a href="#converter" onclick="document.getElementById('dropZone').scrollIntoView({behavior:'smooth', block:'center'}); return false" style="padding:12px 22px;background:var(--primary);color:#fff;border-radius:10px;font-weight:700;text-decoration:none">Wgraj model — 10 s</a>
+              <button onclick="switchTab('discover')" style="padding:12px 22px;background:#fff;color:var(--primary);border:1px solid var(--border);border-radius:10px;font-weight:700;cursor:pointer;font-family:inherit">Odkrywaj modele →</button>
+            </div>
+            <div style="margin-top:10px;font-size:12px;color:var(--text-muted)">Nie wymaga konta · Konto = foldery, 500 MB, linki /u/nick/slug, publikacja w Odkrywaj</div>
+        </div>
+        <!-- onboarding strip dla nowych -->
+        <div style="max-width:900px;margin:0 auto 18px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:center;text-align:center">
+          <span style="font-weight:700;font-size:13px;background:var(--primary-light);color:var(--primary);padding:4px 10px;border-radius:999px">Nowe? Start w 10 s</span>
+          <span style="font-size:13px;color:var(--text-secondary)"><strong>1.</strong> Wgraj STL/3MF/OBJ</span><span style="color:var(--border)">→</span>
+          <span style="font-size:13px;color:var(--text-secondary)"><strong>2.</strong> Podgląd 3D + STEP</span><span style="color:var(--border)">→</span>
+          <span style="font-size:13px;color:var(--text-secondary)"><strong>3.</strong> Udostępnij linkiem · <code style="background:var(--bg-alt);padding:2px 6px;border-radius:6px">3dhosty.com/u/...</code></span>
+          <span style="font-size:12px;color:var(--text-muted)">Publiczny = w Odkrywaj · Unlisted = tylko link · Prywatny = tylko Ty</span>
         </div>
         <div class="trust">
             <div class="trust-badge">
@@ -261,6 +274,36 @@
             </div>
         </div>
         <div class="ad-slot" data-slot="hero_bottom"></div>
+        <!-- co to jest + funkcje -->
+        <div style="max-width:1100px;margin:0 auto 28px;padding:0 24px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px">
+            <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px">
+              <div style="font-size:20px;margin-bottom:6px">📱 Podgląd 3D w przeglądarce</div>
+              <div style="font-size:13px;color:var(--text-secondary)">Działa na telefonie i laptopie. STL/3MF/OBJ bez instalacji. Obracaj, przybliżaj, sprawdź przed drukiem.</div>
+            </div>
+            <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px">
+              <div style="font-size:20px;margin-bottom:6px">🔗 Jeden link wszędzie</div>
+              <div style="font-size:13px;color:var(--text-secondary)"><code>3dhosty.com/u/nick/slug</code> do opisu na Printables, MakerWorld, Thingiverse, FB, slicerze. Embed <code>&lt;iframe&gt;</code> też.</div>
+            </div>
+            <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px">
+              <div style="font-size:20px;margin-bottom:6px">⚙️ STL → STEP dla CAD</div>
+              <div style="font-size:13px;color:var(--text-secondary)">5 trybów (auto/ultra/light/smooth/off), siatka → bryła, import do Fusion/SolidWorks/FreeCAD.</div>
+            </div>
+            <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px">
+              <div style="font-size:20px;margin-bottom:6px">🔒 Prywatnie lub publicznie</div>
+              <div style="font-size:13px;color:var(--text-secondary)"><strong>Publiczny</strong> w Odkrywaj, <strong>Unlisted</strong> tylko link (noindex), <strong>Prywatny</strong> tylko Ty. Zmień jednym klikiem.</div>
+            </div>
+            <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px">
+              <div style="font-size:20px;margin-bottom:6px">📂 500 MB + foldery</div>
+              <div style="font-size:13px;color:var(--text-secondary)">Każdy zalogowany ma 500 MB. Foldery, zmiana nazw, grupowe usuwanie, JPG podglądy, pasek zajętości.</div>
+            </div>
+            <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px">
+              <div style="font-size:20px;margin-bottom:6px">🔍 Odkrywaj + sprzedaż</div>
+              <div style="font-size:13px;color:var(--text-secondary)">Wyszukiwarka, tagi, YouTube, komentarze. Włącz sprzedaż — <strong>80% dla Ciebie, 20% prowizji</strong>.</div>
+            </div>
+          </div>
+          <div style="text-align:center;margin-top:12px;font-size:12px;color:var(--text-muted)">Użyj linku 3dhosty w opisach — ludzie zobaczą model od razu na telefonie. To ściąga ruch z Printables/MakerWorld do Ciebie i do nas.</div>
+        </div>
         <div class="converter">
             <div class="drop-zone" id="dropZone">
                 <div class="drop-icon">
@@ -313,7 +356,10 @@
             <div id="mfFolderCrumbs" style="display:none;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
             <div class="my-files-empty" id="myFilesEmpty">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
-                <p data-i18n="myFilesEmpty">Zaloguj sie, aby zobaczyc swoje pliki</p>
+                <p data-i18n="myFilesEmpty" style="font-weight:600">Zaloguj się, aby zobaczyć swoje pliki</p>
+                <p style="font-size:13px;color:var(--text-secondary);margin-top:6px">Po zalogowaniu: <strong>500 MB</strong>, foldery, linki <code>3dhosty.com/u/...</code>, publikacja w Odkrywaj jednym klikiem.</p>
+                <p style="font-size:13px;color:var(--text-muted);margin-top:4px">Bez konta też działa — wgraj plik wyżej i zobacz w 3D.</p>
+                <button onclick="showModal('register')" style="margin-top:12px;padding:10px 18px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">Załóż konto — za darmo</button>
             </div>
             <div id="mfGrid" style="display:none;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px"></div>
             <div id="myFilesTable" style="display:none"></div>
@@ -363,6 +409,14 @@
         </div>
     </div>
 
+    <!-- ostatnie publiczne — dowód że coś się dzieje -->
+    <div id="homeRecent" style="max-width:1100px;margin:0 auto 8px;padding:0 24px;display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px">
+        <h3 style="font-size:16px;font-weight:800">Ostatnie w Odkrywaj</h3>
+        <button onclick="switchTab('discover')" style="padding:8px 14px;background:#fff;border:1px solid var(--border);border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">Zobacz wszystkie →</button>
+      </div>
+      <div id="homeRecentGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px"></div>
+    </div>
     <div class="ad-slot" data-slot="page_bottom"></div>
     <footer class="footer">
         <div class="footer-inner">
@@ -1370,6 +1424,29 @@
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') { closeJobModal(); closeShareModal(); closeModal(); }
     });
+
+    // home recent — dowód społeczny
+    async function loadHomeRecent(){
+      try{
+        const r=await fetch('/api/models?limit=8&sort=latest');
+        const j=await r.json();
+        if(!j.items || !j.items.length) return;
+        const grid=document.getElementById('homeRecentGrid');
+        const wrap=document.getElementById('homeRecent');
+        wrap.style.display='block';
+        grid.innerHTML='';
+        for(const m of j.items.slice(0,8)){
+          const a=document.createElement('a');
+          a.href=m.vanity||'/s/'+m.uuid;
+          a.style.cssText='display:block;border:1px solid var(--border);border-radius:10px;overflow:hidden;text-decoration:none;color:inherit;background:#fff';
+          const img = m.slug ? `/api/preview/${m.uuid}` : '';
+          a.innerHTML=`<div style="height:120px;background:var(--bg-alt);display:flex;align-items:center;justify-content:center;overflow:hidden">${img?`<img src="${img}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;color:var(--text-muted);font-size:12px">Podglad 3D</div>`:`<span style="color:var(--text-muted);font-size:12px">Podglad 3D</span>`}</div><div style="padding:10px"><div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${(m.title||m.slug||'Model')}</div><div style="font-size:11px;color:var(--text-secondary)">by ${m.username||'anon'} · ${(m.tags||[]).slice(0,2).join(', ')}</div></div>`;
+          grid.appendChild(a);
+        }
+      }catch(e){}
+    }
+    loadHomeRecent();
+
     </script>
 </body>
 </html>
