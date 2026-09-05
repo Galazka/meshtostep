@@ -428,9 +428,13 @@
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+        import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+        import { ThreeMFLoader } from 'three/addons/loaders/3MFLoader.js';
         window.THREE = THREE;
         window._OrbitControls = OrbitControls;
         window._STLLoader = STLLoader;
+        window._OBJLoader = OBJLoader;
+        window._3MFLoader = ThreeMFLoader;
         window.__threeReady = true;
         window.dispatchEvent(new Event('three-ready'));
     </script>
@@ -675,19 +679,33 @@
         const container = document.getElementById('viewer3d');
         container.style.display = 'block';
         init3DViewer(container);
-        const loader = new window._STLLoader();
-        loader.load(url, function(geometry) {
-            geometry.computeBoundingBox();
-            const bb = geometry.boundingBox, center = new THREE.Vector3();
-            bb.getCenter(center); geometry.translate(-center.x, -center.y, -center.z);
-            const size = new THREE.Vector3(); bb.getSize(size);
-            const mx = Math.max(size.x, size.y, size.z);
-            if (mx > 0) geometry.scale(30/mx, 30/mx, 30/mx);
-            const mat = new THREE.MeshPhongMaterial({ color: 0x1a56db, specular: 0x93b8ea, shininess: 40 });
-            const mesh = new THREE.Mesh(geometry, mat);
-            mesh.rotation.x = -Math.PI / 2;
-            _threeScene.add(mesh);
-        });
+        const ext = url.split('.').pop().toLowerCase().split('?')[0];
+        const mat = new THREE.MeshPhongMaterial({ color: 0x1a56db, specular: 0x93b8ea, shininess: 40 });
+
+        function addMesh(obj) {
+            obj.traverse(function(c) { if (c.isMesh) c.material = mat; });
+            obj.rotation.x = -Math.PI / 2;
+            _threeScene.add(obj);
+        }
+
+        if (ext === 'obj') {
+            const loader = new window._OBJLoader();
+            loader.load(url, addMesh);
+        } else if (ext === '3mf') {
+            const loader = new window._3MFLoader();
+            loader.load(url, addMesh);
+        } else {
+            const loader = new window._STLLoader();
+            loader.load(url, function(geometry) {
+                geometry.computeBoundingBox();
+                const bb = geometry.boundingBox, center = new THREE.Vector3();
+                bb.getCenter(center); geometry.translate(-center.x, -center.y, -center.z);
+                const size = new THREE.Vector3(); bb.getSize(size);
+                const mx = Math.max(size.x, size.y, size.z);
+                if (mx > 0) geometry.scale(30/mx, 30/mx, 30/mx);
+                addMesh(new THREE.Mesh(geometry, mat));
+            });
+        }
     }
 
     async function doConvert() {
@@ -1013,7 +1031,7 @@
 
     function _jobModalDeps(cb, errCb) {
         const T = window.THREE, OC = window._OrbitControls, SL = window._STLLoader;
-        if (T && OC && SL) { cb(T, OC, SL); return; }
+        if (T && OC && SL) { cb(T, OC, SL, window._OBJLoader, window._3MFLoader); return; }
         let tries = 0;
         const iv = setInterval(() => {
             const T2 = window.THREE, OC2 = window._OrbitControls, SL2 = window._STLLoader;
@@ -1039,7 +1057,8 @@
         req.onload = function() {
             if (req.status !== 200 || !req.response) { showJobModalErr(); return; }
             const data = req.response;
-            _jobModalDeps(function(T, OC, SL) {
+            const ext = url.split('.').pop().toLowerCase().split('?')[0];
+            _jobModalDeps(function(T, OC, SL, OL, TML) {
                 const w = container.clientWidth || 740;
                 const h = Math.min(window.innerHeight * 0.5, 480) || 400;
                 container.innerHTML = '';
@@ -1060,20 +1079,34 @@
                 _job3Renderer = renderer;
                 _job3Controls = controls;
                 try {
-                    const loader = new SL();
-                    const geometry = loader.parse(data);
-                    geometry.computeBoundingBox();
-                    const box = geometry.boundingBox;
-                    const center = new T.Vector3();
-                    box.getCenter(center);
-                    geometry.translate(-center.x, -center.y, -center.z);
-                    const size = new T.Vector3();
-                    box.getSize(size);
-                    const maxDim = Math.max(size.x, size.y, size.z) || 1;
                     const mat = new T.MeshPhongMaterial({ color: 0x1a56db, specular: 0x111111, shininess: 30 });
-                    const mesh = new T.Mesh(geometry, mat);
-                    mesh.scale.setScalar(100 / maxDim);
-                    scene.add(mesh);
+                    function addMeshObj(obj) {
+                        obj.traverse(function(c) { if (c.isMesh) c.material = mat; });
+                        const cb = new T.Box3().setFromObject(obj);
+                        const ctr = new T.Vector3(); cb.getCenter(ctr);
+                        obj.position.sub(ctr);
+                        const sz = new T.Vector3(); cb.getSize(sz);
+                        const md = Math.max(sz.x, sz.y, sz.z) || 1;
+                        obj.scale.setScalar(100 / md);
+                        scene.add(obj);
+                    }
+                    if (ext === 'obj' && OL) {
+                        new OL().load(URL.createObjectURL(new Blob([data])), addMeshObj, undefined, function(){ showJobModalErr(); });
+                    } else if (ext === '3mf' && TML) {
+                        new TML().load(URL.createObjectURL(new Blob([data])), addMeshObj, undefined, function(){ showJobModalErr(); });
+                    } else {
+                        const geometry = new SL().parse(data);
+                        geometry.computeBoundingBox();
+                        const box = geometry.boundingBox;
+                        const center = new T.Vector3();
+                        box.getCenter(center);
+                        geometry.translate(-center.x, -center.y, -center.z);
+                        const size = new T.Vector3(); box.getSize(size);
+                        const maxDim = Math.max(size.x, size.y, size.z) || 1;
+                        const mesh = new T.Mesh(geometry, mat);
+                        mesh.scale.setScalar(100 / maxDim);
+                        scene.add(mesh);
+                    }
                     camera.position.set(80, 60, 80);
                     camera.lookAt(0, 0, 0);
                     controls.update();
@@ -1083,7 +1116,7 @@
                         renderer.render(scene, camera);
                     }
                     animate();
-                } catch(e) { showJobModalErr(); }
+                } catch(e) { console.error('preview error:', e); showJobModalErr(); }
             }, showJobModalErr);
         };
         req.onerror = showJobModalErr;

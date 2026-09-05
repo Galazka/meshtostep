@@ -112,7 +112,7 @@ def download(job_uuid: str, format: str = "step", db: Session = Depends(get_db))
 
 @router.get("/stl-preview/{job_uuid}")
 def stl_preview(job_uuid: str, db: Session = Depends(get_db)):
-    """Return the original STL (or source mesh) for Three.js preview."""
+    """Return the original mesh (STL/3MF/OBJ) for Three.js preview."""
     job = db.query(models.Job).filter(
         models.Job.uuid == job_uuid, models.Job.status == "done"
     ).first()
@@ -121,13 +121,15 @@ def stl_preview(job_uuid: str, db: Session = Depends(get_db)):
 
     stl_path = job.result_stl_path
     src_dir = JOBS_DIR / job_uuid
-    # Try the stored STL path first, then find any .stl in the job dir
+    # Try the stored path first, then find any known mesh in the job dir
     if stl_path and os.path.exists(stl_path):
         return FileResponse(stl_path, media_type="model/stl")
     if src_dir.exists():
-        for f in src_dir.iterdir():
-            if f.suffix.lower() == ".stl":
-                return FileResponse(str(f), media_type="model/stl")
+        for ext in (".stl", ".3mf", ".obj"):
+            for f in src_dir.iterdir():
+                if f.suffix.lower() == ext:
+                    mt = "model/stl" if ext == ".stl" else "application/octet-stream"
+                    return FileResponse(str(f), media_type=mt)
     raise HTTPException(404, "STL preview niedostępny")
 
 
