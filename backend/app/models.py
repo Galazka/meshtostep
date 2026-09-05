@@ -32,8 +32,10 @@ class User(Base):
     register_user_agent = Column(String(512), nullable=True)
     bio = Column(Text, nullable=True)
     avatar_url = Column(String(512), nullable=True)
+    quota_limit_bytes = Column(Integer, default=500 * 1024 * 1024, nullable=False)  # 500 MB
 
     jobs = relationship("Job", back_populates="user")
+    folders = relationship("Folder", back_populates="user", cascade="all, delete-orphan")
     shares = relationship("ShareLink", back_populates="user")
     geo_logs = relationship("GeoLog", back_populates="user")
     credit_adjustments = relationship("CreditAdjustment", back_populates="user", foreign_keys="CreditAdjustment.user_id")
@@ -73,8 +75,11 @@ class Job(Base):
     is_paid = Column(Boolean, default=False)
     price_cents = Column(Integer, default=0)  # price in cents (USD or PLN — frontend decides)
     preview_image = Column(String(512), nullable=True)
+    folder_id = Column(Integer, ForeignKey("folders.id"), nullable=True, index=True)
+    # ponytail: no folder nesting (single level). Add Folder.parent_id when needed.
 
     user = relationship("User", back_populates="jobs")
+    folder = relationship("Folder", back_populates="jobs")
     shares = relationship("ShareLink", back_populates="job")
     comments = relationship("Comment", back_populates="job")
 
@@ -201,3 +206,13 @@ class AdSlot(Base):
     impressions = Column(Integer, default=0)
     clicks = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class Folder(Base):
+    __tablename__ = "folders"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    name = Column(String(80), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    user = relationship("User", back_populates="folders")
+    jobs = relationship("Job", back_populates="folder")

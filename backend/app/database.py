@@ -74,13 +74,32 @@ def _migrate_columns():
             add_col(conn, "ad_slots", "position", "VARCHAR(50)", existing)
         except Exception as e:
             print(f"[3dhosty] ad_slots migrate: {e}")
+        # folders + quota
+        try:
+            if not insp.has_table("folders"):
+                from . import models as m
+                m.Folder.__table__.create(engine)
+                print("[3dhosty] Created folders")
+        except Exception as e:
+            print(f"[3dhosty] folders create: {e}")
+        try:
+            existing = {c["name"] for c in insp.get_columns("users")}
+            add_col(conn, "users", "quota_limit_bytes", "INTEGER DEFAULT 524288000", existing)
+        except Exception as e:
+            print(f"[3dhosty] quota migrate: {e}")
+        try:
+            existing = {c["name"] for c in insp.get_columns("jobs")}
+            add_col(conn, "jobs", "folder_id", "INTEGER", existing)
+        except Exception as e:
+            print(f"[3dhosty] folder_id migrate: {e}")
         conn.commit()
     # ensure tables exist
-    for tbl in ["comments","sales","ad_slots"]:
+    _tbl_map = {"comments": "Comment", "sales": "Sale", "ad_slots": "AdSlot", "folders": "Folder"}
+    for tbl in ["comments","sales","ad_slots","folders"]:
         try:
             if not inspect(engine).has_table(tbl):
                 from . import models as m
-                getattr(m, {"comments": "Comment", "sales": "Sale", "ad_slots": "AdSlot"}[tbl]).__table__.create(engine)
+                getattr(m, _tbl_map[tbl]).__table__.create(engine)
                 print(f"[3dhosty] Created {tbl}")
         except Exception as e:
             print(f"[3dhosty] {tbl} create: {e}")

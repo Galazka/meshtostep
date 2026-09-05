@@ -22,6 +22,7 @@ from .routes_ads import router as ads_router
 from .routes_community import router as community_router
 from .routes_comments import router as comments_router
 from .routes_sales import router as sales_router
+from .routes_folders import router as folders_router
 
 app = FastAPI(title="3dhosty.com", version="1.0.0")
 
@@ -133,6 +134,7 @@ app.include_router(ads_router)
 app.include_router(community_router)
 app.include_router(comments_router)
 app.include_router(sales_router)
+app.include_router(folders_router)
 
 
 @app.get("/api/health")

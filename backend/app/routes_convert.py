@@ -1,4 +1,4 @@
-"""Conversion routes: upload, convert, download, share."""
+"""Conversion routes: upload, convert, download, share. — 3dhosty.com"""
 import os
 import uuid
 import time
@@ -9,6 +9,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from . import models
 from .auth import get_current_user, require_user
@@ -16,10 +17,17 @@ from .config import settings
 from .database import get_db
 from .engine import convert
 import re
+
 def _slugify(s: str) -> str:
     s=re.sub(r'[^a-z0-9]+','-', (s or '').lower().strip())
     s=re.sub(r'-+','-',s).strip('-')
     return s[:80] or 'model'
+
+def _quota_used(db: Session, user_id: int) -> int:
+    row = db.query(func.coalesce(func.sum(models.Job.file_size_bytes),0)).filter(models.Job.user_id==user_id).scalar()
+    # also include result_size_bytes if larger
+    row2 = db.query(func.coalesce(func.sum(models.Job.result_size_bytes),0)).filter(models.Job.user_id==user_id).scalar()
+    return int((row or 0) + (row2 or 0))
 
 router = APIRouter(prefix="/api", tags=["convert"])
 
@@ -29,12 +37,21 @@ SHARES_DIR = Path(settings.DATA_DIR) / "shares"
 for d in [JOBS_DIR, PREVIEWS_DIR, SHARES_DIR]:
     d.mkdir(parents=True, exist_ok=True)
 
+QUOTA_DEFAULT = 500 * 1024 * 1024
+
+@router.get("/quota")
+def get_quota(user: models.User = Depends(require_user), db: Session = Depends(get_db)):
+    limit = getattr(user, "quota_limit_bytes", None) or QUOTA_DEFAULT
+    used = _quota_used(db, user.id)
+    pct = round(used / limit * 100, 1) if limit else 0
+    return {"used_bytes": used, "limit_bytes": limit, "percent": pct, "used_mb": round(used/1024/1024,2), "limit_mb": round(limit/1024/1024,2)}
 
 @router.post("/convert")
 async def convert_file(
     file: UploadFile = File(...),
     mode: str = Form("auto"),
-    user: models.User = Depends(get_current_user),  # optional
+    folder_id: str = Form(None),
+    user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     t0 = time.time()
@@ -42,7 +59,13 @@ async def convert_file(
     if ext not in (".stl", ".3mf", ".obj"):
         raise HTTPException(400, "Obsługiwane: .stl, .3mf, .obj")
 
-    # Save upload
+    # quota check for logged users
+    if user:
+        limit = getattr(user, "quota_limit_bytes", None) or QUOTA_DEFAULT
+        used = _quota_used(db, user.id)
+        # peek size — need to read first to know size, but we check after read
+        pass
+
     job_uuid = uuid.uuid4().hex[:12]
     job_dir = JOBS_DIR / job_uuid
     job_dir.mkdir(exist_ok=True)
@@ -51,9 +74,14 @@ async def convert_file(
     if len(data) > settings.MAX_FILE_MB * 1024 * 1024:
         shutil.rmtree(job_dir, ignore_errors=True)
         raise HTTPException(400, f"Plik > {settings.MAX_FILE_MB} MB")
+    if user:
+        limit = getattr(user, "quota_limit_bytes", None) or QUOTA_DEFAULT
+        used = _quota_used(db, user.id)
+        if used + len(data) > limit:
+            shutil.rmtree(job_dir, ignore_errors=True)
+            raise HTTPException(413, f"Przekroczono limit 500 MB. Zwolnij miejsce usuwając pliki.")
     src.write_bytes(data)
 
-    # ensure username for vanity
     if user and not getattr(user,'username',None):
         base = re.sub(r'[^a-z0-9]+','', (user.email.split('@')[0].lower()))[:20] or 'user'
         cand=base
@@ -63,12 +91,19 @@ async def convert_file(
         user.username=cand; db.commit()
     stem = Path(file.filename).stem
     slug = _slugify(stem)
-    # ensure unique slug per user if user exists
     if user:
         base_slug=slug; k=1
         while db.query(models.Job).filter(models.Job.user_id==user.id, models.Job.slug==slug).first() is not None:
             k+=1; slug=f"{base_slug}-{k}"
-    # Create job record
+    fid = None
+    if folder_id and folder_id not in ("", "null", "None"):
+        try:
+            fid = int(folder_id)
+            f = db.query(models.Folder).filter(models.Folder.id==fid, models.Folder.user_id==user.id).first() if user else None
+            if not f:
+                fid = None
+        except:
+            fid = None
     job = models.Job(
         user_id=user.id if user else None,
         uuid=job_uuid,
@@ -79,12 +114,12 @@ async def convert_file(
         slug=slug,
         title=stem[:200],
         visibility="public",
+        folder_id=fid,
     )
     db.add(job)
     db.commit()
     db.refresh(job)
 
-    # Convert
     out_step = str(job_dir / (Path(file.filename).stem + ".step"))
     result = convert(str(src), out_step, mode=mode)
 
@@ -95,9 +130,9 @@ async def convert_file(
         job.result_size_bytes = result["result_size"]
         job.processing_time_s = round(time.time() - t0, 1)
         job.completed_at = datetime.utcnow()
-        job.credits_used = 0  # free conversion
+        job.credits_used = 0
+        # try to store a JPG preview if converter produced one alongside — ponytail: no render yet, keep field null
         db.commit()
-
         return {
             "ok": True,
             "job_id": job.id,
@@ -123,7 +158,16 @@ def download(job_uuid: str, format: str = "step", db: Session = Depends(get_db))
     job = db.query(models.Job).filter(models.Job.uuid == job_uuid, models.Job.status == "done").first()
     if not job:
         raise HTTPException(404, "Job nie znaleziony")
-    if format == "stl" and job.result_stl_path and os.path.exists(job.result_stl_path):
+    fmt = format.lower()
+    if fmt == "3mf":
+        # find original 3mf if exists, else 404 — ponytail: no on-fly 3MF export, serve source
+        src_dir = JOBS_DIR / job_uuid
+        if src_dir.exists():
+            for f in src_dir.iterdir():
+                if f.suffix.lower() == ".3mf":
+                    return FileResponse(str(f), filename=Path(job.original_filename).stem + ".3mf", media_type="application/vnd.ms-package.3dmanufacturing-3dmodel+xml")
+        raise HTTPException(404, "Plik 3MF niedostępny — wgraj źródło .3mf")
+    if fmt == "stl" and job.result_stl_path and os.path.exists(job.result_stl_path):
         path = job.result_stl_path
     else:
         path = job.result_step_path
@@ -131,8 +175,8 @@ def download(job_uuid: str, format: str = "step", db: Session = Depends(get_db))
         raise HTTPException(404, "Plik nie istnieje")
     return FileResponse(
         path,
-        filename=Path(job.original_filename).stem + f".{format}",
-        media_type="application/step" if format == "step" else "application/octet-stream",
+        filename=Path(job.original_filename).stem + f".{fmt if fmt in ('step','stl') else 'step'}",
+        media_type="application/step" if fmt == "step" else "application/octet-stream",
     )
 
 
@@ -147,7 +191,6 @@ def stl_preview(job_uuid: str, db: Session = Depends(get_db)):
 
     stl_path = job.result_stl_path
     src_dir = JOBS_DIR / job_uuid
-    # Try the stored path first, then find any known mesh in the job dir
     if stl_path and os.path.exists(stl_path):
         return FileResponse(stl_path, media_type="model/stl")
     if src_dir.exists():
@@ -157,6 +200,20 @@ def stl_preview(job_uuid: str, db: Session = Depends(get_db)):
                     mt = "model/stl" if ext == ".stl" else "application/octet-stream"
                     return FileResponse(str(f), media_type=mt)
     raise HTTPException(404, "STL preview niedostępny")
+
+@router.get("/preview/{job_uuid}")
+def preview_image(job_uuid: str, db: Session = Depends(get_db)):
+    """Serve JPG preview if exists, else 404 — frontend falls back to 3D thumb."""
+    job = db.query(models.Job).filter(models.Job.uuid == job_uuid).first()
+    if not job:
+        raise HTTPException(404, "Job nie znaleziony")
+    if job.preview_image and os.path.exists(job.preview_image):
+        return FileResponse(job.preview_image, media_type="image/jpeg")
+    # try JOBS_DIR preview
+    p = JOBS_DIR / job_uuid / "preview.jpg"
+    if p.exists():
+        return FileResponse(str(p), media_type="image/jpeg")
+    raise HTTPException(404, "Preview nie istnieje")
 
 
 # --- Share links ---
@@ -248,11 +305,90 @@ def share_download(token: str, db: Session = Depends(get_db)):
 def list_jobs(user: models.User = Depends(require_user), db: Session = Depends(get_db)):
     jobs = db.query(models.Job).filter(
         models.Job.user_id == user.id
-    ).order_by(models.Job.created_at.desc()).limit(50).all()
-    return [{"id": j.id, "uuid": j.uuid, "filename": j.original_filename, "status": j.status,
+    ).order_by(models.Job.created_at.desc()).limit(500).all()
+    out=[]
+    for j in jobs:
+        out.append({"id": j.id, "uuid": j.uuid, "filename": j.original_filename, "title": j.title, "status": j.status,
              "mode": j.mode, "faces": j.result_faces, "processing_time_s": j.processing_time_s,
-             "created_at": str(j.created_at)} for j in jobs]
+             "created_at": str(j.created_at), "folder_id": j.folder_id, "preview_image": j.preview_image,
+             "visibility": j.visibility, "slug": j.slug, "file_size_bytes": j.file_size_bytes, "result_size_bytes": j.result_size_bytes})
+    return out
 
+
+# --- Bulk delete ---
+@router.post("/jobs/bulk-delete")
+def bulk_delete(payload: dict, user: models.User = Depends(require_user), db: Session = Depends(get_db)):
+    ids = payload.get("ids") or []
+    if not isinstance(ids, list) or not ids:
+        raise HTTPException(400, "ids wymagane")
+    ids = [int(x) for x in ids if str(x).isdigit()][:100]
+    jobs = db.query(models.Job).filter(models.Job.user_id == user.id, models.Job.id.in_(ids)).all()
+    for job in jobs:
+        db.query(models.ShareLink).filter(models.ShareLink.job_id == job.id).delete()
+        job_dir = JOBS_DIR / job.uuid
+        if job_dir.is_dir():
+            shutil.rmtree(job_dir, ignore_errors=True)
+        db.delete(job)
+    db.commit()
+    return {"ok": True, "deleted": len(jobs)}
+
+# --- Rename ---
+@router.patch("/jobs/{job_id}/rename")
+def rename_job(job_id: int, payload: dict, user: models.User = Depends(require_user), db: Session = Depends(get_db)):
+    job = db.query(models.Job).filter(models.Job.id == job_id).first()
+    if not job or (job.user_id != user.id and not user.is_admin):
+        raise HTTPException(404, "Job nie znaleziony")
+    title = (payload.get("title") or payload.get("name") or "").strip()[:200]
+    if not title:
+        raise HTTPException(400, "Nazwa wymagana")
+    job.title = title
+    # optional folder move
+    if "folder_id" in payload:
+        fid = payload.get("folder_id")
+        if fid in (None, "", 0, "0"):
+            job.folder_id = None
+        else:
+            try:
+                fid = int(fid)
+                f = db.query(models.Folder).filter(models.Folder.id==fid, models.Folder.user_id==user.id).first()
+                if not f:
+                    raise HTTPException(404, "Folder nie znaleziony")
+                job.folder_id = fid
+            except HTTPException:
+                raise
+            except:
+                raise HTTPException(400, "folder_id int")
+    db.commit()
+    return {"ok": True, "title": job.title, "folder_id": job.folder_id}
+
+# --- Share per job ---
+@router.post("/jobs/{job_id}/share")
+def share_job(job_id: int, payload: dict = None, user: models.User = Depends(require_user), db: Session = Depends(get_db)):
+    job = db.query(models.Job).filter(models.Job.id == job_id).first()
+    if not job or (job.user_id != user.id and not user.is_admin):
+        raise HTTPException(404, "Job nie znaleziony")
+    token = uuid.uuid4().hex[:16]
+    share = models.ShareLink(token=token, job_id=job.id, user_id=user.id, format="step", show_author=True)
+    db.add(share); db.commit()
+    vanity = None
+    if job.slug and user.username:
+        vanity = f"{settings.APP_URL}/u/{user.username}/{job.slug}"
+    share_url = vanity or f"{settings.APP_URL}/s/{token}"
+    return {"url": share_url, "token": token, "vanity": vanity, "visibility": job.visibility}
+
+# --- Publish toggle ---
+@router.patch("/jobs/{job_id}/publish")
+def publish_job(job_id: int, payload: dict, user: models.User = Depends(require_user), db: Session = Depends(get_db)):
+    job = db.query(models.Job).filter(models.Job.id == job_id).first()
+    if not job or (job.user_id != user.id and not user.is_admin):
+        raise HTTPException(404, "Job nie znaleziony")
+    vis = payload.get("visibility")
+    if vis not in ("public","private","unlisted"):
+        # toggle
+        vis = "private" if job.visibility == "public" else "public"
+    job.visibility = vis
+    db.commit()
+    return {"ok": True, "visibility": job.visibility}
 
 # --- User delete own job ---
 @router.delete("/jobs/{job_id}")
@@ -266,9 +402,8 @@ def delete_my_job(
         raise HTTPException(404, "Job not found")
     if job.user_id != user.id and not user.is_admin:
         raise HTTPException(403, "Not your job")
-    # Delete share links first (FK constraint)
     db.query(models.ShareLink).filter(models.ShareLink.job_id == job.id).delete()
-    # Delete files from disk
+    db.query(models.Comment).filter(models.Comment.job_id == job.id).delete()
     jobs_dir = Path(settings.DATA_DIR) / "files"
     job_dir = jobs_dir / job.uuid
     if job_dir.is_dir():

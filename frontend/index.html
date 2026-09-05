@@ -212,7 +212,7 @@
 </head>
 <body>
     <nav class="nav">
-        <a href="/" class="nav-logo" style="text-decoration:none">3DHOSTY</a>
+        <a href="/" class="nav-logo" style="text-decoration:none;display:flex;align-items:center;gap:8px"><img id="headerLogo" src="/logo.png" alt="3DHOSTY" style="height:32px;display:none" onload="this.style.display='block';document.getElementById('headerLogoText').style.display='none'" onerror="this.style.display='none'"><span id="headerLogoText">3DHOSTY</span></a>
         <div class="nav-tabs" id="navTabs">
             <button class="nav-tab active" onclick="switchTab('converter')" data-tab="converter" data-i18n="navConverter">Konwerter</button>
             <button class="nav-tab" onclick="switchTab('myfiles')" data-tab="myfiles" data-i18n="navMyFiles">Moje pliki</button>
@@ -298,17 +298,25 @@
             <h2 data-i18n="myFilesTitle">Moje pliki</h2>
             <p data-i18n="myFilesDesc">Twoje ostatnie konwersje i pobrane pliki.</p>
         </div>
-        <div id="myFilesContent" style="padding:24px 0">
+        <div id="myFilesContent" style="padding:16px 0;max-width:1100px">
+            <div id="quotaBar" style="display:none;margin-bottom:16px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 16px">
+                <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text-secondary);margin-bottom:6px"><span id="quotaLabel">Wykorzystano 0 / 500 MB</span><span id="quotaPct">0%</span></div>
+                <div style="height:8px;background:var(--border-light);border-radius:99px;overflow:hidden"><div id="quotaFill" style="height:100%;width:0;background:var(--primary);transition:width .3s"></div></div>
+            </div>
+            <div id="myFilesToolbar" style="display:none;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px">
+                <input id="mfSearch" placeholder="Szukaj po nazwie..." style="flex:1;min-width:160px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px" oninput="mfRender()">
+                <select id="mfFolderFilter" onchange="mfRender()" style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;min-width:140px"><option value="">Wszystkie foldery</option><option value="__none">Bez folderu</option></select>
+                <button onclick="mfCreateFolder()" style="padding:9px 14px;background:#fff;border:1px solid var(--border);border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">+ Folder</button>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" id="mfSelectAll" onchange="mfToggleAll(this.checked)"> Zaznacz wszystkie</label>
+                <button id="mfBulkDelete" onclick="mfBulkDelete()" style="display:none;padding:9px 14px;background:#fff;color:#dc2626;border:1px solid #fecaca;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">Usun zaznaczone</button>
+            </div>
+            <div id="mfFolderCrumbs" style="display:none;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
             <div class="my-files-empty" id="myFilesEmpty">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
                 <p data-i18n="myFilesEmpty">Zaloguj sie, aby zobaczyc swoje pliki</p>
             </div>
-            <div id="myFilesTable" style="display:none;max-width:1000px">
-                <table class="jobs-table" id="jobs">
-                    <thead><tr><th>ID</th><th data-i18n="thFile">Plik</th><th data-i18n="thStatus">Status</th><th>Mode</th><th data-i18n="thFaces">Scianki</th><th data-i18n="thTime">Czas</th><th data-i18n="thDate">Data</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-            </div>
+            <div id="mfGrid" style="display:none;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px"></div>
+            <div id="myFilesTable" style="display:none"></div>
         </div>
     </div>
 
@@ -431,7 +439,7 @@
                         <label for="shareShowAuthor" data-i18n="shareShowAuthor">Pokaz moj email jako autora</label>
                     </label>
                     <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
-                        <label style="font-size:13px;color:#64748b" data-i18n="shareExpiry">Waznosc:</label>
+                        <label style="font-size:13px;color:#64748b" data-i18n="shareExpiry">Ważność:</label>
                         <select id="shareExpiry" style="flex:1;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-family:inherit">
                             <option value="7" data-i18n="shareExp7">7 dni</option>
                             <option value="30" data-i18n="shareExp30">30 dni</option>
@@ -442,8 +450,13 @@
                 <div id="shareResult" style="display:none">
                     <input type="text" id="shareUrl" readonly style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:12px;font-family:inherit;font-size:13px" onclick="this.select()">
                     <button class="btn-primary" style="width:100%" onclick="copyShareUrl()" data-i18n="shareCopy">Kopiuj link</button>
+                    <div style="margin-top:12px;padding:10px;background:#f7f9fc;border:1px solid #e2e8f0;border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:8px">
+                        <span style="font-size:13px;font-weight:600">Opublikuj w Odkrywaj</span>
+                        <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer"><input type="checkbox" id="sharePublishToggle" onchange="togglePublishFromShare()" style="opacity:0;width:0;height:0"><span style="position:absolute;inset:0;background:#cbd5e1;border-radius:999px;transition:.2s" id="sharePublishTrack"></span><span id="sharePublishKnob" style="position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span></label>
+                    </div>
+                    <div style="font-size:11px;color:#64748b;margin-top:6px">Publiczny = widoczny w Odkrywaj i na /u/nick/slug. Prywatny = tylko link.</div>
                 </div>
-                <button class="btn-primary" style="width:100%" id="shareCreateBtn" onclick="createShareLink()" data-i18n="shareCreate">Utworz link</button>
+                <button class="btn-primary" style="width:100%" id="shareCreateBtn" onclick="createShareLink()" data-i18n="shareCreate">Utwórz link</button>
             </div>
         </div>
     </div>
@@ -848,31 +861,205 @@
         } catch(e) { alert('Payment error: ' + e.message); }
     }
 
+    let _mfFolders = [];
+    let _mfSelected = new Set();
+    async function loadQuota(){
+        if(!token) return;
+        try{
+            const r=await fetch('/api/quota',{headers:{'Authorization':'Bearer '+token}});
+            if(!r.ok) return;
+            const q=await r.json();
+            const bar=document.getElementById('quotaBar');
+            bar.style.display='block';
+            document.getElementById('quotaLabel').textContent='Wykorzystano '+q.used_mb+' / '+q.limit_mb+' MB';
+            document.getElementById('quotaPct').textContent=q.percent+'%';
+            const fill=document.getElementById('quotaFill');
+            fill.style.width=Math.min(q.percent,100)+'%';
+            fill.style.background=q.percent>90?'#dc2626':q.percent>75?'#d97706':'var(--primary)';
+        }catch(e){}
+    }
+    async function loadFolders(){
+        if(!token) return;
+        try{
+            const r=await fetch('/api/folders',{headers:{'Authorization':'Bearer '+token}});
+            if(!r.ok) return;
+            _mfFolders=await r.json();
+            const sel=document.getElementById('mfFolderFilter');
+            const cur=sel.value;
+            sel.innerHTML='<option value="">Wszystkie foldery</option><option value="__none">Bez folderu</option>'+_mfFolders.map(function(f){return '<option value="'+f.id+'">'+f.name.replace(/</g,'&lt;')+'</option>'}).join('');
+            if(cur) sel.value=cur;
+            renderFolderCrumbs();
+        }catch(e){}
+    }
+    function renderFolderCrumbs(){
+        const c=document.getElementById('mfFolderCrumbs');
+        if(!_mfFolders.length){ c.style.display='none'; return; }
+        c.style.display='flex';
+        c.innerHTML=_mfFolders.map(function(f){return '<span style="display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--border);border-radius:999px;padding:4px 10px;font-size:13px">'+f.name.replace(/</g,'&lt;')+' <button onclick="mfRenameFolder('+f.id+')" style="background:none;border:none;cursor:pointer;color:#64748b" title="Zmien nazwe">✎</button><button onclick="mfDeleteFolder('+f.id+')" style="background:none;border:none;cursor:pointer;color:#dc2626" title="Usun">\u00d7</button></span>'}).join('');
+    }
+    async function mfCreateFolder(){
+        const name=prompt('Nazwa folderu:');
+        if(!name) return;
+        const r=await fetch('/api/folders',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({name:name})});
+        if(!r.ok){ const e=await r.json().catch(function(){return {}}); alert(e.detail||'Blad'); return; }
+        await loadFolders(); mfRender();
+    }
+    async function mfRenameFolder(id){
+        const f=_mfFolders.find(function(x){return x.id===id});
+        const name=prompt('Nowa nazwa:', f?f.name:'');
+        if(!name) return;
+        const r=await fetch('/api/folders/'+id,{method:'PATCH',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({name:name})});
+        if(!r.ok){ const e=await r.json().catch(function(){return {}}); alert(e.detail||'Blad'); return; }
+        await loadFolders(); mfRender();
+    }
+    async function mfDeleteFolder(id){
+        if(!confirm('Usunac folder? Pliki zostana bez folderu.')) return;
+        await fetch('/api/folders/'+id,{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+        await loadFolders(); mfRender();
+    }
+    function mfToggleAll(on){
+        _mfSelected.clear();
+        if(on){
+            const vis=_filteredJobs();
+            vis.forEach(function(j){_mfSelected.add(j.id)});
+        }
+        document.querySelectorAll('.mf-check').forEach(function(cb){cb.checked=on});
+        updateBulkBar();
+    }
+    function updateBulkBar(){
+        const b=document.getElementById('mfBulkDelete');
+        b.style.display=_mfSelected.size?'':'none';
+        b.textContent='Usun zaznaczone ('+_mfSelected.size+')';
+    }
+    async function mfBulkDelete(){
+        if(!_mfSelected.size) return;
+        if(!confirm('Usunac '+_mfSelected.size+' plikow?')) return;
+        const r=await fetch('/api/jobs/bulk-delete',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({ids:[..._mfSelected]})});
+        if(!r.ok){ alert('Blad usuwania'); return; }
+        _mfSelected.clear();
+        document.getElementById('mfSelectAll').checked=false;
+        await loadMyJobs();
+    }
+    async function mfInlineRename(id){
+        const j=_myJobsData.find(function(x){return x.id===id});
+        const title=prompt('Nowa nazwa:', j? (j.title||j.filename):'');
+        if(title===null) return;
+        const t2=title.trim();
+        if(!t2) return;
+        const r=await fetch('/api/jobs/'+id+'/rename',{method:'PATCH',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({title:t2})});
+        if(!r.ok){ const e=await r.json().catch(function(){return {}}); alert(e.detail||'Blad'); return; }
+        j.title=t2; mfRender();
+    }
+    function _filteredJobs(){
+        const q=(document.getElementById('mfSearch').value||'').toLowerCase();
+        const ff=document.getElementById('mfFolderFilter').value;
+        return _myJobsData.filter(function(j){
+            if(q && !((j.filename||'').toLowerCase().includes(q) || (j.title||'').toLowerCase().includes(q))) return false;
+            if(ff==='__none' && j.folder_id!=null) return false;
+            if(ff && ff!=='__none' && String(j.folder_id||'')!==String(ff)) return false;
+            return true;
+        });
+    }
+    function mfRender(){
+        const jobs=_filteredJobs();
+        const grid=document.getElementById('mfGrid');
+        if(!jobs.length){
+            grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px">Brak plikow dla filtra</div>';
+            return;
+        }
+        grid.innerHTML=jobs.map(function(j){
+            const visBadge=j.visibility==='public' ? '<span style="background:#ecfdf5;color:#059669;padding:2px 6px;border-radius:999px;font-size:11px">public</span>' : j.visibility==='private' ? '<span style="background:#fef2f2;color:#dc2626;padding:2px 6px;border-radius:999px;font-size:11px">private</span>' : '<span style="background:#fffbeb;color:#d97706;padding:2px 6px;border-radius:999px;font-size:11px">unlisted</span>';
+            const is3mf=(j.filename||'').toLowerCase().endsWith('.3mf');
+            const titleEsc=(j.title||j.filename||'').replace(/</g,'&lt;');
+            const thumb=j.preview_image ? '<img src="'+j.preview_image+'" style="width:100%;height:140px;object-fit:cover;border-radius:8px 8px 0 0" onerror="this.style.display=\'none\'">' : '<img src="/api/preview/'+j.uuid+'" style="width:100%;height:140px;object-fit:cover;border-radius:8px 8px 0 0" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div style="display:none;height:140px;background:var(--bg-alt);align-items:center;justify-content:center;color:var(--text-muted);font-size:12px;border-radius:8px 8px 0 0">3D podglad</div>';
+            return '<div style="background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column">'
+            + '<div style="position:relative;cursor:pointer" onclick="openJobModal('+j.id+')">'
+            + thumb
+            + '<input type="checkbox" class="mf-check" '+(_mfSelected.has(j.id)?'checked':'')+' onclick="event.stopPropagation()" onchange="if(this.checked)_mfSelected.add('+j.id+');else _mfSelected.delete('+j.id+');updateBulkBar()" style="position:absolute;top:8px;left:8px;width:16px;height:16px">'
+            + '</div>'
+            + '<div style="padding:10px 12px;flex:1;display:flex;flex-direction:column;gap:6px">'
+            + '<div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="'+titleEsc+'">'+titleEsc+' '+visBadge+'</div>'
+            + '<div style="font-size:11px;color:var(--text-muted)">'+(j.created_at||'').slice(0,16)+' \u00b7 '+(j.faces||'-')+' scian \u00b7 '+(j.mode||'-')+'</div>'
+            + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">'
+            + '<button onclick="mfInlineRename('+j.id+')" style="flex:1;padding:6px 8px;background:#fff;border:1px solid var(--border);border-radius:6px;font-size:12px;cursor:pointer">Zmien nazwe</button>'
+            + '<button onclick="event.stopPropagation(); if(confirm(\'Usunac?\')) deleteMyJob('+j.id+')" style="padding:6px 8px;background:#fff;color:#dc2626;border:1px solid #fecaca;border-radius:6px;font-size:12px;cursor:pointer">Usun</button>'
+            + '</div>'
+            + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
+            + '<a href="/api/download/'+j.uuid+'?format=step" style="flex:1;text-align:center;padding:6px 8px;background:var(--primary);color:#fff;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none">STEP</a>'
+            + (is3mf ? '<a href="/api/download/'+j.uuid+'?format=3mf" style="flex:1;text-align:center;padding:6px 8px;background:#fff;border:1px solid var(--border);border-radius:6px;font-size:12px;font-weight:600;text-decoration:none;color:var(--text)">3MF</a>' : '')
+            + '<button onclick="openShareModalFor('+j.id+')" style="flex:1;padding:6px 8px;background:#fff;border:1px solid var(--border);border-radius:6px;font-size:12px;cursor:pointer">Udostepnij</button>'
+            + '</div>'
+            + '</div></div>';
+        }).join('');
+    }
+    function openShareModalFor(jobId){
+        const j=_myJobsData.find(function(x){return x.id===jobId});
+        if(!j) return;
+        _shareJobId=jobId;
+        document.getElementById('shareModal').classList.add('show');
+        const tog=document.getElementById('sharePublishToggle');
+        if(tog) tog.checked=(j.visibility==='public');
+        updatePublishToggleUI();
+        document.getElementById('shareResult').style.display='none';
+        document.getElementById('shareCreateBtn').style.display='';
+        document.getElementById('shareUrl').value='';
+        fetch('/api/jobs/'+jobId+'/share',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:'{}'}).then(function(r){return r.json()}).then(function(d){
+            document.getElementById('shareUrl').value=d.url||d.vanity||'';
+            document.getElementById('shareResult').style.display='block';
+            document.getElementById('shareCreateBtn').style.display='none';
+        }).catch(function(){});
+    }
+    function updatePublishToggleUI(){
+        const tog=document.getElementById('sharePublishToggle');
+        const track=document.getElementById('sharePublishTrack');
+        const knob=document.getElementById('sharePublishKnob');
+        if(!tog||!track||!knob) return;
+        if(tog.checked){ track.style.background='#1a56db'; knob.style.left='22px'; } else { track.style.background='#cbd5e1'; knob.style.left='2px'; }
+    }
+    async function togglePublishFromShare(){
+        updatePublishToggleUI();
+        if(!_shareJobId) return;
+        const vis=document.getElementById('sharePublishToggle').checked ? 'public':'private';
+        const r=await fetch('/api/jobs/'+_shareJobId+'/publish',{method:'PATCH',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({visibility:vis})});
+        if(r.ok){
+            const d=await r.json();
+            const j=_myJobsData.find(function(x){return x.id===_shareJobId});
+            if(j) j.visibility=d.visibility;
+            mfRender();
+        }
+    }
     async function loadMyJobs() {
         if (!token) {
             document.getElementById('myFilesEmpty').style.display = 'block';
-            document.getElementById('myFilesTable').style.display = 'none';
+            document.getElementById('mfGrid').style.display = 'none';
+            document.getElementById('myFilesToolbar').style.display = 'none';
+            const qb=document.getElementById('quotaBar'); if(qb) qb.style.display='none';
+            const cr=document.getElementById('mfFolderCrumbs'); if(cr) cr.style.display='none';
             return;
         }
         try {
+            loadQuota(); loadFolders();
             const r = await fetch('/api/jobs', {headers:{'Authorization': 'Bearer '+token}});
-            if (!r.ok) { document.getElementById('myFilesEmpty').style.display = 'block'; document.getElementById('myFilesTable').style.display = 'none'; return; }
+            if (!r.ok) { document.getElementById('myFilesEmpty').style.display = 'block'; document.getElementById('mfGrid').style.display = 'none'; document.getElementById('myFilesToolbar').style.display='none'; return; }
             const d = await r.json();
+            _myJobsData = d;
             if (!d.length) {
                 document.getElementById('myFilesEmpty').style.display = 'block';
-                document.getElementById('myFilesEmpty').querySelector('p').textContent = t('myFilesEmpty');
-                document.getElementById('myFilesTable').style.display = 'none';
+                const pe=document.getElementById('myFilesEmpty').querySelector('p'); if(pe) pe.textContent = t('myFilesEmpty');
+                document.getElementById('mfGrid').style.display = 'none';
+                document.getElementById('myFilesToolbar').style.display = 'flex';
+                const qb2=document.getElementById('quotaBar'); if(qb2) qb2.style.display='block';
+                mfRender();
                 return;
             }
             document.getElementById('myFilesEmpty').style.display = 'none';
-            document.getElementById('myFilesTable').style.display = 'block';
-            _myJobsData = d;
-            document.querySelector('#jobs tbody').innerHTML = d.map(j =>
-                '<tr class="job-row" onclick="openJobModal(' + j.id + ')" title="' + t('jobPreview') + '"><td>' + j.id + '</td><td>' + j.filename + '</td><td class="status-' + j.status + '">' + j.status + '</td><td>' + (j.mode||'-') + '</td><td>' + (j.faces||'-') + '</td><td>' + (j.processing_time_s||'-') + 's</td><td>' + (j.created_at||'').slice(0,16) + '</td></tr>'
-            ).join('');
+            document.getElementById('mfGrid').style.display = 'grid';
+            document.getElementById('myFilesToolbar').style.display = 'flex';
+            updateBulkBar();
+            mfRender();
         } catch(e) {
             document.getElementById('myFilesEmpty').style.display = 'block';
-            document.getElementById('myFilesTable').style.display = 'none';
+            const g=document.getElementById('mfGrid'); if(g) g.style.display = 'none';
         }
     }
 
