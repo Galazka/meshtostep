@@ -149,6 +149,7 @@ def create_share(
     job_id: int = Form(...),
     fmt: str = Form("step"),
     expires_days: int = Form(7),
+    show_author: bool = Form(True),
     user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -164,6 +165,7 @@ def create_share(
         job_id=job.id,
         user_id=user.id if user else None,
         format=fmt,
+        show_author=show_author,
         expires_at=datetime.utcnow() + timedelta(days=expires_days) if expires_days > 0 else None,
     )
     db.add(share)

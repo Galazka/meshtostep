@@ -411,6 +411,36 @@
         </div>
     </div>
 
+    <div class="job-modal-bg" id="shareModal">
+        <div class="job-modal" style="width:480px">
+            <div class="job-modal-head">
+                <h3 data-i18n="shareTitle">Udostepnij plik</h3>
+                <button class="modal-close" onclick="closeShareModal()">&times;</button>
+            </div>
+            <div style="padding:24px">
+                <div style="margin-bottom:16px">
+                    <label class="auth-checkbox" style="margin-bottom:12px">
+                        <input type="checkbox" id="shareShowAuthor" checked>
+                        <label for="shareShowAuthor" data-i18n="shareShowAuthor">Pokaz moj email jako autora</label>
+                    </label>
+                    <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+                        <label style="font-size:13px;color:#64748b" data-i18n="shareExpiry">Waznosc:</label>
+                        <select id="shareExpiry" style="flex:1;padding:8px;border:1px solid #e2e8f0;border-radius:8px;font-family:inherit">
+                            <option value="7" data-i18n="shareExp7">7 dni</option>
+                            <option value="30" data-i18n="shareExp30">30 dni</option>
+                            <option value="0" data-i18n="shareExpNever">Bez limitu</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="shareResult" style="display:none">
+                    <input type="text" id="shareUrl" readonly style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:12px;font-family:inherit;font-size:13px" onclick="this.select()">
+                    <button class="btn-primary" style="width:100%" onclick="copyShareUrl()" data-i18n="shareCopy">Kopiuj link</button>
+                </div>
+                <button class="btn-primary" style="width:100%" id="shareCreateBtn" onclick="createShareLink()" data-i18n="shareCreate">Utworz link</button>
+            </div>
+        </div>
+    </div>
+
     <script type="importmap">
     {
         "imports": {
@@ -485,6 +515,8 @@
             resultDone: 'Gotowe! {faces} scianek STEP \u00b7 {time}s',
             resultError: 'Blad: {msg}',
             shareLinkPrompt: 'Skopiuj link:', downloadText: 'Pobierz', shareText: 'Udostepnij',
+            shareTitle: 'Udostepnij plik', shareShowAuthor: 'Pokaz moj email jako autora', shareExpiry: 'Waznosc:', shareExp7: '7 dni',
+            shareExp30: '30 dni', shareExpNever: 'Bez limitu', shareCopy: 'Kopiuj link', shareCreate: 'Utworz link',
             langLabel: 'EN',
             jobDlStep: 'Pobierz STEP', jobDlStl: 'Pobierz STL', jobDelete: 'Usun',
             jobShare: 'Udostepnij', jobPreview: 'Podglad 3D',
@@ -543,6 +575,8 @@
             resultDone: 'Done! {faces} STEP faces \u00b7 {time}s',
             resultError: 'Error: {msg}',
             shareLinkPrompt: 'Copy link:', downloadText: 'Download', shareText: 'Share',
+            shareTitle: 'Share file', shareShowAuthor: 'Show my email as author', shareExpiry: 'Expires:', shareExp7: '7 days',
+            shareExp30: '30 days', shareExpNever: 'No limit', shareCopy: 'Copy link', shareCreate: 'Create link',
             langLabel: 'PL',
             jobDlStep: 'Download STEP', jobDlStl: 'Download STL', jobDelete: 'Delete',
             jobShare: 'Share', jobPreview: '3D Preview',
@@ -713,12 +747,44 @@
         document.getElementById('progress').classList.remove('show');
     }
 
-    async function doShare(jobId) {
-        const fd = new FormData(); fd.append('job_id', jobId); fd.append('fmt', 'step'); fd.append('expires_days', 7);
-        const r = await fetch('/api/share', {method:'POST', body:fd, headers: token?{'Authorization':'Bearer '+token}:{}});
-        if (r.ok) { const d = await r.json(); prompt(t('shareLinkPrompt'), d.url); }
+    let _shareJobId = null;
+    function doShare(jobId) {
+        _shareJobId = jobId;
+        document.getElementById('shareUrl').value = '';
+        document.getElementById('shareResult').style.display = 'none';
+        document.getElementById('shareCreateBtn').style.display = '';
+        document.getElementById('shareModal').classList.add('show');
     }
-
+    function closeShareModal() {
+        document.getElementById('shareModal').classList.remove('show');
+        _shareJobId = null;
+    }
+    async function createShareLink() {
+        if (!_shareJobId) return;
+        const btn = document.getElementById('shareCreateBtn');
+        btn.disabled = true; btn.textContent = t('shareCreate') + '...';
+        const fd = new FormData();
+        fd.append('job_id', _shareJobId);
+        fd.append('fmt', 'step');
+        fd.append('show_author', document.getElementById('shareShowAuthor').checked);
+        fd.append('expires_days', document.getElementById('shareExpiry').value);
+        try {
+            const r = await fetch('/api/share', {method:'POST', body:fd, headers: token?{'Authorization':'Bearer '+token}:{}});
+            if (r.ok) {
+                const d = await r.json();
+                document.getElementById('shareUrl').value = d.url;
+                document.getElementById('shareResult').style.display = 'block';
+                btn.style.display = 'none';
+            }
+        } catch(e) {}
+        btn.disabled = false; btn.textContent = t('shareCreate');
+    }
+    function copyShareUrl() {
+        const el = document.getElementById('shareUrl');
+        el.select();
+        navigator.clipboard.writeText(el.value);
+        toast(t('shareLinkPrompt'), 'success');
+    }
     function doEmbed(jobId) {
         const code = '<iframe src="/e/' + jobId + '" width="800" height="500" frameborder="0" allowfullscreen></iframe>';
         prompt('Embed iframe code:', code);
@@ -1019,8 +1085,14 @@
     document.getElementById('authModal').addEventListener('click', function(e) {
         if (e.target === this) closeModal();
     });
+    document.getElementById('jobModal').addEventListener('click', function(e) {
+        if (e.target === this) closeJobModal();
+    });
+    document.getElementById('shareModal').addEventListener('click', function(e) {
+        if (e.target === this) closeShareModal();
+    });
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') { closeJobModal(); closeModal(); }
+        if (e.key === 'Escape') { closeJobModal(); closeShareModal(); closeModal(); }
     });
     </script>
 </body>

@@ -10,7 +10,8 @@ from . import models
 
 
 def cleanup_old_files(days: int = 30):
-    """Delete jobs older than N days and their files."""
+    """Delete jobs older than N days and their files.
+    Jobs owned by users with keep_files_forever=True are skipped."""
     cutoff = datetime.utcnow() - timedelta(days=days)
     db = SessionLocal()
     deleted = 0
@@ -21,6 +22,13 @@ def cleanup_old_files(days: int = 30):
         ).all()
 
         for job in old_jobs:
+            # Skip premium users (lifetime plan): files not deleted
+            if job.user_id:
+                owner = db.query(models.User).filter(
+                    models.User.id == job.user_id
+                ).first()
+                if owner and getattr(owner, "keep_files_forever", False):
+                    continue
             # Delete files from disk
             job_dir = Path(settings.DATA_DIR) / "files" / job.uuid
             if job_dir.exists():

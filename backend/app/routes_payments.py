@@ -167,6 +167,9 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
             credits = pack.credits if pack else (payment.credits_granted or 0)
             if user:
                 user.credits = (user.credits or 0) + credits
+                # Pack 100 (or credits >= 100) = lifetime plan: files never deleted
+                if credits >= 100:
+                    user.keep_files_forever = True
             payment.status = "completed"
             payment.credits_granted = credits
             if not payment.reference:

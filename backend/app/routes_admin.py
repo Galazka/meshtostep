@@ -293,3 +293,24 @@ def adjust_credits(
         "credits": user.credits,
         "adjustment_id": adjustment.id,
     }
+
+
+# ── Toggle keep_files_forever (lifetime plan) ────────────────────────
+class KeepFilesReq(BaseModel):
+    keep_files_forever: bool
+
+
+@router.post("/users/{user_id}/keep-files")
+def toggle_keep_files(
+    user_id: int,
+    body: KeepFilesReq,
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Grant or revoke lifetime file retention for a user."""
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "User not found")
+    user.keep_files_forever = body.keep_files_forever
+    db.commit()
+    return {"ok": True, "keep_files_forever": user.keep_files_forever}

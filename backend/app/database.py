@@ -33,6 +33,7 @@ def _migrate_columns():
     is_pg = not settings.DATABASE_URL.startswith("sqlite")
     with engine.connect() as conn:
         inspector = inspect(engine)
+        # Users table
         existing = {col["name"] for col in inspector.get_columns("users")}
         new_cols = {
             "terms_accepted_at": "TIMESTAMP" if is_pg else "DATETIME",
@@ -40,11 +41,17 @@ def _migrate_columns():
             "marketing_consent": "BOOLEAN DEFAULT FALSE",
             "registered_ip": "VARCHAR(45)" if is_pg else "VARCHAR(45)",
             "register_user_agent": "TEXT",
+            "keep_files_forever": "BOOLEAN DEFAULT FALSE",
         }
         for col, dtype in new_cols.items():
             if col not in existing:
                 conn.execute(text(f'ALTER TABLE users ADD COLUMN {col} {dtype}'))
                 print(f"[MeshToStep] Added column users.{col}")
+        # -- share_links: author display flag --
+        existing_share = {col["name"] for col in inspector.get_columns("share_links")}
+        if "show_author" not in existing_share:
+            conn.execute(text("ALTER TABLE share_links ADD COLUMN show_author BOOLEAN DEFAULT TRUE"))
+            print("[MeshToStep] Added column share_links.show_author")
         conn.commit()
 
 

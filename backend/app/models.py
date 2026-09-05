@@ -14,6 +14,7 @@ class User(Base):
     password_hash = Column(String(255), nullable=False)
     credits = Column(Integer, default=3, nullable=False)  # 3 free on signup
     is_admin = Column(Boolean, default=False)
+    keep_files_forever = Column(Boolean, default=False)  # premium: files not deleted after 30d
     created_at = Column(DateTime, default=datetime.utcnow)
     last_login = Column(DateTime)
     # -- hardening --
@@ -77,6 +78,7 @@ class ShareLink(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     is_active = Column(Boolean, default=True)
     views = Column(Integer, default=0)  # track share page views
+    show_author = Column(Boolean, default=True)  # display author email on share page
 
     job = relationship("Job", back_populates="shares")
     user = relationship("User", back_populates="shares")

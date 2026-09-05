@@ -1,4 +1,6 @@
 """Share link public page with 3D preview."""
+import html
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
@@ -20,6 +22,21 @@ def _lang(request: Request) -> str:
         return "en"
 
 
+def _fmt_bytes(n) -> str:
+    """Format byte count nicely (B / KB / MB)."""
+    try:
+        n = int(n)
+    except (TypeError, ValueError):
+        return "?"
+    if n <= 0:
+        return "?"
+    if n >= 1024 * 1024:
+        return f"{n / 1024 / 1024:.1f} MB"
+    if n >= 1024:
+        return f"{n / 1024:.1f} KB"
+    return f"{n} B"
+
+
 _SHARE_HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="__LANG__">
 <head>
@@ -29,49 +46,59 @@ _SHARE_HTML_TEMPLATE = """<!DOCTYPE html>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='24' font-size='24'>📁</text></svg>">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: #0c0c14;
     color: #e0e0e8;
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-  }
-  .card {
-    width: 100%;
-    max-width: 640px;
-    background: #16161f;
-    border: 1px solid #2a2a3a;
-    border-radius: 12px;
     overflow: hidden;
   }
-  .card-header {
-    padding: 20px 24px;
-    border-bottom: 1px solid #2a2a3a;
+  .topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 10;
     display: flex;
     align-items: center;
-    gap: 12px;
-  }
-  .card-header h1 { font-size: 16px; font-weight: 600; }
-  .card-header .icon { font-size: 24px; }
-  .card-body { padding: 24px; }
-  .meta-row {
-    display: flex;
-    flex-wrap: wrap;
     gap: 16px;
-    margin-bottom: 20px;
-    font-size: 13px;
-    color: #888;
+    padding: 10px 16px;
+    background: rgba(14, 14, 22, 0.88);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid #2a2a3a;
   }
-  .meta-row span { display: flex; align-items: center; gap: 4px; }
-  .actions { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+  .file-block { min-width: 0; max-width: 30vw; }
+  .file {
+    font-weight: 700;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .shared-by { font-size: 12px; color: #888; margin-top: 2px; }
+  .shared-by:empty { display: none; }
+  .pills {
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-width: 0;
+  }
+  .pill {
+    font-size: 12px;
+    padding: 4px 12px;
+    border: 1px solid #2a2a3a;
+    border-radius: 999px;
+    background: #16161f;
+    color: #bbb;
+    white-space: nowrap;
+  }
+  .actions { display: flex; gap: 8px; margin-left: auto; flex-shrink: 0; }
   .btn {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 10px 20px;
+    padding: 9px 18px;
     border-radius: 8px;
     font-size: 14px;
     font-weight: 600;
@@ -79,47 +106,39 @@ _SHARE_HTML_TEMPLATE = """<!DOCTYPE html>
     cursor: pointer;
     border: none;
     transition: opacity 0.2s;
+    white-space: nowrap;
   }
   .btn:hover { opacity: 0.85; }
   .btn-primary { background: #3b82f6; color: #fff; }
   .btn-secondary { background: #2a2a3a; color: #e0e0e8; }
   #viewer3d {
-    width: 100%;
-    height: 380px;
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
     background: #0a0a12;
-    border: 1px solid #2a2a3a;
-    border-radius: 8px;
-    overflow: hidden;
   }
-  .footer-note {
-    margin-top: 16px;
-    font-size: 11px;
-    color: #555;
-    text-align: center;
+  #viewer3d canvas { display: block; }
+  @media (max-width: 860px) {
+    .pills { display: none; }
+    .file-block { max-width: 45vw; }
+    .btn { padding: 8px 12px; font-size: 13px; }
   }
 </style>
 </head>
 <body>
-<div class="card">
-  <div class="card-header">
-    <span class="icon">📁</span>
-    <h1>__FILENAME__</h1>
+<header class="topbar">
+  <div class="file-block">
+    <div class="file" title="__FILENAME__">📁 __FILENAME__</div>
+    <div class="shared-by">__AUTHOR_INFO__</div>
   </div>
-  <div class="card-body">
-    <div class="meta-row">
-      <span>📐 __FACES__ __FACES_WORD__</span>
-      <span>⚙️ __MODE__</span>
-      <span>💾 __SIZE__ KB</span>
-      <span>⬇ __DOWNLOADS__ __TIMES_WORD__</span>
-    </div>
-    <div class="actions">
-      <a class="btn btn-primary" href="/api/share/__TOKEN__/download">⬇ __DOWNLOAD_BTN__</a>
-      <button class="btn btn-secondary" onclick="showEmbed()">⧉ Embed</button>
-    </div>
-    <div id="viewer3d"></div>
-    <div class="footer-note">MeshToStep · FreeCAD headless</div>
+  <div class="pills">__CONV_INFO__</div>
+  <div class="actions">
+    <a class="btn btn-primary" href="/api/share/__TOKEN__/download">⬇ __DOWNLOAD_BTN__</a>
+    <button class="btn btn-secondary" onclick="showEmbed()">⧉ __EMBED_BTN__</button>
   </div>
-</div>
+</header>
+<div id="viewer3d"></div>
 
 <script type="importmap">
 {
@@ -139,11 +158,11 @@ if (!el) throw new Error('no viewer3d element');
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x0a0a12);
-const camera = new THREE.PerspectiveCamera(50, el.clientWidth / 380, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0, 40, 60);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(el.clientWidth, 380);
+renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 el.appendChild(renderer.domElement);
 
@@ -186,9 +205,9 @@ function animate() {
 animate();
 
 window.addEventListener('resize', () => {
-  camera.aspect = el.clientWidth / el.clientHeight;
+  camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
-  renderer.setSize(el.clientWidth, el.clientHeight);
+  renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
 window.showEmbed = function() {
@@ -201,10 +220,10 @@ window.showEmbed = function() {
 
 def _render_share(template: str, **kwargs) -> str:
     """Replace __KEY__ placeholders — safe for JS curly braces."""
-    html = template
+    html_out = template
     for k, v in kwargs.items():
-        html = html.replace(f"__{k.upper()}__", str(v))
-    return html
+        html_out = html_out.replace(f"__{k.upper()}__", str(v))
+    return html_out
 
 
 @router.get("/s/{token}", response_class=HTMLResponse)
@@ -225,26 +244,56 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
     db.commit()
 
     job = share.job
-    size_kb = job.result_size_bytes // 1024 if job.result_size_bytes else "?"
     faces_n = job.result_faces or "?"
+    faces_word = "ścianek STEP" if is_pl else "STEP faces"
+    mode = job.mode or "auto"
+    size_kb = job.result_size_bytes // 1024 if job.result_size_bytes else "?"
+    downloads = share.downloads or 0
+    times_word = "razy" if is_pl else "times"
+    time_word = "Czas" if is_pl else "Time"
+    orig_size_word = "Oryginał" if is_pl else "Original"
+    proc_time = f"{job.processing_time_s:.1f} s" if job.processing_time_s else "?"
+    file_size_orig = _fmt_bytes(job.file_size_bytes)
 
-    html = _render_share(
-        _SHARE_HTML_TEMPLATE,
-        lang=lang,
-        filename=job.original_filename,
-        faces=faces_n,
-        faces_word="scianek STEP" if is_pl else "STEP faces",
-        mode=job.mode,
-        size=size_kb,
-        downloads=share.downloads or 0,
-        times_word="razy" if is_pl else "times",
-        token=token,
-        download_btn="Pobierz STEP" if is_pl else "Download STEP",
-        uuid=job.uuid,
-        job_id=job.id,
+    conv_info = (
+        f'<span class="pill">📐 {faces_n} {html.escape(str(faces_word))}</span>'
+        f'<span class="pill">⚙️ {html.escape(str(mode))}</span>'
+        f'<span class="pill">⏱ {html.escape(time_word)}: {html.escape(str(proc_time))}</span>'
+        f'<span class="pill">📄 {html.escape(orig_size_word)}: {html.escape(file_size_orig)}</span>'
+        f'<span class="pill">⬇ {downloads} {html.escape(str(times_word))}</span>'
     )
 
-    return HTMLResponse(html)
+    show_author = getattr(share, "show_author", True)
+    if show_author and getattr(share, "user", None) and share.user.email:
+        prefix = "Udostępnił" if is_pl else "Shared by"
+        author_info = f"{prefix}: {html.escape(share.user.email)}"
+    else:
+        author_info = ""
+
+    html_page = _render_share(
+        _SHARE_HTML_TEMPLATE,
+        lang=lang,
+        filename=html.escape(job.original_filename or "model"),
+        faces=faces_n,
+        faces_word=faces_word,
+        mode=mode,
+        size=size_kb,
+        downloads=downloads,
+        times_word=times_word,
+        token=token,
+        download_btn="Pobierz STEP" if is_pl else "Download STEP",
+        embed_btn="Osadź" if is_pl else "Embed",
+        uuid=job.uuid,
+        job_id=job.id,
+        conv_info=conv_info,
+        author_info=author_info,
+        time_word=time_word,
+        processing_time=proc_time,
+        file_size_orig=file_size_orig,
+        orig_size_word=orig_size_word,
+    )
+
+    return HTMLResponse(html_page)
 
 
 @router.get("/e/{job_id}", response_class=HTMLResponse)
@@ -258,24 +307,26 @@ def embed_page(job_id: int, db: Session = Depends(get_db)) -> HTMLResponse:
 
     faces = job.result_faces or "?"
     size_kb = job.result_size_bytes // 1024 if job.result_size_bytes else "?"
-    filename = job.original_filename
+    filename = html.escape(job.original_filename or "model")
     uuid = job.uuid
 
-    html = f"""<!DOCTYPE html>
+    html_page = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <title>{filename} — MeshToStep</title>
 <style>
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-  body {{ font: 13px/1.4 system-ui, sans-serif; background: #0c0c14; color: #e0e0e8; }}
+  html, body {{ height: 100%; }}
+  body {{ font: 13px/1.4 system-ui, sans-serif; background: #0c0c14; color: #e0e0e8;
+    display: flex; flex-direction: column; }}
   .top {{ display: flex; align-items: center; justify-content: space-between;
     padding: 10px 14px; border-bottom: 1px solid #2a2a3a; background: #16161f; }}
-  .top h1 {{ font-size: 14px; font-weight: 600; }}
-  .top a {{ display: inline-block; padding: 6px 16px; background: #3b82f6;
+  .top h1 {{ font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis; margin-right: 12px; }}
+  .top a {{ display: inline-block; padding: 6px 16px; background: #3b82f6; flex-shrink: 0;
     color: #fff; font-weight: 600; border-radius: 6px; text-decoration: none; font-size: 12px; }}
-  .info {{ font-size: 11px; color: #555; padding: 4px 14px; }}
-  #viewer3d {{ width: 100%; height: calc(100vh - 70px); min-height: 300px; background: #0a0a12; }}
+  #viewer3d {{ width: 100%; flex: 1; min-height: 300px; background: #0a0a12; }}
 </style>
 </head>
 <body>
@@ -283,7 +334,6 @@ def embed_page(job_id: int, db: Session = Depends(get_db)) -> HTMLResponse:
   <h1>{filename}</h1>
   <a href="/api/download/{uuid}">Download STEP ({faces} faces, {size_kb} KB)</a>
 </div>
-<div class="info">MeshToStep · Three.js 3D Preview</div>
 <div id="viewer3d"></div>
 <script type="importmap">
 {{"imports":{{"three":"https://unpkg.com/three@0.164.1/build/three.module.js","three/addons/":"https://unpkg.com/three@0.164.1/examples/jsm/"}}}}
@@ -328,4 +378,4 @@ window.addEventListener('resize', () => {{
 </script>
 </body></html>"""
 
-    return HTMLResponse(html)
+    return HTMLResponse(html_page)
