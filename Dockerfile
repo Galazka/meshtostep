@@ -1,11 +1,12 @@
 FROM python:3.11-slim
 
 # System deps for FreeCAD headless + OpenCASCADE
+# Note: libgl1-mesa-glx replaced by libgl1 in Debian trixie+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     bzip2 \
     xz-utils \
-    libgl1-mesa-glx \
+    libgl1 \
     libglu1-mesa \
     libxmu6 \
     libxi6 \
@@ -16,27 +17,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     libxcb1 \
     libx11-6 \
+    libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install FreeCAD 0.21 via AppImage (stable, works on headless)
+# Install FreeCAD via AppImage
 RUN wget -q "https://github.com/FreeCAD/FreeCAD/releases/download/0.21.2/FreeCAD_0.21.2-Linux-x86_64.AppImage" \
         -O /usr/local/bin/FreeCAD.AppImage \
-    && chmod +x /usr/local/bin/FreeCAD.AppImage \
-    && /usr/local/bin/FreeCAD.AppImage --appimage-extract 2>/dev/null || true \
-    && mv /squashfs-root /usr/local/freecad || true
+    && chmod +x /usr/local/bin/FreeCAD.AppImage
 
-# Fallback: create a wrapper that tries freecadcmd, FreeCAD, or AppImage
-RUN echo '#!/bin/bash\n\
-if [ -x /usr/local/freecad/usr/bin/FreeCADCmd ]; then\n\
-    exec /usr/local/freecad/usr/bin/FreeCADCmd "$@"\n\
-elif command -v freecadcmd >/dev/null 2>&1; then\n\
-    exec freecadcmd "$@"\n\
-elif [ -x /usr/local/bin/FreeCAD.AppImage ]; then\n\
-    exec /usr/local/bin/FreeCAD.AppImage --console "$@"\n\
-else\n\
-    echo "FreeCAD not found" >&2\n\
-    exit 1\n\
-fi' > /usr/local/bin/freecadcmd && chmod +x /usr/local/bin/freecadcmd
+# Create wrapper script
+RUN printf '#!/bin/bash\n\
+exec /usr/local/bin/FreeCAD.AppImage --console "$@"\n' \
+    > /usr/local/bin/freecadcmd && chmod +x /usr/local/bin/freecadcmd
 
 WORKDIR /app
 
