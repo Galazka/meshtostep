@@ -24,6 +24,7 @@ def get_slots(db: Session = Depends(get_db)):
         "slot_key": s.slot_key,
         "ad_code": s.ad_code,
         "ad_type": s.ad_type,
+        "position": getattr(s, "position", None) or s.slot_key,
     } for s in slots]
 
 
@@ -60,6 +61,7 @@ class AdSlotReq(BaseModel):
     slot_key: str  # e.g. "hero_bottom", "sidebar", "after_convert"
     ad_code: str   # HTML/JS ad code (AdSense etc.)
     ad_type: str = "adsense"  # adsense / custom / image
+    position: str = "hero_bottom"  # hero_bottom / after_convert / page_bottom / sidebar / viewer_overlay / search_top
     sort_order: int = 0
     is_active: bool = True
 
@@ -73,7 +75,9 @@ def admin_list_slots(
     return [{
         "id": s.id, "name": s.name, "slot_key": s.slot_key,
         "ad_code": s.ad_code, "ad_type": s.ad_type,
+        "position": getattr(s, "position", None) or s.slot_key,
         "sort_order": s.sort_order, "is_active": s.is_active,
+        "position": getattr(s, "position", None) or s.slot_key,
         "impressions": s.impressions, "clicks": s.clicks,
         "created_at": str(s.created_at),
     } for s in slots]
@@ -92,7 +96,7 @@ def admin_create_slot(
 
     slot = models.AdSlot(
         name=req.name, slot_key=req.slot_key, ad_code=req.ad_code,
-        ad_type=req.ad_type, sort_order=req.sort_order, is_active=req.is_active,
+        ad_type=req.ad_type, position=getattr(req,"position",None) or req.slot_key, sort_order=req.sort_order, is_active=req.is_active,
     )
     db.add(slot)
     db.commit()
@@ -114,6 +118,7 @@ def admin_update_slot(
     slot.slot_key = req.slot_key
     slot.ad_code = req.ad_code
     slot.ad_type = req.ad_type
+    slot.position = getattr(req,"position",None) or req.slot_key
     slot.sort_order = req.sort_order
     slot.is_active = req.is_active
     db.commit()

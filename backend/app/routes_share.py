@@ -42,7 +42,8 @@ _SHARE_HTML_TEMPLATE = """<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>__FILENAME__ — MeshToStep</title>
+__ROBOTS__
+<title>__FILENAME__ — 3dhosty.com</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='24' font-size='24'>📁</text></svg>">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -270,9 +271,12 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
     else:
         author_info = ""
 
+    # robots for unlisted shares
+    robots_tag = '<meta name="robots" content="noindex, nofollow">' if getattr(share, "visibility", "public") == "unlisted" else ""
     html_page = _render_share(
         _SHARE_HTML_TEMPLATE,
         lang=lang,
+        robots=robots_tag,
         filename=html.escape(job.original_filename or "model"),
         faces=faces_n,
         faces_word=faces_word,
@@ -314,7 +318,7 @@ def embed_page(job_id: int, db: Session = Depends(get_db)) -> HTMLResponse:
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>{filename} — MeshToStep</title>
+<title>{filename} — 3dhosty.com</title>
 <style>
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
   html, body {{ height: 100%; }}

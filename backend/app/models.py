@@ -1,4 +1,4 @@
-"""Database models: users, credits, jobs, share links, geo tracking, credit adjustments."""
+"""Database models: users, jobs, shares, comments, sales, geo, ads. — 3dhosty.com"""
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, ForeignKey, Text
 from sqlalchemy.orm import declarative_base, relationship
@@ -11,58 +11,72 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     email = Column(String(255), unique=True, nullable=False, index=True)
+    username = Column(String(50), unique=True, nullable=True, index=True)  # for /u/{username}/{slug}
     password_hash = Column(String(255), nullable=False)
-    credits = Column(Integer, default=3, nullable=False)  # 3 free on signup (legacy, unused in free mode)
+    credits = Column(Integer, default=3, nullable=False)
     is_admin = Column(Boolean, default=False)
-    keep_files_forever = Column(Boolean, default=False)  # premium: files not deleted after 30d
-    retention_days = Column(Integer, default=30)  # file retention: 30 default, +7 per ad click, max 180
+    keep_files_forever = Column(Boolean, default=False)
+    retention_days = Column(Integer, default=30)
     created_at = Column(DateTime, default=datetime.utcnow)
     last_login = Column(DateTime)
-    # -- hardening --
     email_verified = Column(Boolean, default=False)
     verification_token = Column(String(64), nullable=True)
     failed_logins = Column(Integer, default=0)
     locked_until = Column(DateTime, nullable=True)
     reset_token = Column(String(64), nullable=True)
     reset_expires = Column(DateTime, nullable=True)
-    # -- RODO: zgody i audyt --
-    terms_accepted_at = Column(DateTime, nullable=True)  # kiedy zaakceptowal regulamin
-    privacy_accepted_at = Column(DateTime, nullable=True)  # kiedy zaakceptowal polityke
-    marketing_consent = Column(Boolean, default=False)  # zgoda marketingowa (opcjonalna)
-    registered_ip = Column(String(64), nullable=True)  # IP rejestracji (audyt)
-    register_user_agent = Column(String(512), nullable=True)  # UA rejestracji (audyt)
+    terms_accepted_at = Column(DateTime, nullable=True)
+    privacy_accepted_at = Column(DateTime, nullable=True)
+    marketing_consent = Column(Boolean, default=False)
+    registered_ip = Column(String(64), nullable=True)
+    register_user_agent = Column(String(512), nullable=True)
+    bio = Column(Text, nullable=True)
+    avatar_url = Column(String(512), nullable=True)
 
     jobs = relationship("Job", back_populates="user")
     shares = relationship("ShareLink", back_populates="user")
     geo_logs = relationship("GeoLog", back_populates="user")
-    credit_adjustments = relationship(
-        "CreditAdjustment", back_populates="user",
-        foreign_keys="CreditAdjustment.user_id"
-    )
+    credit_adjustments = relationship("CreditAdjustment", back_populates="user", foreign_keys="CreditAdjustment.user_id")
+    comments = relationship("Comment", back_populates="user")
+    sales_as_seller = relationship("Sale", back_populates="seller", foreign_keys="Sale.seller_id")
+    sales_as_buyer = relationship("Sale", back_populates="buyer", foreign_keys="Sale.buyer_id")
 
 
 class Job(Base):
     __tablename__ = "jobs"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # nullable for anon
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     uuid = Column(String(32), unique=True, nullable=False, index=True)
     original_filename = Column(String(255), nullable=False)
     file_size_bytes = Column(Integer, default=0)
-    mode = Column(String(20), default="auto")  # auto/ultra/light/off/smooth
-    status = Column(String(20), default="pending")  # pending/processing/done/error
+    mode = Column(String(20), default="auto")
+    status = Column(String(20), default="pending")
     result_faces = Column(Integer)
     result_size_bytes = Column(Integer)
     result_step_path = Column(String(512))
     result_stl_path = Column(String(512))
     error_msg = Column(Text)
     processing_time_s = Column(Float)
-    credits_used = Column(Integer, default=1)
+    credits_used = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime)
+    # community fields
+    slug = Column(String(120), nullable=True, index=True)  # editable part of /u/{username}/{slug}
+    title = Column(String(200), nullable=True)
+    description = Column(Text, nullable=True)  # markdown
+    tags = Column(String(500), nullable=True)  # comma-separated
+    youtube_url = Column(String(512), nullable=True)
+    visibility = Column(String(20), default="public")  # public / unlisted / private
+    views = Column(Integer, default=0)
+    likes = Column(Integer, default=0)
+    is_paid = Column(Boolean, default=False)
+    price_cents = Column(Integer, default=0)  # price in cents (USD or PLN — frontend decides)
+    preview_image = Column(String(512), nullable=True)
 
     user = relationship("User", back_populates="jobs")
     shares = relationship("ShareLink", back_populates="job")
+    comments = relationship("Comment", back_populates="job")
 
 
 class ShareLink(Base):
@@ -72,24 +86,57 @@ class ShareLink(Base):
     token = Column(String(16), unique=True, nullable=False, index=True)
     job_id = Column(Integer, ForeignKey("jobs.id"), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    format = Column(String(10), default="step")  # step/stl/both
+    format = Column(String(10), default="step")
     downloads = Column(Integer, default=0)
-    max_downloads = Column(Integer, nullable=True)  # None = unlimited
+    max_downloads = Column(Integer, nullable=True)
     expires_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     is_active = Column(Boolean, default=True)
-    views = Column(Integer, default=0)  # track share page views
-    show_author = Column(Boolean, default=True)  # display author email on share page
+    views = Column(Integer, default=0)
+    show_author = Column(Boolean, default=True)
+    slug = Column(String(120), nullable=True)
+    visibility = Column(String(20), default="public")  # public / unlisted / private
 
     job = relationship("Job", back_populates="shares")
     user = relationship("User", back_populates="shares")
 
 
+class Comment(Base):
+    __tablename__ = "comments"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    job_id = Column(Integer, ForeignKey("jobs.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    body = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    is_hidden = Column(Boolean, default=False)
+    job = relationship("Job", back_populates="comments")
+    user = relationship("User", back_populates="comments")
+
+
+class Sale(Base):
+    """Paid model purchase — 20% commission."""
+    __tablename__ = "sales"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    job_id = Column(Integer, ForeignKey("jobs.id"), nullable=False, index=True)
+    seller_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    buyer_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # null for anon Stripe checkout
+    amount_cents = Column(Integer, nullable=False)
+    commission_cents = Column(Integer, nullable=False)  # 20%
+    seller_payout_cents = Column(Integer, nullable=False)
+    stripe_session_id = Column(String(200), nullable=True)
+    stripe_payment_id = Column(String(200), nullable=True)
+    status = Column(String(20), default="pending")  # pending/completed/failed/refunded
+    created_at = Column(DateTime, default=datetime.utcnow)
+    completed_at = Column(DateTime, nullable=True)
+    job = relationship("Job")
+    seller = relationship("User", back_populates="sales_as_seller", foreign_keys=[seller_id])
+    buyer = relationship("User", back_populates="sales_as_buyer", foreign_keys=[buyer_id])
+
+
 class CreditPack(Base):
     __tablename__ = "credit_packs"
-
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(50), nullable=False)  # "5 credits"
+    name = Column(String(50), nullable=False)
     credits = Column(Integer, nullable=False)
     price_usd = Column(Float, nullable=False)
     is_active = Column(Boolean, default=True)
@@ -98,65 +145,57 @@ class CreditPack(Base):
 
 class Payment(Base):
     __tablename__ = "payments"
-
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     pack_id = Column(Integer, ForeignKey("credit_packs.id"), nullable=True)
     amount_usd = Column(Float, nullable=False)
     credits_granted = Column(Integer, default=0)
-    status = Column(String(20), default="pending")  # pending/completed/failed
-    payment_method = Column(String(20))  # blik/card/transfer
-    reference = Column(String(100))  # external payment reference
+    status = Column(String(20), default="pending")
+    payment_method = Column(String(20))
+    reference = Column(String(100))
     created_at = Column(DateTime, default=datetime.utcnow)
-
     user = relationship("User")
     pack = relationship("CreditPack")
 
 
 class GeoLog(Base):
-    """Tracks IP, country, city for every request with geo data."""
     __tablename__ = "geo_logs"
-
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # nullable for anon
-    ip_address = Column(String(45), nullable=False)  # IPv4 or IPv6
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    ip_address = Column(String(45), nullable=False)
     country = Column(String(100), nullable=True)
     city = Column(String(200), nullable=True)
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
     user_agent = Column(String(500), nullable=True)
-    endpoint = Column(String(200), nullable=True)  # which route triggered this
+    endpoint = Column(String(200), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
-
     user = relationship("User", back_populates="geo_logs")
 
 
 class CreditAdjustment(Base):
-    """Admin manual credit adjustments with full audit trail."""
     __tablename__ = "credit_adjustments"
-
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    admin_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # who made the change
-    amount = Column(Integer, nullable=False)  # positive = grant, negative = revoke
+    admin_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    amount = Column(Integer, nullable=False)
     reason = Column(Text, nullable=True)
-    credits_before = Column(Integer, nullable=False)  # snapshot before
-    credits_after = Column(Integer, nullable=False)   # snapshot after
+    credits_before = Column(Integer, nullable=False)
+    credits_after = Column(Integer, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
-
     user = relationship("User", back_populates="credit_adjustments", foreign_keys=[user_id])
     admin = relationship("User", foreign_keys=[admin_id])
 
 
 class AdSlot(Base):
-    """Ad slots for monetization (AdSense etc.). Managed via admin panel."""
+    """Ad slots — position map for admin."""
     __tablename__ = "ad_slots"
-
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(100), nullable=False)  # "Banner pod konwerterem"
-    slot_key = Column(String(50), unique=True, nullable=False)  # "hero_bottom", "after_convert"
-    ad_code = Column(Text, nullable=False)  # HTML/JS snippet
-    ad_type = Column(String(20), default="adsense")  # adsense / custom / image
+    name = Column(String(100), nullable=False)
+    slot_key = Column(String(50), unique=True, nullable=False)
+    position = Column(String(50), nullable=True)  # hero_bottom / after_convert / page_bottom / sidebar / viewer_overlay / search_top
+    ad_code = Column(Text, nullable=False)
+    ad_type = Column(String(20), default="adsense")
     sort_order = Column(Integer, default=0)
     is_active = Column(Boolean, default=True)
     impressions = Column(Integer, default=0)

@@ -19,8 +19,11 @@ from .routes_admin import router as admin_router
 from .routes_share import router as share_router
 from .routes_payments import router as payments_router
 from .routes_ads import router as ads_router
+from .routes_community import router as community_router
+from .routes_comments import router as comments_router
+from .routes_sales import router as sales_router
 
-app = FastAPI(title="MeshToStep", version="1.0.0")
+app = FastAPI(title="3dhosty.com", version="1.0.0")
 
 # ── CORS (restrict in production) ───────────────────────────────────
 origins = settings.CORS_ORIGINS.split(",") if settings.CORS_ORIGINS != "*" else ["*"]
@@ -127,6 +130,9 @@ app.include_router(admin_router)
 app.include_router(share_router)
 app.include_router(payments_router)
 app.include_router(ads_router)
+app.include_router(community_router)
+app.include_router(comments_router)
+app.include_router(sales_router)
 
 
 @app.get("/api/health")
@@ -154,11 +160,35 @@ def health():
         "freecad": fc_ok,
         "freecad_path": freecad,
         "database": db_ok,
-        "app": "MeshToStep v1.1",
+        "app": "3dhosty.com v1.1",
     }
 
 
 # ── Serve frontend ──────────────────────────────────────────────────
+@app.get("/sitemap.xml", include_in_schema=False)
+def sitemap():
+    from .database import SessionLocal
+    from . import models
+    db_s = SessionLocal()
+    try:
+        jobs = db_s.query(models.Job).filter(models.Job.status=="done", models.Job.visibility=="public").order_by(models.Job.created_at.desc()).limit(5000).all()
+        urls = ["https://3dhosty.com/", "https://3dhosty.com/admin"]
+        for j in jobs:
+            if j.slug and j.user and getattr(j.user,"username",None):
+                urls.append(f"https://3dhosty.com/u/{j.user.username}/{j.slug}")
+            else:
+                urls.append(f"https://3dhosty.com/s/{j.uuid}" if hasattr(j,"uuid") else "https://3dhosty.com/")
+        xml = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + "".join(f"<url><loc>{u}</loc></url>" for u in urls) + "</urlset>"
+        from fastapi.responses import Response
+        return Response(content=xml, media_type="application/xml")
+    finally:
+        db_s.close()
+
+@app.get("/robots.txt", include_in_schema=False)
+def robots():
+    from fastapi.responses import PlainTextResponse
+    return PlainTextResponse("User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nSitemap: https://3dhosty.com/sitemap.xml\n")
+
 FRONTEND_DIR = Path(__file__).parent.parent.parent / "frontend"
 
 
@@ -176,4 +206,4 @@ if FRONTEND_DIR.exists():
 def startup():
     os.makedirs(settings.DATA_DIR, exist_ok=True)
     init_db()
-    print("[MeshToStep] DB ready, app started")
+    print("[3dhosty] DB ready, app started")

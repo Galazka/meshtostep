@@ -15,6 +15,11 @@ from .auth import get_current_user, require_user
 from .config import settings
 from .database import get_db
 from .engine import convert
+import re
+def _slugify(s: str) -> str:
+    s=re.sub(r'[^a-z0-9]+','-', (s or '').lower().strip())
+    s=re.sub(r'-+','-',s).strip('-')
+    return s[:80] or 'model'
 
 router = APIRouter(prefix="/api", tags=["convert"])
 
@@ -48,6 +53,21 @@ async def convert_file(
         raise HTTPException(400, f"Plik > {settings.MAX_FILE_MB} MB")
     src.write_bytes(data)
 
+    # ensure username for vanity
+    if user and not getattr(user,'username',None):
+        base = re.sub(r'[^a-z0-9]+','', (user.email.split('@')[0].lower()))[:20] or 'user'
+        cand=base
+        n=1
+        while db.query(models.User).filter(models.User.username==cand).first():
+            n+=1; cand=f"{base}{n}"
+        user.username=cand; db.commit()
+    stem = Path(file.filename).stem
+    slug = _slugify(stem)
+    # ensure unique slug per user if user exists
+    if user:
+        base_slug=slug; k=1
+        while db.query(models.Job).filter(models.Job.user_id==user.id, models.Job.slug==slug).first() is not None:
+            k+=1; slug=f"{base_slug}-{k}"
     # Create job record
     job = models.Job(
         user_id=user.id if user else None,
@@ -56,6 +76,9 @@ async def convert_file(
         file_size_bytes=len(data),
         mode=mode,
         status="processing",
+        slug=slug,
+        title=stem[:200],
+        visibility="public",
     )
     db.add(job)
     db.commit()
@@ -84,6 +107,9 @@ async def convert_file(
             "time_s": job.processing_time_s,
             "mode": mode,
             "filename": Path(file.filename).stem + ".step",
+            "slug": job.slug,
+            "vanity": f"/u/{user.username}/{job.slug}" if user and getattr(user,"username",None) and job.slug else None,
+            "visibility": job.visibility,
         }
     else:
         job.status = "error"

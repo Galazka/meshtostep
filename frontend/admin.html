@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>MeshToStep — Admin Panel</title>
+    <title>3dhosty.com — Admin Panel</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -218,7 +218,7 @@
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5m7-7l-7 7 7 7"/></svg>
                     <span data-i18n="navBack">Powrot</span>
                 </a>
-                <div class="nav-logo">MeshToStep</div>
+                <div class="nav-logo">3dhosty.com</div>
                 <span class="nav-title" data-i18n="navTitle">Admin Panel</span>
             </div>
             <div class="nav-right">
@@ -337,13 +337,28 @@
                             <p class="subtitle">Zarządzaj miejscami na reklamy i kodem AdSense</p>
                         </div>
                         <div class="panel-body padded">
+                            <!-- MAPKA REKLAM — klik zaznacza pozycję -->
+                            <div style="border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;background:var(--bg-alt)">
+                              <div style="font-weight:700;margin-bottom:8px">🗺️ Mapa pozycji reklam — kliknij gdzie ma się pojawić</div>
+                              <div id="adMap" style="display:grid;grid-template-columns:1fr;gap:8px;max-width:520px">
+                                <button class="admap-cell" data-pos="hero_bottom" onclick="pickAdPos('hero_bottom')">Hero — pod nagłówkiem</button>
+                                <button class="admap-cell" data-pos="after_convert" onclick="pickAdPos('after_convert')">Po konwerterze</button>
+                                <button class="admap-cell" data-pos="viewer_overlay" onclick="pickAdPos('viewer_overlay')">Przy podglądzie 3D</button>
+                                <button class="admap-cell" data-pos="search_top" onclick="pickAdPos('search_top')">Nad wyszukiwarką (Odkrywaj)</button>
+                                <button class="admap-cell" data-pos="sidebar" onclick="pickAdPos('sidebar')">Sidebar / panel boczny</button>
+                                <button class="admap-cell" data-pos="page_bottom" onclick="pickAdPos('page_bottom')">Dół strony</button>
+                              </div>
+                              <div style="font-size:12px;color:var(--text-muted);margin-top:8px">Pozycja zapisuje się w slot.position. Podgląd: slot pojawi się dokładnie w tym miejscu na stronie.</div>
+                              <div id="adMapPreview" style="margin-top:10px;font-size:12px;color:var(--text-secondary)"></div>
+                            </div>
+                            <style>.admap-cell{padding:10px;border:1px dashed var(--border);border-radius:8px;background:#fff;cursor:pointer;text-align:left;font-family:inherit}.admap-cell.active{border-color:var(--primary);background:var(--primary-light);color:var(--primary);font-weight:600}</style>
                             <button class="btn primary" onclick="openAdSlotModal(null)" style="margin-bottom:16px">+ Dodaj slot</button>
                             <div style="max-height:500px;overflow-y:auto;">
                                 <table class="admin-table" id="adsTable">
                                     <thead>
                                         <tr>
                                             <th>ID</th><th>Nazwa</th><th>Slot key</th><th>Typ</th>
-                                            <th>Aktywny</th><th>Wyświetlenia</th><th>Kliknięcia</th><th>Akcje</th>
+                                            <th>Pozycja</th><th>Aktywny</th><th>Wyświetlenia</th><th>Kliknięcia</th><th>Akcje</th>
                                         </tr>
                                     </thead>
                                     <tbody id="adsBody"></tbody>
@@ -1093,10 +1108,14 @@
                 '<option value="custom"' + (slot?.ad_type==='custom'?' selected':'') + '>Custom HTML</option>' +
                 '<option value="image"' + (slot?.ad_type==='image'?' selected':'') + '>Image</option>' +
             '</select></label>' +
+            '<label>Pozycja (mapka): <select id="adPosition" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px"><option value="hero_bottom"' + ( (slot?.position||slot?.slot_key)==="hero_bottom"?" selected":"") + '>hero_bottom</option><option value="after_convert"' + ((slot?.position||slot?.slot_key)==="after_convert"?" selected":"") + '>after_convert</option><option value="viewer_overlay"' + ((slot?.position||slot?.slot_key)==="viewer_overlay"?" selected":"") + '>viewer_overlay</option><option value="search_top"' + ((slot?.position||slot?.slot_key)==="search_top"?" selected":"") + '>search_top</option><option value="sidebar"' + ((slot?.position||slot?.slot_key)==="sidebar"?" selected":"") + '>sidebar</option><option value="page_bottom"' + ((slot?.position||slot?.slot_key)==="page_bottom"?" selected":"") + '>page_bottom</option></select></label>
             '<label>Kolejność: <input type="number" id="adSort" value="' + (slot?.sort_order||0) + '" style="width:100px;padding:8px;border:1px solid var(--border);border-radius:6px"></label>' +
             '<label><input type="checkbox" id="adActive"' + (slot?.is_active!==false?' checked':'') + '> Aktywny</label>' +
             '<label>Kod reklamy (HTML/JS):<textarea id="adCode" rows="8" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:12px">' + (slot?.ad_code||'').replace(/</g,'&lt;') + '</textarea></label>' +
             '<div style="display:flex;gap:8px">' +
+            ''; // position set below
+            setTimeout(()=>{const s=document.getElementById("adPosition"); if(s) s.value=(slot?.position||slot?.slot_key||"hero_bottom");},0);
+            document.getElementById('modalBody').innerHTML += ''
             '<button class="btn primary" onclick="saveAdSlot(' + (slot?.id||'null') + ')">' + (isNew ? 'Dodaj' : 'Zapisz') + '</button>' +
             '<button class="btn" onclick="document.getElementById(\'userModal\').classList.remove(\'show\')">Anuluj</button>' +
             '</div></div>';
@@ -1108,6 +1127,7 @@
             slot_key: document.getElementById('adSlotKey').value,
             ad_code: document.getElementById('adCode').value,
             ad_type: document.getElementById('adType').value,
+            position: document.getElementById('adPosition')?.value || document.getElementById('adSlotKey').value,
             sort_order: parseInt(document.getElementById('adSort').value) || 0,
             is_active: document.getElementById('adActive').checked,
         };
@@ -1119,6 +1139,11 @@
         } catch(e) { alert(e.message); }
     }
 
+    let pickedPos=null;
+    function pickAdPos(pos){ pickedPos=pos; document.querySelectorAll('.admap-cell').forEach(b=>b.classList.toggle('active', b.dataset.pos===pos)); document.getElementById('adMapPreview').textContent='Wybrano: '+pos+' — użyj przy tworzeniu slota (pole Pozycja).'; }
+    // highlight map by active slots
+    function highlightAdMap(slots){ const counts={}; slots.forEach(s=>{const p=s.position||s.slot_key; counts[p]=(counts[p]||0)+1}); document.querySelectorAll('.admap-cell').forEach(b=>{const c=counts[b.dataset.pos]||0; b.textContent = b.textContent.split(' —')[0] + (c?` — ${c} slotów`:''); b.style.borderStyle=c?'solid':'dashed';}); }
+    const _origLoad=loadAdSlots; loadAdSlots=async function(){ await _origLoad(); try{const r=await api('/api/ads/admin/slots'); highlightAdMap(r);}catch(e){} }
     if (window.location.search.includes('tab=ads')) switchAdminTab('ads');
     </script>
 </body>

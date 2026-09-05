@@ -3,7 +3,19 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>MeshToStep - STL do STEP w kilka sekund</title>
+    <title>3DHOSTY — Hosting modeli 3D + STL → STEP | stl, 3mf, obj</title>
+    <meta name="description" content="3DHOSTY — hosting i podgląd modeli 3D w przeglądarce. Wgraj STL/3MF/OBJ, przekonwertuj do STEP, udostępnij linkiem /u/nick/slug. Darmowe, szybkie, bez instalacji.">
+    <meta name="keywords" content="STL, STEP, 3MF, OBJ, konwersja STL STEP, hosting 3D, podgląd STL, przeglądarka STL, 3D model hosting">
+    <link rel="canonical" href="https://3dhosty.com/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="3DHOSTY — Hosting modeli 3D + STL → STEP">
+    <meta property="og:description" content="Wgraj STL/3MF/OBJ, zobacz w 3D, przekonwertuj do STEP i udostępnij linkiem. Na telefonie i desktopie.">
+    <meta property="og:url" content="https://3dhosty.com/">
+    <meta property="og:image" content="https://3dhosty.com/og-image.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="3DHOSTY — Hosting modeli 3D">
+    <meta name="twitter:description" content="Hosting i konwersja STL → STEP. Podgląd 3D, link /u/nick/slug do wrzucenia na Printables i MakerWorld.">
+    <link rel="icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -200,11 +212,12 @@
 </head>
 <body>
     <nav class="nav">
-        <div class="nav-logo">MeshToStep</div>
+        <a href="/" class="nav-logo" style="text-decoration:none">3DHOSTY</a>
         <div class="nav-tabs" id="navTabs">
             <button class="nav-tab active" onclick="switchTab('converter')" data-tab="converter" data-i18n="navConverter">Konwerter</button>
             <button class="nav-tab" onclick="switchTab('myfiles')" data-tab="myfiles" data-i18n="navMyFiles">Moje pliki</button>
             <button class="nav-tab" onclick="switchTab('howitworks')" data-tab="howitworks" data-i18n="navHowItWorks">Jak to dziala</button>
+            <button class="nav-tab" onclick="switchTab('discover')" data-tab="discover">Odkrywaj</button>
             <button class="nav-tab" onclick="switchTab('faq')" data-tab="faq" data-i18n="navFAQ">Pomoc FAQ</button>
         </div>
         <div class="nav-right">
@@ -232,7 +245,7 @@
         <div class="trust">
             <div class="trust-badge">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                <span data-i18n="trustStripe">Bezpieczne platnosci Stripe</span>
+                <span data-i18n="trustStripe">Za darmo, bez limitu</span>
             </div>
             <div class="trust-badge">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
@@ -311,29 +324,48 @@
         </div>
     </div>
 
-    <div class="tab-panel" id="panel-faq">
+    
+      <div class="tab-panel" id="panel-discover">
+        <div class="section-header" style="text-align:center;padding:24px 0 12px">
+          <h2>Odkrywaj modele</h2>
+          <p style="color:var(--text-secondary)">Wyszukiwarka 3D — tagi, opis, YouTube. Tylko publiczne modele.</p>
+        </div>
+        <div style="max-width:900px;margin:0 auto;padding:0 24px">
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <input id="discoverQ" placeholder="Szukaj np. wazon, holder, bracket" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-family:inherit">
+            <select id="discoverSort" style="padding:10px;border:1px solid var(--border);border-radius:8px"><option value="latest">Najnowsze</option><option value="popular">Popularne</option><option value="price">Cena</option></select>
+            <button onclick="doDiscover()" style="padding:10px 18px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer">Szukaj</button>
+          </div>
+          <div id="discoverTags" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px"></div>
+          <div class="ad-slot" data-slot="search_top" style="margin:12px auto"></div>
+          <div id="discoverGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px"></div>
+          <div id="discoverMore" style="text-align:center;margin:16px 0;display:none"><button onclick="discoverOffset+=24;doDiscover(true)" style="padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer">Więcej</button></div>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="panel-faq">
         <div class="section-header"><h2 data-i18n="faqTitle">Najczesciej zadawane pytania</h2></div>
         <div class="faq-list">
             <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ1">Jakie formaty mesh sa obslugiwane?</span><span class="arrow">&#9660;</span></button><div class="faq-a" data-i18n="faqA1">Obslugujemy pliki STL, 3MF i OBJ. Maksymalny rozmiar pliku to 200 MB. Pliki binary i ASCII sa wspierane rowniez.</div></div>
             <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ2">Co to sa kredyty i jak dzialaja?</span><span class="arrow">&#9660;</span></button><div class="faq-a" data-i18n="faqA2">Jedna konwersja = 1 kredyt. Nowi uzytkownicy otrzymuja 3 kredyty za darmo. Kolejne kredyty kupujesz w pakietach: 5 za $0.99, 25 za $2.99, 100 za $7.99. Kredyty nie wygadaja.</div></div>
             <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ3">Czy moge odzyskac srodki?</span><span class="arrow">&#9660;</span></button><div class="faq-a" data-i18n="faqA3">Tak, masz 14 dni na zwrot srodkow od momentu zakupu, pod warunkiem ze nie wykorzystales kredytow z danego pakietu. Skontaktuj sie z nami aby zainicjowac zwrot.</div></div>
             <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ4">Jak dlugo przechowujecie moje pliki?</span><span class="arrow">&#9660;</span></button><div class="faq-a" data-i18n="faqA4">Pliki zrodlowe (mesh) sa usuwane po 30 dniach od przeslania. Pliki STEP sa rowniez usuwane po 30 dniach. Linki do udostepniania wygadaja po 7 dniach.</div></div>
-            <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ5">Czy oferujecie API?</span><span class="arrow">&#9660;</span></button><div class="faq-a" data-i18n="faqA5">Tak, MeshToStep oferuje REST API. Wymaga konta z pakietem 25 lub 100. Pelna dokumentacja API jest dostepna pod /docs na serwerze.</div></div>
-            <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ6">Jak sie skontaktowac z wsparciem?</span><span class="arrow">&#9660;</span></button><div class="faq-a" data-i18n="faqA6">Napisz do nas na support@meshtostep.com. Odpowiadamy w ciagu 24 godzin w jezyku polskim lub angielskim.</div></div>
+            <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ5">Czy oferujecie API?</span><span class="arrow">&#9660;</span></button><div class="faq-a" data-i18n="faqA5">Tak, 3DHOSTY oferuje REST API. Wymaga konta z pakietem 25 lub 100. Pelna dokumentacja API jest dostepna pod /docs na serwerze.</div></div>
+            <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ6">Jak sie skontaktowac z wsparciem?</span><span class="arrow">&#9660;</span></button><div class="faq-a" data-i18n="faqA6">Napisz do nas na support@3dhosty.com. Odpowiadamy w ciagu 24 godzin w jezyku polskim lub angielskim.</div></div>
         </div>
     </div>
 
     <div class="ad-slot" data-slot="page_bottom"></div>
     <footer class="footer">
         <div class="footer-inner">
-            <div class="footer-brand">MeshToStep<p>Zaawansowana konwersja &middot; STL do STEP</p></div>
+            <div class="footer-brand">3DHOSTY<p>Zaawansowana konwersja &middot; STL do STEP</p></div>
             <div class="footer-links">
                 <div class="footer-col"><h4 data-i18n="footerProduct">Produkt</h4><a href="#" onclick="switchTab('converter')" data-i18n="navConverter">Konwerter</a><a href="#" onclick="switchTab('howitworks')" data-i18n="navHowItWorks">Jak to dziala</a></div>
                 <div class="footer-col"><h4 data-i18n="footerLegal">Prawne</h4><a href="regulamin.html" data-i18n="footerRegulamin">Regulamin</a><a href="prywatnosc.html" data-i18n="footerPrivacy">Polityka prywatnosci</a></div>
-                <div class="footer-col"><h4 data-i18n="footerContact">Kontakt</h4><a href="mailto:support@meshtostep.com">support@meshtostep.com</a><a href="mailto:kontakt@meshtostep.com">kontakt@meshtostep.com</a></div>
+                <div class="footer-col"><h4 data-i18n="footerContact">Kontakt</h4><a href="mailto:support@3dhosty.com">support@3dhosty.com</a><a href="mailto:kontakt@3dhosty.com">kontakt@3dhosty.com</a></div>
             </div>
         </div>
-        <div class="footer-bottom">&copy; 2026 MeshToStep &middot; Wszelkie prawa zastrzezone</div>
+        <div class="footer-bottom">&copy; 2026 3DHOSTY &middot; Wszelkie prawa zastrzezone</div>
     </footer>
 
     <div class="modal-bg" id="authModal">
@@ -449,8 +481,8 @@
             heroTitle: 'Przekonwertuj <span class="hl">STL \u2192 STEP</span><br>w kilka sekund',
             heroDesc: 'Wgraj plik mesh. Pobierz edytowalna bryle STEP.<br>Nasz autorski silnik konwersji + automatyczna optymalizacja geometrii.',
             heroPricing: 'Za darmo. Bez limitu konwersji.',
-            trustStripe: 'Bezpieczne platnosci Stripe', trustDelete: 'Darmowe przechowywanie',
-            trustRODO: 'RODO', trustSupport: 'Wsparcie PL EN',
+            trustStripe: 'Za darmo, bez limitu', trustDelete: 'Darmowe przechowywanie',
+            trustRODO: 'Prywatne linki (unlisted)', trustSupport: 'Wsparcie PL EN',
             dropText: 'Przeciagnij plik <strong>STL/3MF/OBJ</strong> tutaj<br>lub kliknij by wybrac',
             modeAuto: 'Auto \u2014 balans detale/rozmiar', modeUltra: 'Ultra \u2014 min. scianek',
             modeSmooth: 'Gladki \u2014 zaawansowane wygladzanie', modeLight: 'Lekko \u2014 scala koplanarne',
@@ -458,11 +490,11 @@
             progressUploading: 'Przesylanie...', progressConverting: 'Konwersja w toku...',
             progressAlmostDone: 'Prawie gotowe...',
             convertBtn: 'Konwertuj', convertingBtn: 'Konwertuje...',
-            pricingTitle: 'Cennik', pricingDesc: 'Prosty cennik bez abonamentu. Plac tylko tyle, ile potrzebujesz.',
-            priceFreeH3: 'Darmowe', pf1: '3 konwersje na start', pf2: 'Max 50 MB / plik', pf3: 'Tryb Auto', pfBtn: 'Zaloz konto',
-            pricePack25H3: 'Pakiet 25', pp1: '25 konwersji', pp2: 'Priorytetowa kolejka', pp3: 'API access', pp4: 'Admin panel', ppBtn: 'Kup teraz',
-            pricePack100H3: 'Pakiet 100', ppl1: '100 konwersji', ppl2: 'Priorytetowa kolejka', ppl3: 'API access', ppl4: 'Admin panel', pplBtn: 'Kup teraz',
-            ps1: '5 konwersji', ps2: 'Wszystkie tryby', ps3: 'Linki udostepniania', ps4: 'Podglad 3D', psBtn: 'Kup teraz',
+            pricingTitle: 'Za darmo', pricingDesc: 'Bez kredytow. Bez limitu. Hosting + podglad 3D.',
+            priceFreeH3: 'Za darmo', pf1: 'Bez limitu konwersji', pf2: 'Do 200 MB / plik', pf3: 'Wszystkie tryby', pfBtn: 'Wgraj plik',
+            pricePack25H3: 'Hosting', pp1: 'Link /u/nick/slug', pp2: 'Wyszukiwarka + tagi', pp3: 'Zdjecia + opis', pp4: 'Komentarze', ppBtn: 'Zaloz konto',
+            pricePack100H3: 'Prywatne', ppl1: 'Link unlisted', ppl2: 'Nie w wyszukiwarce', ppl3: 'Zywotnosc = plik', ppl4: 'Udostepnij linkiem', pplBtn: 'Wgraj plik',
+            ps1: 'Podglad 3D', ps2: 'YouTube embed', ps3: 'Profile /u/nick', ps4: 'Wyszukiwarka', psBtn: 'Zobacz',
             myFilesTitle: 'Moje pliki', myFilesDesc: 'Twoje ostatnie konwersje i pobrane pliki.', myFilesEmpty: 'Zaloguj sie, aby zobaczyc swoje pliki',
             thFile: 'Plik', thStatus: 'Status', thFaces: 'Scianki', thTime: 'Czas', thDate: 'Data',
             hiwTitle: 'Jak to dziala', hiwDesc: 'Trzy proste kroki do pliku STEP.',
@@ -475,7 +507,7 @@
             faqQ3: 'Jak dlugo przechowujecie moje pliki?', faqA3: 'Anonimowe: 7 dni. Zalogowani: 30 dni domyslnie. Klikniecie w reklame przedluza o 7 dni (max 180 dni).',
             faqQ4: 'Co sie stanie jak zablokuje reklamy?', faqA4: 'Nic. Serwis dziala normalnie bez reklam. Jedynym ograniczeniem jest brak mozliwosci przedluzenia przechowywania plikow przez klikanie w reklamy.',
             faqQ5: 'Czy dostepna jest dokumentacja API?', faqA5: 'Tak, REST API jest dostepne. Pelna dokumentacja OpenAPI jest pod /docs na serwerze.',
-            faqQ6: 'Jak sie skontaktowac z wsparciem?', faqA6: 'Napisz do nas na support@meshtostep.com. Odpowiadamy w ciagu 24 godzin w jezyku polskim lub angielskim.',
+            faqQ6: 'Jak sie skontaktowac z wsparciem?', faqA6: 'Napisz do nas na support@3dhosty.com. Odpowiadamy w ciagu 24 godzin w jezyku polskim lub angielskim.',
             footerProduct: 'Produkt', footerLegal: 'Prawne', footerContact: 'Kontakt',
             footerRegulamin: 'Regulamin', footerPrivacy: 'Polityka prywatnosci',
             authLoginTitle: 'Zaloguj sie', authRegisterTitle: 'Zaloz konto (3 darmowe)',
@@ -514,7 +546,7 @@
             heroDesc: 'Upload a mesh file. Download an editable STEP solid.<br>Our proprietary conversion engine + automatic geometry optimization.',
             heroPricing: 'Free. Unlimited conversions.',
             trustStripe: 'Secure payments via Stripe', trustDelete: 'Free storage',
-            trustRODO: 'GDPR', trustSupport: 'Support PL EN',
+            trustRODO: 'Private links (unlisted)', trustSupport: 'Support PL EN',
             dropText: 'Drag <strong>STL/3MF/OBJ</strong> file here<br>or click to choose',
             modeAuto: 'Auto \u2014 balance detail / size', modeUltra: 'Ultra \u2014 min. faces',
             modeSmooth: 'Smooth \u2014 Advanced smoothing & reduction', modeLight: 'Light \u2014 merge coplanar only',
@@ -539,7 +571,7 @@
             faqQ3: 'How long do you keep my files?', faqA3: 'Anonymous: 7 days. Logged-in: 30 days by default. Clicking an ad extends storage by 7 days (max 180 days).',
             faqQ4: 'What happens if I block ads?', faqA4: 'Nothing. The Service works normally without ads. The only limitation is no file retention extension via ad clicks.',
             faqQ5: 'Is API documentation available?', faqA5: 'Yes, REST API is available. Full documentation is at /docs on the server.',
-            faqQ6: 'How can I contact support?', faqA6: 'Write to us at support@meshtostep.com. We respond within 24 hours in Polish or English.',
+            faqQ6: 'How can I contact support?', faqA6: 'Write to us at support@3dhosty.com. We respond within 24 hours in Polish or English.',
             footerProduct: 'Product', footerLegal: 'Legal', footerContact: 'Contact',
             footerRegulamin: 'Terms of Service', footerPrivacy: 'Privacy Policy',
             authLoginTitle: 'Log in', authRegisterTitle: 'Sign up (3 free)',
