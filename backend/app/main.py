@@ -154,6 +154,14 @@ def health():
 
 # ── Serve frontend ──────────────────────────────────────────────────
 FRONTEND_DIR = Path(__file__).parent.parent.parent / "frontend"
+
+
+@app.get("/admin", include_in_schema=False)
+def admin_page():
+    from fastapi.responses import FileResponse
+    return FileResponse(str(FRONTEND_DIR / "admin.html"))
+
+
 if FRONTEND_DIR.exists():
     app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
 

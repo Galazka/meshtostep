@@ -186,7 +186,7 @@
     <div class="tab-panel active" id="panel-converter">
         <div class="hero">
             <h1 data-i18n="heroTitle">Przekonwertuj <span class="hl">STL &rarr; STEP</span><br>w kilka sekund</h1>
-            <p data-i18n="heroDesc">Wgraj plik mesh. Pobierz edytowalna bryle STEP.<br>FreeCAD headless + automatyczna optymalizacja geometrii.</p>
+            <p data-i18n="heroDesc">Wgraj plik mesh. Pobierz edytowalna bryle STEP.<br>Nasz autorski silnik konwersji + automatyczna optymalizacja geometrii.</p>
             <div class="pricing-tag" data-i18n="heroPricing">5 konwersji za $0.99 &middot; 3 darmowe na start</div>
         </div>
         <div class="trust">
@@ -223,7 +223,7 @@
                 <select id="modeSelect">
                     <option value="auto" data-i18n="modeAuto">Auto &mdash; balans detale/rozmiar</option>
                     <option value="ultra" data-i18n="modeUltra">Ultra &mdash; min. scianek</option>
-                    <option value="smooth" data-i18n="modeSmooth">Gladki &mdash; Taubin + decymacja</option>
+                    <option value="smooth" data-i18n="modeSmooth">Gladki &mdash; zaawansowane wygladzanie</option>
                     <option value="light" data-i18n="modeLight">Lekko &mdash; scala koplanarne</option>
                     <option value="off" data-i18n="modeOff">Bez optymalizacji</option>
                 </select>
@@ -297,8 +297,8 @@
         </div>
         <div class="how-steps">
             <div class="step"><div class="step-num">1</div><h3 data-i18n="hiwS1Title">Wgraj mesh</h3><p data-i18n="hiwS1Desc">Przeciagnij plik STL, 3MF lub OBJ do okna konwertera. Obslugujemy pliki do 200 MB.</p></div>
-            <div class="step"><div class="step-num">2</div><h3 data-i18n="hiwS2Title">FreeCAD konwertuje</h3><p data-i18n="hiwS2Desc">Nasz serwer uruchamia FreeCAD headless z Open CASCADE. Automatyczna optymalizacja geometrii w tle.</p></div>
-            <div class="step"><div class="step-num">3</div><h3 data-i18n="hiwS3Title">Pobierz STEP</h3><p data-i18n="hiwS3Desc">Gotowy plik STEP gotowy do importu w CAD. Porownaj przed i po w podgladzie 3D.</p></div>
+            <div class="step"><div class="step-num">2</div><h3 data-i18n="hiwS2Title">Silnik konwertuje</h3><p data-i18n="hiwS2Desc">Nasz autorski silnik konwersji przetwarza geometrie w tle. Automatyczna optymalizacja i czyszczenie modelu.</p></div>
+            <div class="step"><div class="step-num">3</div><h3 data-i18n="hiwS3Title">Pobierz STEP</h3><p data-i18n="hiwS3Desc">Gotowy plik STEP gotowy do importu w CAD. Porownaj przed i po w interaktywnym podgladzie 3D.</p></div>
         </div>
     </div>
 
@@ -309,21 +309,21 @@
             <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ2">Co to sa kredyty i jak dzialaja?</span><span class="arrow">&#9660;</span></button><div class="faq-a" data-i18n="faqA2">Jedna konwersja = 1 kredyt. Nowi uzytkownicy otrzymuja 3 kredyty za darmo. Kolejne kredyty kupujesz w pakietach: 5 za $0.99, 25 za $2.99, 100 za $7.99. Kredyty nie wygadaja.</div></div>
             <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ3">Czy moge odzyskac srodki?</span><span class="arrow">&#9660;</span></button><div class="faq-a" data-i18n="faqA3">Tak, masz 14 dni na zwrot srodkow od momentu zakupu, pod warunkiem ze nie wykorzystales kredytow z danego pakietu. Skontaktuj sie z nami aby zainicjowac zwrot.</div></div>
             <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ4">Jak dlugo przechowujecie moje pliki?</span><span class="arrow">&#9660;</span></button><div class="faq-a" data-i18n="faqA4">Pliki zrodlowe (mesh) sa usuwane po 30 dniach od przeslania. Pliki STEP sa rowniez usuwane po 30 dniach. Linki do udostepniania wygadaja po 7 dniach.</div></div>
-            <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ5">Czy oferujecie API?</span><span class="arrow">&#9660;</span></button><div class="faq-a" data-i18n="faqA5">Tak, MeshToStep oferuje REST API. Wymaga konta z pakietem 25 lub 100. Dokuemntacja OpenAPI jest dostepna pod /docs na serwerze.</div></div>
+            <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ5">Czy oferujecie API?</span><span class="arrow">&#9660;</span></button><div class="faq-a" data-i18n="faqA5">Tak, MeshToStep oferuje REST API. Wymaga konta z pakietem 25 lub 100. Pelna dokumentacja API jest dostepna pod /docs na serwerze.</div></div>
             <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ6">Jak sie skontaktowac z wsparciem?</span><span class="arrow">&#9660;</span></button><div class="faq-a" data-i18n="faqA6">Napisz do nas na support@meshtostep.com. Odpowiadamy w ciagu 24 godzin w jezyku polskim lub angielskim.</div></div>
         </div>
     </div>
 
     <footer class="footer">
         <div class="footer-inner">
-            <div class="footer-brand">MeshToStep<p>FreeCAD headless &middot; STL do STEP</p></div>
+            <div class="footer-brand">MeshToStep<p>Zaawansowana konwersja &middot; STL do STEP</p></div>
             <div class="footer-links">
                 <div class="footer-col"><h4 data-i18n="footerProduct">Produkt</h4><a href="#" onclick="switchTab('converter')" data-i18n="navConverter">Konwerter</a><a href="#" onclick="switchTab('pricing')" data-i18n="navPricing">Cennik</a><a href="#" onclick="switchTab('howitworks')" data-i18n="navHowItWorks">Jak to dziala</a></div>
                 <div class="footer-col"><h4 data-i18n="footerLegal">Prawne</h4><a href="regulamin.html" data-i18n="footerRegulamin">Regulamin</a><a href="prywatnosc.html" data-i18n="footerPrivacy">Polityka prywatnosci</a></div>
                 <div class="footer-col"><h4 data-i18n="footerContact">Kontakt</h4><a href="mailto:support@meshtostep.com">support@meshtostep.com</a><a href="mailto:kontakt@meshtostep.com">kontakt@meshtostep.com</a></div>
             </div>
         </div>
-        <div class="footer-bottom">&copy; 2024 MeshToStep &middot; Wszelkie prawa zastrzezone</div>
+        <div class="footer-bottom">&copy; 2026 MeshToStep &middot; Wszelkie prawa zastrzezone</div>
     </footer>
 
     <div class="modal-bg" id="authModal">
@@ -363,15 +363,15 @@
             navLogin: 'Zaloguj', navSignup: 'Zaloz konto',
             navMyConversions: 'Moje konwersje', navLogout: 'Wyloguj',
             heroTitle: 'Przekonwertuj <span class="hl">STL \u2192 STEP</span><br>w kilka sekund',
-            heroDesc: 'Wgraj plik mesh. Pobierz edytowalna bryle STEP.<br>FreeCAD headless + automatyczna optymalizacja geometrii.',
+            heroDesc: 'Wgraj plik mesh. Pobierz edytowalna bryle STEP.<br>Nasz autorski silnik konwersji + automatyczna optymalizacja geometrii.',
             heroPricing: '5 konwersji za $0.99 \u00b7 3 darmowe na start',
             trustStripe: 'Bezpieczne platnosci Stripe', trustDelete: 'Pliki usuwane po 30 dniach',
             trustRODO: 'RODO', trustSupport: 'Wsparcie PL EN',
             dropText: 'Przeciagnij plik <strong>STL/3MF/OBJ</strong> tutaj<br>lub kliknij by wybrac',
             modeAuto: 'Auto \u2014 balans detale/rozmiar', modeUltra: 'Ultra \u2014 min. scianek',
-            modeSmooth: 'Gladki \u2014 Taubin + decymacja', modeLight: 'Lekko \u2014 scala koplanarne',
+            modeSmooth: 'Gladki \u2014 zaawansowane wygladzanie', modeLight: 'Lekko \u2014 scala koplanarne',
             modeOff: 'Bez optymalizacji',
-            progressUploading: 'Przesylanie...', progressConverting: 'FreeCAD konwersja...',
+            progressUploading: 'Przesylanie...', progressConverting: 'Konwersja w toku...',
             progressAlmostDone: 'Prawie gotowe...',
             convertBtn: 'Konwertuj', convertingBtn: 'Konwertuje...',
             pricingTitle: 'Cennik', pricingDesc: 'Prosty cennik bez abonamentu. Plac tylko tyle, ile potrzebujesz.',
@@ -383,14 +383,14 @@
             thFile: 'Plik', thStatus: 'Status', thFaces: 'Scianki', thTime: 'Czas', thDate: 'Data',
             hiwTitle: 'Jak to dziala', hiwDesc: 'Trzy proste kroki do pliku STEP.',
             hiwS1Title: 'Wgraj mesh', hiwS1Desc: 'Przeciagnij plik STL, 3MF lub OBJ do okna konwertera. Obslugujemy pliki do 200 MB.',
-            hiwS2Title: 'FreeCAD konwertuje', hiwS2Desc: 'Nasz serwer uruchamia FreeCAD headless z Open CASCADE. Automatyczna optymalizacja geometrii w tle.',
-            hiwS3Title: 'Pobierz STEP', hiwS3Desc: 'Gotowy plik STEP gotowy do importu w CAD. Porownaj przed i po w podgladzie 3D.',
+            hiwS2Title: 'Silnik konwertuje', hiwS2Desc: 'Nasz autorski silnik konwersji przetwarza geometrie w tle. Automatyczna optymalizacja i czyszczenie modelu.',
+            hiwS3Title: 'Pobierz STEP', hiwS3Desc: 'Gotowy plik STEP gotowy do importu w CAD. Porownaj przed i po w interaktywnym podgladzie 3D.',
             faqTitle: 'Najczesciej zadawane pytania',
             faqQ1: 'Jakie formaty mesh sa obslugiwane?', faqA1: 'Obslugujemy pliki STL, 3MF i OBJ. Maksymalny rozmiar pliku to 200 MB. Pliki binary i ASCII sa wspierane rowniez.',
             faqQ2: 'Co to sa kredyty i jak dzialaja?', faqA2: 'Jedna konwersja = 1 kredyt. Nowi uzytkownicy otrzymuja 3 kredyty za darmo. Kolejne kredyty kupujesz w pakietach: 5 za $0.99, 25 za $2.99, 100 za $7.99. Kredyty nie wygadaja.',
             faqQ3: 'Czy moge odzyskac srodki?', faqA3: 'Tak, masz 14 dni na zwrot srodkow od momentu zakupu, pod warunkiem ze nie wykorzystales kredytow z danego pakietu. Skontaktuj sie z nami aby zainicjowac zwrot.',
             faqQ4: 'Jak dlugo przechowujecie moje pliki?', faqA4: 'Pliki zrodlowe (mesh) sa usuwane po 30 dniach od przeslania. Pliki STEP sa rowniez usuwane po 30 dniach. Linki do udostepniania wygadaja po 7 dniach.',
-            faqQ5: 'Czy oferujecie API?', faqA5: 'Tak, MeshToStep oferuje REST API. Wymaga konta z pakietem 25 lub 100. Dokuemntacja OpenAPI jest dostepna pod /docs na serwerze.',
+            faqQ5: 'Czy oferujecie API?', faqA5: 'Tak, MeshToStep oferuje REST API. Wymaga konta z pakietem 25 lub 100. Pelna dokumentacja API jest dostepna pod /docs na serwerze.',
             faqQ6: 'Jak sie skontaktowac z wsparciem?', faqA6: 'Napisz do nas na support@meshtostep.com. Odpowiadamy w ciagu 24 godzin w jezyku polskim lub angielskim.',
             footerProduct: 'Produkt', footerLegal: 'Prawne', footerContact: 'Kontakt',
             footerRegulamin: 'Regulamin', footerPrivacy: 'Polityka prywatnosci',
@@ -410,15 +410,15 @@
             navLogin: 'Login', navSignup: 'Sign up',
             navMyConversions: 'My conversions', navLogout: 'Logout',
             heroTitle: 'Convert <span class="hl">STL \u2192 STEP</span><br>in seconds',
-            heroDesc: 'Upload a mesh file. Download an editable STEP solid.<br>FreeCAD headless + automatic geometry optimization.',
+            heroDesc: 'Upload a mesh file. Download an editable STEP solid.<br>Our proprietary conversion engine + automatic geometry optimization.',
             heroPricing: '5 conversions for $0.99 \u00b7 3 free to start',
             trustStripe: 'Secure payments via Stripe', trustDelete: 'Files deleted after 30 days',
             trustRODO: 'GDPR', trustSupport: 'Support PL EN',
             dropText: 'Drag <strong>STL/3MF/OBJ</strong> file here<br>or click to choose',
             modeAuto: 'Auto \u2014 balance detail / size', modeUltra: 'Ultra \u2014 min. faces',
-            modeSmooth: 'Smooth \u2014 Taubin + decimation', modeLight: 'Light \u2014 merge coplanar only',
+            modeSmooth: 'Smooth \u2014 Advanced smoothing & reduction', modeLight: 'Light \u2014 merge coplanar only',
             modeOff: 'No optimization',
-            progressUploading: 'Uploading...', progressConverting: 'FreeCAD conversion...',
+            progressUploading: 'Uploading...', progressConverting: 'Converting...',
             progressAlmostDone: 'Almost done...',
             convertBtn: 'Convert', convertingBtn: 'Converting...',
             pricingTitle: 'Pricing', pricingDesc: 'Simple pricing, no subscription. Pay only for what you need.',
@@ -430,14 +430,14 @@
             thFile: 'File', thStatus: 'Status', thFaces: 'Faces', thTime: 'Time', thDate: 'Date',
             hiwTitle: 'How it works', hiwDesc: 'Three simple steps to a STEP file.',
             hiwS1Title: 'Upload mesh', hiwS1Desc: 'Drag an STL, 3MF, or OBJ file into the converter. We support files up to 200 MB.',
-            hiwS2Title: 'FreeCAD converts', hiwS2Desc: 'Our server runs FreeCAD headless with Open CASCADE. Automatic geometry optimization in the background.',
-            hiwS3Title: 'Download STEP', hiwS3Desc: 'The finished STEP file is ready to import into any CAD software. Compare before and after in the 3D preview.',
+            hiwS2Title: 'Our engine converts', hiwS2Desc: 'Our proprietary conversion engine processes the geometry automatically. Advanced optimization and cleanup in the background.',
+            hiwS3Title: 'Download STEP', hiwS3Desc: 'The finished STEP file is ready to import into any CAD software. Compare before and after in the interactive 3D viewer.',
             faqTitle: 'Frequently asked questions',
             faqQ1: 'Which mesh formats are supported?', faqA1: 'We support STL, 3MF, and OBJ files. Maximum file size is 200 MB. Both binary and ASCII files are supported.',
             faqQ2: 'What are credits and how do they work?', faqA2: 'One conversion = 1 credit. New users get 3 free credits. Additional credits are available in packs: 5 for $0.99, 25 for $2.99, 100 for $7.99. Credits do not expire.',
             faqQ3: 'Can I get a refund?', faqA3: 'Yes, you have 14 days to request a refund from the moment of purchase, provided you have not used the credits from that pack. Contact us to initiate a refund.',
             faqQ4: 'How long do you keep my files?', faqA4: 'Source files (mesh) are deleted 30 days after upload. STEP files are also deleted after 30 days. Share links expire after 7 days.',
-            faqQ5: 'Do you offer an API?', faqA5: 'Yes, MeshToStep offers a REST API. It requires an account with the Pack 25 or Pack 100 plan. OpenAPI documentation is available at /docs on the server.',
+            faqQ5: 'Do you offer an API?', faqA5: 'Yes, MeshToStep offers a REST API. It requires an account with the Pack 25 or Pack 100 plan. Full API documentation is available at /docs on the server.',
             faqQ6: 'How can I contact support?', faqA6: 'Write to us at support@meshtostep.com. We respond within 24 hours in Polish or English.',
             footerProduct: 'Product', footerLegal: 'Legal', footerContact: 'Contact',
             footerRegulamin: 'Terms of Service', footerPrivacy: 'Privacy Policy',
@@ -546,7 +546,7 @@
         _threeRenderer.setSize(W, H);
         _threeRenderer.setPixelRatio(window.devicePixelRatio);
         container.appendChild(_threeRenderer.domElement);
-        _threeControls = new OrbitControls(_threeCamera, _threeRenderer.domElement);
+        _threeControls = new window._OrbitControls(_threeCamera, _threeRenderer.domElement);
         _threeControls.enableDamping = true;
         _threeScene.add(new THREE.AmbientLight(0xffffff, 0.8));
         const d1 = new THREE.DirectionalLight(0xffffff, 0.8); d1.position.set(30,50,30); _threeScene.add(d1);

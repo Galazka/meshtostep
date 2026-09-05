@@ -1,292 +1,805 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin - MeshToStep</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-:root{--primary:#1a56db;--primary-light:#e8eefb;--bg:#fff;--bg-alt:#f7f9fc;--card:#fff;--border:#e2e8f0;--text:#1e293b;--muted:#64748b;--ok:#059669;--err:#dc2626;--warn:#d97706;--accent2:#7c3aed;--radius:10px}
-*{margin:0;padding:0;box-sizing:border-box}
-body{font:14px/1.6 'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:0}
-h1{font-size:22px;font-weight:800;margin-bottom:4px}
-h2{margin-top:32px;border-top:1px solid var(--border);padding-top:16px;font-size:18px;font-weight:700}
-h3{font-size:15px;font-weight:700;margin:20px 0 8px}
-a{color:var(--primary)}
-.container{max-width:1200px;margin:0 auto;padding:24px}
-.top-bar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid var(--border);background:var(--bg)}
-.top-bar a{color:var(--muted);font-size:14px;text-decoration:none;font-weight:500}
-.top-bar a:hover{color:var(--primary)}
-.stats{display:flex;gap:16px;flex-wrap:wrap;margin:16px 0}
-.stat{background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;min-width:140px}
-.stat .num{font-size:28px;font-weight:800;color:var(--primary)}
-.stat .label{color:var(--muted);font-size:12px}
-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px}
-th,td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:left}
-th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.5px;background:var(--bg-alt)}
-td{color:var(--text)}
-.tab-bar{display:flex;gap:0;margin:16px 0}
-.tab{padding:10px 20px;background:var(--bg-alt);border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:13px;font-weight:500;font-family:inherit}
-.tab:first-child{border-radius:8px 0 0 8px}
-.tab:last-child{border-radius:0 8px 8px 0}
-.tab.active{background:var(--primary-light);color:var(--primary);border-color:var(--primary);font-weight:600}
-.section{display:none}.section.active{display:block}
-.ok{color:var(--ok);font-weight:500}.err{color:var(--err);font-weight:500}.pending{color:var(--warn);font-weight:500}
-.user-detail{background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-top:16px}
-.user-detail .field{margin-bottom:8px;font-size:14px}
-.user-detail .field strong{color:var(--primary);min-width:140px;display:inline-block}
-.sub-table{margin-top:12px}
-.sub-table th{color:var(--accent2);font-size:12px}
-.sub-table td{font-size:12px}
-.btn-adj{padding:6px 14px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit}
-.btn-grant{background:var(--ok-bg);color:var(--ok)}
-.btn-revoke{background:var(--err-bg);color:var(--err)}
-.btn-back{background:var(--primary-light);color:var(--primary);padding:6px 14px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-family:inherit;font-weight:500}
-.btn-back:hover{background:var(--primary);color:#fff}
-.adj-dialog{display:none;margin-top:12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
-.adj-dialog.show{display:block}
-.adj-dialog input,.adj-dialog textarea{width:100%;padding:8px 12px;background:var(--bg-alt);border:1px solid var(--border);border-radius:6px;color:var(--text);margin-bottom:8px;font-size:13px;box-sizing:border-box;font-family:inherit}
-.adj-dialog textarea{height:60px;resize:vertical}
-.adj-dialog .btn-submit{padding:8px 20px;border-radius:6px;border:none;background:var(--primary);color:#fff;font-weight:600;cursor:pointer;font-size:13px;font-family:inherit}
-.adj-dialog .btn-submit:hover{opacity:.9}
-select{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:inherit;font-size:13px}
-</style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MeshToStep — Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a56db;
+            --primary-hover: #1648b8;
+            --primary-light: #e8eefb;
+            --bg: #ffffff;
+            --bg-alt: #f7f9fc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --ok: #059669;
+            --ok-bg: #ecfdf5;
+            --err: #dc2626;
+            --err-bg: #fef2f2;
+            --warn: #d97706;
+            --warn-bg: #fffbeb;
+            --radius: 10px;
+            --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+            --shadow-md: 0 4px 6px rgba(0,0,0,.05), 0 2px 4px rgba(0,0,0,.04);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg-alt); color: var(--text); line-height: 1.6; min-height: 100vh; }
+        a { color: var(--primary); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* ── NAV ── */
+        .nav { display: flex; align-items: center; justify-content: space-between; padding: 0 32px; height: 64px; border-bottom: 1px solid var(--border); max-width: 1400px; margin: 0 auto; position: sticky; top: 0; background: var(--bg); z-index: 100; }
+        .nav-left { display: flex; align-items: center; gap: 16px; }
+        .nav-logo { font-size: 20px; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; }
+        .nav-back { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 6px 14px; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; font-family: inherit; transition: all .15s; display: flex; align-items: center; gap: 4px; }
+        .nav-back:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+        .nav-title { font-size: 15px; font-weight: 600; color: var(--text-secondary); }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .lang-toggle { background: var(--bg-alt) !important; border: 1px solid var(--border) !important; border-radius: 6px; padding: 6px 12px !important; font-weight: 600; color: var(--text-secondary) !important; cursor: pointer; font-family: inherit; font-size: 13px; transition: all .15s; }
+        .lang-toggle:hover { border-color: var(--primary) !important; color: var(--primary) !important; }
+        .nav-admin-badge { background: var(--err-bg); color: var(--err); padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; border: 1px solid #fecaca; }
+
+        /* ── LAYOUT ── */
+        .admin-wrap { max-width: 1400px; margin: 0 auto; padding: 24px 32px; }
+
+        /* ── STATS CARDS ── */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; transition: box-shadow .2s; }
+        .stat-card:hover { box-shadow: var(--shadow-md); }
+        .stat-card .stat-label { font-size: 13px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+        .stat-card .stat-value { font-size: 32px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+        .stat-card .stat-sub { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+        .stat-card.primary .stat-value { color: var(--primary); }
+        .stat-card.success .stat-value { color: var(--ok); }
+        .stat-card.warning .stat-value { color: var(--warn); }
+        .stat-card.danger .stat-value { color: var(--err); }
+
+        /* ── SECTION PANEL ── */
+        .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 24px; overflow: hidden; }
+        .panel-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 12px; }
+        .panel-header h2 { font-size: 18px; font-weight: 700; }
+        .panel-header .subtitle { font-size: 13px; color: var(--text-muted); }
+        .panel-body { padding: 0; }
+        .panel-body.padded { padding: 24px; }
+
+        /* ── TABS ── */
+        .admin-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); padding: 0 24px; background: var(--bg); overflow-x: auto; }
+        .admin-tab { background: none; border: none; border-bottom: 2px solid transparent; padding: 14px 20px; font-size: 14px; font-weight: 500; color: var(--text-secondary); cursor: pointer; font-family: inherit; transition: all .15s; white-space: nowrap; }
+        .admin-tab:hover { color: var(--text); background: var(--bg-alt); }
+        .admin-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* ── SEARCH / FILTERS ── */
+        .filter-bar { display: flex; align-items: center; gap: 12px; padding: 16px 24px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+        .filter-bar input, .filter-bar select { background: var(--bg-alt); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; font-size: 14px; font-family: inherit; transition: border-color .15s; }
+        .filter-bar input:focus, .filter-bar select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+        .filter-bar input { min-width: 240px; }
+        .filter-bar select { appearance: auto; cursor: pointer; }
+        .filter-bar .filter-count { font-size: 13px; color: var(--text-muted); margin-left: auto; }
+
+        /* ── TABLES ── */
+        .admin-table { width: 100%; border-collapse: collapse; }
+        .admin-table th, .admin-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border-light); font-size: 14px; }
+        .admin-table th { color: var(--text-muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; background: var(--bg-alt); position: sticky; top: 0; }
+        .admin-table tbody tr { cursor: pointer; transition: background .1s; }
+        .admin-table tbody tr:hover { background: var(--bg-alt); }
+        .admin-table tbody tr:last-child td { border-bottom: none; }
+        .admin-table .cell-ellipsis { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .status-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .status-badge.done { background: var(--ok-bg); color: var(--ok); }
+        .status-badge.error { background: var(--err-bg); color: var(--err); }
+        .status-badge.pending { background: var(--warn-bg); color: var(--warn); }
+        .credit-display { font-weight: 600; color: var(--primary); }
+
+        /* ── MODAL ── */
+        .modal-bg { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.5); backdrop-filter: blur(4px); z-index: 999; justify-content: center; align-items: center; }
+        .modal-bg.show { display: flex; }
+        .modal { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 0; width: 560px; max-width: 92vw; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.15); }
+        .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--card); z-index: 1; }
+        .modal-head h3 { font-size: 18px; font-weight: 700; }
+        .modal-close { background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: all .15s; }
+        .modal-close:hover { color: var(--text); background: var(--bg-alt); }
+        .modal-body { padding: 24px; }
+
+        /* ── USER DETAIL ── */
+        .user-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        .detail-item { background: var(--bg-alt); border-radius: 8px; padding: 14px 16px; }
+        .detail-item .detail-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+        .detail-item .detail-value { font-size: 15px; font-weight: 600; color: var(--text); }
+
+        /* ── CREDIT ADJUSTMENT ── */
+        .credit-form { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+        .credit-form input { width: 100px; background: var(--bg-alt); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; font-size: 14px; font-family: inherit; text-align: center; font-weight: 600; }
+        .credit-form input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+        .btn-sm { padding: 8px 18px; border-radius: 8px; font-weight: 600; font-size: 13px; border: none; cursor: pointer; font-family: inherit; transition: all .15s; }
+        .btn-sm.primary { background: var(--primary); color: #fff; }
+        .btn-sm.primary:hover { background: var(--primary-hover); }
+        .btn-sm.danger { background: var(--err-bg); color: var(--err); border: 1px solid #fecaca; }
+        .btn-sm.danger:hover { background: #fecaca; }
+        .btn-sm.success { background: var(--ok-bg); color: var(--ok); border: 1px solid #bbf7d0; }
+        .btn-sm.success:hover { background: #d1fae5; }
+        .btn-sm:disabled { opacity: .5; cursor: not-allowed; }
+
+        /* ── GEO STATS ── */
+        .geo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 24px; }
+        .geo-col h3 { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+        .geo-bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .geo-bar-label { min-width: 140px; font-size: 13px; font-weight: 500; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .geo-bar-track { flex: 1; height: 8px; background: var(--bg-alt); border-radius: 4px; overflow: hidden; }
+        .geo-bar-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width .4s; }
+        .geo-bar-count { min-width: 36px; font-size: 12px; font-weight: 600; color: var(--text-muted); text-align: right; }
+
+        /* ── TOAST ── */
+        .toast { position: fixed; bottom: 24px; right: 24px; background: var(--text); color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; z-index: 1000; opacity: 0; transform: translateY(10px); transition: all .3s; pointer-events: none; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background: var(--ok); }
+        .toast.error { background: var(--err); }
+
+        /* ── EMPTY STATE ── */
+        .empty-state { text-align: center; padding: 48px 24px; color: var(--text-muted); }
+        .empty-state svg { width: 40px; height: 40px; margin-bottom: 12px; color: var(--text-muted); }
+
+        /* ── LOADER ── */
+        .loader { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .6s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── AUTH GATE ── */
+        .auth-gate { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; gap: 16px; }
+        .auth-gate h2 { font-size: 24px; font-weight: 700; }
+        .auth-gate p { color: var(--text-secondary); font-size: 15px; }
+        .auth-gate .modal { display: block; position: static; }
+        .auth-gate .modal .btn-auth { width: 100%; display: block !important; text-align: center; padding: 12px; background: var(--primary); color: #fff; font-weight: 600; font-size: 15px; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; transition: background .15s; }
+        .auth-gate .modal .btn-auth:hover { background: var(--primary-hover); }
+        .auth-gate .modal input { width: 100%; padding: 10px 14px; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 8px; color: var(--text); margin-bottom: 12px; font-size: 14px; font-family: inherit; }
+        .auth-gate .modal input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            .nav { padding: 0 16px; flex-wrap: wrap; height: auto; padding-top: 12px; padding-bottom: 12px; gap: 8px; }
+            .admin-wrap { padding: 16px; }
+            .geo-grid { grid-template-columns: 1fr; }
+            .user-detail-grid { grid-template-columns: 1fr; }
+            .filter-bar input { min-width: 160px; flex: 1; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .admin-table { font-size: 13px; }
+            .admin-table th, .admin-table td { padding: 10px 12px; }
+        }
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
-<div class="top-bar">
-<h1>MeshToStep Admin</h1>
-<div><a href="/">&larr; Back to site</a> &middot; <a onclick="loadAll()" style="cursor:pointer">Refresh</a></div>
-</div>
-<div class="container">
 
-<div class="tab-bar">
-    <div class="tab active" onclick="showTab('stats')" data-tab="stats">Stats</div>
-    <div class="tab" onclick="showTab('geo')" data-tab="geo">Geo</div>
-    <div class="tab" onclick="showTab('users')" data-tab="users">Users</div>
-    <div class="tab" onclick="showTab('jobs')" data-tab="jobs">Jobs</div>
-</div>
-
-<div class="section active" id="sec-stats">
-    <div class="stats" id="stats"></div>
-</div>
-
-<div class="section" id="sec-geo">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-        <span style="color:var(--muted);font-size:13px">Period:</span>
-        <select id="geoPeriod" onchange="loadGeo()"><option value="7">7 days</option><option value="30" selected>30 days</option><option value="90">90 days</option></select>
+    <!-- AUTH GATE (shown before login) -->
+    <div id="authGate" class="auth-gate" style="display:none">
+        <div class="panel" style="width:400px; max-width:90vw;">
+            <div class="panel-body padded" style="text-align:center;">
+                <div style="margin-bottom:16px;">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <h2 style="font-size:20px;font-weight:700;margin-bottom:8px" data-i18n="authGateTitle">Admin Panel</h2>
+                <p style="color:var(--text-secondary);font-size:14px;margin-bottom:20px" data-i18n="authGateDesc">Zaloguj sie jako administrator, aby kontynuowac.</p>
+                <input id="authEmail" type="email" placeholder="email" data-i18n-placeholder="authEmailPh" style="width:100%;padding:10px 14px;background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:10px;font-size:14px;font-family:inherit;">
+                <input id="authPass" type="password" placeholder="haslo" data-i18n-placeholder="authPassPh" style="width:100%;padding:10px 14px;background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:16px;font-size:14px;font-family:inherit;">
+                <button class="btn-sm primary" onclick="doLogin()" style="width:100%;padding:12px;font-size:15px" data-i18n="authLoginBtn">Zaloguj</button>
+                <div style="margin-top:12px"><a href="/" style="font-size:13px;color:var(--text-muted)" data-i18n="authGateBack">Powrot do glownej strony</a></div>
+            </div>
+        </div>
     </div>
-    <div class="stats" id="geoStats"></div>
-    <h3 style="color:var(--primary);margin-top:16px">Countries</h3><div id="geoCountries"></div>
-    <h3 style="color:var(--accent2);margin-top:16px">Cities</h3><div id="geoCities"></div>
-    <h3 style="color:var(--ok);margin-top:16px">Daily Requests</h3><div id="geoDaily"></div>
-</div>
 
-<div class="section" id="sec-users">
-    <div id="userListView">
-        <h2>Users</h2>
-        <table id="users"><thead><tr><th>ID</th><th>Email</th><th>Credits</th><th>Admin</th><th>Last Login</th><th>Action</th></tr></thead><tbody></tbody></table>
+    <!-- MAIN APP (hidden until auth) -->
+    <div id="mainApp" style="display:none">
+        <nav class="nav">
+            <div class="nav-left">
+                <a href="/" class="nav-back">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5m7-7l-7 7 7 7"/></svg>
+                    <span data-i18n="navBack">Powrot</span>
+                </a>
+                <div class="nav-logo">MeshToStep</div>
+                <span class="nav-title" data-i18n="navTitle">Admin Panel</span>
+            </div>
+            <div class="nav-right">
+                <span class="nav-admin-badge" data-i18n="navAdminBadge">ADMIN</span>
+                <button class="lang-toggle" id="langToggle" onclick="toggleLang()">EN</button>
+            </div>
+        </nav>
+
+        <div class="admin-wrap">
+            <!-- STATS -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card primary">
+                    <div class="stat-label" data-i18n="statUsers">Uzytkownicy</div>
+                    <div class="stat-value" id="statUsers">—</div>
+                    <div class="stat-sub" data-i18n="statUsersSub">Laczna liczba kont</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label" data-i18n="statJobs">Przetworzenia</div>
+                    <div class="stat-value" id="statJobs">—</div>
+                    <div class="stat-sub" data-i18n="statJobsSub">Wszystkie konwersje</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-label" data-i18n="statRevenue">Przychod</div>
+                    <div class="stat-value" id="statRevenue">—</div>
+                    <div class="stat-sub" data-i18n="statRevenueSub">Laczna wartosc platnosci</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-label" data-i18n="statCredits">Kredyty wykorzystane</div>
+                    <div class="stat-value" id="statCredits">—</div>
+                    <div class="stat-sub" data-i18n="statCreditsSub">Suma przetworzen</div>
+                </div>
+            </div>
+
+            <!-- TABS -->
+            <div class="panel">
+                <div class="admin-tabs">
+                    <button class="admin-tab active" onclick="switchAdminTab('users')" data-tab="users" data-i18n="tabUsers">Uzytkownicy</button>
+                    <button class="admin-tab" onclick="switchAdminTab('jobs')" data-tab="jobs" data-i18n="tabJobs">Przetworzenia</button>
+                    <button class="admin-tab" onclick="switchAdminTab('geo')" data-tab="geo" data-i18n="tabGeo">Statystyki geolokalizacji</button>
+                </div>
+
+                <!-- USERS TAB -->
+                <div class="tab-content active" id="tab-users">
+                    <div class="filter-bar">
+                        <input type="text" id="userSearch" placeholder="Szukaj uzytkownika..." data-i18n-placeholder="userSearchPh" oninput="filterUsers()">
+                        <span class="filter-count" id="userCount"></span>
+                    </div>
+                    <div style="max-height:600px; overflow-y:auto;">
+                        <table class="admin-table" id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th data-i18n="thEmail">Email</th>
+                                    <th data-i18n="thCreditsLeft">Kredyty</th>
+                                    <th data-i18n="thJobsCount">Przetworzenia</th>
+                                    <th data-i18n="thCountry">Kraj</th>
+                                    <th data-i18n="thJoined">Data rejestracji</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- JOBS TAB -->
+                <div class="tab-content" id="tab-jobs">
+                    <div class="filter-bar">
+                        <input type="text" id="jobSearch" placeholder="Szukaj po nazwie pliku..." data-i18n-placeholder="jobSearchPh" oninput="filterJobs()">
+                        <select id="jobStatusFilter" onchange="filterJobs()">
+                            <option value="" data-i18n="jobFilterAll">Wszystkie statusy</option>
+                            <option value="done" data-i18n="jobFilterDone">Ukonczone</option>
+                            <option value="error" data-i18n="jobFilterError">Bledy</option>
+                            <option value="pending" data-i18n="jobFilterPending">W kolejce</option>
+                        </select>
+                        <span class="filter-count" id="jobCount"></span>
+                    </div>
+                    <div style="max-height:600px; overflow-y:auto;">
+                        <table class="admin-table" id="jobsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th data-i18n="thUser">Uzytkownik</th>
+                                    <th data-i18n="thFile">Plik</th>
+                                    <th data-i18n="thStatus">Status</th>
+                                    <th data-i18n="thMode">Tryb</th>
+                                    <th data-i18n="thFaces">Scianki</th>
+                                    <th data-i18n="thTime">Czas</th>
+                                    <th data-i18n="thDate">Data</th>
+                                </tr>
+                            </thead>
+                            <tbody id="jobsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- GEO TAB -->
+                <div class="tab-content" id="tab-geo">
+                    <div class="geo-grid" id="geoGrid">
+                        <div class="geo-col">
+                            <h3 data-i18n="geoCountries">Kraje</h3>
+                            <div id="geoCountries"></div>
+                        </div>
+                        <div class="geo-col">
+                            <h3 data-i18n="geoCities">Miasta</h3>
+                            <div id="geoCities"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div id="userDetailView" style="display:none">
-        <button class="btn-back" onclick="closeUserDetail()">&larr; Back to users</button>
-        <div id="userDetailContent"></div>
+
+    <!-- USER DETAIL MODAL -->
+    <div class="modal-bg" id="userModal">
+        <div class="modal">
+            <div class="modal-head">
+                <h3 data-i18n="modalUserDetail">Szczegoly uzytkownika</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <div id="modalLoading" style="text-align:center;padding:32px"><div class="loader"></div></div>
+                <div id="modalContent" style="display:none">
+                    <div class="user-detail-grid" id="userDetailGrid"></div>
+
+                    <h4 style="font-size:14px;font-weight:700;margin-bottom:8px" data-i18n="creditAdjustTitle">Regulacja kredytow</h4>
+                    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px" data-i18n="creditAdjustDesc">Dodaj lub odejmij kredyty. Ujemna wartosc = odejmowanie.</p>
+                    <div class="credit-form">
+                        <input type="number" id="creditAmount" placeholder="+10" value="" style="width:100px">
+                        <button class="btn-sm primary" id="creditBtn" onclick="adjustCredits()" data-i18n="creditAdjustBtn">Zastosuj</button>
+                        <span id="creditResult" style="font-size:13px;font-weight:500;"></span>
+                    </div>
+
+                    <h4 style="font-size:14px;font-weight:700;margin:24px 0 8px" data-i18n="userJobsTitle">Ostatnie przetworzenia</h4>
+                    <div style="max-height:240px;overflow-y:auto;">
+                        <table class="admin-table" id="userJobsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th data-i18n="thFile">Plik</th>
+                                    <th data-i18n="thStatus">Status</th>
+                                    <th data-i18n="thFaces">Scianki</th>
+                                    <th data-i18n="thDate">Data</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userJobsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
 
-<div class="section" id="sec-jobs">
-    <h2>Conversions</h2>
-    <table id="jobs"><thead><tr><th>ID</th><th>User</th><th>File</th><th>Status</th><th>Mode</th><th>Faces</th><th>Time</th><th>Created</th></tr></thead><tbody></tbody></table>
-</div>
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
 
-<div class="adj-dialog" id="adjDialog">
-    <h3 style="margin:0 0 12px 0;color:var(--primary);font-size:15px" id="adjTitle">Adjust Credits</h3>
-    <input id="adjAmount" type="number" placeholder="Amount (+ to grant, - to revoke)" min="-1000" max="1000">
-    <textarea id="adjReason" placeholder="Reason (optional but recommended)"></textarea>
-    <div style="display:flex;gap:8px">
-        <button class="btn-submit" onclick="submitAdjust()">Submit</button>
-        <button class="btn-submit" style="background:var(--bg-alt);color:var(--muted);border:1px solid var(--border)" onclick="closeAdjDialog()">Cancel</button>
-    </div>
-</div>
+    <script>
+    /* ═══════════════════════ I18N ═══════════════════════ */
+    const I18N = {
+        pl: {
+            navBack: 'Powrot', navTitle: 'Admin Panel', navAdminBadge: 'ADMIN',
+            authGateTitle: 'Panel administracyjny', authGateDesc: 'Zaloguj sie jako administrator, aby kontynuowac.',
+            authEmailPh: 'email', authPassPh: 'haslo', authLoginBtn: 'Zaloguj', authGateBack: 'Powrot do glownej strony',
+            tabUsers: 'Uzytkownicy', tabJobs: 'Przetworzenia', tabGeo: 'Statystyki geolokalizacji',
+            statUsers: 'Uzytkownicy', statUsersSub: 'Laczna liczba kont',
+            statJobs: 'Przetworzenia', statJobsSub: 'Wszystkie konwersje',
+            statRevenue: 'Przychod', statRevenueSub: 'Laczna wartosc platnosci',
+            statCredits: 'Kredyty wykorzystane', statCreditsSub: 'Suma przetworzen',
+            userSearchPh: 'Szukaj uzytkownika...',
+            thEmail: 'Email', thCreditsLeft: 'Kredyty', thJobsCount: 'Przetworzenia',
+            thCountry: 'Kraj', thJoined: 'Data rejestracji',
+            thFile: 'Plik', thStatus: 'Status', thMode: 'Tryb', thFaces: 'Scianki',
+            thTime: 'Czas', thDate: 'Data', thUser: 'Uzytkownik',
+            jobSearchPh: 'Szukaj po nazwie pliku...',
+            jobFilterAll: 'Wszystkie statusy', jobFilterDone: 'Ukonczone', jobFilterError: 'Bledy', jobFilterPending: 'W kolejce',
+            geoCountries: 'Kraje', geoCities: 'Miasta',
+            modalUserDetail: 'Szczegoly uzytkownika',
+            creditAdjustTitle: 'Regulacja kredytow', creditAdjustDesc: 'Dodaj lub odejmij kredyty. Ujemna wartosc = odejmowanie.',
+            creditAdjustBtn: 'Zastosuj',
+            userJobsTitle: 'Ostatnie przetworzenia',
+            userDetailEmail: 'Email', userDetailCredits: 'Kredyty',
+            userDetailJobs: 'Przetworzenia', userDetailCountry: 'Kraj',
+            userDetailCity: 'Miasto', userDetailJoined: 'Rejestracja',
+            userDetailId: 'ID',
+            noData: 'Brak danych', loading: 'Ladowanie...',
+            creditSuccess: 'Kredyty zaktualizowane', creditError: 'Blad regulacji kredytow',
+            authError: 'Blad logowania. Sprawdz dane.', authAdminOnly: 'Dostep tylko dla administratorow.',
+            emptyUsers: 'Brak uzytkownikow do wyswietlenia', emptyJobs: 'Brak przetworzen do wyswietlenia',
+            emptyGeo: 'Brak danych geolokalizacji'
+        },
+        en: {
+            navBack: 'Back', navTitle: 'Admin Panel', navAdminBadge: 'ADMIN',
+            authGateTitle: 'Admin Panel', authGateDesc: 'Log in as an administrator to continue.',
+            authEmailPh: 'email', authPassPh: 'password', authLoginBtn: 'Log in', authGateBack: 'Back to main site',
+            tabUsers: 'Users', tabJobs: 'Jobs', tabGeo: 'Geolocation Stats',
+            statUsers: 'Users', statUsersSub: 'Total accounts',
+            statJobs: 'Jobs', statJobsSub: 'All conversions',
+            statRevenue: 'Revenue', statRevenueSub: 'Total payment value',
+            statCredits: 'Credits used', statCreditsSub: 'Total conversions',
+            userSearchPh: 'Search users...',
+            thEmail: 'Email', thCreditsLeft: 'Credits', thJobsCount: 'Jobs',
+            thCountry: 'Country', thJoined: 'Joined',
+            thFile: 'File', thStatus: 'Status', thMode: 'Mode', thFaces: 'Faces',
+            thTime: 'Time', thDate: 'Date', thUser: 'User',
+            jobSearchPh: 'Search by filename...',
+            jobFilterAll: 'All statuses', jobFilterDone: 'Completed', jobFilterError: 'Errors', jobFilterPending: 'In queue',
+            geoCountries: 'Countries', geoCities: 'Cities',
+            modalUserDetail: 'User Details',
+            creditAdjustTitle: 'Credit Adjustment', creditAdjustDesc: 'Add or remove credits. Negative value = deduction.',
+            creditAdjustBtn: 'Apply',
+            userJobsTitle: 'Recent Jobs',
+            userDetailEmail: 'Email', userDetailCredits: 'Credits',
+            userDetailJobs: 'Jobs', userDetailCountry: 'Country',
+            userDetailCity: 'City', userDetailJoined: 'Joined',
+            userDetailId: 'ID',
+            noData: 'No data', loading: 'Loading...',
+            creditSuccess: 'Credits updated', creditError: 'Credit adjustment failed',
+            authError: 'Login failed. Check your credentials.', authAdminOnly: 'Admin access required.',
+            emptyUsers: 'No users to display', emptyJobs: 'No jobs to display',
+            emptyGeo: 'No geolocation data'
+        }
+    };
 
-</div>
+    let currentLang = localStorage.getItem('mt_lang') || (navigator.language.startsWith('pl') ? 'pl' : 'en');
+    let token = localStorage.getItem('mt_token');
 
-<script>
-const token = localStorage.getItem('mt_token');
-const H = {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'};
-let currentAdjUserId = null;
+    function t(key) {
+        return (I18N[currentLang] && I18N[currentLang][key]) || (I18N.en && I18N.en[key]) || key;
+    }
 
-async function api(path, opts = {}) {
-    const r = await fetch(path, {headers: H, ...opts});
-    if (!r.ok) { alert('Auth error ' + r.status); throw r; }
-    return r.json();
-}
+    function applyI18n() {
+        document.documentElement.lang = currentLang;
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            const val = t(key);
+            if (val) el.innerHTML = val;
+        });
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-i18n-placeholder');
+            const val = t(key);
+            if (val) el.placeholder = val;
+        });
+        const langBtn = document.getElementById('langToggle');
+        if (langBtn) langBtn.textContent = currentLang === 'pl' ? 'EN' : 'PL';
+    }
 
-function showTab(name) {
-    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.getElementById('sec-' + name).classList.add('active');
-    if (name === 'geo') loadGeo();
-    if (name === 'users' && !document.getElementById('userDetailView').style.display.includes('block')) loadUsers();
-    if (name === 'jobs') loadJobs();
-}
+    function toggleLang() {
+        currentLang = currentLang === 'pl' ? 'en' : 'pl';
+        localStorage.setItem('mt_lang', currentLang);
+        applyI18n();
+        /* Re-render dynamic content that uses language */
+        if (_usersData.length) renderUsers();
+        if (_jobsData.length) renderJobs();
+    }
 
-async function loadStats() {
-    const d = await api('/api/admin/stats');
-    document.getElementById('stats').innerHTML = [
-        ['Users', d.users], ['Conversions', d.jobs_total], ['Done', d.jobs_done],
-        ['Errors', d.jobs_error], ['Credits sold', d.credits_sold],
-        ['Revenue', '$' + (d.revenue_usd || 0).toFixed(2)], ['Active shares', d.shares_active],
-        ['Downloads', d.total_downloads], ['Share views', d.total_share_views || 0]
-    ].map(([l,n]) => '<div class="stat"><div class="num">' + n + '</div><div class="label">' + l + '</div></div>').join('');
-}
+    /* ═══════════════════════ API HELPERS ═══════════════════════ */
+    const API_BASE = '';
 
-async function loadGeo() {
-    const days = document.getElementById('geoPeriod').value;
-    try {
-        const d = await api('/api/admin/geo?days=' + days);
-        document.getElementById('geoStats').innerHTML = [
-            ['Requests', d.total_requests], ['Unique IPs', d.unique_ips]
-        ].map(([l,n]) => '<div class="stat"><div class="num">' + n + '</div><div class="label">' + l + '</div></div>').join('');
+    async function api(path, opts = {}) {
+        const headers = { ...opts.headers };
+        if (token) headers['Authorization'] = 'Bearer ' + token;
+        if (opts.body && !(opts.body instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
+            opts.body = JSON.stringify(opts.body);
+        }
+        const r = await fetch(API_BASE + path, { ...opts, headers });
+        if (r.status === 401) {
+            token = null;
+            localStorage.removeItem('mt_token');
+            showAuthGate();
+            throw new Error('Unauthorized');
+        }
+        if (r.status === 403) throw new Error(t('authAdminOnly'));
+        if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || 'Request failed'); }
+        return r.json();
+    }
 
-        if (d.countries.length === 0) {
-            document.getElementById('geoCountries').innerHTML = '<p style="color:var(--muted);font-size:13px">No geo data yet</p>';
-            document.getElementById('geoCities').innerHTML = '<p style="color:var(--muted);font-size:13px">No geo data yet</p>';
-            document.getElementById('geoDaily').innerHTML = '<p style="color:var(--muted);font-size:13px">No geo data yet</p>';
+    /* ═══════════════════════ TOAST ═══════════════════════ */
+    let _toastTimer;
+    function toast(msg, type) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.className = 'toast show ' + (type || '');
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    /* ═══════════════════════ AUTH ═══════════════════════ */
+    function showAuthGate() {
+        document.getElementById('authGate').style.display = 'flex';
+        document.getElementById('mainApp').style.display = 'none';
+    }
+    function showMainApp() {
+        document.getElementById('authGate').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+    }
+
+    async function doLogin() {
+        const email = document.getElementById('authEmail').value;
+        const pass = document.getElementById('authPass').value;
+        if (!email || !pass) return;
+        try {
+            const d = await api('/api/auth/login', { method: 'POST', body: { email, password: pass } });
+            token = d.token;
+            localStorage.setItem('mt_token', token);
+            await checkAdmin();
+        } catch (e) {
+            toast(t('authError'), 'error');
+        }
+    }
+
+    async function checkAdmin() {
+        try {
+            const d = await api('/api/auth/me');
+            if (!d.is_admin) { toast(t('authAdminOnly'), 'error'); showAuthGate(); return; }
+            showMainApp();
+            loadAll();
+        } catch (e) {
+            showAuthGate();
+        }
+    }
+
+    /* ═══════════════════════ TABS ═══════════════════════ */
+    function switchAdminTab(name) {
+        document.querySelectorAll('.admin-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+        document.querySelectorAll('.tab-content').forEach(p => p.classList.remove('active'));
+        document.getElementById('tab-' + name).classList.add('active');
+        if (name === 'geo' && !_geoLoaded) loadGeoStats();
+    }
+
+    /* ═══════════════════════ STATS ═══════════════════════ */
+    async function loadStats() {
+        try {
+            const d = await api('/api/admin/stats');
+            document.getElementById('statUsers').textContent = d.total_users ?? d.users ?? '—';
+            document.getElementById('statJobs').textContent = d.total_jobs ?? d.jobs ?? '—';
+            const rev = d.revenue ?? d.total_revenue;
+            document.getElementById('statRevenue').textContent = rev != null ? '$' + Number(rev).toFixed(2) : '—';
+            document.getElementById('statCredits').textContent = d.credits_used ?? d.total_credits_used ?? '—';
+        } catch (e) { /* stats will show dashes */ }
+    }
+
+    /* ═══════════════════════ USERS ═══════════════════════ */
+    let _usersData = [];
+    let _allUsersData = [];
+
+    async function loadUsers() {
+        try {
+            _allUsersData = await api('/api/admin/users');
+            _usersData = [..._allUsersData];
+            renderUsers();
+        } catch (e) {
+            document.getElementById('usersBody').innerHTML =
+                '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">' + t('emptyUsers') + '</td></tr>';
+        }
+    }
+
+    function filterUsers() {
+        const q = document.getElementById('userSearch').value.toLowerCase().trim();
+        _usersData = q ? _allUsersData.filter(u =>
+            (u.email || '').toLowerCase().includes(q) ||
+            (u.country || '').toLowerCase().includes(q) ||
+            String(u.id).includes(q)
+        ) : [..._allUsersData];
+        renderUsers();
+    }
+
+    function renderUsers() {
+        const body = document.getElementById('usersBody');
+        document.getElementById('userCount').textContent = _usersData.length + ' / ' + _allUsersData.length;
+        if (!_usersData.length) {
+            body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">' + t('emptyUsers') + '</td></tr>';
             return;
         }
-        const maxC = d.countries[0]?.count || 1;
-        document.getElementById('geoCountries').innerHTML = d.countries.slice(0, 15).map(c =>
-            '<div style="display:flex;align-items:center;gap:8px;margin:3px 0">' +
-            '<span style="width:80px;text-align:right;font-size:12px;color:var(--muted)">' + c.country + '</span>' +
-            '<div style="height:16px;background:var(--primary);border-radius:4px;width:' + Math.max(2, (c.count/maxC)*400) + 'px"></div>' +
-            '<span style="font-size:12px;color:var(--primary);font-weight:600">' + c.count + '</span></div>'
-        ).join('');
-
-        const maxCity = d.cities[0]?.count || 1;
-        document.getElementById('geoCities').innerHTML = d.cities.slice(0, 15).map(c =>
-            '<div style="display:flex;align-items:center;gap:8px;margin:3px 0">' +
-            '<span style="width:120px;text-align:right;font-size:12px;color:var(--muted)">' + c.city + ', ' + c.country + '</span>' +
-            '<div style="height:16px;background:var(--accent2);border-radius:4px;width:' + Math.max(2, (c.count/maxCity)*400) + 'px"></div>' +
-            '<span style="font-size:12px;color:var(--accent2);font-weight:600">' + c.count + '</span></div>'
-        ).join('');
-
-        const maxD = Math.max(...d.daily.map(x => x.count), 1);
-        document.getElementById('geoDaily').innerHTML = '<div style="display:flex;align-items:flex-end;gap:3px;height:100px;margin-top:8px">' +
-            d.daily.reverse().map(x =>
-                '<div style="display:flex;flex-direction:column;align-items:center;flex:1;min-width:8px">' +
-                '<span style="font-size:9px;color:var(--ok)">' + x.count + '</span>' +
-                '<div style="width:100%;height:' + Math.max(2, (x.count/maxD)*80) + 'px;background:var(--ok);border-radius:2px 2px 0 0"></div>' +
-                '<span style="font-size:8px;color:var(--muted);writing-mode:vertical-lr;transform:rotate(180deg);max-height:40px;overflow:hidden">' + x.date.slice(5) + '</span></div>'
-            ).join('') + '</div>';
-    } catch(e) {
-        document.getElementById('geoStats').innerHTML = '<p style="color:var(--err)">Failed to load geo data</p>';
+        body.innerHTML = _usersData.map(u => {
+            const joined = u.created_at ? new Date(u.created_at).toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-US') : '—';
+            return '<tr onclick="openUser(' + u.id + ')">' +
+                '<td>' + u.id + '</td>' +
+                '<td class="cell-ellipsis">' + esc(u.email || '—') + '</td>' +
+                '<td class="credit-display">' + (u.credits ?? '—') + '</td>' +
+                '<td>' + (u.jobs_count ?? u.job_count ?? '—') + '</td>' +
+                '<td>' + esc(u.country || '—') + '</td>' +
+                '<td>' + joined + '</td>' +
+                '</tr>';
+        }).join('');
     }
-}
 
-async function loadUsers() {
-    const d = await api('/api/admin/users');
-    document.querySelector('#users tbody').innerHTML = d.map(u =>
-        '<tr><td>' + u.id + '</td><td>' + u.email + '</td><td>' + u.credits + '</td><td>' + (u.is_admin ? '\u2713' : '') + '</td>' +
-        '<td>' + (u.last_login && u.last_login !== 'None' ? u.last_login.slice(0,16) : '-') + '</td>' +
-        '<td><button class="btn-adj btn-grant" onclick="showUserDetail(' + u.id + ')">Details</button> ' +
-        '<button class="btn-adj btn-grant" onclick="openAdjDialog(' + u.id + ', \'' + u.email + '\', 1)">+ Add</button> ' +
-        '<button class="btn-adj btn-revoke" onclick="openAdjDialog(' + u.id + ', \'' + u.email + '\', -1)">- Revoke</button></td></tr>'
-    ).join('');
-}
+    /* ═══════════════════════ USER DETAIL ═══════════════════════ */
+    let _currentUser = null;
 
-async function showUserDetail(userId) {
-    const d = await api('/api/admin/users/' + userId);
-    const s = d.stats;
-    document.getElementById('userDetailView').style.display = 'block';
-    document.getElementById('userListView').style.display = 'none';
-    document.getElementById('adjDialog').className = 'adj-dialog';
+    async function openUser(id) {
+        const modal = document.getElementById('userModal');
+        modal.classList.add('show');
+        document.getElementById('modalLoading').style.display = 'block';
+        document.getElementById('modalContent').style.display = 'none';
+        document.getElementById('creditAmount').value = '';
+        document.getElementById('creditResult').textContent = '';
+        try {
+            _currentUser = await api('/api/admin/users/' + id);
+            renderUserDetail();
+        } catch (e) {
+            document.getElementById('modalBody').innerHTML = '<div style="text-align:center;padding:32px;color:var(--err)">' + e.message + '</div>';
+        }
+    }
 
-    document.getElementById('userDetailContent').innerHTML =
-        '<div class="user-detail">' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">' +
-        '<h2 style="margin:0;color:var(--primary)">' + d.email + '</h2>' +
-        '<div><button class="btn-adj btn-grant" onclick="openAdjDialog(' + d.id + ', \'' + d.email + '\', 1)">+ Add Credits</button> ' +
-        '<button class="btn-adj btn-revoke" onclick="openAdjDialog(' + d.id + ', \'' + d.email + '\', -1)">- Revoke Credits</button></div></div>' +
-        '<div class="stats">' +
-        '<div class="stat"><div class="num">' + d.credits + '</div><div class="label">Credits</div></div>' +
-        '<div class="stat"><div class="num">' + s.total_conversions + '</div><div class="label">Conversions</div></div>' +
-        '<div class="stat"><div class="num" style="color:var(--ok)">' + s.conversions_done + '</div><div class="label">Done</div></div>' +
-        '<div class="stat"><div class="num" style="color:var(--err)">' + s.conversions_error + '</div><div class="label">Errors</div></div>' +
-        '<div class="stat"><div class="num">' + s.total_shares + '</div><div class="label">Shares</div></div>' +
-        '<div class="stat"><div class="num">' + s.total_downloads + '</div><div class="label">Downloads</div></div>' +
-        '<div class="stat"><div class="num">' + s.total_share_views + '</div><div class="label">Share Views</div></div>' +
-        '</div>' +
-        '<div class="field"><strong>ID:</strong> ' + d.id + (d.is_admin ? ' Admin' : '') + '</div>' +
-        '<div class="field"><strong>Created:</strong> ' + (d.created_at?.slice(0,19)||'-') + '</div>' +
-        '<div class="field"><strong>Last login:</strong> ' + (d.last_login && d.last_login !== 'None' ? d.last_login.slice(0,19) : '-') + '</div>' +
-        '<div class="field"><strong>Last activity:</strong> ' + (d.last_activity && d.last_activity !== 'None' ? d.last_activity.slice(0,19) : '-') + '</div>' +
-        '<div class="field"><strong>Last IP:</strong> ' + (d.last_ip || '-') + '</div>' +
-        '<div class="field"><strong>Last location:</strong> ' + (d.last_city && d.last_country ? d.last_city + ', ' + d.last_country : (d.last_country || '-')) + '</div>' +
-        (d.adjustments.length ?
-        '<h3 style="color:var(--accent2);margin-top:20px;margin-bottom:8px">Credit Adjustments</h3>' +
-        '<table class="sub-table"><thead><tr><th>Date</th><th>Amount</th><th>Before</th><th>After</th><th>Admin</th><th>Reason</th></tr></thead><tbody>' +
-        d.adjustments.map(a => '<tr><td>' + (a.created_at?.slice(0,16)||'-') + '</td>' +
-            '<td style="color:' + (a.amount > 0 ? 'var(--ok)' : 'var(--err)') + ';font-weight:600">' + (a.amount > 0 ? '+' : '') + a.amount + '</td>' +
-            '<td>' + a.credits_before + '</td><td>' + a.credits_after + '</td><td>#' + a.admin_id + '</td><td>' + (a.reason || '-') + '</td></tr>').join('') +
-        '</tbody></table>' : '') +
-        (d.payments.length ?
-        '<h3 style="color:var(--primary);margin-top:20px;margin-bottom:8px">Payments</h3>' +
-        '<table class="sub-table"><thead><tr><th>Date</th><th>Amount</th><th>Credits</th><th>Status</th></tr></thead><tbody>' +
-        d.payments.map(p => '<tr><td>' + (p.created_at?.slice(0,16)||'-') + '</td><td>$' + (p.amount_usd || 0).toFixed(2) + '</td>' +
-            '<td>+' + p.credits_granted + '</td><td class="' + (p.status === 'completed' ? 'ok' : p.status === 'failed' ? 'err' : 'pending') + '">' + p.status + '</td></tr>').join('') +
-        '</tbody></table>' : '') +
-        (d.recent_jobs.length ?
-        '<h3 style="color:var(--primary);margin-top:20px;margin-bottom:8px">Recent Jobs</h3>' +
-        '<table class="sub-table"><thead><tr><th>Date</th><th>File</th><th>Status</th><th>Mode</th></tr></thead><tbody>' +
-        d.recent_jobs.map(j => '<tr><td>' + (j.created_at?.slice(0,16)||'-') + '</td><td>' + j.filename + '</td>' +
-            '<td class="' + (j.status === 'done' ? 'ok' : j.status === 'error' ? 'err' : 'pending') + '">' + j.status + '</td><td>' + j.mode + '</td></tr>').join('') +
-        '</tbody></table>' : '') +
-        '</div>';
-}
+    function renderUserDetail() {
+        const u = _currentUser;
+        document.getElementById('modalLoading').style.display = 'none';
+        document.getElementById('modalContent').style.display = 'block';
+        const joined = u.created_at ? new Date(u.created_at).toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-US') : '—';
+        const grid = document.getElementById('userDetailGrid');
+        grid.innerHTML =
+            '<div class="detail-item"><div class="detail-label">' + t('userDetailId') + '</div><div class="detail-value">' + u.id + '</div></div>' +
+            '<div class="detail-item"><div class="detail-label">' + t('userDetailEmail') + '</div><div class="detail-value">' + esc(u.email || '—') + '</div></div>' +
+            '<div class="detail-item"><div class="detail-label">' + t('userDetailCredits') + '</div><div class="detail-value" style="color:var(--primary)">' + (u.credits ?? '—') + '</div></div>' +
+            '<div class="detail-item"><div class="detail-label">' + t('userDetailJobs') + '</div><div class="detail-value">' + (u.jobs_count ?? u.job_count ?? (u.jobs ? u.jobs.length : '—')) + '</div></div>' +
+            '<div class="detail-item"><div class="detail-label">' + t('userDetailCountry') + '</div><div class="detail-value">' + esc(u.country || '—') + '</div></div>' +
+            '<div class="detail-item"><div class="detail-label">' + t('userDetailCity') + '</div><div class="detail-value">' + esc(u.city || '—') + '</div></div>' +
+            '<div class="detail-item" style="grid-column:span 2"><div class="detail-label">' + t('userDetailJoined') + '</div><div class="detail-value">' + joined + '</div></div>';
 
-function closeUserDetail() {
-    document.getElementById('userDetailView').style.display = 'none';
-    document.getElementById('userListView').style.display = 'block';
-}
+        const jobs = u.jobs || [];
+        const tbody = document.getElementById('userJobsBody');
+        if (!jobs.length) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-muted)">' + t('emptyJobs') + '</td></tr>';
+        } else {
+            tbody.innerHTML = jobs.slice(0, 20).map(j => {
+                const st = j.status === 'done' ? 'done' : j.status === 'error' ? 'error' : 'pending';
+                return '<tr>' +
+                    '<td>' + j.id + '</td>' +
+                    '<td class="cell-ellipsis">' + esc(j.filename || '—') + '</td>' +
+                    '<td><span class="status-badge ' + st + '">' + j.status + '</span></td>' +
+                    '<td>' + (j.faces ?? '—') + '</td>' +
+                    '<td>' + (j.created_at ? new Date(j.created_at).toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-US') : '—') + '</td>' +
+                    '</tr>';
+            }).join('');
+        }
+    }
 
-function openAdjDialog(userId, email, defaultSign) {
-    currentAdjUserId = userId;
-    const amountEl = document.getElementById('adjAmount');
-    amountEl.value = '';
-    amountEl.placeholder = defaultSign > 0 ? '+ credits to grant' : '- credits to revoke';
-    document.getElementById('adjReason').value = '';
-    document.getElementById('adjTitle').textContent = 'Adjust credits for ' + email;
-    document.getElementById('adjDialog').className = 'adj-dialog show';
-}
+    function closeModal() {
+        document.getElementById('userModal').classList.remove('show');
+        _currentUser = null;
+    }
 
-function closeAdjDialog() { document.getElementById('adjDialog').className = 'adj-dialog'; currentAdjUserId = null; }
+    /* ═══════════════════════ CREDIT ADJUSTMENT ═══════════════════════ */
+    async function adjustCredits() {
+        if (!_currentUser) return;
+        const amount = parseInt(document.getElementById('creditAmount').value, 10);
+        if (isNaN(amount)) return;
+        const btn = document.getElementById('creditBtn');
+        btn.disabled = true;
+        try {
+            const d = await api('/api/admin/users/' + _currentUser.id + '/credits', {
+                method: 'POST',
+                body: { amount: amount }
+            });
+            _currentUser.credits = d.credits ?? d.new_credits ?? (_currentUser.credits + amount);
+            document.getElementById('creditResult').textContent = '✓ ' + t('creditSuccess') + ' (' + _currentUser.credits + ')';
+            document.getElementById('creditResult').style.color = 'var(--ok)';
+            renderUserDetail();
+            loadUsers();
+            loadStats();
+        } catch (e) {
+            document.getElementById('creditResult').textContent = '✗ ' + t('creditError');
+            document.getElementById('creditResult').style.color = 'var(--err)';
+        }
+        btn.disabled = false;
+    }
 
-async function submitAdjust() {
-    if (!currentAdjUserId) return;
-    const amount = parseInt(document.getElementById('adjAmount').value);
-    const reason = document.getElementById('adjReason').value;
-    if (isNaN(amount) || amount === 0) { alert('Enter a valid amount'); return; }
-    try {
-        const d = await api('/api/admin/users/' + currentAdjUserId + '/credits', {
-            method: 'POST', body: JSON.stringify({amount, reason})
+    /* ═══════════════════════ JOBS ═══════════════════════ */
+    let _jobsData = [];
+    let _allJobsData = [];
+
+    async function loadJobs() {
+        try {
+            _allJobsData = await api('/api/admin/jobs');
+            _jobsData = [..._allJobsData];
+            renderJobs();
+        } catch (e) {
+            document.getElementById('jobsBody').innerHTML =
+                '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-muted)">' + t('emptyJobs') + '</td></tr>';
+        }
+    }
+
+    function filterJobs() {
+        const q = document.getElementById('jobSearch').value.toLowerCase().trim();
+        const st = document.getElementById('jobStatusFilter').value;
+        _jobsData = _allJobsData.filter(j => {
+            if (q && !(j.filename || '').toLowerCase().includes(q) && !String(j.id).includes(q) && !(j.user_email || '').toLowerCase().includes(q)) return false;
+            if (st && j.status !== st) return false;
+            return true;
         });
-        alert('Done. Credits now: ' + d.credits);
-        closeAdjDialog(); loadUsers();
-        if (document.getElementById('userDetailView').style.display.includes('block')) showUserDetail(currentAdjUserId);
-    } catch(e) { alert('Error adjusting credits'); }
-}
+        renderJobs();
+    }
 
-async function loadJobs() {
-    const d = await api('/api/admin/jobs');
-    document.querySelector('#jobs tbody').innerHTML = d.map(j =>
-        '<tr><td>' + j.id + '</td><td>' + (j.user_id||'anon') + '</td><td>' + j.filename + '</td>' +
-        '<td class="' + (j.status==='done'?'ok':j.status==='error'?'err':'pending') + '">' + j.status + '</td>' +
-        '<td>' + j.mode + '</td><td>' + (j.faces||'-') + '</td><td>' + (j.processing_time_s||'-') + 's</td>' +
-        '<td>' + (j.created_at?.slice(0,16)||'') + '</td></tr>'
-    ).join('');
-}
+    function renderJobs() {
+        const body = document.getElementById('jobsBody');
+        document.getElementById('jobCount').textContent = _jobsData.length + ' / ' + _allJobsData.length;
+        if (!_jobsData.length) {
+            body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-muted)">' + t('emptyJobs') + '</td></tr>';
+            return;
+        }
+        body.innerHTML = _jobsData.map(j => {
+            const st = j.status === 'done' ? 'done' : j.status === 'error' ? 'error' : 'pending';
+            const date = j.created_at ? new Date(j.created_at).toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-US') : '—';
+            const time = j.processing_time_s != null ? j.processing_time_s + 's' : '—';
+            return '<tr>' +
+                '<td>' + j.id + '</td>' +
+                '<td class="cell-ellipsis">' + esc(j.user_email || j.user_id || '—') + '</td>' +
+                '<td class="cell-ellipsis">' + esc(j.filename || '—') + '</td>' +
+                '<td><span class="status-badge ' + st + '">' + j.status + '</span></td>' +
+                '<td>' + esc(j.mode || '—') + '</td>' +
+                '<td>' + (j.faces ?? '—') + '</td>' +
+                '<td>' + time + '</td>' +
+                '<td>' + date + '</td>' +
+                '</tr>';
+        }).join('');
+    }
 
-function loadAll() { loadStats(); loadUsers(); }
-loadAll();
-</script>
+    /* ═══════════════════════ GEO STATS ═══════════════════════ */
+    let _geoLoaded = false;
+
+    async function loadGeoStats() {
+        _geoLoaded = true;
+        try {
+            const d = await api('/api/admin/geo-stats');
+            renderGeo(d);
+        } catch (e) {
+            document.getElementById('geoCountries').innerHTML = '<div class="empty-state"><p>' + t('emptyGeo') + '</p></div>';
+            document.getElementById('geoCities').innerHTML = '<div class="empty-state"><p>' + t('emptyGeo') + '</p></div>';
+        }
+    }
+
+    function renderGeo(d) {
+        const countries = d.countries || d.by_country || [];
+        const cities = d.cities || d.by_city || [];
+
+        renderGeoBar('geoCountries', countries, 'country', 'count', 'name');
+        renderGeoBar('geoCities', cities, 'city', 'count', 'name');
+    }
+
+    function renderGeoBar(containerId, items, labelKey, countKey, altLabelKey) {
+        const el = document.getElementById(containerId);
+        if (!items.length) { el.innerHTML = '<div class="empty-state" style="padding:24px"><p>' + t('emptyGeo') + '</p></div>'; return; }
+        const max = Math.max(...items.map(i => i[countKey] || i.count || 0));
+        el.innerHTML = items.slice(0, 20).map(i => {
+            const name = i[labelKey] || i[altLabelKey] || i.name || i.country || i.city || '—';
+            const count = i[countKey] || i.count || 0;
+            const pct = max > 0 ? (count / max * 100) : 0;
+            return '<div class="geo-bar-row">' +
+                '<div class="geo-bar-label" title="' + esc(name) + '">' + esc(name) + '</div>' +
+                '<div class="geo-bar-track"><div class="geo-bar-fill" style="width:' + pct + '%"></div></div>' +
+                '<div class="geo-bar-count">' + count + '</div>' +
+                '</div>';
+        }).join('');
+    }
+
+    /* ═══════════════════════ UTIL ═══════════════════════ */
+    function esc(s) {
+        const div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+    }
+
+    /* ═══════════════════════ INIT ═══════════════════════ */
+    applyI18n();
+    if (token) { checkAdmin(); }
+    else { showAuthGate(); }
+
+    function loadAll() {
+        loadStats();
+        loadUsers();
+        loadJobs();
+    }
+
+    /* Close modal on backdrop click */
+    document.getElementById('userModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+
+    /* Keyboard shortcuts */
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeModal();
+    });
+
+    /* Enter key on login form */
+    document.getElementById('authPass').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') doLogin();
+    });
+    document.getElementById('authEmail').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') document.getElementById('authPass').focus();
+    });
+
+    /* Enter key on credit amount */
+    document.getElementById('creditAmount').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') adjustCredits();
+    });
+    </script>
 </body>
 </html>
