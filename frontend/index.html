@@ -1382,7 +1382,7 @@
             const is3mf=(j.filename||'').toLowerCase().endsWith('.3mf');
             const titleEsc=(j.title||j.filename||'').replace(/</g,'&lt;');
             const fallbackUrl='/api/preview/'+j.uuid;
-            const previewSrc=j.preview_image || fallbackUrl;
+            const previewSrc=j.preview_image || '/api/thumb/'+j.uuid;
             const folderOpts='<option value="">Bez folderu</option>'+_mfFolders.map(function(f){return '<option value="'+f.id+'"'+(String(j.folder_id||'')===String(f.id)?' selected':'')+'>'+String(f.name).replace(/</g,'&lt;')+'</option>'}).join('');
             const thumb='<img src="'+previewSrc+'" style="width:100%;height:140px;object-fit:cover;border-radius:8px 8px 0 0" onerror="if(this.dataset.tried!=\'1\' && this.src!==\''+fallbackUrl+'\'){this.dataset.tried=\'1\';this.src=\''+fallbackUrl+'\';}else{this.style.display=\'none\';if(this.nextElementSibling) this.nextElementSibling.style.display=\'flex\';}"><div style="display:none;height:140px;background:var(--bg-alt);align-items:center;justify-content:center;flex-direction:column;gap:6px;color:var(--text-muted);font-size:12px;border-radius:8px 8px 0 0;padding:8px;text-align:center"><div style="font-size:22px">\uD83D\uDCC4</div><div style="font-weight:600;color:var(--text);font-size:12px;max-width:90%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+titleEsc+'</div><div style="font-size:11px">Podgl\u0105d niedost\u0119pny</div></div><button class=\"preview-zoom-btn\" onclick=\"event.stopPropagation();openPreviewFullscreen('+previewSrc+')\" title=\"Powieksz podglad">&#x1F50D;</button>';
             return '<div draggable="true" ondragstart="event.dataTransfer.setData(\'text/jobid\','+j.id+')" style="background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;cursor:move">'
@@ -1790,6 +1790,7 @@
         const mat = new THREE.MeshPhongMaterial({ color: 0x1a56db, specular: 0x93b8ea, shininess: 40 });
         function addMeshObj(obj) {
             obj.traverse(function(c) { if (c.isMesh) c.material = mat; });
+            obj.rotation.x = -Math.PI / 2;
             const cb = new THREE.Box3().setFromObject(obj);
             const ctr = new THREE.Vector3(); cb.getCenter(ctr); obj.position.sub(ctr);
             const sz = new THREE.Vector3(); cb.getSize(sz);
@@ -1905,6 +1906,7 @@
                     const mat = new T.MeshPhongMaterial({ color: 0x1a56db, specular: 0x111111, shininess: 30 });
                     function addMeshObj(obj) {
                         obj.traverse(function(c) { if (c.isMesh) c.material = mat; });
+                        obj.rotation.x = -Math.PI / 2;
                         const cb = new T.Box3().setFromObject(obj);
                         const ctr = new T.Vector3(); cb.getCenter(ctr);
                         obj.position.sub(ctr);

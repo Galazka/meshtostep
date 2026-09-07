@@ -253,7 +253,7 @@ const el=document.getElementById('viewer');
 const scene=new THREE.Scene();scene.background=new THREE.Color(0xf0f2f5);
 const camera=new THREE.PerspectiveCamera(50, el.clientWidth/el.clientHeight, 0.1, 1000);camera.position.set(0,40,60);
 const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(el.clientWidth, el.clientHeight);renderer.setPixelRatio(window.devicePixelRatio);el.appendChild(renderer.domElement);
-const controls=new OrbitControls(camera, renderer.domElement);controls.enableDamping=true;
+const controls=new OrbitControls(camera, renderer.domElement);controls.enableDamping=true;controls.enableRotate=true;controls.enablePan=true;controls.enableZoom=true;controls.minDistance=5;controls.maxDistance=500;controls.minPolarAngle=0.1;controls.maxPolarAngle=Math.PI-0.1;
 scene.add(new THREE.AmbientLight(0x404060,1.2));const d1=new THREE.DirectionalLight(0x3b82f6,1.0);d1.position.set(30,50,30);scene.add(d1);
 const d2=new THREE.DirectionalLight(0x8888ff,0.5);d2.position.set(-20,10,-30);scene.add(d2);
 new STLLoader().load('/api/stl-preview/__UUID__', g=>{g.computeBoundingBox();const c=new THREE.Vector3();g.boundingBox.getCenter(c);g.translate(-c.x,-c.y,-c.z);const s=new THREE.Vector3();g.boundingBox.getSize(s);const mx=Math.max(s.x,s.y,s.z);if(mx>0)g.scale(30/mx,30/mx,30/mx);const m=new THREE.Mesh(g,new THREE.MeshPhongMaterial({color:0x3b82f6,specular:0x6666aa,shininess:40}));m.rotation.x=-Math.PI/2;scene.add(m);},undefined,()=>{el.style.display='none'});

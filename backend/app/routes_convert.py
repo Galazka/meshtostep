@@ -240,6 +240,60 @@ def preview_image(job_uuid: str, db: Session = Depends(get_db)):
     raise HTTPException(404, "Preview nie istnieje")
 
 
+# --- Server-side STL thumbnail (trimesh + matplotlib) ---
+@router.get("/thumb/{job_uuid}")
+def stl_thumbnail(job_uuid: str, db: Session = Depends(get_db)):
+    """Render STL to PNG thumbnail server-side. Cached as thumb.png in JOBS_DIR/uuid/."""
+    job = db.query(models.Job).filter(models.Job.uuid == job_uuid).first()
+    if not job:
+        raise HTTPException(404, "Job nie znaleziony")
+    thumb_path = JOBS_DIR / job_uuid / "thumb.png"
+    if thumb_path.exists():
+        return FileResponse(str(thumb_path), media_type="image/png")
+    # find mesh file
+    src_dir = JOBS_DIR / job_uuid
+    mesh_file = None
+    if src_dir.exists():
+        for ext in (".stl", ".3mf", ".obj"):
+            for f in src_dir.iterdir():
+                if f.suffix.lower() == ext:
+                    mesh_file = str(f); break
+            if mesh_file: break
+    if not mesh_file:
+        raise HTTPException(404, "Mesh niedostepny")
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+        import trimesh
+        mesh = trimesh.load(mesh_file, force="mesh")
+        fig = plt.figure(figsize=(4, 3), dpi=100)
+        ax = fig.add_subplot(111, projection="3d")
+        ax.set_facecolor("#f0f2f5")
+        fig.patch.set_facecolor("#f0f2f5")
+        verts = mesh.vertices
+        faces = mesh.faces
+        # downsample for speed
+        if len(faces) > 8000:
+            import numpy as np
+            idx = np.random.choice(len(faces), 8000, replace=False)
+            faces = faces[idx]
+        poly = Poly3DCollection(verts[faces], alpha=0.9, facecolor="#3b82f6", edgecolor="#1e40af", linewidths=0.1)
+        ax.add_collection3d(poly)
+        # auto-scale
+        ax.auto_scale_xyz(verts[:,0], verts[:,1], verts[:,2])
+        ax.view_init(elev=20, azim=45)
+        ax.set_axis_off()
+        plt.tight_layout(pad=0)
+        thumb_path.parent.mkdir(parents=True, exist_ok=True)
+        plt.savefig(str(thumb_path), dpi=100, bbox_inches="tight", facecolor="#f0f2f5", pad_inches=0.1)
+        plt.close(fig)
+        return FileResponse(str(thumb_path), media_type="image/png")
+    except Exception as e:
+        raise HTTPException(500, f"Thumbnail error: {e}")
+
+
 @router.post("/jobs/{job_uuid}/preview")
 async def upload_preview(
     job_uuid: str,
