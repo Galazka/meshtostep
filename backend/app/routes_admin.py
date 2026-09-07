@@ -19,18 +19,126 @@ router = APIRouter(prefix="/api/admin", tags=["admin"])
 # ── Overview stats ───────────────────────────────────────────────────
 @router.get("/stats")
 def stats(admin: models.User = Depends(require_admin), db: Session = Depends(get_db)):
+    total_users = db.query(models.User).count()
+    total_jobs = db.query(models.Job).filter(models.Job.status != "deleted").count()
+    # keep fallback total including deleted for compat
+    total_jobs_all = db.query(models.Job).count()
+
+    total_storage_bytes = db.query(func.sum(models.Job.file_size_bytes)).filter(
+        models.Job.status != "deleted"
+    ).scalar() or 0
+
+    total_downloads = db.query(func.sum(models.ShareLink.downloads)).scalar() or 0
+
+    # jobs_by_status
+    status_rows = db.query(models.Job.status, func.count(models.Job.id)).group_by(models.Job.status).all()
+    jobs_by_status = {row[0] or "unknown": row[1] for row in status_rows}
+
+    # storage_by_user: top users by total bytes
+    storage_rows = (
+        db.query(
+            models.Job.user_id,
+            func.sum(models.Job.file_size_bytes).label("total_bytes"),
+            func.count(models.Job.id).label("cnt"),
+        )
+        .filter(models.Job.status != "deleted", models.Job.user_id.isnot(None))
+        .group_by(models.Job.user_id)
+        .order_by(desc("total_bytes"))
+        .limit(20)
+        .all()
+    )
+    # map user_id -> email/username
+    user_ids = [r.user_id for r in storage_rows]
+    users_map = {}
+    if user_ids:
+        for u in db.query(models.User).filter(models.User.id.in_(user_ids)).all():
+            users_map[u.id] = u
+    storage_by_user = []
+    for r in storage_rows:
+        u = users_map.get(r.user_id)
+        storage_by_user.append({
+            "user_id": r.user_id,
+            "username": u.username if u else None,
+            "email": u.email if u else None,
+            "total_size_bytes": int(r.total_bytes or 0),
+            "job_count": int(r.cnt or 0),
+        })
+
+    # daily_uploads_last_30d
+    since = datetime.utcnow() - timedelta(days=30)
+    daily_rows = (
+        db.query(
+            func.date(models.Job.created_at).label("day"),
+            func.count(models.Job.id).label("count"),
+        )
+        .filter(models.Job.created_at >= since, models.Job.status != "deleted")
+        .group_by(func.date(models.Job.created_at))
+        .order_by(func.date(models.Job.created_at))
+        .all()
+    )
+    # build full 30-day array filling zeros
+    daily_map = {str(r.day): int(r.count) for r in daily_rows}
+    daily_uploads_last_30d = []
+    for i in range(30):
+        d = (since + timedelta(days=i + 1)).date()
+        ds = str(d)
+        daily_uploads_last_30d.append({"date": ds, "count": daily_map.get(ds, 0)})
+
+    # top_models: most viewed jobs
+    top_jobs = (
+        db.query(models.Job)
+        .filter(models.Job.status != "deleted")
+        .order_by(desc(models.Job.views))
+        .limit(10)
+        .all()
+    )
+    top_models = [
+        {
+            "id": j.id,
+            "uuid": j.uuid,
+            "filename": j.original_filename,
+            "title": j.title,
+            "views": j.views or 0,
+            "likes": j.likes or 0,
+            "user_id": j.user_id,
+            "created_at": str(j.created_at),
+        }
+        for j in top_jobs
+    ]
+
+    # legacy fields for backward compat with old frontend
+    jobs_done = jobs_by_status.get("done", 0)
+    jobs_error = jobs_by_status.get("error", 0)
+    credits_sold = db.query(func.sum(models.Payment.credits_granted)).scalar() or 0
+    revenue_usd = db.query(func.sum(models.Payment.amount_usd)).filter(
+        models.Payment.status == "completed").scalar() or 0
+    shares_active = db.query(models.ShareLink).filter(
+        models.ShareLink.is_active == True).count()  # noqa: E712
+    total_share_views = db.query(func.sum(models.ShareLink.views)).scalar() or 0
+
     return {
-        "users": db.query(models.User).count(),
-        "jobs_total": db.query(models.Job).count(),
-        "jobs_done": db.query(models.Job).filter(models.Job.status == "done").count(),
-        "jobs_error": db.query(models.Job).filter(models.Job.status == "error").count(),
-        "credits_sold": db.query(func.sum(models.Payment.credits_granted)).scalar() or 0,
-        "revenue_usd": db.query(func.sum(models.Payment.amount_usd)).filter(
-            models.Payment.status == "completed").scalar() or 0,
-        "shares_active": db.query(models.ShareLink).filter(
-            models.ShareLink.is_active == True).count(),  # noqa: E712
-        "total_downloads": db.query(func.sum(models.ShareLink.downloads)).scalar() or 0,
-        "total_share_views": db.query(func.sum(models.ShareLink.views)).scalar() or 0,
+        # required new keys
+        "total_users": total_users,
+        "total_jobs": total_jobs,
+        "total_downloads": int(total_downloads),
+        "total_storage_bytes": int(total_storage_bytes),
+        "storage_by_user": storage_by_user,
+        "daily_uploads_last_30d": daily_uploads_last_30d,
+        "jobs_by_status": jobs_by_status,
+        "top_models": top_models,
+        # legacy / compat aliases
+        "users": total_users,
+        "jobs_total": total_jobs_all,
+        "jobs": total_jobs,
+        "jobs_done": jobs_done,
+        "jobs_error": jobs_error,
+        "credits_sold": credits_sold,
+        "revenue_usd": revenue_usd,
+        "revenue": revenue_usd,
+        "shares_active": shares_active,
+        "total_share_views": total_share_views,
+        "total_revenue": revenue_usd,
+        "credits_used": total_jobs,
     }
 
 
@@ -108,10 +216,150 @@ def geo_stats(
 @router.get("/users")
 def list_users(admin: models.User = Depends(require_admin), db: Session = Depends(get_db)):
     users = db.query(models.User).order_by(models.User.created_at.desc()).limit(100).all()
-    return [{
-        "id": u.id, "email": u.email, "credits": u.credits, "is_admin": u.is_admin,
-        "created_at": str(u.created_at), "last_login": str(u.last_login),
-    } for u in users]
+    if not users:
+        return []
+    user_ids = [u.id for u in users]
+    # aggregate job counts + storage per user (exclude soft-deleted)
+    agg_rows = (
+        db.query(
+            models.Job.user_id,
+            func.count(models.Job.id).label("cnt"),
+            func.coalesce(func.sum(models.Job.file_size_bytes), 0).label("total_bytes"),
+            func.max(models.Job.created_at).label("last_job_at"),
+        )
+        .filter(models.Job.user_id.in_(user_ids), models.Job.status != "deleted")
+        .group_by(models.Job.user_id)
+        .all()
+    )
+    agg_map = {r.user_id: r for r in agg_rows}
+    result = []
+    for u in users:
+        agg = agg_map.get(u.id)
+        job_count = int(agg.cnt) if agg else 0
+        total_size_bytes = int(agg.total_bytes) if agg else 0
+        last_job_at = str(agg.last_job_at) if agg and agg.last_job_at else None
+        # last_active: prefer last_login, fallback to last_job_at, then created_at
+        last_active = str(u.last_login) if u.last_login else (last_job_at or str(u.created_at))
+        result.append({
+            "id": u.id,
+            "username": u.username,
+            "email": u.email,
+            "credits": u.credits,
+            "is_admin": u.is_admin,
+            "created_at": str(u.created_at),
+            "last_login": str(u.last_login) if u.last_login else None,
+            "last_active": last_active,
+            "job_count": job_count,
+            "jobs_count": job_count,  # compat alias
+            "total_size_bytes": total_size_bytes,
+            "total_storage_bytes": total_size_bytes,
+            "last_job_at": last_job_at,
+        })
+    return result
+
+
+# ── Per-user files list ─────────────────────────────────────────────
+@router.get("/users/{user_id}/files")
+def user_files(
+    user_id: int,
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "User not found")
+    jobs = (
+        db.query(models.Job)
+        .filter(models.Job.user_id == user_id)
+        .order_by(desc(models.Job.created_at))
+        .limit(100)
+        .all()
+    )
+    return [
+        {
+            "id": j.id,
+            "uuid": j.uuid,
+            "filename": j.original_filename,
+            "original_filename": j.original_filename,
+            "file_size_bytes": j.file_size_bytes or 0,
+            "mode": j.mode,
+            "status": j.status,
+            "views": j.views or 0,
+            "likes": j.likes or 0,
+            "created_at": str(j.created_at),
+            "completed_at": str(j.completed_at) if j.completed_at else None,
+        }
+        for j in jobs
+    ]
+
+
+# ── Cleanup: soft-delete excess files per user ──────────────────────
+class CleanupReq(BaseModel):
+    max_files_per_user: int = 10
+
+
+@router.post("/cleanup")
+def cleanup(
+    body: CleanupReq = None,
+    max_files_per_user: int = None,
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    # accept both JSON body and query param
+    limit = None
+    if body and body.max_files_per_user is not None:
+        limit = body.max_files_per_user
+    if max_files_per_user is not None:
+        limit = max_files_per_user
+    if limit is None:
+        limit = 10
+    if limit < 0:
+        raise HTTPException(400, "max_files_per_user must be >= 0")
+    if limit > 10000:
+        raise HTTPException(400, "max_files_per_user too large")
+
+    # find users with > limit active files
+    # get per-user active counts
+    active_counts = (
+        db.query(models.Job.user_id, func.count(models.Job.id).label("cnt"))
+        .filter(models.Job.status != "deleted", models.Job.user_id.isnot(None))
+        .group_by(models.Job.user_id)
+        .having(func.count(models.Job.id) > limit)
+        .all()
+    )
+    deleted_total = 0
+    affected_users = 0
+    details = []
+    for row in active_counts:
+        uid = row.user_id
+        cnt = int(row.cnt)
+        excess = cnt - limit
+        if excess <= 0:
+            continue
+        # oldest files first
+        oldest = (
+            db.query(models.Job)
+            .filter(models.Job.user_id == uid, models.Job.status != "deleted")
+            .order_by(models.Job.created_at.asc(), models.Job.id.asc())
+            .limit(excess)
+            .all()
+        )
+        for job in oldest:
+            job.status = "deleted"
+            deleted_total += 1
+        affected_users += 1
+        details.append({"user_id": uid, "deleted": len(oldest), "had": cnt, "kept": limit})
+
+    if deleted_total:
+        db.commit()
+
+    return {
+        "ok": True,
+        "max_files_per_user": limit,
+        "deleted_count": deleted_total,
+        "affected_users": affected_users,
+        "details": details,
+    }
 
 
 # ── Per-user detailed stats ─────────────────────────────────────────
@@ -125,7 +373,6 @@ def user_detail(
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(404, "User not found")
-
     # Jobs
     total_jobs = db.query(models.Job).filter(models.Job.user_id == user_id).count()
     done_jobs = db.query(models.Job).filter(
@@ -183,6 +430,7 @@ def user_detail(
     return {
         "id": user.id,
         "email": user.email,
+        "username": user.username,
         "credits": user.credits,
         "is_admin": user.is_admin,
         "created_at": str(user.created_at),

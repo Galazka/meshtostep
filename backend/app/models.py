@@ -55,6 +55,7 @@ class Job(Base):
     mode = Column(String(20), default="auto")
     status = Column(String(20), default="pending")
     result_faces = Column(Integer)
+    dims_mm = Column(String(60), nullable=True)  # "X x Y x Z mm"
     result_size_bytes = Column(Integer)
     result_step_path = Column(String(512))
     result_stl_path = Column(String(512))

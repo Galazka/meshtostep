@@ -88,6 +88,11 @@ def _migrate_columns():
         except Exception as e:
             print(f"[3dhosty] quota migrate: {e}")
         try:
+            existing_jobs = {c["name"] for c in insp.get_columns("jobs")}
+            add_col(conn, "jobs", "dims_mm", "VARCHAR(60)", existing_jobs)
+        except Exception as e:
+            print(f"[3dhosty] dims_mm migrate: {e}")
+        try:
             existing = {c["name"] for c in insp.get_columns("jobs")}
             add_col(conn, "jobs", "folder_id", "INTEGER", existing)
         except Exception as e:

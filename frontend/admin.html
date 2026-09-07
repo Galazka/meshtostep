@@ -61,6 +61,25 @@
         .stat-card.warning .stat-value { color: var(--warn); }
         .stat-card.danger .stat-value { color: var(--err); }
 
+        /* ── EXPANDABLE ROWS ── */
+        .expand-row { display: none; }
+        .expand-row.open { display: table-row; }
+        .expand-row td { padding: 0 16px 12px 40px; background: var(--bg-alt); }
+        .expand-inner { padding: 12px 0; }
+        .expand-inner table { width: 100%; font-size: 13px; }
+        .expand-inner th { font-size: 11px; padding: 6px 8px; text-align: left; color: var(--text-muted); text-transform: uppercase; }
+        .expand-inner td { padding: 6px 8px; border-bottom: 1px solid var(--border-light); font-size: 13px; }
+        .toggle-arrow { display: inline-block; width: 16px; text-align: center; transition: transform .15s; }
+        .toggle-arrow.open { transform: rotate(90deg); }
+        .row-actions { display: flex; align-items: center; gap: 8px; padding: 12px 24px 16px; border-top: 1px solid var(--border-light); background: var(--bg-alt); border-radius: 0 0 var(--radius) var(--radius); }
+        .cleanup-bar { display: flex; align-items: center; gap: 10px; padding: 12px 24px; border-top: 1px solid var(--border); background: var(--bg); flex-wrap: wrap; }
+        .cleanup-bar label { font-size: 13px; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+        .cleanup-bar input[type=number] { width: 80px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; font-family: inherit; background: var(--bg-alt); }
+        .cleanup-bar input[type=number]:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+        .btn-danger { background: var(--err); color: #fff; border: none; border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: opacity .15s; }
+        .btn-danger:hover { opacity: .85; }
+        .storage-fmt { font-size: 12px; color: var(--text-secondary); }
+
         /* ── SECTION PANEL ── */
         .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 24px; overflow: hidden; }
         .panel-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 12px; }
@@ -236,19 +255,19 @@
                     <div class="stat-sub" data-i18n="statUsersSub">Laczna liczba kont</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label" data-i18n="statJobs">Przetworzenia</div>
+                    <div class="stat-label" data-i18n="statJobs">Pliki (aktywne)</div>
                     <div class="stat-value" id="statJobs">—</div>
-                    <div class="stat-sub" data-i18n="statJobsSub">Wszystkie konwersje</div>
+                    <div class="stat-sub" data-i18n="statJobsSub">Praca przetworzenia</div>
                 </div>
                 <div class="stat-card success">
-                    <div class="stat-label" data-i18n="statRevenue">Przychod</div>
-                    <div class="stat-value" id="statRevenue">—</div>
-                    <div class="stat-sub" data-i18n="statRevenueSub">Laczna wartosc platnosci</div>
+                    <div class="stat-label">Pamiec</div>
+                    <div class="stat-value" id="statStorage">—</div>
+                    <div class="stat-sub">Suma rozmiarow plikow</div>
                 </div>
                 <div class="stat-card warning">
-                    <div class="stat-label" data-i18n="statCredits">Kredyty wykorzystane</div>
-                    <div class="stat-value" id="statCredits">—</div>
-                    <div class="stat-sub" data-i18n="statCreditsSub">Suma przetworzen</div>
+                    <div class="stat-label" data-i18n="statDownloads">Pobrania</div>
+                    <div class="stat-value" id="statDownloads">—</div>
+                    <div class="stat-sub">Laczne pobrania publiczne</div>
                 </div>
             </div>
 
@@ -271,16 +290,23 @@
                         <table class="admin-table" id="usersTable">
                             <thead>
                                 <tr>
+                                    <th style="width:30px"></th>
                                     <th>ID</th>
                                     <th data-i18n="thEmail">Email</th>
                                     <th data-i18n="thCreditsLeft">Kredyty</th>
-                                    <th data-i18n="thJobsCount">Przetworzenia</th>
-                                    <th data-i18n="thCountry">Kraj</th>
-                                    <th data-i18n="thJoined">Data rejestracji</th>
+                                    <th data-i18n="thJobsCount">Pliki</th>
+                                    <th>Rozmiar</th>
+                                    <th data-i18n="thJoined">Ostatnia aktywnosc</th>
                                 </tr>
                             </thead>
                             <tbody id="usersBody"></tbody>
                         </table>
+                    </div>
+                    <div class="cleanup-bar">
+                        <label for="maxFilesInput">Max plikow na uzytkownika:</label>
+                        <input type="number" id="maxFilesInput" value="10" min="1" max="10000">
+                        <button class="btn-danger" onclick="runCleanup()" id="cleanupBtn">Wyczysc nadmiar plikow</button>
+                        <span id="cleanupResult" style="font-size:13px;font-weight:500;"></span>
                     </div>
                 </div>
 
@@ -642,10 +668,17 @@
             const d = await api('/api/admin/stats');
             document.getElementById('statUsers').textContent = d.total_users ?? d.users ?? '—';
             document.getElementById('statJobs').textContent = d.total_jobs ?? d.jobs ?? '—';
-            const rev = d.revenue ?? d.total_revenue;
-            document.getElementById('statRevenue').textContent = rev != null ? '$' + Number(rev).toFixed(2) : '—';
-            document.getElementById('statCredits').textContent = d.credits_used ?? d.total_credits_used ?? '—';
+            document.getElementById('statDownloads').textContent = d.total_downloads ?? '—';
+            const bytes = d.total_storage_bytes ?? 0;
+            document.getElementById('statStorage').innerHTML = fmtBytes(bytes) + ' <span class="storage-fmt">' + bytes.toLocaleString() + ' B</span>';
         } catch (e) { /* stats will show dashes */ }
+    }
+    function fmtBytes(b) {
+        if (!b) return '0 B';
+        if (b < 1024) return b + ' B';
+        if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+        if (b < 1073741824) return (b / 1048576).toFixed(1) + ' MB';
+        return (b / 1073741824).toFixed(2) + ' GB';
     }
 
     /* ═══════════════════════ USERS ═══════════════════════ */
@@ -667,7 +700,7 @@
         const q = document.getElementById('userSearch').value.toLowerCase().trim();
         _usersData = q ? _allUsersData.filter(u =>
             (u.email || '').toLowerCase().includes(q) ||
-            (u.country || '').toLowerCase().includes(q) ||
+            (u.username || '').toLowerCase().includes(q) ||
             String(u.id).includes(q)
         ) : [..._allUsersData];
         renderUsers();
@@ -677,20 +710,95 @@
         const body = document.getElementById('usersBody');
         document.getElementById('userCount').textContent = _usersData.length + ' / ' + _allUsersData.length;
         if (!_usersData.length) {
-            body.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">' + t('emptyUsers') + '</td></tr>';
+            body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted)">' + t('emptyUsers') + '</td></tr>';
             return;
         }
         body.innerHTML = _usersData.map(u => {
-            const joined = u.created_at ? new Date(u.created_at).toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-US') : '—';
-            return '<tr onclick="openUser(' + u.id + ')">' +
+            const lastActive = u.last_active ? new Date(u.last_active).toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-US') : '—';
+            const sizeStr = fmtBytes(u.total_size_bytes || 0);
+            return '<tr class="user-row" data-id="' + u.id + '">' +
+                '<td><span class="toggle-arrow" id="arrow-' + u.id + '">&#9654;</span></td>' +
                 '<td>' + u.id + '</td>' +
                 '<td class="cell-ellipsis">' + esc(u.email || '—') + '</td>' +
                 '<td class="credit-display">' + (u.credits ?? '—') + '</td>' +
-                '<td>' + (u.jobs_count ?? u.job_count ?? '—') + '</td>' +
-                '<td>' + esc(u.country || '—') + '</td>' +
-                '<td>' + joined + '</td>' +
-                '</tr>';
+                '<td>' + (u.job_count ?? '—') + '</td>' +
+                '<td>' + sizeStr + '</td>' +
+                '<td>' + lastActive + '</td>' +
+                '</tr>' +
+                '<tr class="expand-row" id="expand-' + u.id + '"><td colspan="7">' +
+                '<div class="expand-inner" id="files-inner-' + u.id + '"><div style="padding:8px;color:var(--text-muted);font-size:13px">Kliknij strzalke aby zaladowac pliki...</div></div>' +
+                '</td></tr>';
         }).join('');
+        body.querySelectorAll('.user-row').forEach(tr => {
+            tr.addEventListener('click', function() {
+                toggleUserFiles(parseInt(this.dataset.id));
+            });
+            tr.addEventListener('dblclick', function() {
+                openUser(parseInt(this.dataset.id));
+            });
+        });
+    }
+
+    async function toggleUserFiles(uid) {
+        const row = document.getElementById('expand-' + uid);
+        const arrow = document.getElementById('arrow-' + uid);
+        if (row.classList.contains('open')) {
+            row.classList.remove('open');
+            arrow.classList.remove('open');
+            return;
+        }
+        // close other open rows
+        document.querySelectorAll('.expand-row.open').forEach(r => r.classList.remove('open'));
+        document.querySelectorAll('.toggle-arrow.open').forEach(a => a.classList.remove('open'));
+        row.classList.add('open');
+        arrow.classList.add('open');
+        // load files
+        const inner = document.getElementById('files-inner-' + uid);
+        inner.innerHTML = '<div style="padding:8px;color:var(--text-muted);font-size:13px">Ladowanie...</div>';
+        try {
+            const files = await api('/api/admin/users/' + uid + '/files');
+            if (!files.length) {
+                inner.innerHTML = '<div style="padding:8px;color:var(--text-muted);font-size:13px">Brak plikow</div>';
+                return;
+            }
+            inner.innerHTML = '<table class="admin-table"><thead><tr>' +
+                '<th>ID</th><th>Nazwa pliku</th><th>Rozmiar</th><th>Status</th><th>Widoki</th><th>Data</th>' +
+                '</tr></thead><tbody>' + files.map(f => {
+                    const st = f.status === 'done' ? 'done' : f.status === 'error' ? 'error' : f.status === 'deleted' ? 'error' : 'pending';
+                    const date = f.created_at ? new Date(f.created_at).toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-US') : '—';
+                    return '<tr>' +
+                        '<td>' + f.id + '</td>' +
+                        '<td class="cell-ellipsis">' + esc(f.filename || '—') + '</td>' +
+                        '<td>' + fmtBytes(f.file_size_bytes) + '</td>' +
+                        '<td><span class="status-badge ' + st + '">' + f.status + '</span></td>' +
+                        '<td>' + (f.views || 0) + '</td>' +
+                        '<td>' + date + '</td>' +
+                        '</tr>';
+                }).join('') + '</tbody></table>';
+        } catch (e) {
+            inner.innerHTML = '<div style="padding:8px;color:var(--err);font-size:13px">Blad: ' + esc(e.message) + '</div>';
+        }
+    }
+
+    async function runCleanup() {
+        const btn = document.getElementById('cleanupBtn');
+        const result = document.getElementById('cleanupResult');
+        const maxFiles = parseInt(document.getElementById('maxFilesInput').value, 10);
+        if (isNaN(maxFiles) || maxFiles < 1) { result.textContent = 'Podaj liczbe >= 1'; result.style.color = 'var(--err)'; return; }
+        btn.disabled = true;
+        result.textContent = 'Przetwarzanie...';
+        result.style.color = 'var(--text-secondary)';
+        try {
+            const d = await api('/api/admin/cleanup', { method: 'POST', body: { max_files_per_user: maxFiles } });
+            result.textContent = 'Usunięto ' + d.deleted_count + ' plikow z ' + d.affected_users + ' uzytkownikow (limit: ' + d.max_files_per_user + ')';
+            result.style.color = d.deleted_count > 0 ? 'var(--ok)' : 'var(--text-secondary)';
+            loadStats();
+            loadUsers();
+        } catch (e) {
+            result.textContent = 'Blad: ' + e.message;
+            result.style.color = 'var(--err)';
+        }
+        btn.disabled = false;
     }
 
     /* ═══════════════════════ USER DETAIL ═══════════════════════ */

@@ -125,6 +125,30 @@ async def convert_file(
 
     if result["ok"]:
         job.status = "done"
+        # Calculate dimensions from STL bounding box
+        try:
+            stl_dir = os.path.join(JOBS_DIR, job.uuid)
+            stl_file = None
+            for fn in os.listdir(stl_dir):
+                if fn.lower().endswith(('.stl','.3mf','.obj')):
+                    stl_file = os.path.join(stl_dir, fn); break
+            if stl_file:
+                import struct
+                with open(stl_file, 'rb') as f:
+                    header = f.read(80)
+                    num_triangles = struct.unpack('<I', f.read(4))[0]
+                    min_x=min_y=min_z=float('inf'); max_x=max_y=max_z=float('-inf')
+                    for _ in range(min(num_triangles, 500000)):
+                        f.read(12)  # normal
+                        for _ in range(3):
+                            x,y,z = struct.unpack('<fff', f.read(12))
+                            min_x=min(min_x,x); max_x=max(max_x,x)
+                            min_y=min(min_y,y); max_y=max(max_y,y)
+                            min_z=min(min_z,z); max_z=max(max_z,z)
+                        f.read(2)  # attr
+                    dims_str = f"{round(max_x-min_x,1)} x {round(max_y-min_y,1)} x {round(max_z-min_z,1)} mm"
+                    job.dims_mm = dims_str
+        except Exception: pass
         job.result_step_path = out_step
         job.result_faces = result["faces"]
         job.result_size_bytes = result["result_size"]
@@ -363,7 +387,7 @@ def list_jobs(user: models.User = Depends(require_user), db: Session = Depends(g
         out.append({"id": j.id, "uuid": j.uuid, "filename": j.original_filename, "title": j.title, "status": j.status,
              "mode": j.mode, "faces": j.result_faces, "processing_time_s": j.processing_time_s,
              "created_at": str(j.created_at), "folder_id": j.folder_id, "preview_image": j.preview_image,
-             "visibility": j.visibility, "slug": j.slug, "file_size_bytes": j.file_size_bytes, "result_size_bytes": j.result_size_bytes})
+             "visibility": j.visibility, "slug": j.slug, "file_size_bytes": j.file_size_bytes, "result_size_bytes": j.result_size_bytes, "dims_mm": j.dims_mm})
     return out
 
 
@@ -479,13 +503,15 @@ def share_job(job_id: int, payload: dict = None, user: models.User = Depends(req
     if not job or (job.user_id != user.id and not user.is_admin):
         raise HTTPException(404, "Job nie znaleziony")
     token = uuid.uuid4().hex[:16]
-    share = models.ShareLink(token=token, job_id=job.id, user_id=user.id, format="step", show_author=True)
+    anon = (payload or {}).get("anon", False)
+    show_author = (payload or {}).get("show_author", True)
+    share = models.ShareLink(token=token, job_id=job.id, user_id=user.id, format="step", show_author=show_author)
     db.add(share); db.commit()
     vanity = None
-    if job.slug and user.username:
+    if job.slug and user.username and not anon:
         vanity = f"{settings.APP_URL}/u/{user.username}/{job.slug}"
     share_url = vanity or f"{settings.APP_URL}/s/{token}"
-    return {"url": share_url, "token": token, "vanity": vanity, "visibility": job.visibility}
+    return {"url": share_url, "token": token, "vanity": vanity, "visibility": job.visibility, "anon": anon}
 
 # --- Publish toggle ---
 @router.patch("/jobs/{job_id}/publish")

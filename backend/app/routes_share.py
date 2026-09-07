@@ -50,8 +50,8 @@ __ROBOTS__
   html, body { height: 100%; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #0c0c14;
-    color: #e0e0e8;
+    background: #f7f9fc;
+    color: #1e293b;
     overflow: hidden;
   }
   .topbar {
@@ -90,7 +90,7 @@ __ROBOTS__
     padding: 4px 12px;
     border: 1px solid #2a2a3a;
     border-radius: 999px;
-    background: #16161f;
+    background: #fff;
     color: #bbb;
     white-space: nowrap;
   }
@@ -110,14 +110,14 @@ __ROBOTS__
     white-space: nowrap;
   }
   .btn:hover { opacity: 0.85; }
-  .btn-primary { background: #3b82f6; color: #fff; }
-  .btn-secondary { background: #2a2a3a; color: #e0e0e8; }
+  .btn-primary { background: #1a56db; color: #fff; }
+  .btn-secondary { background: #2a2a3a; color: #1e293b; }
   #viewer3d {
     position: fixed;
     inset: 0;
     width: 100vw;
     height: 100vh;
-    background: #0a0a12;
+    background: #f0f2f5;
   }
   #viewer3d canvas { display: block; }
   @media (max-width: 860px) {
@@ -158,7 +158,7 @@ const el = document.getElementById('viewer3d');
 if (!el) throw new Error('no viewer3d element');
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0a0a12);
+scene.background = new THREE.Color(0xf0f2f5);
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0, 40, 60);
 
@@ -178,7 +178,6 @@ scene.add(d1);
 const d2 = new THREE.DirectionalLight(0x8888ff, 0.5);
 d2.position.set(-20, 10, -30);
 scene.add(d2);
-scene.add(new THREE.GridHelper(100, 20, 0x2a2a3a, 0x16161f));
 
 new STLLoader().load('/api/stl-preview/__UUID__', (g) => {
   g.computeBoundingBox();
@@ -322,15 +321,15 @@ def embed_page(job_id: int, db: Session = Depends(get_db)) -> HTMLResponse:
 <style>
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
   html, body {{ height: 100%; }}
-  body {{ font: 13px/1.4 system-ui, sans-serif; background: #0c0c14; color: #e0e0e8;
+  body {{ font: 13px/1.4 system-ui, sans-serif; background: #f7f9fc; color: #1e293b;
     display: flex; flex-direction: column; }}
   .top {{ display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 14px; border-bottom: 1px solid #2a2a3a; background: #16161f; }}
+    padding: 10px 14px; border-bottom: 1px solid #2a2a3a; background: #fff; }}
   .top h1 {{ font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden;
     text-overflow: ellipsis; margin-right: 12px; }}
   .top a {{ display: inline-block; padding: 6px 16px; background: #3b82f6; flex-shrink: 0;
     color: #fff; font-weight: 600; border-radius: 6px; text-decoration: none; font-size: 12px; }}
-  #viewer3d {{ width: 100%; flex: 1; min-height: 300px; background: #0a0a12; }}
+  #viewer3d {{ width: 100%; flex: 1; min-height: 300px; background: #f0f2f5; }}
 </style>
 </head>
 <body>
@@ -348,7 +347,7 @@ import {{ OrbitControls }} from 'three/addons/controls/OrbitControls.js';
 import {{ STLLoader }} from 'three/addons/loaders/STLLoader.js';
 const el = document.getElementById('viewer3d');
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x0a0a12);
+scene.background = new THREE.Color(0xf0f2f5);
 const camera = new THREE.PerspectiveCamera(50, el.clientWidth / el.clientHeight, 0.1, 1000);
 camera.position.set(0, 40, 60);
 const renderer = new THREE.WebGLRenderer({{ antialias: true }});
@@ -360,7 +359,6 @@ controls.enableDamping = true;
 scene.add(new THREE.AmbientLight(0x404060, 1.2));
 const d1 = new THREE.DirectionalLight(0x3b82f6, 1.0); d1.position.set(30,50,30); scene.add(d1);
 const d2 = new THREE.DirectionalLight(0x8888ff, 0.5); d2.position.set(-20,10,-30); scene.add(d2);
-scene.add(new THREE.GridHelper(100, 20, 0x2a2a3a, 0x16161f));
 new STLLoader().load('/api/stl-preview/{uuid}', g => {{
   g.computeBoundingBox();
   const c = new THREE.Vector3(); g.boundingBox.getCenter(c);
