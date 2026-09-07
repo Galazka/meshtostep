@@ -1098,26 +1098,31 @@
         modal.classList.add('show');
         document.getElementById('modalContent').style.display = 'block';
         document.getElementById('modalLoading').style.display = 'none';
+        const pos = slot?.position || slot?.slot_key || 'hero_bottom';
         document.getElementById('modalBody').innerHTML =
             '<h3 style="margin-bottom:16px">' + (isNew ? 'Nowy slot reklamowy' : 'Edytuj slot') + '</h3>' +
             '<div style="display:grid;gap:12px;max-width:600px">' +
-            '<label>Nazwa: <input type="text" id="adName" value="' + (slot?.name||'') + '" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px"></label>' +
-            '<label>Slot key: <input type="text" id="adSlotKey" value="' + (slot?.slot_key||'') + '" placeholder="after_convert" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px"></label>' +
+            '<label>Nazwa: <input type="text" id="adName" value="' + esc(slot?.name||'') + '" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px"></label>' +
+            '<label>Slot key: <input type="text" id="adSlotKey" value="' + esc(slot?.slot_key||'') + '" placeholder="after_convert" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px"></label>' +
             '<label>Typ: <select id="adType" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px">' +
                 '<option value="adsense"' + (slot?.ad_type==='adsense'?' selected':'') + '>AdSense</option>' +
                 '<option value="custom"' + (slot?.ad_type==='custom'?' selected':'') + '>Custom HTML</option>' +
                 '<option value="image"' + (slot?.ad_type==='image'?' selected':'') + '>Image</option>' +
             '</select></label>' +
-            '<label>Pozycja (mapka): <select id="adPosition" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px"><option value="hero_bottom"' + ( (slot?.position||slot?.slot_key)==="hero_bottom"?" selected":"") + '>hero_bottom</option><option value="after_convert"' + ((slot?.position||slot?.slot_key)==="after_convert"?" selected":"") + '>after_convert</option><option value="viewer_overlay"' + ((slot?.position||slot?.slot_key)==="viewer_overlay"?" selected":"") + '>viewer_overlay</option><option value="search_top"' + ((slot?.position||slot?.slot_key)==="search_top"?" selected":"") + '>search_top</option><option value="sidebar"' + ((slot?.position||slot?.slot_key)==="sidebar"?" selected":"") + '>sidebar</option><option value="page_bottom"' + ((slot?.position||slot?.slot_key)==="page_bottom"?" selected":"") + '>page_bottom</option></select></label>
+            '<label>Pozycja (mapka): <select id="adPosition" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px">' +
+                '<option value="hero_bottom"' + (pos==="hero_bottom"?' selected':'') + '>hero_bottom</option>' +
+                '<option value="after_convert"' + (pos==="after_convert"?' selected':'') + '>after_convert</option>' +
+                '<option value="viewer_overlay"' + (pos==="viewer_overlay"?' selected':'') + '>viewer_overlay</option>' +
+                '<option value="search_top"' + (pos==="search_top"?' selected':'') + '>search_top</option>' +
+                '<option value="sidebar"' + (pos==="sidebar"?' selected':'') + '>sidebar</option>' +
+                '<option value="page_bottom"' + (pos==="page_bottom"?' selected':'') + '>page_bottom</option>' +
+            '</select></label>' +
             '<label>Kolejność: <input type="number" id="adSort" value="' + (slot?.sort_order||0) + '" style="width:100px;padding:8px;border:1px solid var(--border);border-radius:6px"></label>' +
             '<label><input type="checkbox" id="adActive"' + (slot?.is_active!==false?' checked':'') + '> Aktywny</label>' +
-            '<label>Kod reklamy (HTML/JS):<textarea id="adCode" rows="8" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:12px">' + (slot?.ad_code||'').replace(/</g,'&lt;') + '</textarea></label>' +
+            '<label>Kod reklamy (HTML/JS):<textarea id="adCode" rows="8" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:12px">' + esc(slot?.ad_code||'') + '</textarea></label>' +
             '<div style="display:flex;gap:8px">' +
-            ''; // position set below
-            setTimeout(()=>{const s=document.getElementById("adPosition"); if(s) s.value=(slot?.position||slot?.slot_key||"hero_bottom");},0);
-            document.getElementById('modalBody').innerHTML += ''
-            '<button class="btn primary" onclick="saveAdSlot(' + (slot?.id||'null') + ')">' + (isNew ? 'Dodaj' : 'Zapisz') + '</button>' +
-            '<button class="btn" onclick="document.getElementById(\'userModal\').classList.remove(\'show\')">Anuluj</button>' +
+                '<button class="btn primary" onclick="saveAdSlot(' + (slot?.id||'null') + ')">' + (isNew ? 'Dodaj' : 'Zapisz') + '</button>' +
+                '<button class="btn" onclick="document.getElementById(\'userModal\').classList.remove(\'show\')">Anuluj</button>' +
             '</div></div>';
     }
 

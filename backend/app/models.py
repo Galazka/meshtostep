@@ -32,7 +32,7 @@ class User(Base):
     register_user_agent = Column(String(512), nullable=True)
     bio = Column(Text, nullable=True)
     avatar_url = Column(String(512), nullable=True)
-    quota_limit_bytes = Column(Integer, default=500 * 1024 * 1024, nullable=False)  # 500 MB
+    quota_limit_bytes = Column(Integer, default=100 * 1024 * 1024, nullable=False)  # 100 MB
 
     jobs = relationship("Job", back_populates="user")
     folders = relationship("Folder", back_populates="user", cascade="all, delete-orphan")

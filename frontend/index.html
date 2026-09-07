@@ -43,7 +43,8 @@
         body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh; }
         a { color: var(--primary); text-decoration: none; }
         a:hover { text-decoration: underline; }
-        .nav { display: flex; align-items: center; justify-content: space-between; padding: 0 32px; height: 64px; border-bottom: 1px solid var(--border); max-width: 1200px; margin: 0 auto; position: sticky; top: 0; background: var(--bg); z-index: 100; }
+        .nav { display: flex; align-items: center; justify-content: space-between; padding: 0 32px; height: 84px; border-bottom: 1px solid var(--border); max-width: 1200px; margin: 0 auto; position: sticky; top: 0; background: var(--bg); z-index: 100; }
+        .nav-logo img{image-rendering:auto;}
         .nav-logo { font-size: 20px; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; flex-shrink: 0; }
         .nav-tabs { display: flex; gap: 4px; align-items: center; }
         .nav-tab { background: none; border: none; padding: 8px 16px; font-size: 14px; font-weight: 500; color: var(--text-secondary); cursor: pointer; border-radius: 6px; transition: all .15s; font-family: inherit; }
@@ -104,7 +105,8 @@
         .result-card .result-faces strong { font-size: 22px; }
         .result-card .result-meta { font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; }
         .result-card .result-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-        #viewer3d { display: none; width: 100%; height: 400px; border-radius: var(--radius); margin-top: 16px; background: var(--bg-alt); border: 1px solid var(--border); }
+        #viewer3d { display: none; width: 100%; height: 400px; min-height: 400px; border-radius: var(--radius); margin-top: 16px; background: var(--bg-alt); border: 1px solid var(--border); }
+        #viewer3d .v3d-loading { display: flex; align-items: center; justify-content: center; height: 400px; min-height: 400px; color: var(--text-secondary); font-size: 14px; font-weight: 500; }
         .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; max-width: 1000px; margin: 40px auto 60px; }
         .price-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px 24px; text-align: center; transition: box-shadow .2s; }
         .price-card:hover { box-shadow: var(--shadow-md); }
@@ -200,6 +202,10 @@
         .page-heading { padding: 40px 24px 0; max-width: 1200px; margin: 0 auto; }
         .page-heading h2 { font-size: 28px; font-weight: 800; }
         .page-heading p { color: var(--text-secondary); font-size: 15px; margin-top: 4px; }
+        .toast { position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; z-index: 2000; opacity: 0; transform: translateY(10px); transition: all .3s; pointer-events: none; max-width: 90vw; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background: #059669; }
+        .toast.error { background: #dc2626; }
         @media (max-width: 768px) {
             .nav { padding: 0 16px; flex-wrap: wrap; height: auto; padding-top: 12px; padding-bottom: 12px; gap: 8px; }
             .nav-tabs { display: none; }
@@ -208,16 +214,25 @@
             .footer-inner { flex-direction: column; }
             .footer-links { flex-direction: column; gap: 16px; }
         }
+        .job-preview-hero { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+        .fullscreen-overlay { display: none; position: fixed; inset: 0; z-index: 2000; background: #0f172a; flex-direction: column; }
+        .fullscreen-overlay.show { display: flex; }
+        .fs-controls { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: rgba(15,23,42,0.95); border-bottom: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
+        .fs-controls button { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); color: #fff; width: 36px; height: 36px; border-radius: 8px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s; font-family: inherit; }
+        .fs-controls button:hover { background: rgba(255,255,255,0.25); }
+        .fs-controls button.fs-close { margin-left: auto; }
+        .fs-viewer { flex: 1; position: relative; overflow: hidden; }
+        .fs-viewer canvas { display: block; }
     </style>
 </head>
 <body>
     <nav class="nav">
-        <a href="/" class="nav-logo" style="text-decoration:none;display:flex;align-items:center;gap:8px"><img id="headerLogo" src="/logo.png" alt="3DHOSTY" style="height:32px;display:none" onload="this.style.display='block';document.getElementById('headerLogoText').style.display='none'" onerror="this.style.display='none'"><span id="headerLogoText">3DHOSTY</span></a>
+        <a href="/" class="nav-logo" style="text-decoration:none;display:flex;align-items:center;gap:8px"><img id="headerLogo" src="/logo.png" alt="3DHOSTY" style="height:80px;max-width:320px;object-fit:contain;display:none;image-rendering:-webkit-optimize-contrast" onload="this.style.display='block';document.getElementById('headerLogoText').style.display='none'" onerror="this.style.display='none'"><span id="headerLogoText">3DHOSTY</span></a>
         <div class="nav-tabs" id="navTabs">
             <button class="nav-tab active" onclick="switchTab('converter')" data-tab="converter" data-i18n="navConverter">Konwerter</button>
             <button class="nav-tab" onclick="switchTab('myfiles')" data-tab="myfiles" data-i18n="navMyFiles">Moje pliki</button>
             <button class="nav-tab" onclick="switchTab('howitworks')" data-tab="howitworks" data-i18n="navHowItWorks">Jak to dziala</button>
-            <button class="nav-tab" onclick="switchTab('discover')" data-tab="discover">Odkrywaj</button>
+            <button class="nav-tab" onclick="switchTab('discover')" data-tab="discover" data-i18n="navDiscover">Odkrywaj</button>
             <button class="nav-tab" onclick="switchTab('faq')" data-tab="faq" data-i18n="navFAQ">Pomoc FAQ</button>
         </div>
         <div class="nav-right">
@@ -238,22 +253,22 @@
 
     <div class="tab-panel active" id="panel-converter">
         <div class="hero">
-            <h1><span class="hl">Hosting modeli 3D</span> + <span style="white-space:nowrap">STL &rarr; STEP</span></h1>
-            <p style="max-width:640px;margin:0 auto 16px">Wgraj <strong>STL / 3MF / OBJ</strong> — zobacz w 3D na telefonie, przekonwertuj do <strong>STEP</strong> dla CAD, udostępnij <strong>jednym linkiem</strong> na Printables / MakerWorld / w slicerze. <strong>3dhosty.com/u/twój-nick/nazwa-modelu</strong></p>
-            <div class="pricing-tag">Za darmo · 500 MB · Bez instalacji · Działa na telefonie</div>
+            <h1 data-i18n="heroH1">Hosting modeli 3D + STL &rarr; STEP</h1>
+            <p style="max-width:640px;margin:0 auto 16px" data-i18n="heroP">Wgraj <strong>STL / 3MF / OBJ</strong> — zobacz w 3D na telefonie, przekonwertuj do <strong>STEP</strong> dla CAD, udostepnij <strong>jednym linkiem</strong> na Printables / MakerWorld / w slicerze. <strong>3dhosty.com/u/twoj-nick/nazwa-modelu</strong></p>
+            <div class="pricing-tag" data-i18n="heroFreeTag">Za darmo · 100 MB · Bez instalacji · Dziala na telefonie</div>
             <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px">
-              <a href="#converter" onclick="document.getElementById('dropZone').scrollIntoView({behavior:'smooth', block:'center'}); return false" style="padding:12px 22px;background:var(--primary);color:#fff;border-radius:10px;font-weight:700;text-decoration:none">Wgraj model — 10 s</a>
-              <button onclick="switchTab('discover')" style="padding:12px 22px;background:#fff;color:var(--primary);border:1px solid var(--border);border-radius:10px;font-weight:700;cursor:pointer;font-family:inherit">Odkrywaj modele →</button>
+              <a href="#converter" onclick="document.getElementById('dropZone').scrollIntoView({behavior:'smooth', block:'center'}); return false" style="padding:12px 22px;background:var(--primary);color:#fff;border-radius:10px;font-weight:700;text-decoration:none" data-i18n="heroBtnUpload">Wgraj model -- 10 s</a>
+              <button onclick="switchTab('discover')" style="padding:12px 22px;background:#fff;color:var(--primary);border:1px solid var(--border);border-radius:10px;font-weight:700;cursor:pointer;font-family:inherit" data-i18n="heroBtnDiscover">Odkrywaj modele -></button>
             </div>
-            <div style="margin-top:10px;font-size:12px;color:var(--text-muted)">Nie wymaga konta · Konto = foldery, 500 MB, linki /u/nick/slug, publikacja w Odkrywaj</div>
+            <div style="margin-top:10px;font-size:12px;color:var(--text-muted)"><span data-i18n="heroNoAcc">Nie wymaga konta · Konto = foldery, 100 MB, linki /u/nick/slug, publikacja w Odkrywaj</span></div>
         </div>
         <!-- onboarding strip dla nowych -->
         <div style="max-width:900px;margin:0 auto 18px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;justify-content:center;text-align:center">
-          <span style="font-weight:700;font-size:13px;background:var(--primary-light);color:var(--primary);padding:4px 10px;border-radius:999px">Nowe? Start w 10 s</span>
-          <span style="font-size:13px;color:var(--text-secondary)"><strong>1.</strong> Wgraj STL/3MF/OBJ</span><span style="color:var(--border)">→</span>
-          <span style="font-size:13px;color:var(--text-secondary)"><strong>2.</strong> Podgląd 3D + STEP</span><span style="color:var(--border)">→</span>
-          <span style="font-size:13px;color:var(--text-secondary)"><strong>3.</strong> Udostępnij linkiem · <code style="background:var(--bg-alt);padding:2px 6px;border-radius:6px">3dhosty.com/u/...</code></span>
-          <span style="font-size:12px;color:var(--text-muted)">Publiczny = w Odkrywaj · Unlisted = tylko link · Prywatny = tylko Ty</span>
+          <span style="font-weight:700;font-size:13px;background:var(--primary-light);color:var(--primary);padding:4px 10px;border-radius:999px" data-i18n="stripNew">Nowe? Start w 10 s</span>
+          <span style="font-size:13px;color:var(--text-secondary)"><span data-i18n="stripS1"><strong>1.</strong> Wgraj STL/3MF/OBJ</span></span><span style="color:var(--border)">→</span>
+          <span style="font-size:13px;color:var(--text-secondary)"><span data-i18n="stripS2"><strong>2.</strong> Podglad 3D + STEP</span></span><span style="color:var(--border)">→</span>
+          <span style="font-size:13px;color:var(--text-secondary)"><strong>3.</strong> <span data-i18n="stripS3">Udostepnij linkiem · <code style="background:var(--bg-alt);padding:2px 6px;border-radius:6px">3dhosty.com/u/...</code></span>
+          <span style="font-size:12px;color:var(--text-muted)"><span data-i18n="stripVis">Publiczny = w Odkrywaj · Unlisted = tylko link · Prywatny = tylko Ty</span></span>
         </div>
         <div class="trust">
             <div class="trust-badge">
@@ -278,31 +293,31 @@
         <div style="max-width:1100px;margin:0 auto 28px;padding:0 24px">
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px">
             <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px">
-              <div style="font-size:20px;margin-bottom:6px">📱 Podgląd 3D w przeglądarce</div>
-              <div style="font-size:13px;color:var(--text-secondary)">Działa na telefonie i laptopie. STL/3MF/OBJ bez instalacji. Obracaj, przybliżaj, sprawdź przed drukiem.</div>
+              <div style="font-size:20px;margin-bottom:6px"><span data-i18n="feat1H">Podglad 3D w przegladarce</span></div>
+              <div style="font-size:13px;color:var(--text-secondary)"><span data-i18n="feat1P">Dziala na telefonie i laptopie. STL/3MF/OBJ bez instalacji. Obracaj, przyblizaj, sprawdz przed drukiem.</span></div>
             </div>
             <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px">
-              <div style="font-size:20px;margin-bottom:6px">🔗 Jeden link wszędzie</div>
-              <div style="font-size:13px;color:var(--text-secondary)"><code>3dhosty.com/u/nick/slug</code> do opisu na Printables, MakerWorld, Thingiverse, FB, slicerze. Embed <code>&lt;iframe&gt;</code> też.</div>
+              <div style="font-size:20px;margin-bottom:6px"><span data-i18n="feat2H">Jeden link wszedzie</span></div>
+              <div style="font-size:13px;color:var(--text-secondary)"><span data-i18n="feat2P"><code>3dhosty.com/u/nick/slug</code> do opisu na Printables, MakerWorld, Thingiverse, FB, slicerze. Embed <code>&lt;iframe&gt;</code> też.</div>
             </div>
             <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px">
-              <div style="font-size:20px;margin-bottom:6px">⚙️ STL → STEP dla CAD</div>
-              <div style="font-size:13px;color:var(--text-secondary)">5 trybów (auto/ultra/light/smooth/off), siatka → bryła, import do Fusion/SolidWorks/FreeCAD.</div>
+              <div style="font-size:20px;margin-bottom:6px">⚙️ <span data-i18n="feat3H">STL → STEP dla CAD</span></div>
+              <div style="font-size:13px;color:var(--text-secondary)" data-i18n="feat3P">5 trybów (auto/ultra/light/smooth/off), siatka → bryła, import do Fusion/SolidWorks/FreeCAD.</div>
             </div>
             <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px">
-              <div style="font-size:20px;margin-bottom:6px">🔒 Prywatnie lub publicznie</div>
-              <div style="font-size:13px;color:var(--text-secondary)"><strong>Publiczny</strong> w Odkrywaj, <strong>Unlisted</strong> tylko link (noindex), <strong>Prywatny</strong> tylko Ty. Zmień jednym klikiem.</div>
+              <div style="font-size:20px;margin-bottom:6px">🔒 <span data-i18n="feat4H">Prywatnie lub publicznie</span></div>
+              <div style="font-size:13px;color:var(--text-secondary)" data-i18n="feat4P"><strong>Publiczny</strong> w Odkrywaj, <strong>Unlisted</strong> tylko link (noindex), <strong>Prywatny</strong> tylko Ty. Zmień jednym klikiem.</div>
             </div>
             <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px">
-              <div style="font-size:20px;margin-bottom:6px">📂 500 MB + foldery</div>
-              <div style="font-size:13px;color:var(--text-secondary)">Każdy zalogowany ma 500 MB. Foldery, zmiana nazw, grupowe usuwanie, JPG podglądy, pasek zajętości.</div>
+              <div style="font-size:20px;margin-bottom:6px">📂 <span data-i18n="feat5H">100 MB + foldery</span></div>
+              <div style="font-size:13px;color:var(--text-secondary)" data-i18n="feat5P">Każdy zalogowany ma 100 MB. Foldery, zmiana nazw, grupowe usuwanie, JPG podglądy, pasek zajętości.</div>
             </div>
             <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px">
-              <div style="font-size:20px;margin-bottom:6px">🔍 Odkrywaj + sprzedaż</div>
-              <div style="font-size:13px;color:var(--text-secondary)">Wyszukiwarka, tagi, YouTube, komentarze. Włącz sprzedaż — <strong>80% dla Ciebie, 20% prowizji</strong>.</div>
+              <div style="font-size:20px;margin-bottom:6px">🔍 <span data-i18n="feat6H">Odkrywaj + sprzedaż</span></div>
+              <div style="font-size:13px;color:var(--text-secondary)" data-i18n="feat6P">Wyszukiwarka, tagi, YouTube, komentarze. Włącz sprzedaż — <strong>80% dla Ciebie, 20% prowizji</strong>.</div>
             </div>
           </div>
-          <div style="text-align:center;margin-top:12px;font-size:12px;color:var(--text-muted)">Użyj linku 3dhosty w opisach — ludzie zobaczą model od razu na telefonie. To ściąga ruch z Printables/MakerWorld do Ciebie i do nas.</div>
+          <div style="text-align:center;margin-top:12px;font-size:12px;color:var(--text-muted)" data-i18n="featFoot">Użyj linku 3dhosty w opisach — ludzie zobaczą model od razu na telefonie. To ściąga ruch z Printables/MakerWorld do Ciebie i do nas.</div>
         </div>
         <div class="converter">
             <div class="drop-zone" id="dropZone">
@@ -343,23 +358,23 @@
         </div>
         <div id="myFilesContent" style="padding:16px 0;max-width:1100px">
             <div id="quotaBar" style="display:none;margin-bottom:16px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 16px">
-                <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text-secondary);margin-bottom:6px"><span id="quotaLabel">Wykorzystano 0 / 500 MB</span><span id="quotaPct">0%</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text-secondary);margin-bottom:6px"><span id="quotaLabel">Wykorzystano 0 / 100 MB</span><span id="quotaPct">0%</span></div>
                 <div style="height:8px;background:var(--border-light);border-radius:99px;overflow:hidden"><div id="quotaFill" style="height:100%;width:0;background:var(--primary);transition:width .3s"></div></div>
             </div>
             <div id="myFilesToolbar" style="display:none;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px">
-                <input id="mfSearch" placeholder="Szukaj po nazwie..." style="flex:1;min-width:160px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px" oninput="mfRender()">
-                <select id="mfFolderFilter" onchange="mfRender()" style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;min-width:140px"><option value="">Wszystkie foldery</option><option value="__none">Bez folderu</option></select>
-                <button onclick="mfCreateFolder()" style="padding:9px 14px;background:#fff;border:1px solid var(--border);border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">+ Folder</button>
-                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" id="mfSelectAll" onchange="mfToggleAll(this.checked)"> Zaznacz wszystkie</label>
-                <button id="mfBulkDelete" onclick="mfBulkDelete()" style="display:none;padding:9px 14px;background:#fff;color:#dc2626;border:1px solid #fecaca;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">Usun zaznaczone</button>
+                <input id="mfSearch" data-i18n-placeholder="mfSearchPh" placeholder="Szukaj po nazwie..." style="flex:1;min-width:160px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px" oninput="mfRender()">
+                <select id="mfFolderFilter" onchange="mfRender()" style="padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;min-width:140px"><option value="" data-i18n="mfFolderAll">Wszystkie foldery</option><option value="__none" data-i18n="mfFolderNone">Bez folderu</option></select>
+                <button onclick="mfCreateFolder()" style="padding:9px 14px;background:#fff;border:1px solid var(--border);border-radius:8px;font-weight:600;cursor:pointer;font-size:13px" data-i18n="mfCreateFolder">+ Folder</button>
+                <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" id="mfSelectAll" onchange="mfToggleAll(this.checked)"> <span data-i18n="mfSelectAll">Zaznacz wszystkie</span></label>
+                <button id="mfBulkDelete" onclick="mfBulkDelete()" style="display:none;padding:9px 14px;background:#fff;color:#dc2626;border:1px solid #fecaca;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px" data-i18n="mfBulkDelete">Usuń zaznaczone</button>
             </div>
             <div id="mfFolderCrumbs" style="display:none;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
             <div class="my-files-empty" id="myFilesEmpty">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
                 <p data-i18n="myFilesEmpty" style="font-weight:600">Zaloguj się, aby zobaczyć swoje pliki</p>
-                <p style="font-size:13px;color:var(--text-secondary);margin-top:6px">Po zalogowaniu: <strong>500 MB</strong>, foldery, linki <code>3dhosty.com/u/...</code>, publikacja w Odkrywaj jednym klikiem.</p>
-                <p style="font-size:13px;color:var(--text-muted);margin-top:4px">Bez konta też działa — wgraj plik wyżej i zobacz w 3D.</p>
-                <button onclick="showModal('register')" style="margin-top:12px;padding:10px 18px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer">Załóż konto — za darmo</button>
+                <p style="font-size:13px;color:var(--text-secondary);margin-top:6px" data-i18n="mfEmptySub">Po zalogowaniu: <strong>100 MB</strong>, foldery, linki <code>3dhosty.com/u/...</code>, publikacja w Odkrywaj jednym klikiem.</p>
+                <p style="font-size:13px;color:var(--text-muted);margin-top:4px" data-i18n="mfEmptyNoAcc">Bez konta też działa — wgraj plik wyżej i zobacz w 3D.</p>
+                <button onclick="showModal('register')" style="margin-top:12px;padding:10px 18px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer" data-i18n="mfEmptyCta">Załóż konto — za darmo</button>
             </div>
             <div id="mfGrid" style="display:none;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px"></div>
             <div id="myFilesTable" style="display:none"></div>
@@ -381,19 +396,19 @@
     
       <div class="tab-panel" id="panel-discover">
         <div class="section-header" style="text-align:center;padding:24px 0 12px">
-          <h2>Odkrywaj modele</h2>
-          <p style="color:var(--text-secondary)">Wyszukiwarka 3D — tagi, opis, YouTube. Tylko publiczne modele.</p>
+          <h2 data-i18n="discoverTitle">Odkrywaj modele</h2>
+          <p style="color:var(--text-secondary)" data-i18n="discoverDesc">Wyszukiwarka 3D — tagi, opis, YouTube. Tylko publiczne modele.</p>
         </div>
         <div style="max-width:900px;margin:0 auto;padding:0 24px">
           <div style="display:flex;gap:8px;margin-bottom:12px">
-            <input id="discoverQ" placeholder="Szukaj np. wazon, holder, bracket" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-family:inherit">
-            <select id="discoverSort" style="padding:10px;border:1px solid var(--border);border-radius:8px"><option value="latest">Najnowsze</option><option value="popular">Popularne</option><option value="price">Cena</option></select>
-            <button onclick="doDiscover()" style="padding:10px 18px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer">Szukaj</button>
+            <input id="discoverQ" data-i18n-placeholder="discoverSearchPh" placeholder="Szukaj np. wazon, holder, bracket" style="flex:1;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-family:inherit">
+            <select id="discoverSort" style="padding:10px;border:1px solid var(--border);border-radius:8px"><option value="latest" data-i18n="discoverSortLatest">Najnowsze</option><option value="popular" data-i18n="discoverSortPopular">Popularne</option><option value="price" data-i18n="discoverSortPrice">Cena</option></select>
+            <button onclick="doDiscover()" style="padding:10px 18px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer" data-i18n="discoverSearchBtn">Szukaj</button>
           </div>
           <div id="discoverTags" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px"></div>
           <div class="ad-slot" data-slot="search_top" style="margin:12px auto"></div>
           <div id="discoverGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px"></div>
-          <div id="discoverMore" style="text-align:center;margin:16px 0;display:none"><button onclick="discoverOffset+=24;doDiscover(true)" style="padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer">Więcej</button></div>
+          <div id="discoverMore" style="text-align:center;margin:16px 0;display:none"><button onclick="discoverOffset+=24;doDiscover(true)" style="padding:8px 16px;border:1px solid var(--border);border-radius:8px;background:#fff;cursor:pointer" data-i18n="discoverMoreBtn">Więcej</button></div>
         </div>
       </div>
 
@@ -412,15 +427,15 @@
     <!-- ostatnie publiczne — dowód że coś się dzieje -->
     <div id="homeRecent" style="max-width:1100px;margin:0 auto 8px;padding:0 24px;display:none">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px">
-        <h3 style="font-size:16px;font-weight:800">Ostatnie w Odkrywaj</h3>
-        <button onclick="switchTab('discover')" style="padding:8px 14px;background:#fff;border:1px solid var(--border);border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">Zobacz wszystkie →</button>
+        <h3 style="font-size:16px;font-weight:800" data-i18n="homeRecentTitle">Ostatnie w Odkrywaj</h3>
+        <button onclick="switchTab('discover')" style="padding:8px 14px;background:#fff;border:1px solid var(--border);border-radius:8px;font-weight:600;cursor:pointer;font-size:13px" data-i18n="homeRecentBtn">Zobacz wszystkie →</button>
       </div>
       <div id="homeRecentGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px"></div>
     </div>
     <div class="ad-slot" data-slot="page_bottom"></div>
     <footer class="footer">
         <div class="footer-inner">
-            <div class="footer-brand">3DHOSTY<p>Zaawansowana konwersja &middot; STL do STEP</p></div>
+            <div class="footer-brand"><img src="/logo.png" alt="3DHOSTY" style="height:32px;object-fit:contain;display:none" onload="this.style.display='block'" onerror="this.style.display='none'"><p style="margin-top:4px">Hosting modeli 3D</p></div>
             <div class="footer-links">
                 <div class="footer-col"><h4 data-i18n="footerProduct">Produkt</h4><a href="#" onclick="switchTab('converter')" data-i18n="navConverter">Konwerter</a><a href="#" onclick="switchTab('howitworks')" data-i18n="navHowItWorks">Jak to dziala</a></div>
                 <div class="footer-col"><h4 data-i18n="footerLegal">Prawne</h4><a href="regulamin.html" data-i18n="footerRegulamin">Regulamin</a><a href="prywatnosc.html" data-i18n="footerPrivacy">Polityka prywatnosci</a></div>
@@ -468,6 +483,10 @@
                 <button class="modal-close" onclick="closeJobModal()">&times;</button>
             </div>
             <div class="job-modal-meta" id="jobModalMeta"></div>
+            <div class="job-preview-hero" id="jobPreviewHero" style="display:none;margin:12px 24px 0">
+                <div style="font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px" data-i18n="previewHeroLabel">Widoczny podglad</div>
+                <img id="jobPreviewHeroImg" src="" style="width:100%;max-height:300px;object-fit:contain;border-radius:8px;border:1px solid #e2e8f0;background:#f7f9fc">
+            </div>
             <div class="job-preview-wrap">
                 <div class="job-preview-canvas" id="jobPreviewCanvas"></div>
             </div>
@@ -475,6 +494,7 @@
                 <button class="btn-primary" id="jobDlStep" style="display:none" data-i18n="jobDlStep">Pobierz STEP</button>
                 <button class="btn-outline" id="jobDlStl" style="display:none" data-i18n="jobDlStl">Pobierz STL</button>
                 <button class="btn-outline" id="jobShareBtn" style="display:none" data-i18n="jobShare">Udostepnij</button>
+                <button class="btn-outline" id="jobFullscreenBtn" onclick="openJobFullscreen()" style="display:none" title="Full screen 3D" data-i18n="jobFullscreen">⛶</button>
                 <button class="btn-danger" id="jobDeleteBtn" data-i18n="jobDelete">Usun</button>
             </div>
         </div>
@@ -505,12 +525,83 @@
                     <input type="text" id="shareUrl" readonly style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:12px;font-family:inherit;font-size:13px" onclick="this.select()">
                     <button class="btn-primary" style="width:100%" onclick="copyShareUrl()" data-i18n="shareCopy">Kopiuj link</button>
                     <div style="margin-top:12px;padding:10px;background:#f7f9fc;border:1px solid #e2e8f0;border-radius:8px;display:flex;align-items:center;justify-content:space-between;gap:8px">
-                        <span style="font-size:13px;font-weight:600">Opublikuj w Odkrywaj</span>
+                        <span style="font-size:13px;font-weight:600" data-i18n="sharePublishTitle">Opublikuj w Odkrywaj</span>
                         <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer"><input type="checkbox" id="sharePublishToggle" onchange="togglePublishFromShare()" style="opacity:0;width:0;height:0"><span style="position:absolute;inset:0;background:#cbd5e1;border-radius:999px;transition:.2s" id="sharePublishTrack"></span><span id="sharePublishKnob" style="position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span></label>
                     </div>
-                    <div style="font-size:11px;color:#64748b;margin-top:6px">Publiczny = widoczny w Odkrywaj i na /u/nick/slug. Prywatny = tylko link.</div>
+                    <div style="font-size:11px;color:#64748b;margin-top:6px" data-i18n="sharePublishDesc">Publiczny = widoczny w Odkrywaj i na /u/nick/slug. Prywatny = tylko link.</div>
                 </div>
                 <button class="btn-primary" style="width:100%" id="shareCreateBtn" onclick="createShareLink()" data-i18n="shareCreate">Utwórz link</button>
+            </div>
+        </div>
+    </div>
+
+    <style id="editorModalStyle">
+    #editorModal.job-modal{width:860px;max-width:95vw}
+    #editorModal .ed-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px 24px}
+    #editorModal .ed-field{display:flex;flex-direction:column;gap:6px}
+    #editorModal .ed-field label{font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.04em}
+    #editorModal .ed-input{padding:9px 12px;border:1px solid #e2e8f0;border-radius:8px;font-family:inherit;font-size:14px;width:100%;background:#fff;color:#1e293b}
+    #editorModal .ed-input:focus{outline:none;border-color:#1a56db;box-shadow:0 0 0 3px #e8eefb}
+    #editorModal .ed-row{display:flex;gap:8px;flex-wrap:wrap}
+    #editorModal .ed-textarea{min-height:220px;resize:vertical;line-height:1.6}
+    #editorModal .ed-preview{border:1px solid #e2e8f0;border-radius:8px;padding:12px;min-height:220px;background:#fff;overflow:auto;font-size:14px;line-height:1.6}
+    #editorModal .ed-preview img{max-width:100%;border-radius:8px}
+    #editorModal .ed-preview pre{background:#f7f9fc;padding:10px;border-radius:6px;overflow:auto}
+    #editorModal .ed-preview code{background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:13px}
+    #editorModal .ed-actions{display:flex;gap:10px;padding:12px 24px 16px;border-top:1px solid #e2e8f0;align-items:center;flex-wrap:wrap}
+    #editorModal .ed-hint{font-size:12px;color:#94a3b8}
+    @media(max-width:720px){#editorModal .ed-grid{grid-template-columns:1fr}}
+    </style>
+    <div class="job-modal-bg" id="editorModal">
+        <div class="job-modal" id="editorModalBox">
+            <div class="job-modal-head">
+                <h3 data-i18n="editorTitle">Edytuj model — opis jak blog</h3>
+                <button class="modal-close" onclick="closeEditorModal()">&times;</button>
+            </div>
+            <div class="ed-grid">
+                <div class="ed-field" style="grid-column:1/-1">
+                    <label data-i18n="editorTitleLab">Tytuł</label>
+                    <input id="edTitle" class="ed-input" data-i18n-placeholder="editorTitlePh" placeholder="Tytuł modelu">
+                </div>
+                <div class="ed-field">
+                    <label data-i18n="editorTagsLab">Tagi</label>
+                    <input id="edTags" class="ed-input" data-i18n-placeholder="editorTagsPh" placeholder="Tagi oddzielone przecinkami">
+                </div>
+                <div class="ed-field">
+                    <label>YouTube</label>
+                    <input id="edYoutube" class="ed-input" data-i18n-placeholder="editorYoutubePh" placeholder="YouTube URL (opcjonalnie)">
+                </div>
+                <div class="ed-field">
+                    <label data-i18n="editorVisibility">Widoczność</label>
+                    <select id="edVisibility" class="ed-input"><option value="public" data-i18n="visPublic">Publiczny</option><option value="unlisted" data-i18n="visUnlisted">Unlisted — tylko link</option><option value="private" data-i18n="visPrivate">Prywatny</option></select>
+                </div>
+                <div class="ed-field">
+                    <label data-i18n="editorFolder">Folder</label>
+                    <select id="edFolder" class="ed-input"><option value="" data-i18n="mfFolderNone">Bez folderu</option></select>
+                </div>
+                <div class="ed-field">
+                    <label data-i18n="editorDescLab">Opis (markdown)</label>
+                    <textarea id="edDesc" class="ed-input ed-textarea" data-i18n-placeholder="editorDescPh" placeholder="Opis (markdown) — jak blog: wstęp, zdjęcia, parametry, linki"></textarea>
+                    <div class="ed-hint">Markdown: **pogrubienie** *kursywa* `kod` [link](url) # Nagłówek - lista &gt; cytat — obrazy dodaj galerią poniżej ↓</div>
+                </div>
+                <div class="ed-field">
+                    <label data-i18n="editorPreview">Podgląd</label>
+                    <div id="edPreview" class="ed-preview"></div>
+                </div>
+                <div class="ed-field" style="grid-column:1/-1">
+                    <label data-i18n="editorUploadImages">Dodaj zdjęcia do galerii</label>
+                    <div class="ed-row">
+                        <input type="file" id="edImageInput" accept="image/jpeg,image/png,image/webp,image/gif" multiple style="flex:1">
+                        <button class="btn-outline" onclick="edUploadImages()" data-i18n="editorUploadBtn">Wyślij i wstaw do opisu</button>
+                    </div>
+                    <div id="edGallery" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"></div>
+                    <div id="edUploadStatus" class="ed-hint"></div>
+                </div>
+            </div>
+            <div class="ed-actions">
+                <button class="btn-primary" onclick="edSave()" data-i18n="editorSave">Zapisz</button>
+                <button class="btn-outline" onclick="closeEditorModal()" data-i18n="editorCancel">Anuluj</button>
+                <span id="edSaveStatus" class="ed-hint"></span>
             </div>
         </div>
     </div>
@@ -601,8 +692,66 @@
             jobStatus: 'Status', jobMode: 'Tryb', jobDeleteConfirm: 'Usunac to przetworzenie?',
             freeConversion: 'Za darmo. Bez limitu konwersji.',
             adExtendRetention: 'Przedłuż klikając w reklamy',
+            heroH1: 'Hosting modeli 3D + STL \u2192 STEP',
+            heroP: 'Wgraj <strong>STL / 3MF / OBJ</strong> \u2014 zobacz w 3D na telefonie, przekonwertuj do <strong>STEP</strong> dla CAD, udost\u0119pnij <strong>jednym linkiem</strong> na Printables / MakerWorld / w slicerze. <strong>3dhosty.com/u/tw\u00f3j-nick/nazwa-modelu</strong>',
+            heroFreeTag: 'Za darmo \u00b7 100 MB \u00b7 Bez instalacji \u00b7 Dzia\u0142a na telefonie',
+            heroBtnUpload: 'Wgraj model \u2014 10 s',
+            heroBtnDiscover: 'Odkrywaj modele \u2192',
+            heroNoAcc: 'Nie wymaga konta \u00b7 Konto = foldery, 100 MB, linki /u/nick/slug, publikacja w Odkrywaj',
+            stripNew: 'Nowe? Start w 10 s',
+            stripS1: '<strong>1.</strong> Wgraj STL/3MF/OBJ',
+            stripS2: '<strong>2.</strong> Podgl\u0105d 3D + STEP',
+            stripS3: 'Udost\u0119pnij linkiem \u00b7 3dhosty.com/u/...',
+            stripVis: 'Publiczny = w Odkrywaj \u00b7 Unlisted = tylko link \u00b7 Prywatny = tylko Ty',
+            feat1H: 'Podgl\u0105d 3D w przegl\u0105darce',
+            feat1P: 'Dzia\u0142a na telefonie i laptopie. STL/3MF/OBJ bez instalacji. Obracaj, przybli\u017caj, sprawd\u017a przed drukiem.',
+            feat2H: 'Jeden link wsz\u0119dzie',
+            feat2P: '3dhosty.com/u/nick/slug do opisu na Printables, MakerWorld, Thingiverse, FB, slicerze. Embed <iframe>.',
+            feat3H: 'STL \u2192 STEP dla CAD',
+            feat3P: '5 tryb\u00f3w (auto/ultra/light/smooth/off), siatka \u2192 bry\u0142a, import do Fusion/SolidWorks/FreeCAD.',
+            feat4H: 'Prywatnie lub publicznie',
+            feat4P: 'Publiczny w Odkrywaj, Unlisted tylko link (noindex), Prywatny tylko Ty. Zmie\u0144 jednym klikiem.',
+            feat5H: '100 MB + foldery',
+            feat5P: 'Ka\u017cdy zalogowany ma 100 MB. Foldery, zmiana nazw, grupowe usuwanie, JPG podgl\u0105dy, pasek zaj\u0119to\u015bci.',
+            feat6H: 'Odkrywaj + sprzeda\u017c',
+            feat6P: 'Wyszukiwarka, tagi, YouTube, komentarze. W\u0142\u0105cz sprzeda\u017c \u2014 80% dla Ciebie, 20% prowizji.',
+            featFoot: 'U\u017cyj linku 3dhosty w opisach \u2014 ludzie zobacz\u0105 model od razu na telefonie. To \u015bci\u0105ga ruch z Printables/MakerWorld do Ciebie i do nas.',
+            navDiscover: 'Odkrywaj',
+            discoverTitle: 'Odkrywaj modele',
+            discoverDesc: 'Wyszukiwarka 3D \u2014 tagi, opis, YouTube. Tylko publiczne modele.',
+            discoverSearchPh: 'Szukaj np. wazon, holder, bracket',
+            discoverSortLatest: 'Najnowsze', discoverSortPopular: 'Popularne', discoverSortPrice: 'Cena',
+            discoverSearchBtn: 'Szukaj', discoverMoreBtn: 'Wi\u0119cej',
+            homeRecentTitle: 'Ostatnie w Odkrywaj', homeRecentBtn: 'Zobacz wszystkie \u2192',
+            sharePublishTitle: 'Opublikuj w Odkrywaj', sharePublishDesc: 'Publiczny = widoczny w Odkrywaj i na /u/nick/slug. Prywatny = tylko link.',
+            mfSearchPh: 'Szukaj po nazwie...', mfFolderAll: 'Wszystkie foldery', mfFolderNone: 'Bez folderu',
+            mfCreateFolder: '+ Folder', mfSelectAll: 'Zaznacz wszystkie', mfBulkDelete: 'Usu\u0144 zaznaczone',
+            mfEmptySub: 'Po zalogowaniu: 100 MB, foldery, linki 3dhosty.com/u/..., publikacja w Odkrywaj jednym klikiem.',
+            mfEmptyNoAcc: 'Bez konta te\u017c dzia\u0142a \u2014 wgraj plik wy\u017cej i zobacz w 3D.',
+            mfEmptyCta: 'Za\u0142\u00f3\u017c konto \u2014 za darmo',
+            visPublic: 'Publiczny', visUnlisted: 'Unlisted \u2014 tylko link', visPrivate: 'Prywatny',
+            mfRename: 'Zmie\u0144 nazw\u0119', mfEdit: 'Edytuj', mfDelete: 'Usu\u0144',
+            editorTitle: 'Edytuj model \u2014 opis jak blog',
+            editorTitleLab: 'Tytu\u0142', editorTagsLab: 'Tagi', editorDescLab: 'Opis (markdown)',
+            editorTitlePh: 'Tytu\u0142 modelu',
+            editorDescPh: 'Opis (markdown) \u2014 jak blog: wst\u0119p, zdj\u0119cia, parametry, linki',
+            editorTagsPh: 'Tagi oddzielone przecinkami',
+            editorYoutubePh: 'YouTube URL (opcjonalnie)',
+            editorVisibility: 'Widoczno\u015b\u0107',
+            editorFolder: 'Folder',
+            editorSave: 'Zapisz', editorCancel: 'Anuluj',
+            editorPreview: 'Podgl\u0105d',
+            editorUploadImages: 'Dodaj zdj\u0119cia do galerii',
+            editorUploadBtn: 'Wy\u015blij i wstaw do opisu',
+            editorSaved: 'Zapisano', editorSaveErr: 'B\u0142\u0105d zapisu: {msg}',
+            editorUploading: 'Wysy\u0142anie...', editorUploaded: 'Wstawiono {n} zdj\u0119\u0107',
+            blogBy: 'przez',
+            blogTags: 'Tagi',
+            noDescription: 'Brak opisu \u2014 edytuj by doda\u0107 tre\u015b\u0107 jak na blogu.',
             retentionInfo: 'Przechowywanie: {days} dni',
-            faceCount: 'Scianki'
+            faceCount: 'Scianki',
+            previewHeroLabel: 'Widoczny podglad',
+            jobFullscreen: '\u26f6'
         },
         en: {
             navConverter: 'Converter', navPricing: 'Pricing', navMyFiles: 'My Files',
@@ -622,7 +771,7 @@
             progressAlmostDone: 'Almost done...',
             convertBtn: 'Convert', convertingBtn: 'Converting...',
             pricingTitle: 'Pricing', pricingDesc: 'Simple pricing, no subscription. Pay only for what you need.',
-            priceFreeH3: 'Free', pf1: '3 conversions to start', pf2: 'Max 50 MB / file', pf3: 'Auto mode', pfBtn: 'Sign up',
+            priceFreeH3: 'Free', pf1: '3 conversions to start', pf2: 'Max 100 MB / file', pf3: 'Auto mode', pfBtn: 'Sign up',
             pricePack25H3: 'Pack 25', pp1: '25 conversions', pp2: 'Priority queue', pp3: 'API access', pp4: 'Admin panel', ppBtn: 'Buy now',
             pricePack100H3: 'Pack 100', ppl1: '100 conversions', ppl2: 'Priority queue', ppl3: 'API access', ppl4: 'Admin panel', pplBtn: 'Buy now',
             ps1: '5 conversions', ps2: 'All modes', ps3: 'Share links', ps4: '3D preview', psBtn: 'Buy now',
@@ -665,8 +814,66 @@
             jobStatus: 'Status', jobMode: 'Mode', jobDeleteConfirm: 'Delete this conversion?',
             freeConversion: 'Free. Unlimited conversions.',
             adExtendRetention: 'Extend by clicking ads',
+            heroH1: '3D model hosting + STL \u2192 STEP',
+            heroP: 'Upload <strong>STL / 3MF / OBJ</strong> \u2014 view 3D on phone, convert to <strong>STEP</strong> for CAD, share with <strong>one link</strong> on Printables / MakerWorld / in slicer. <strong>3dhosty.com/u/your-nick/model-name</strong>',
+            heroFreeTag: 'Free \u00b7 100 MB \u00b7 No install \u00b7 Works on phone',
+            heroBtnUpload: 'Upload model \u2014 10 s',
+            heroBtnDiscover: 'Discover models \u2192',
+            heroNoAcc: 'No account needed \u00b7 Account = folders, 100 MB, /u/nick/slug links, publish to Discover',
+            stripNew: 'New? Start in 10 s',
+            stripS1: '<strong>1.</strong> Upload STL/3MF/OBJ',
+            stripS2: '<strong>2.</strong> 3D preview + STEP',
+            stripS3: 'Share via link \u00b7 3dhosty.com/u/...',
+            stripVis: 'Public = in Discover \u00b7 Unlisted = link only \u00b7 Private = only you',
+            feat1H: '3D preview in browser',
+            feat1P: 'Works on phone & laptop. STL/3MF/OBJ with no install. Orbit, zoom, check before print.',
+            feat2H: 'One link everywhere',
+            feat2P: '3dhosty.com/u/nick/slug for Printables, MakerWorld, Thingiverse, FB, slicer. Embed <iframe>.',
+            feat3H: 'STL \u2192 STEP for CAD',
+            feat3P: '5 modes (auto/ultra/light/smooth/off), mesh \u2192 solid, import to Fusion/SolidWorks/FreeCAD.',
+            feat4H: 'Private or public',
+            feat4P: 'Public in Discover, Unlisted link only (noindex), Private only you. Switch in one click.',
+            feat5H: '100 MB + folders',
+            feat5P: 'Every logged-in user has 100 MB. Folders, rename, bulk delete, JPG previews, quota bar.',
+            feat6H: 'Discover + sales',
+            feat6P: 'Search, tags, YouTube, comments. Enable sales \u2014 80% for you, 20% fee.',
+            featFoot: 'Use 3dhosty links in descriptions \u2014 people see the model instantly on phone. Drives traffic from Printables/MakerWorld to you and us.',
+            navDiscover: 'Discover',
+            discoverTitle: 'Discover models',
+            discoverDesc: '3D search \u2014 tags, description, YouTube. Public models only.',
+            discoverSearchPh: 'Search e.g. vase, holder, bracket',
+            discoverSortLatest: 'Latest', discoverSortPopular: 'Popular', discoverSortPrice: 'Price',
+            discoverSearchBtn: 'Search', discoverMoreBtn: 'More',
+            homeRecentTitle: 'Latest in Discover', homeRecentBtn: 'See all \u2192',
+            sharePublishTitle: 'Publish to Discover', sharePublishDesc: 'Public = visible in Discover and at /u/nick/slug. Private = link only.',
+            mfSearchPh: 'Search by name...', mfFolderAll: 'All folders', mfFolderNone: 'No folder',
+            mfCreateFolder: '+ Folder', mfSelectAll: 'Select all', mfBulkDelete: 'Delete selected',
+            mfEmptySub: 'When logged in: 100 MB, folders, 3dhosty.com/u/... links, one-click publish to Discover.',
+            mfEmptyNoAcc: 'Works without account too \u2014 upload above and view in 3D.',
+            mfEmptyCta: 'Create free account',
+            visPublic: 'Public', visUnlisted: 'Unlisted \u2014 link only', visPrivate: 'Private',
+            mfRename: 'Rename', mfEdit: 'Edit', mfDelete: 'Delete',
+            editorTitle: 'Edit model \u2014 blog-like description',
+            editorTitleLab: 'Title', editorTagsLab: 'Tags', editorDescLab: 'Description (markdown)',
+            editorTitlePh: 'Model title',
+            editorDescPh: 'Description (markdown) \u2014 like a blog: intro, images, params, links',
+            editorTagsPh: 'Tags comma-separated',
+            editorYoutubePh: 'YouTube URL (optional)',
+            editorVisibility: 'Visibility',
+            editorFolder: 'Folder',
+            editorSave: 'Save', editorCancel: 'Cancel',
+            editorPreview: 'Preview',
+            editorUploadImages: 'Add gallery images',
+            editorUploadBtn: 'Upload & insert',
+            editorSaved: 'Saved', editorSaveErr: 'Save error: {msg}',
+            editorUploading: 'Uploading...', editorUploaded: 'Inserted {n} images',
+            blogBy: 'by',
+            blogTags: 'Tags',
+            noDescription: 'No description \u2014 edit to add blog-like content.',
             retentionInfo: 'Storage: {days} days',
-            faceCount: 'Faces'
+            faceCount: 'Faces',
+            previewHeroLabel: 'Preview image',
+            jobFullscreen: '\u26f6'
         }
     };
 
@@ -748,7 +955,65 @@
     }
 
     let _threeScene, _threeCamera, _threeRenderer, _threeControls, _threeAnim;
+    let _threeToastTimer;
+    function toast(msg, type){
+        let el=document.getElementById('toast');
+        if(!el){ el=document.createElement('div'); el.id='toast'; el.className='toast'; document.body.appendChild(el); }
+        el.textContent=msg;
+        el.className='toast show '+(type||'');
+        clearTimeout(_threeToastTimer);
+        _threeToastTimer=setTimeout(function(){ el.classList.remove('show'); }, 3000);
+    }
+    function _waitThreeReady(cb){
+        console.log('[3D] _waitThreeReady: __threeReady=', window.__threeReady, 'THREE=', !!window.THREE, 'STLLoader=', !!window._STLLoader);
+        if(window.__threeReady && window.THREE && window._STLLoader){ console.log('[3D] _waitThreeReady: already ready'); cb(); return; }
+        let done=false;
+        function go(){ if(done) return; done=true; cb(); }
+        window.addEventListener('three-ready', go, {once:true});
+        let tries=0;
+        const iv=setInterval(function(){
+            tries++;
+            console.log('[3D] _waitThreeReady poll', tries, '__threeReady=', window.__threeReady);
+            if(window.__threeReady && window.THREE && window._STLLoader){ clearInterval(iv); console.log('[3D] _waitThreeReady: ready after poll'); go(); }
+            else if(tries>40){ clearInterval(iv); console.log('[3D] _waitThreeReady: timeout'); if(!done) toast('B\u0142\u0105d \u0142adowania podgl\u0105du 3D', 'error'); }
+        }, 150);
+    }
+    function _fitCameraToObject(obj){
+        try{
+            const box=new THREE.Box3().setFromObject(obj);
+            const size=new THREE.Vector3(); box.getSize(size);
+            const center=new THREE.Vector3(); box.getCenter(center);
+            const maxDim=Math.max(size.x, size.y, size.z) || 1;
+            const fov=_threeCamera.fov * Math.PI/180;
+            let dist=(maxDim/2) / Math.tan(fov/2);
+            dist*=1.6;
+            const dir=new THREE.Vector3(0.6,0.8,1).normalize();
+            _threeCamera.position.copy(center).add(dir.multiplyScalar(dist));
+            _threeCamera.near=dist/100; _threeCamera.far=dist*100; _threeCamera.updateProjectionMatrix();
+            _threeControls.target.copy(center);
+            _threeControls.update();
+        }catch(e){}
+    }
+    function _capturePreview(jobUuid){
+        if(!jobUuid || !_threeRenderer) return;
+        setTimeout(function(){
+            try{
+                const canvas=_threeRenderer.domElement;
+                if(!canvas) return;
+                const dataUrl=canvas.toDataURL('image/jpeg', 0.85);
+                if(!dataUrl || dataUrl.length < 1000) return;
+                // dataURL -> blob via fetch
+                fetch(dataUrl).then(function(r){ return r.blob(); }).then(function(blob){
+                    const fd=new FormData();
+                    fd.append('preview', blob, 'preview.jpg');
+                    const headers=token ? {'Authorization':'Bearer '+token} : {};
+                    fetch('/api/jobs/'+jobUuid+'/preview', {method:'POST', body:fd, headers: headers}).catch(function(){});
+                }).catch(function(){});
+            }catch(e){}
+        }, 1500);
+    }
     function init3DViewer(container) {
+        console.log('[3D] init3DViewer: container=', container.id, 'clientW=', container.clientWidth, 'clientH=', container.clientHeight);
         if (_threeRenderer) {
             cancelAnimationFrame(_threeAnim);
             _threeRenderer.dispose();
@@ -760,10 +1025,12 @@
         _threeScene.background = new THREE.Color(0xf7f9fc);
         _threeCamera = new THREE.PerspectiveCamera(50, W / H, 0.1, 1000);
         _threeCamera.position.set(0, 40, 60);
-        _threeRenderer = new THREE.WebGLRenderer({ antialias: true });
+        _threeRenderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
         _threeRenderer.setSize(W, H);
         _threeRenderer.setPixelRatio(window.devicePixelRatio);
         container.appendChild(_threeRenderer.domElement);
+        // Force resize after DOM layout settles
+        setTimeout(function(){ _threeRenderer.setSize(W, H); }, 100);
         _threeControls = new window._OrbitControls(_threeCamera, _threeRenderer.domElement);
         _threeControls.enableDamping = true;
         _threeScene.add(new THREE.AmbientLight(0xffffff, 0.8));
@@ -774,37 +1041,55 @@
         animate();
     }
 
-    function loadSTLIntoViewer(url) {
-        const container = document.getElementById('viewer3d');
-        container.style.display = 'block';
-        init3DViewer(container);
-        const ext = url.split('.').pop().toLowerCase().split('?')[0];
-        const mat = new THREE.MeshPhongMaterial({ color: 0x1a56db, specular: 0x93b8ea, shininess: 40 });
-
-        function addMesh(obj) {
-            obj.traverse(function(c) { if (c.isMesh) c.material = mat; });
-            obj.rotation.x = -Math.PI / 2;
-            _threeScene.add(obj);
+    function loadSTLIntoViewer(url, jobUuid) {
+        console.log('[3D] loadSTLIntoViewer called url=', url, 'uuid=', jobUuid);
+        if(!jobUuid){
+            try{ const m=url.match(/([a-f0-9]{8,32})/i); if(m) jobUuid=m[1]; }catch(e){}
         }
+        _waitThreeReady(function(){
+            const container = document.getElementById('viewer3d');
+            if(!container){ toast('Brak kontenera podgl\u0105du', 'error'); return; }
+            container.style.height = '400px';
+            container.style.minHeight = '400px';
+            container.innerHTML = '<div class="v3d-loading">\u0141adowanie modelu 3D...</div>';
+            container.style.display = 'block';
+            init3DViewer(container);
+            const ext = url.split('.').pop().toLowerCase().split('?')[0];
+            const mat = new THREE.MeshPhongMaterial({ color: 0x1a56db, specular: 0x93b8ea, shininess: 40 });
 
-        if (ext === 'obj') {
-            const loader = new window._OBJLoader();
-            loader.load(url, addMesh);
-        } else if (ext === '3mf') {
-            const loader = new window._3MFLoader();
-            loader.load(url, addMesh);
-        } else {
-            const loader = new window._STLLoader();
-            loader.load(url, function(geometry) {
-                geometry.computeBoundingBox();
-                const bb = geometry.boundingBox, center = new THREE.Vector3();
-                bb.getCenter(center); geometry.translate(-center.x, -center.y, -center.z);
-                const size = new THREE.Vector3(); bb.getSize(size);
-                const mx = Math.max(size.x, size.y, size.z);
-                if (mx > 0) geometry.scale(30/mx, 30/mx, 30/mx);
-                addMesh(new THREE.Mesh(geometry, mat));
-            });
-        }
+            function addMesh(obj) {
+                var ld = container.querySelector('.v3d-loading');
+                if(ld) ld.style.display = 'none';
+                obj.traverse(function(c) { if (c.isMesh) c.material = mat; });
+                obj.rotation.x = -Math.PI / 2;
+                _threeScene.add(obj);
+                _fitCameraToObject(obj);
+                _capturePreview(jobUuid);
+            }
+            function onErr(e){
+                console.error('loadSTLIntoViewer error', e);
+                toast('Nie uda\u0142o si\u0119 wczyta\u0107 podgl\u0105du 3D', 'error');
+            }
+
+            if (ext === 'obj') {
+                const loader = new window._OBJLoader();
+                loader.load(url, addMesh, undefined, onErr);
+            } else if (ext === '3mf') {
+                const loader = new window._3MFLoader();
+                loader.load(url, addMesh, undefined, onErr);
+            } else {
+                const loader = new window._STLLoader();
+                loader.load(url, function(geometry) {
+                    try{
+                        geometry.computeBoundingBox();
+                        const bb = geometry.boundingBox, center = new THREE.Vector3();
+                        bb.getCenter(center); geometry.translate(-center.x, -center.y, -center.z);
+                        const mesh=new THREE.Mesh(geometry, mat);
+                        addMesh(mesh);
+                    }catch(e){ onErr(e); }
+                }, undefined, onErr);
+            }
+        });
     }
 
     async function doConvert() {
@@ -844,7 +1129,7 @@
                 '<button class="embed-btn" onclick="doEmbed(' + d.job_id + ')">Embed</button>' +
                 '</div></div>';
             document.getElementById('result').style.display = 'block';
-            loadSTLIntoViewer('/api/stl-preview/' + d.uuid);
+            try { loadSTLIntoViewer('/api/stl-preview/' + d.uuid, d.uuid); } catch(e) { console.error('[3D] loadSTLIntoViewer threw:', e); }
         } catch(e) {
             clearInterval(iv);
             document.getElementById('result').className = 'result err';
@@ -1025,7 +1310,10 @@
             const visBadge=j.visibility==='public' ? '<span style="background:#ecfdf5;color:#059669;padding:2px 6px;border-radius:999px;font-size:11px">public</span>' : j.visibility==='private' ? '<span style="background:#fef2f2;color:#dc2626;padding:2px 6px;border-radius:999px;font-size:11px">private</span>' : '<span style="background:#fffbeb;color:#d97706;padding:2px 6px;border-radius:999px;font-size:11px">unlisted</span>';
             const is3mf=(j.filename||'').toLowerCase().endsWith('.3mf');
             const titleEsc=(j.title||j.filename||'').replace(/</g,'&lt;');
-            const thumb=j.preview_image ? '<img src="'+j.preview_image+'" style="width:100%;height:140px;object-fit:cover;border-radius:8px 8px 0 0" onerror="this.style.display=\'none\'">' : '<img src="/api/preview/'+j.uuid+'" style="width:100%;height:140px;object-fit:cover;border-radius:8px 8px 0 0" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'"><div style="display:none;height:140px;background:var(--bg-alt);align-items:center;justify-content:center;color:var(--text-muted);font-size:12px;border-radius:8px 8px 0 0">3D podglad</div>';
+            const fallbackUrl='/api/preview/'+j.uuid;
+            const previewSrc=j.preview_image || fallbackUrl;
+            const folderOpts='<option value="">Bez folderu</option>'+_mfFolders.map(function(f){return '<option value="'+f.id+'"'+(String(j.folder_id||'')===String(f.id)?' selected':'')+'>'+String(f.name).replace(/</g,'&lt;')+'</option>'}).join('');
+            const thumb='<img src="'+previewSrc+'" style="width:100%;height:140px;object-fit:cover;border-radius:8px 8px 0 0" onerror="if(this.dataset.tried!=\'1\' && this.src!==\''+fallbackUrl+'\'){this.dataset.tried=\'1\';this.src=\''+fallbackUrl+'\';}else{this.style.display=\'none\';if(this.nextElementSibling) this.nextElementSibling.style.display=\'flex\';}"><div style="display:none;height:140px;background:var(--bg-alt);align-items:center;justify-content:center;flex-direction:column;gap:6px;color:var(--text-muted);font-size:12px;border-radius:8px 8px 0 0;padding:8px;text-align:center"><div style="font-size:22px">\uD83D\uDCC4</div><div style="font-weight:600;color:var(--text);font-size:12px;max-width:90%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+titleEsc+'</div><div style="font-size:11px">Podgl\u0105d niedost\u0119pny</div></div>';
             return '<div style="background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column">'
             + '<div style="position:relative;cursor:pointer" onclick="openJobModal('+j.id+')">'
             + thumb
@@ -1036,6 +1324,8 @@
             + '<div style="font-size:11px;color:var(--text-muted)">'+(j.created_at||'').slice(0,16)+' \u00b7 '+(j.faces||'-')+' scian \u00b7 '+(j.mode||'-')+'</div>'
             + '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">'
             + '<button onclick="mfInlineRename('+j.id+')" style="flex:1;padding:6px 8px;background:#fff;border:1px solid var(--border);border-radius:6px;font-size:12px;cursor:pointer">Zmien nazwe</button>'
+            + '<select onchange="mfMoveJob('+j.id+',this.value)" onclick="event.stopPropagation()" style="padding:5px 6px;background:#fff;border:1px solid var(--border);border-radius:6px;font-size:12px;cursor:pointer;max-width:110px" title="Folder">'+folderOpts+'</select>'
+            + '<button onclick="event.stopPropagation();openEditor('+j.id+')" style="padding:6px 8px;background:#fff;border:1px solid var(--border);border-radius:6px;font-size:12px;cursor:pointer" title="Edytuj">Edytuj</button>'
             + '<button onclick="event.stopPropagation(); if(confirm(\'Usunac?\')) deleteMyJob('+j.id+')" style="padding:6px 8px;background:#fff;color:#dc2626;border:1px solid #fecaca;border-radius:6px;font-size:12px;cursor:pointer">Usun</button>'
             + '</div>'
             + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
@@ -1266,11 +1556,13 @@
 
     /* ═══════ JOB PREVIEW MODAL (Moje pliki) ═══════ */
     let _myJobsData = [];
+    let _jobCurrentStlUrl = null;
     let _job3Renderer = null, _job3Controls = null, _job3AnimId = null;
 
     function openJobModal(jobId) {
         const j = _myJobsData.find(x => x.id === jobId);
         if (!j) return;
+        window._jobModalJob = j;
         const modal = document.getElementById('jobModal');
         modal.classList.add('show');
         document.getElementById('jobModalTitle').textContent = j.filename || ('Job #' + j.id);
@@ -1289,8 +1581,23 @@
         dlStl.onclick = () => window.open('/api/download/' + j.uuid + '?format=stl', '_blank');
         shareBtn.onclick = () => doShare(j.id);
         delBtn.onclick = () => deleteMyJob(j.id);
+        // Preview image hero
+        const heroSection = document.getElementById('jobPreviewHero');
+        const heroImg = document.getElementById('jobPreviewHeroImg');
+        if (j.preview_image) {
+            heroSection.style.display = 'block';
+            heroImg.src = j.preview_image;
+            heroImg.onerror = function() {
+                heroSection.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:24px;background:#f7f9fc;border:1px solid #f1f5f9;border-radius:8px;margin:12px 24px 0"><div style="font-size:28px">📄</div><div style="font-weight:600;font-size:14px;color:#1e293b;text-align:center">'+(j.title||j.filename||('Job #'+j.id)).replace(/</g,'&lt;')+'</div><div style="font-size:12px;color:#64748b">Podgląd niedostępny</div></div>';
+                heroSection.style.display = 'block';
+            };
+        } else {
+            heroSection.style.display = 'none';
+        }
+        _jobCurrentStlUrl = '/api/stl-preview/' + j.uuid;
+        document.getElementById('jobFullscreenBtn').style.display = done ? '' : 'none';
         loadJobModalSTL('/api/stl-preview/' + j.uuid);
-    }
+        }
 
     function closeJobModal() {
         document.getElementById('jobModal').classList.remove('show');
@@ -1301,6 +1608,144 @@
         const c = document.getElementById('jobPreviewCanvas');
         if (c) c.innerHTML = '';
     }
+
+    /* ═══════ FULLSCREEN 3D OVERLAY ═══════ */
+    let _fsRenderer = null, _fsScene = null, _fsCamera = null, _fsControls = null, _fsAnimId = null, _fsInitialPos = null;
+    let _fsPinchDist = 0, _fsGesturesBound = false;
+
+    function openJobFullscreen() {
+        if (!_jobCurrentStlUrl || !window.THREE || !window._OrbitControls) return;
+        const overlay = document.getElementById('fsOverlay');
+        overlay.classList.add('show');
+        const container = document.getElementById('fsViewer');
+        container.innerHTML = '';
+        const W = container.clientWidth || window.innerWidth;
+        const H = container.clientHeight || (window.innerHeight - 60);
+        _fsScene = new THREE.Scene();
+        _fsScene.background = new THREE.Color(0x0f172a);
+        _fsCamera = new THREE.PerspectiveCamera(45, W / H, 0.1, 10000);
+        _fsRenderer = new THREE.WebGLRenderer({ antialias: true });
+        _fsRenderer.setSize(W, H);
+        _fsRenderer.setPixelRatio(window.devicePixelRatio || 1);
+        container.appendChild(_fsRenderer.domElement);
+        _fsScene.add(new THREE.AmbientLight(0xffffff, 0.7));
+        const dl = new THREE.DirectionalLight(0xffffff, 0.9); dl.position.set(1,1,1); _fsScene.add(dl);
+        const dl2 = new THREE.DirectionalLight(0x1a56db, 0.3); dl2.position.set(-1,0.5,-1); _fsScene.add(dl2);
+        _fsControls = new window._OrbitControls(_fsCamera, _fsRenderer.domElement);
+        _fsControls.enableDamping = true;
+        _fsCamera.position.set(80, 60, 80);
+        _fsCamera.lookAt(0, 0, 0);
+        _fsControls.update();
+        function animate() { _fsAnimId = requestAnimationFrame(animate); _fsControls.update(); _fsRenderer.render(_fsScene, _fsCamera); }
+        animate();
+        loadFsSTL(_jobCurrentStlUrl);
+        // Lazy-bind wheel + pinch once DOM is parsed
+        if (!_fsGesturesBound) {
+            const fsEl = document.getElementById('fsViewer');
+            if (fsEl) {
+                _fsGesturesBound = true;
+                fsEl.addEventListener('wheel', function(e) {
+                    if (!_fsRenderer) return;
+                    e.preventDefault();
+                    fsZoom(e.deltaY > 0 ? 0.1 : -0.1);
+                }, { passive: false });
+                fsEl.addEventListener('touchstart', function(e) {
+                    if (e.touches.length === 2) _fsPinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                }, { passive: true });
+                fsEl.addEventListener('touchmove', function(e) {
+                    if (e.touches.length === 2 && _fsPinchDist) {
+                        e.preventDefault();
+                        const nd = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                        fsZoom((_fsPinchDist - nd) / _fsPinchDist * 0.5);
+                        _fsPinchDist = nd;
+                    }
+                }, { passive: false });
+                fsEl.addEventListener('touchend', function(){ _fsPinchDist = 0; }, { passive: true });
+            }
+        }
+        // Resize renderer on window resize while fullscreen open
+        let _fsResize = function(){
+            if (!_fsRenderer || !overlay.classList.contains('show')) return;
+            const W2 = container.clientWidth || window.innerWidth;
+            const H2 = container.clientHeight || (window.innerHeight - 60);
+            _fsCamera.aspect = W2 / H2;
+            _fsCamera.updateProjectionMatrix();
+            _fsRenderer.setSize(W2, H2);
+        };
+        window.addEventListener('resize', _fsResize);
+        // Remove listener on close (store on overlay)
+        overlay._fsResize = _fsResize;
+    }
+
+    function closeJobFullscreen() {
+        const overlay = document.getElementById('fsOverlay');
+        if (!overlay.classList.contains('show')) return;
+        overlay.classList.remove('show');
+        if (overlay._fsResize) { window.removeEventListener('resize', overlay._fsResize); overlay._fsResize = null; }
+        if (_fsAnimId) { cancelAnimationFrame(_fsAnimId); _fsAnimId = null; }
+        if (_fsRenderer) { _fsRenderer.dispose(); _fsRenderer = null; }
+        if (_fsControls) { try { _fsControls.dispose(); } catch(e){} _fsControls = null; }
+        _fsScene = null; _fsCamera = null; _fsInitialPos = null;
+    }
+
+    function loadFsSTL(url) {
+        if (!_fsScene) return;
+        const ext = url.split('.').pop().toLowerCase().split('?')[0];
+        const mat = new THREE.MeshPhongMaterial({ color: 0x1a56db, specular: 0x93b8ea, shininess: 40 });
+        function addMeshObj(obj) {
+            obj.traverse(function(c) { if (c.isMesh) c.material = mat; });
+            const cb = new THREE.Box3().setFromObject(obj);
+            const ctr = new THREE.Vector3(); cb.getCenter(ctr); obj.position.sub(ctr);
+            const sz = new THREE.Vector3(); cb.getSize(sz);
+            obj.scale.setScalar(100 / (Math.max(sz.x, sz.y, sz.z) || 1));
+            _fsScene.add(obj);
+            _fsInitialPos = _fsCamera.position.clone();
+        }
+        const req = new XMLHttpRequest();
+        req.open('GET', url);
+        if (token) req.setRequestHeader('Authorization', 'Bearer ' + token);
+        req.responseType = 'arraybuffer';
+        req.onload = function() {
+            if (req.status !== 200 || !req.response) return;
+            const data = req.response;
+            try {
+                if (ext === 'obj' && window._OBJLoader) { new window._OBJLoader().load(URL.createObjectURL(new Blob([data])), addMeshObj); }
+                else if (ext === '3mf' && window._3MFLoader) { new window._3MFLoader().load(URL.createObjectURL(new Blob([data])), addMeshObj); }
+                else {
+                    const geometry = new window._STLLoader().parse(data);
+                    geometry.computeBoundingBox();
+                    const box = geometry.boundingBox;
+                    const center = new THREE.Vector3(); box.getCenter(center);
+                    geometry.translate(-center.x, -center.y, -center.z);
+                    const size = new THREE.Vector3(); box.getSize(size);
+                    const mesh = new THREE.Mesh(geometry, mat);
+                    mesh.scale.setScalar(100 / (Math.max(size.x, size.y, size.z) || 1));
+                    _fsScene.add(mesh);
+                    _fsInitialPos = _fsCamera.position.clone();
+                }
+            } catch(e) { console.error('fs preview error:', e); }
+        };
+        req.send();
+    }
+
+    function fsZoom(delta) {
+        if (!_fsCamera || !_fsControls) return;
+        const dir = new THREE.Vector3().subVectors(_fsCamera.position, _fsControls.target);
+        const dist = dir.length();
+        dir.normalize().multiplyScalar(dist * (1 + delta));
+        _fsCamera.position.copy(_fsControls.target).add(dir);
+        _fsControls.update();
+    }
+    function fsZoomIn() { fsZoom(-0.2); }
+    function fsZoomOut() { fsZoom(0.2); }
+    function fsResetCamera() {
+        if (!_fsCamera || !_fsControls || !_fsInitialPos) return;
+        _fsCamera.position.copy(_fsInitialPos);
+        _fsControls.target.set(0, 0, 0);
+        _fsControls.update();
+    }
+
+    // Scroll + pinch are bound lazily in openJobFullscreen
 
     function _jobModalDeps(cb, errCb) {
         const T = window.THREE, OC = window._OrbitControls, SL = window._STLLoader;
@@ -1322,7 +1767,13 @@
 
     function loadJobModalSTL(url) {
         const container = document.getElementById('jobPreviewCanvas');
-        container.innerHTML = '';
+        console.log('[3D] loadJobModalSTL called url=', url, 'container=', !!container, 'clientW=', container && container.clientWidth);
+        // Ensure container has explicit height and loading text
+        const wrap = container.closest('.job-preview-wrap');
+        if(wrap){ wrap.style.minHeight = '400px'; }
+        container.style.minHeight = '400px';
+        container.style.height = '400px';
+        container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:400px;min-height:400px;color:#64748b;font-size:14px;font-weight:500">\u0141adowanie modelu 3D...</div>';
         const req = new XMLHttpRequest();
         req.open('GET', url);
         if (token) req.setRequestHeader('Authorization', 'Bearer ' + token);
@@ -1342,6 +1793,9 @@
                 renderer.setSize(w, h);
                 renderer.setPixelRatio(window.devicePixelRatio || 1);
                 container.appendChild(renderer.domElement);
+                // Force resize after DOM layout settles (modal just opened, clientWidth was 0)
+                console.log('[3D] loadJobModalSTL: renderer mounted w=', w, 'h=', h);
+                setTimeout(function(){ renderer.setSize(container.clientWidth || w, h); }, 100);
                 scene.add(new T.AmbientLight(0xffffff, 0.7));
                 const dl = new T.DirectionalLight(0xffffff, 0.9);
                 dl.position.set(1, 1, 1);
@@ -1422,7 +1876,7 @@
         if (e.target === this) closeShareModal();
     });
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') { closeJobModal(); closeShareModal(); closeModal(); }
+        if (e.key === 'Escape') { if (document.getElementById('fsOverlay').classList.contains('show')) { closeJobFullscreen(); } else { closeJobModal(); closeShareModal(); closeModal(); } }
     });
 
     // home recent — dowód społeczny
@@ -1447,6 +1901,197 @@
     }
     loadHomeRecent();
 
-    </script>
+        async function mfMoveJob(jobId, folderId){
+            try{
+                const r=await fetch('/api/jobs/'+jobId+'/rename',{method:'PATCH',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({folder_id:folderId})});
+                if(r.ok){
+                    const j=_myJobsData.find(function(x){return x.id===jobId});
+                    if(j) j.folder_id=folderId;
+                    mfRender();
+                    toast('Przeniesiono do folderu','success');
+                }
+            }catch(e){}
+        }
+
+        /* ═══════ EDITOR MODAL ═══════ */
+        let _edJobId = null;
+        let _edDescListener = null;
+
+        function _mdToHtml(md) {
+            if (!md) return '';
+            let h = md
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+            // code blocks ```...```
+            h = h.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+            // inline code
+            h = h.replace(/`([^`]+)`/g, '<code>$1</code>');
+            // headings
+            h = h.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+            h = h.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+            h = h.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+            h = h.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+            // bold + italic
+            h = h.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+            h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            h = h.replace(/\*(.+?)\*/g, '<em>$1</em>');
+            // images
+            h = h.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px">');
+            // links
+            h = h.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+            // newlines → <br> (but not inside pre)
+            h = h.replace(/\n/g, '<br>');
+            return h;
+        }
+
+        function openEditor(jobId) {
+            const j = _myJobsData.find(function(x) { return x.id === jobId; });
+            if (!j) return;
+            _edJobId = jobId;
+
+            document.getElementById('edTitle').value = j.title || j.filename || '';
+            document.getElementById('edTags').value = (j.tags || []).join(', ');
+            document.getElementById('edYoutube').value = j.youtube_url || '';
+            document.getElementById('edVisibility').value = j.visibility || 'private';
+            document.getElementById('edDesc').value = j.description || '';
+
+            // populate folder options
+            const folderSel = document.getElementById('edFolder');
+            folderSel.innerHTML = '<option value="">' + t('mfFolderNone') + '</option>';
+            _mfFolders.forEach(function(f) {
+                const opt = document.createElement('option');
+                opt.value = f.id;
+                opt.textContent = f.name;
+                folderSel.appendChild(opt);
+            });
+            folderSel.value = j.folder_id || '';
+
+            // live markdown preview
+            const descEl = document.getElementById('edDesc');
+            const previewEl = document.getElementById('edPreview');
+            previewEl.innerHTML = _mdToHtml(descEl.value);
+            if (_edDescListener) descEl.removeEventListener('input', _edDescListener);
+            _edDescListener = function() { previewEl.innerHTML = _mdToHtml(descEl.value); };
+            descEl.addEventListener('input', _edDescListener);
+
+            // gallery from existing images in description
+            const galEl = document.getElementById('edGallery');
+            galEl.innerHTML = '';
+            var imgMatches = (j.description || '').match(/!\[[^\]]*\]\([^)]+\)/g) || [];
+            imgMatches.forEach(function(m) {
+                var urlM = m.match(/\(([^)]+)\)/);
+                if (urlM) {
+                    var img = document.createElement('img');
+                    img.src = urlM[1];
+                    img.style.cssText = 'width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0';
+                    galEl.appendChild(img);
+                }
+            });
+
+            document.getElementById('edSaveStatus').textContent = '';
+            document.getElementById('editorModal').classList.add('show');
+        }
+
+        function closeEditorModal() {
+            document.getElementById('editorModal').classList.remove('show');
+            _edJobId = null;
+            if (_edDescListener) {
+                document.getElementById('edDesc').removeEventListener('input', _edDescListener);
+                _edDescListener = null;
+            }
+        }
+
+        async function edSave() {
+            if (!_edJobId) return;
+            const statusEl = document.getElementById('edSaveStatus');
+            statusEl.textContent = '...';
+            const body = {
+                title: document.getElementById('edTitle').value.trim(),
+                description: document.getElementById('edDesc').value,
+                tags: document.getElementById('edTags').value.split(',').map(function(s){return s.trim()}).filter(Boolean),
+                youtube_url: document.getElementById('edYoutube').value.trim() || null,
+                visibility: document.getElementById('edVisibility').value,
+                folder_id: document.getElementById('edFolder').value || null
+            };
+            try {
+                const r = await fetch('/api/jobs/' + _edJobId + '/meta', {
+                    method: 'PATCH',
+                    headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
+                    body: JSON.stringify(body)
+                });
+                if (!r.ok) { const e = await r.json().catch(function(){return{}}); throw new Error(e.detail || 'Error'); }
+                // update local data
+                const j = _myJobsData.find(function(x) { return x.id === _edJobId; });
+                if (j) {
+                    j.title = body.title;
+                    j.description = body.description;
+                    j.tags = body.tags;
+                    j.youtube_url = body.youtube_url;
+                    j.visibility = body.visibility;
+                    j.folder_id = body.folder_id ? Number(body.folder_id) : null;
+                }
+                statusEl.textContent = t('editorSaved');
+                closeEditorModal();
+                mfRender();
+            } catch(e) {
+                statusEl.textContent = t('editorSaveErr', {msg: e.message});
+            }
+        }
+
+        async function edUploadImages() {
+            const inp = document.getElementById('edImageInput');
+            const files = inp.files;
+            if (!files || !files.length || !_edJobId) return;
+            const statusEl = document.getElementById('edUploadStatus');
+            statusEl.textContent = t('editorUploading');
+            let inserted = 0;
+            for (let i = 0; i < files.length; i++) {
+                try {
+                    const fd = new FormData();
+                    fd.append('image', files[i]);
+                    const r = await fetch('/api/jobs/' + _edJobId + '/preview', {
+                        method: 'POST',
+                        headers: token ? {'Authorization': 'Bearer ' + token} : {},
+                        body: fd
+                    });
+                    if (!r.ok) continue;
+                    const d = await r.json();
+                    const url = d.url || d.preview_url || d.image_url || '';
+                    if (!url) continue;
+                    // insert markdown image into edDesc
+                    const descEl = document.getElementById('edDesc');
+                    const cursor = descEl.selectionStart;
+                    const val = descEl.value;
+                    const ins = (cursor > 0 && val[cursor - 1] !== '\n' ? '\n' : '') + '![](' + url + ')\n';
+                    descEl.value = val.slice(0, cursor) + ins + val.slice(cursor);
+                    descEl.dispatchEvent(new Event('input'));
+                    // add thumbnail to gallery
+                    const galEl = document.getElementById('edGallery');
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.style.cssText = 'width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0';
+                    galEl.appendChild(img);
+                    inserted++;
+                } catch(e) {}
+            }
+            statusEl.textContent = t('editorUploaded', {n: inserted});
+            inp.value = '';
+        }
+
+        document.getElementById('editorModal').addEventListener('click', function(e) {
+            if (e.target === this) closeEditorModal();
+        });
+        </script>
+<div class="fullscreen-overlay" id="fsOverlay">
+    <div class="fs-controls">
+        <button onclick="fsZoomIn()" title="Zoom in">+</button>
+        <button onclick="fsZoomOut()" title="Zoom out">−</button>
+        <button onclick="fsResetCamera()" title="Reset camera">⌂</button>
+        <button class="fs-close" onclick="closeJobFullscreen()" title="Close (ESC)">✕</button>
+    </div>
+    <div class="fs-viewer" id="fsViewer"></div>
+</div>
+<div id="toast" class="toast"></div>
 </body>
 </html>

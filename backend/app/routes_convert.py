@@ -37,7 +37,7 @@ SHARES_DIR = Path(settings.DATA_DIR) / "shares"
 for d in [JOBS_DIR, PREVIEWS_DIR, SHARES_DIR]:
     d.mkdir(parents=True, exist_ok=True)
 
-QUOTA_DEFAULT = 500 * 1024 * 1024
+QUOTA_DEFAULT = 100 * 1024 * 1024
 
 @router.get("/quota")
 def get_quota(user: models.User = Depends(require_user), db: Session = Depends(get_db)):
@@ -79,7 +79,7 @@ async def convert_file(
         used = _quota_used(db, user.id)
         if used + len(data) > limit:
             shutil.rmtree(job_dir, ignore_errors=True)
-            raise HTTPException(413, f"Przekroczono limit 500 MB. Zwolnij miejsce usuwając pliki.")
+            raise HTTPException(413, f"Przekroczono limit 100 MB. Zwolnij miejsce usuwając pliki.")
     src.write_bytes(data)
 
     if user and not getattr(user,'username',None):
@@ -216,6 +216,58 @@ def preview_image(job_uuid: str, db: Session = Depends(get_db)):
     raise HTTPException(404, "Preview nie istnieje")
 
 
+@router.post("/jobs/{job_uuid}/preview")
+async def upload_preview(
+    job_uuid: str,
+    preview: UploadFile = File(...),
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Accept canvas screenshot (image/jpeg or image/png) and save as JOBS_DIR/uuid/preview.jpg"""
+    job = db.query(models.Job).filter(models.Job.uuid == job_uuid).first()
+    if not job:
+        raise HTTPException(404, "Job nie znaleziony")
+    # ownership check if logged — allow anon uploads for anon jobs, require owner for owned jobs
+    if job.user_id is not None:
+        if not user or (job.user_id != user.id and not getattr(user, "is_admin", False)):
+            raise HTTPException(403, "Brak uprawnien")
+    ctype = (preview.content_type or "").lower()
+    if ctype not in ("image/jpeg", "image/jpg", "image/png", "image/webp", "application/octet-stream"):
+        # still accept — frontend sends jpeg; be permissive
+        pass
+    data = await preview.read()
+    if not data or len(data) < 100:
+        raise HTTPException(400, "Pusty plik preview")
+    if len(data) > 5 * 1024 * 1024:
+        raise HTTPException(400, "Preview > 5 MB")
+    job_dir = JOBS_DIR / job_uuid
+    job_dir.mkdir(parents=True, exist_ok=True)
+    out = job_dir / "preview.jpg"
+    # if png/webp, try to convert via PIL else just save; ponytail: no PIL dep required — save raw bytes as jpg path, browsers handle it
+    # if PIL available, convert to JPEG for consistency
+    try:
+        from PIL import Image
+        import io
+        img = Image.open(io.BytesIO(data))
+        if img.mode in ("RGBA", "LA", "P"):
+            bg = Image.new("RGB", img.size, (247, 249, 252))
+            if img.mode == "P":
+                img = img.convert("RGBA")
+            bg.paste(img, mask=img.split()[-1] if img.mode == "RGBA" else None)
+            img = bg
+        elif img.mode != "RGB":
+            img = img.convert("RGB")
+        img.save(str(out), "JPEG", quality=85)
+    except Exception:
+        # fallback: write raw bytes
+        out.write_bytes(data)
+    job.preview_image = str(out)
+    db.commit()
+    return {"ok": True, "preview": f"/api/preview/{job_uuid}"}
+
+
+
+
 # --- Share links ---
 @router.post("/share")
 def create_share(
@@ -338,10 +390,58 @@ def rename_job(job_id: int, payload: dict, user: models.User = Depends(require_u
     job = db.query(models.Job).filter(models.Job.id == job_id).first()
     if not job or (job.user_id != user.id and not user.is_admin):
         raise HTTPException(404, "Job nie znaleziony")
-    title = (payload.get("title") or payload.get("name") or "").strip()[:200]
-    if not title:
-        raise HTTPException(400, "Nazwa wymagana")
-    job.title = title
+    # extended: accept title + description/tags/youtube_url/visibility/is_paid/price_cents/folder_id/slug
+    updated = {}
+    if "title" in payload or "name" in payload:
+        title = (payload.get("title") or payload.get("name") or "").strip()[:200]
+        if title:
+            job.title = title
+            # also update slug if title changed and no explicit slug
+            if "slug" not in payload:
+                new_slug = _slugify(title)
+                # ensure unique per user
+                base = new_slug; k = 1
+                while db.query(models.Job).filter(models.Job.user_id==job.user_id, models.Job.slug==new_slug, models.Job.id!=job.id).first() is not None:
+                    k+=1; new_slug=f"{base}-{k}"
+                job.slug = new_slug
+            updated["title"] = job.title
+            updated["slug"] = job.slug
+        elif "title" in payload:
+            raise HTTPException(400, "Nazwa wymagana")
+    if "slug" in payload:
+        s = _slugify(payload.get("slug") or "")
+        base=s; k=1
+        while db.query(models.Job).filter(models.Job.user_id==job.user_id, models.Job.slug==s, models.Job.id!=job.id).first() is not None:
+            k+=1; s=f"{base}-{k}"
+        job.slug=s; updated["slug"]=s
+    if "description" in payload:
+        job.description = (payload.get("description") or "")[:10000]
+        updated["description"] = job.description
+    if "tags" in payload:
+        raw = payload.get("tags") or ""
+        if isinstance(raw, list):
+            raw = ",".join(str(x) for x in raw)
+        job.tags = ",".join([t.strip()[:40] for t in raw.split(",") if t.strip()])[:500]
+        updated["tags"] = job.tags
+    if "youtube_url" in payload:
+        job.youtube_url = (payload.get("youtube_url") or "")[:512] or None
+        updated["youtube_url"] = job.youtube_url
+    if "visibility" in payload:
+        v = payload.get("visibility")
+        if v in ("public","private","unlisted"):
+            job.visibility = v
+            updated["visibility"] = v
+    if "is_paid" in payload:
+        job.is_paid = bool(payload.get("is_paid"))
+        updated["is_paid"] = job.is_paid
+    if "price_cents" in payload:
+        try:
+            pc = int(payload.get("price_cents") or 0)
+            pc = max(0, min(pc, 9999999))
+            job.price_cents = pc
+            updated["price_cents"] = pc
+        except Exception:
+            raise HTTPException(400, "price_cents int")
     # optional folder move
     if "folder_id" in payload:
         fid = payload.get("folder_id")
@@ -358,8 +458,19 @@ def rename_job(job_id: int, payload: dict, user: models.User = Depends(require_u
                 raise
             except:
                 raise HTTPException(400, "folder_id int")
+        updated["folder_id"] = job.folder_id
+    if not updated and "title" not in payload and "name" not in payload:
+        # no recognized fields — require at least one
+        raise HTTPException(400, "Brak pol do aktualizacji")
     db.commit()
-    return {"ok": True, "title": job.title, "folder_id": job.folder_id}
+    db.refresh(job)
+    return {"ok": True, "title": job.title, "slug": job.slug, "folder_id": job.folder_id, "visibility": job.visibility, "description": job.description, "tags": job.tags, "youtube_url": job.youtube_url, "is_paid": job.is_paid, "price_cents": job.price_cents, "updated": updated}
+
+
+@router.patch("/jobs/{job_id}/meta")
+def update_job_meta(job_id: int, payload: dict, user: models.User = Depends(require_user), db: Session = Depends(get_db)):
+    """Alias for rename with full meta fields — keeps frontend compat."""
+    return rename_job(job_id, payload, user, db)
 
 # --- Share per job ---
 @router.post("/jobs/{job_id}/share")

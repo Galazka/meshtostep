@@ -84,7 +84,7 @@ def _migrate_columns():
             print(f"[3dhosty] folders create: {e}")
         try:
             existing = {c["name"] for c in insp.get_columns("users")}
-            add_col(conn, "users", "quota_limit_bytes", "INTEGER DEFAULT 524288000", existing)
+            add_col(conn, "users", "quota_limit_bytes", "INTEGER DEFAULT 104857600", existing)
         except Exception as e:
             print(f"[3dhosty] quota migrate: {e}")
         try:
