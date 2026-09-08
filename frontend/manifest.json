@@ -1,0 +1,17 @@
+{
+  "name": "3dhosty.com — hosting 3D",
+  "short_name": "3dhosty",
+  "description": "Hosting i konwersja modeli 3D (STL -> STEP).",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f9fc",
+  "theme_color": "#6366f1",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

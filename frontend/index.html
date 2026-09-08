@@ -2,7 +2,12 @@
 <html lang="pl">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#6366f1">
+<link rel="apple-touch-icon" href="/logo.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="3dhosty">
+<meta name="viewport" content="width=device-width, initial-scale=1">
     <title>3DHOSTY — Hosting modeli 3D + STL → STEP | stl, 3mf, obj</title>
     <meta name="description" content="3DHOSTY — hosting i podgląd modeli 3D w przeglądarce. Wgraj STL/3MF/OBJ, przekonwertuj do STEP, udostępnij linkiem /u/nick/slug. Darmowe, szybkie, bez instalacji.">
     <meta name="keywords" content="STL, STEP, 3MF, OBJ, konwersja STL STEP, hosting 3D, podgląd STL, przeglądarka STL, 3D model hosting">
@@ -460,13 +465,25 @@
         <div class="footer-inner">
             <div class="footer-brand"><img src="/logo.png" alt="3DHOSTY" style="height:32px;object-fit:contain;display:none" onload="this.style.display='block'" onerror="this.style.display='none'"><p style="margin-top:4px">Hosting modeli 3D</p></div>
             <div class="footer-links">
-                <div class="footer-col"><h4 data-i18n="footerProduct">Produkt</h4><a href="#" onclick="switchTab('converter')" data-i18n="navConverter">Konwerter</a><a href="#" onclick="switchTab('howitworks')" data-i18n="navHowItWorks">Jak to dziala</a></div>
+                <div class="footer-col"><h4 data-i18n="footerProduct">Produkt</h4><a href="#" onclick="switchTab('converter')" data-i18n="navConverter">Konwerter</a><a href="#" onclick="switchTab('howitworks')" data-i18n="navHowItWorks">Jak to dziala</a><a href="#" onclick="switchTab('faq')" data-i18n="navFAQ">Pomoc FAQ</a></div>
                 <div class="footer-col"><h4 data-i18n="footerLegal">Prawne</h4><a href="regulamin.html" data-i18n="footerRegulamin">Regulamin</a><a href="prywatnosc.html" data-i18n="footerPrivacy">Polityka prywatnosci</a></div>
                 <div class="footer-col"><h4 data-i18n="footerContact">Kontakt</h4><a href="mailto:support@3dhosty.com">support@3dhosty.com</a><a href="mailto:kontakt@3dhosty.com">kontakt@3dhosty.com</a></div>
             </div>
         </div>
-        <div class="footer-bottom">&copy; 2026 3DHOSTY &middot; Wszelkie prawa zastrzezone</div>
+        <div class="footer-bottom">
+            &copy; 2026 3dhosty.com &middot; Hosting 3D &middot;
+            <a href="regulamin.html" style="color:inherit;text-decoration:underline">Regulamin</a> &middot;
+            <a href="prywatnosc.html" style="color:inherit;text-decoration:underline">Polityka prywatnosci</a> &middot;
+            Kontakt: <a href="mailto:kontakt@3dhosty.com" style="color:inherit;text-decoration:underline">kontakt@3dhosty.com</a>
+            <span style="opacity:.6"> &middot; IODO: kontakt / GDPR: RODO UE</span>
+        </div>
     </footer>
+
+        <div id="pwaBanner" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:9999;background:#111827;color:#fff;border-radius:12px;padding:12px 16px;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,.3);font-size:13px">
+        <span>Zainstaluj 3dhosty na telefonie</span>
+        <button id="pwaInstallBtn" style="background:#6366f1;color:#fff;border:0;padding:8px 14px;border-radius:8px;cursor:pointer">Zainstaluj</button>
+        <button id="pwaDismiss" style="background:transparent;border:1px solid #4b5563;color:#9ca3af;padding:8px 14px;border-radius:8px;cursor:pointer">Nie teraz</button>
+    </div>
 
     <div class="modal-bg" id="authModal">
         <div class="modal">
@@ -2425,5 +2442,13 @@
     <div class="fs-viewer" id="fsViewer"></div>
 </div>
 <div id="toast" class="toast"></div>
+
+<script>
+// PWA: register service worker + install banner
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('/sw.js').catch(()=>{}); }
+let _deferredPrompt=null; window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); _deferredPrompt=e; const b=document.getElementById('pwaBanner'); if(b) b.style.display='flex'; });
+if(document.getElementById('pwaInstallBtn')) document.getElementById('pwaInstallBtn').addEventListener('click', async ()=>{ if(!_deferredPrompt) return; _deferredPrompt.prompt(); await _deferredPrompt.userChoice; _deferredPrompt=null; document.getElementById('pwaBanner').style.display='none'; });
+if(document.getElementById('pwaDismiss')) document.getElementById('pwaDismiss').addEventListener('click', ()=>{ document.getElementById('pwaBanner').style.display='none'; } );
+</script>
 </body>
 </html>
