@@ -1276,7 +1276,7 @@
             '<label><input type="checkbox" id="adActive"' + (slot?.is_active!==false?' checked':'') + '> Aktywny</label>' +
             '<label>Kod reklamy (HTML/JS):<textarea id="adCode" rows="8" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:12px">' + esc(slot?.ad_code||'') + '</textarea></label>' +
             '<div style="display:flex;gap:8px">' +
-                '<button class="btn primary" onclick="saveAdSlot(' + (slot?.id||'null') + ')">' + (isNew ? 'Dodaj' : 'Zapisz') + '</button>' +
+                '<button class="btn primary" onclick="saveAdSlot(' + (slot?.id||'') + ')">' + (isNew ? 'Dodaj' : 'Zapisz') + '</button>' +
                 '<button class="btn" onclick="document.getElementById(\'userModal\').classList.remove(\'show\')">Anuluj</button>' +
             '</div></div>';
     }
@@ -1291,13 +1291,16 @@
             sort_order: parseInt(document.getElementById('adSort').value) || 0,
             is_active: document.getElementById('adActive').checked,
         };
+        if(!body.name || !body.slot_key || !body.ad_code){ alert('Wypelnij: Nazwa, Slot key, Kod reklamy'); return; }
         try {
             if (id) { await api('/api/ads/admin/slots/' + id, {method:'PUT', body}); }
             else { await api('/api/ads/admin/slots', {method:'POST', body}); }
-            try{ const d = await api('/api/ads/admin/slots'); localStorage.setItem('_adSlots', JSON.stringify(d)); }catch(e){}
+            const d = await api('/api/ads/admin/slots');
+            _allAdSlots = d; try{ localStorage.setItem('_adSlots', JSON.stringify(d)); }catch(e){}
             document.getElementById('userModal').classList.remove('show');
-            loadAdSlots();
-        } catch(e) { alert(e.message); }
+            await loadAdSlots();
+            toast('Slot zapisany','success');
+        } catch(e) { alert('Blad zapisu: ' + e.message); console.error('[ADS] save error:', e); }
     }
 
     let pickedPos=null;
