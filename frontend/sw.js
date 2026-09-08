@@ -1,4 +1,4 @@
-const CACHE = '3dhosty-v3';
+const CACHE = '3dhosty-v4';
 const ASSETS = ['/', '/manifest.json', '/logo.png'];
 
 self.addEventListener('install', e => {
@@ -7,20 +7,25 @@ self.addEventListener('install', e => {
 });
 self.addEventListener('activate', e => e.waitUntil(
   caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))
+  .then(() => self.clients.claim())
 ));
 self.addEventListener('fetch', e => {
-  const url = new URL(e.request.url);
+  const u = e.request.url;
+  // Skip non-GET, cross-origin, API, chrome-extension, share/profile/embed pages
   if (e.request.method !== 'GET') return;
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/admin')) return;
-  if (url.protocol !== 'https:' && url.protocol !== 'http:') return;
-  if (url.origin !== self.location.origin) return;
-  e.respondWith(
-    caches.match(e.request).then(r => r || fetch(e.request).then(res => {
-      if (res.ok) {
-        const c = res.clone();
-        caches.open(CACHE).then(cache => cache.put(e.request, c));
+  if (u.includes('chrome-extension://')) return;
+  if (u.includes('/api/')) return;
+  if (u.includes('/s/') || u.includes('/u/') || u.includes('/e/')) return;
+  if (u.includes('/admin')) return;
+  if (!u.startsWith(self.location.origin)) return;
+  e.respondWith(caches.match(e.request).then(cached => {
+    if (cached) return cached;
+    return fetch(e.request).then(resp => {
+      if (resp.ok) {
+        const cl = resp.clone();
+        caches.open(CACHE).then(c => c.put(e.request, cl));
       }
-      return res;
-    }).catch(() => caches.match(e.request)))
-  );
+      return resp;
+    }).catch(() => cached);
+  }));
 });
