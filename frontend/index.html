@@ -300,6 +300,7 @@
                 <span data-i18n="trustSupport">Wsparcie PL EN</span>
             </div>
         </div>
+        <div class="ad-slot" data-slot="hero_top" style="margin:8px auto"></div>
         <div class="ad-slot" data-slot="hero_bottom"></div>
         <!-- co to jest + funkcje -->
         <div style="max-width:1100px;margin:0 auto 28px;padding:0 24px">
@@ -1722,7 +1723,15 @@
                     el.parentNode.insertBefore(clone, el.nextSibling);
                     el = clone;
                 }
-                el.innerHTML = s.ad_code;
+                // ad_code may be plain text like <test> — use textContent fallback if innerHTML produces empty visible text
+                if (s.ad_type === 'text' || s.ad_type === 'custom' || s.ad_code.trim().startsWith('<')) {
+                    el.innerHTML = s.ad_code;
+                    // if innerHTML produced no visible text (invalid tag like <test>), show as text
+                    if (!el.textContent.trim()) el.textContent = s.ad_code;
+                    if (!el.innerHTML.trim().includes('<')) el.textContent = s.ad_code;
+                } else {
+                    el.innerHTML = s.ad_code;
+                }
                 console.log('[ADS] injected', key, '→', el.children.length, 'elements');
                 try { fetch('/api/ads/impression/' + s.id, {method:'POST'}).catch(function(){}); } catch(e) {}
             });
