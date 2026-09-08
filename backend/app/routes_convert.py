@@ -23,6 +23,29 @@ def _slugify(s: str) -> str:
     s=re.sub(r'-+','-',s).strip('-')
     return s[:80] or 'model'
 
+
+def _auto_thumb(mesh_file: str, thumb_path):
+    """Render mesh to 500x375 PNG via trimesh+matplotlib (Agg)."""
+    import matplotlib; matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+    import trimesh
+    mesh = trimesh.load(mesh_file, force="mesh")
+    fig = plt.figure(figsize=(4, 3), dpi=125)
+    ax = fig.add_subplot(111, projection="3d")
+    ax.set_facecolor("#f0f2f5"); fig.patch.set_facecolor("#f0f2f5")
+    verts = mesh.vertices; faces = mesh.faces
+    if len(faces) > 8000:
+        import numpy as np
+        faces = faces[np.random.choice(len(faces), 8000, replace=False)]
+    poly = Poly3DCollection(verts[faces], alpha=0.9, facecolor="#3b82f6", edgecolor="#1e40af", linewidths=0.1)
+    ax.add_collection3d(poly)
+    ax.auto_scale_xyz(verts[:,0], verts[:,1], verts[:,2])
+    ax.view_init(elev=20, azim=45); ax.set_axis_off()
+    plt.tight_layout(pad=0)
+    fig.savefig(str(thumb_path), dpi=125, facecolor="#f0f2f5", bbox_inches="tight", pad_inches=0)
+    plt.close(fig)
+
 def _quota_used(db: Session, user_id: int) -> int:
     row = db.query(func.coalesce(func.sum(models.Job.file_size_bytes),0)).filter(models.Job.user_id==user_id).scalar()
     # also include result_size_bytes if larger
@@ -155,7 +178,12 @@ async def convert_file(
         job.processing_time_s = round(time.time() - t0, 1)
         job.completed_at = datetime.utcnow()
         job.credits_used = 0
-        # try to store a JPG preview if converter produced one alongside — ponytail: no render yet, keep field null
+        # Auto-generate thumbnail PNG server-side (3dhosty.com — ponytail: cache thumb.png, no extra deps beyond trimesh+matplotlib)
+        try:
+            thumb_out = job_dir / "thumb.png"
+            if stl_file and not thumb_out.exists():
+                _auto_thumb(stl_file, thumb_out)
+        except Exception: pass
         db.commit()
         return {
             "ok": True,
