@@ -986,10 +986,14 @@
             const tags = await r.json();
             const box = document.getElementById('discoverTags');
             if(!box) return;
-            box.innerHTML = (tags||[]).slice(0,20).map(function(tg){
-                const name = typeof tg==='string' ? tg : (tg.name||tg.tag);
-                return '<button onclick="document.getElementById(\'discoverQ\').value=\''+String(name).replace(/'/g,'')+'\';doDiscover()" style="padding:4px 10px;border:1px solid var(--border);border-radius:999px;background:#fff;font-size:12px;cursor:pointer;color:var(--text-secondary)">'+String(name).replace(/</g,'&lt;')+'</button>';
+            if(!tags||!tags.length){ box.innerHTML=''; return; }
+            var html = '<button onclick="document.getElementById(\'discoverQ\').value=\'\';doDiscover()" style="padding:5px 14px;border:1px solid var(--primary);border-radius:999px;background:var(--primary-light);font-size:13px;font-weight:600;cursor:pointer;color:var(--primary)">Wszystkie</button>';
+            html += (tags||[]).slice(0,25).map(function(tg){
+                var name = typeof tg==='string' ? tg : (tg.name||tg.tag||'');
+                var count = (typeof tg==='object' && tg.count) ? tg.count : '';
+                return '<button onclick="document.getElementById(\'discoverQ\').value=\''+String(name).replace(/'/g,'')+'\';doDiscover()" style="padding:5px 12px;border:1px solid var(--border);border-radius:999px;background:#fff;font-size:13px;cursor:pointer;color:var(--text-secondary)">'+String(name).replace(/</g,'&lt;')+(count?' <span style=\"color:#94a3b8;font-size:11px\">'+count+'</span>':'')+'</button>';
             }).join('');
+            box.innerHTML = html;
         }catch(e){}
     }
     document.addEventListener('DOMContentLoaded', function(){ loadPopularTags(); });

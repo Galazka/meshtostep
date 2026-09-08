@@ -1,52 +1,86 @@
-"""Comments on models — 3dhosty.com"""
+"""Comments routes — public read + auth create + admin delete. — 3dhosty.com"""
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from .database import get_db
-from . import models
-from .auth import get_current_user
+from typing import Optional
+from sqlalchemy.orm import Session
 
-router = APIRouter(prefix="/api/comments", tags=["comments"])
+from . import models
+from .auth import get_current_user, require_admin, require_user
+from .database import get_db
+
+router = APIRouter(tags=["comments"])
+
 
 class CommentReq(BaseModel):
-    job_id: int
     body: str
 
-@router.get("/{job_id}")
+
+# ── Public: list comments for a job ───────────────────────────────
+@router.get("/api/jobs/{job_id}/comments")
 def list_comments(job_id: int, db: Session = Depends(get_db)):
+    comments = (
+        db.query(models.Comment)
+        .filter(
+            models.Comment.job_id == job_id,
+            models.Comment.is_hidden == False,  # noqa: E712
+        )
+        .order_by(models.Comment.created_at.desc())
+        .limit(100)
+        .all()
+    )
+    return [
+        {
+            "id": c.id,
+            "body": c.body,
+            "username": getattr(getattr(c, "user", None), "username", None) or "anon",
+            "created_at": c.created_at.isoformat() if c.created_at else None,
+        }
+        for c in comments
+    ]
+
+
+# ── Auth: create comment ──────────────────────────────────────────
+@router.post("/api/jobs/{job_id}/comments")
+def create_comment(
+    job_id: int,
+    req: CommentReq,
+    user: models.User = Depends(require_user),
+    db: Session = Depends(get_db),
+):
+    if not req.body or not req.body.strip():
+        raise HTTPException(400, "Pusty komentarz")
+    if len(req.body) > 5000:
+        raise HTTPException(400, "Komentarz max 5000 znakow")
+
     job = db.query(models.Job).filter(models.Job.id == job_id).first()
     if not job:
-        raise HTTPException(404, "Model nie znaleziony")
-    rows = db.query(models.Comment).filter(models.Comment.job_id==job_id, models.Comment.is_hidden==False).order_by(models.Comment.created_at.asc()).all()
-    out=[]
-    for c in rows:
-        uname = c.user.username if c.user and getattr(c.user,"username",None) else (c.user.email.split("@")[0] if c.user else "anon")
-        out.append({"id":c.id,"body":c.body,"username":uname,"created_at":str(c.created_at)})
-    return out
+        raise HTTPException(404, "Job nie znaleziony")
+    if job.visibility == "private":
+        raise HTTPException(403, "Komentarze do prywatnych modeli")
 
-@router.post("")
-def add_comment(req: CommentReq, user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if not user:
-        raise HTTPException(401, "Zaloguj sie by komentowac")
-    if not req.body or not req.body.strip():
-        raise HTTPException(400, "Komentarz pusty")
-    if len(req.body) > 2000:
-        raise HTTPException(400, "Komentarz za dlugi (max 2000)")
-    job = db.query(models.Job).filter(models.Job.id == req.job_id, models.Job.status=="done").first()
-    if not job:
-        raise HTTPException(404, "Model nie znaleziony")
-    c = models.Comment(job_id=job.id, user_id=user.id, body=req.body.strip()[:2000])
-    db.add(c); db.commit(); db.refresh(c)
-    return {"ok": True, "id": c.id}
+    comment = models.Comment(job_id=job_id, user_id=user.id, body=req.body.strip())
+    db.add(comment)
+    db.commit()
+    db.refresh(comment)
 
-@router.delete("/{comment_id}")
-def delete_comment(comment_id: int, user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if not user:
-        raise HTTPException(401)
-    c = db.query(models.Comment).filter(models.Comment.id==comment_id).first()
-    if not c:
+    return {
+        "id": comment.id,
+        "body": comment.body,
+        "username": getattr(user, "username", None) or user.email.split("@")[0],
+        "created_at": comment.created_at.isoformat() if comment.created_at else None,
+    }
+
+
+# ── Admin: hide comment ───────────────────────────────────────────
+@router.delete("/api/admin/comments/{comment_id}")
+def hide_comment(
+    comment_id: int,
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    comment = db.query(models.Comment).filter(models.Comment.id == comment_id).first()
+    if not comment:
         raise HTTPException(404)
-    if c.user_id != user.id and not user.is_admin:
-        raise HTTPException(403)
-    c.is_hidden=True; db.commit()
+    comment.is_hidden = True
+    db.commit()
     return {"ok": True}

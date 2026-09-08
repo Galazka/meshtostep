@@ -1,3 +1,4 @@
+import json
 """Community routes: vanity URL /u/{username}/{slug}, search, tags, model detail — 3dhosty.com"""
 import re
 import html
@@ -27,6 +28,33 @@ def _is_youtube_valid(url: str) -> bool:
     if not url:
         return True
     return _youtube_embed(url) is not None
+
+
+def _md_to_html(md: str) -> str:
+    if not md:
+        return ""
+    esc = html.escape(str(md), quote=False)
+    code_blocks = []
+    def _cb(m):
+        code_blocks.append("<pre><code>" + m.group(1).strip("\n") + "</code></pre>")
+        return f"\x00CODE{len(code_blocks)-1}\x00"
+    esc = re.sub(r"```(.*?)```", _cb, esc, flags=re.DOTALL)
+    esc = re.sub(r"`([^`\n]+)`", r"<code>\1</code>", esc)
+    esc = re.sub(r"!\[([^\]]*)\]\(([^)\s]+)\)", r'<img src="\2" alt="\1" loading="lazy">', esc)
+    esc = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", r'<a href="\2" target="_blank" rel="noopener">\1</a>', esc)
+    esc = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", esc)
+    esc = re.sub(r"(?<!\*)\*([^\*\n]+)\*(?!\*)", r"<em>\1</em>", esc)
+    parts = re.split(r"\n\s*\n", esc)
+    out = []
+    for p in parts:
+        p = p.strip()
+        if not p: continue
+        if p.startswith("\x00CODE") and p.endswith("\x00"):
+            try: out.append(code_blocks[int(p[5:-1])]); continue
+            except: pass
+        if p.startswith("##"): out.append("<h3>" + p.lstrip("#").strip() + "</h3>"); continue
+        out.append("<p>" + p.replace("\n", "<br>") + "</p>")
+    return "".join(out)
 
 # ---- API: search models ----
 @router.get("/api/models")
@@ -260,6 +288,61 @@ new STLLoader().load('/api/stl-preview/__UUID__', g=>{g.computeBoundingBox();con
 function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera);}animate();
 window.addEventListener('resize',()=>{camera.aspect=el.clientWidth/el.clientHeight;camera.updateProjectionMatrix();renderer.setSize(el.clientWidth,el.clientHeight);});
 </script>
+<!-- ── Opis / blog + Komentarze ── -->
+<div style="max-width:800px;margin:24px auto;padding:0 16px">
+  <div id="descSection" style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:20px;margin-bottom:20px">
+    <h3 style="margin:0 0 8px;font-size:16px">Opis modelu</h3>
+    <div id="descBody" style="font-size:14px;line-height:1.6;color:#334155;white-space:pre-wrap"></div>
+    <div id="descTags" style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap"></div>
+    <div id="descYoutube" style="margin-top:12px;display:none"><iframe id="descYoutubeFrame" width="100%" height="315" frameborder="0" allowfullscreen style="border-radius:8px"></iframe></div>
+  </div>
+  <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:20px">
+    <h3 style="margin:0 0 12px;font-size:16px">Komentarze <span id="cmCount" style="font-weight:400;color:#94a3b8"></span></h3>
+    <div id="commentsList"></div>
+    <div id="commentForm" style="margin-top:12px;display:none">
+      <textarea id="commentBody" rows="3" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;resize:vertical" placeholder="Napisz komentarz..."></textarea>
+      <button onclick="postComment()" style="margin-top:8px;padding:8px 16px;background:#1a56db;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer">Wyslij</button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var jobId = __JOBID__;
+  // description from placeholders
+  var descTitle = __DESCTITLE__;
+  var descBody = __DESCBODY__;
+  var descTags = __DESCTAGS__;
+  var descYoutube = __DESCYOUTUBE__;
+  document.getElementById('descBody').innerHTML = descBody || '<span style="color:#94a3b8">Brak opisu</span>';
+  document.getElementById('descTags').innerHTML = (descTags||[]).map(function(tg){return '<span style="padding:2px 8px;border:1px solid #d1d5db;border-radius:999px;font-size:11px;color:#64748b">'+tg+'</span>'}).join('');
+  if (descYoutube) {
+    var m = String(descYoutube).match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]+)/);
+    if (m) { document.getElementById('descYoutube').style.display='block'; document.getElementById('descYoutubeFrame').src='https://www.youtube.com/embed/'+m[1]; }
+  }
+  // comments
+  function renderComments(comments){
+    var el = document.getElementById('commentsList');
+    if (!comments || !comments.length) { el.innerHTML = '<div style="color:#94a3b8;font-size:13px">Brak komentarzy — badz pierwszy</div>'; document.getElementById('cmCount').textContent=''; return; }
+    document.getElementById('cmCount').textContent = '('+comments.length+')';
+    el.innerHTML = comments.map(function(c){
+      var d = c.created_at ? new Date(c.created_at).toLocaleDateString('pl-PL') : '';
+      return '<div style="border-bottom:1px solid #f1f5f9;padding:8px 0"><span style="font-weight:600;font-size:13px">'+(c.username||'anon')+'</span><span style="font-size:11px;color:#94a3b8;margin-left:8px">'+d+'</span><div style="font-size:13px;margin-top:4px">'+String(c.body||'').replace(/</g,'&lt;')+'</div></div>';
+    }).join('');
+  }
+  function loadComments(){
+    fetch('/api/jobs/' + jobId + '/comments').then(function(r){return r.ok?r.json():[]}).then(renderComments).catch(function(){});
+  }
+  window.postComment = function(){
+    var body = document.getElementById('commentBody').value.trim();
+    if (!body) return;
+    var token = localStorage.getItem('mt_token');
+    if (!token) { alert('Zaloguj sie by komentowac'); return; }
+    fetch('/api/jobs/' + jobId + '/comments', {method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({body:body})}).then(function(r){ if(r.ok){document.getElementById('commentBody').value='';loadComments();} else {r.json().then(function(e){alert(e.detail||'Blad')}).catch(function(){alert('Blad')});} }).catch(function(){alert('Blad sieci')});
+  };
+  loadComments();
+  if (localStorage.getItem('mt_token')) document.getElementById('commentForm').style.display = 'block';
+})();
+</script>
 </body>
 </html>
 """
@@ -298,7 +381,7 @@ def vanity_page(username: str, slug: str, request: Request, db: Session = Depend
     if job.is_paid and job.price_cents:
         price = job.price_cents / 100
         paid_box = f'<div style="margin-top:12px;padding:12px;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px"><div style="font-weight:700">Platny model — {price:.2f} USD</div><div style="font-size:12px;color:#92400e">Prowizja 20% dla 3dhosty.com</div><button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="buy({job.id})">Kup teraz</button></div><script>function buy(id){{fetch(`/api/models/${{id}}/purchase`,{{method:"POST",headers:{{"Authorization":localStorage.getItem("token")?"Bearer "+localStorage.getItem("token"):""}}}}).then(r=>r.json()).then(j=>{{if(j.checkout_url) location=j.checkout_url; else alert(JSON.stringify(j))}})}}<\/script>'
-    html_page = _VANITY_HTML.replace("__LANG__","pl").replace("__TITLE__",title).replace("__META_DESC__", (desc[:150] or title)).replace("__ROBOTS__", robots).replace("__CANONICAL__", f"https://3dhosty.com/u/{html.escape(username)}/{html.escape(slug)}").replace("__PILLS__", f'<span class="pill">{faces} ścian</span><span class="pill">{html.escape(job.mode or "auto")}</span><span class="pill">{vis_label}</span>').replace("__UUID__", job.uuid).replace("__JOBID__", str(job.id)).replace("__USERNAME__", html.escape(username)).replace("__DATE__", str(job.created_at)[:10] if job.created_at else "").replace("__VIS_LABEL__", vis_label).replace("__TAG_HTML__", tag_html).replace("__DESC__", desc or "Brak opisu.").replace("__YOUTUBE__", yt_html).replace("__FILENAME__", html.escape(job.original_filename or "")).replace("__FACES__", str(faces)).replace("__SIZE__", size_kb).replace("__TOKEN__", token_share).replace("__VIEWS__", str(job.views or 0)).replace("__DOWNLOADS__", str(job.shares[0].downloads if job.shares else 0)).replace("__PAID_BOX__", paid_box)
+    html_page = _VANITY_HTML.replace("__LANG__","pl").replace("__TITLE__",title).replace("__META_DESC__", (desc[:150] or title)).replace("__ROBOTS__", robots).replace("__CANONICAL__", f"https://3dhosty.com/u/{html.escape(username)}/{html.escape(slug)}").replace("__PILLS__", f'<span class="pill">{faces} ścian</span><span class="pill">{html.escape(job.mode or "auto")}</span><span class="pill">{vis_label}</span>').replace("__UUID__", job.uuid).replace("__JOBID__", str(job.id)).replace("__USERNAME__", html.escape(username)).replace("__DATE__", str(job.created_at)[:10] if job.created_at else "").replace("__VIS_LABEL__", vis_label).replace("__TAG_HTML__", tag_html).replace("__DESC__", desc or "Brak opisu.").replace("__YOUTUBE__", yt_html).replace("__FILENAME__", html.escape(job.original_filename or "")).replace("__FACES__", str(faces)).replace("__SIZE__", size_kb).replace("__TOKEN__", token_share).replace("__VIEWS__", str(job.views or 0)).replace("__DOWNLOADS__", str(job.shares[0].downloads if job.shares else 0)).replace("__PAID_BOX__", paid_box).replace("__DESCTITLE__", json.dumps(html.escape(job.title or job.original_filename or ""))).replace("__DESCBODY__", json.dumps(_md_to_html(job.description or ""))).replace("__DESCTAGS__", json.dumps(tags)).replace("__DESCYOUTUBE__", json.dumps(str(job.youtube_url or "")))
     return HTMLResponse(html_page)
 
 @router.get("/u/{username}", response_class=HTMLResponse)

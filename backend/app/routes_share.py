@@ -1,5 +1,7 @@
 """Share link public page with 3D preview."""
 import html
+import json
+import re
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
@@ -9,6 +11,55 @@ from .database import get_db
 from . import models
 
 router = APIRouter(tags=["share"])
+
+
+def _md_to_html(md: str) -> str:
+    """Tiny markdown→HTML (escaped first, safe tags only). ponytail: ceiling=basic md; upgrade to markdown lib when tables/lists needed."""
+    if not md:
+        return ""
+    esc = html.escape(str(md), quote=False)
+    code_blocks = []
+    def _cb(m):
+        code_blocks.append("<pre><code>" + m.group(1).strip("\n") + "</code></pre>")
+        return f"\x00CODE{len(code_blocks)-1}\x00"
+    esc = re.sub(r"```(.*?)```", _cb, esc, flags=re.DOTALL)
+    esc = re.sub(r"`([^`\n]+)`", r"<code>\1</code>", esc)
+    esc = re.sub(r"!\[([^\]]*)\]\(([^)\s]+)\)", r'<img src="\2" alt="\1" loading="lazy">', esc)
+    esc = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", r'<a href="\2" target="_blank" rel="noopener">\1</a>', esc)
+    esc = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", esc)
+    esc = re.sub(r"(?<!\*)\*([^*\n]+)\*(?!\*)", r"<em>\1</em>", esc)
+    parts = re.split(r"\n\s*\n", esc)
+    out = []
+    for p in parts:
+        p = p.strip()
+        if not p:
+            continue
+        if p.startswith("\x00CODE") and p.endswith("\x00"):
+            try:
+                out.append(code_blocks[int(p[5:-1])])
+                continue
+            except (ValueError, IndexError):
+                pass
+        if p.startswith("##"):
+            out.append("<h3>" + p.lstrip("#").strip() + "</h3>")
+            continue
+        out.append("<p>" + p.replace("\n", "<br>") + "</p>")
+    return "".join(out)
+
+
+def _tags_list(raw) -> list:
+    """Comma-separated tags → list. ponytail: ceiling=CSV string; upgrade when Tag table lands."""
+    if not raw:
+        return []
+    if isinstance(raw, list):
+        return [str(t).strip() for t in raw if str(t).strip()]
+    try:
+        parsed = json.loads(raw)
+        if isinstance(parsed, list):
+            return [str(t).strip() for t in parsed if str(t).strip()]
+    except (ValueError, TypeError):
+        pass
+    return [t.strip() for t in str(raw).split(",") if t.strip()]
 
 
 def _lang(request: Request) -> str:
@@ -125,6 +176,16 @@ __ROBOTS__
     .file-block { max-width: 45vw; }
     .btn { padding: 8px 12px; font-size: 13px; }
   }
+  #descBody img { max-width: 100%; border-radius: 8px; margin: 12px 0; }
+  #descBody pre { background: #1e293b; color: #e2e8f0; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 13px; margin: 12px 0; }
+  #descBody code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+  #descBody pre code { background: none; padding: 0; }
+  #descBody h3 { font-size: 18px; font-weight: 700; margin: 16px 0 8px; }
+  #descBody p { margin: 8px 0; }
+  .comment-item { padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+  .comment-item .comment-user { font-weight: 600; font-size: 13px; }
+  .comment-item .comment-date { font-size: 11px; color: #94a3b8; margin-left: 8px; }
+  .comment-item .comment-body { font-size: 13px; color: #475569; margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -140,6 +201,23 @@ __ROBOTS__
   </div>
 </header>
 <div id="viewer3d"></div>
+<div id="descriptionPanel" style="display:none;position:fixed;bottom:48px;left:0;right:0;z-index:15;background:rgba(255,255,255,0.95);border-top:1px solid #e5e7eb;max-height:45vh;overflow-y:auto;padding:24px 32px;font-size:14px;line-height:1.7">
+  <div style="max-width:800px;margin:0 auto">
+    <div id="descTitle" style="font-size:20px;font-weight:700;margin-bottom:12px"></div>
+    <div id="descTags" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px"></div>
+    <div id="descBody" style="color:#334155"></div>
+    <div id="descYoutube" style="margin-top:16px;display:none"><iframe id="descYoutubeFrame" width="100%" height="315" frameborder="0" allowfullscreen style="border-radius:8px"></iframe></div>
+    <div style="margin-top:24px;border-top:1px solid #e5e7eb;padding-top:16px">
+      <h3 id="commentsTitle" style="font-size:16px;margin-bottom:12px"></h3>
+      <div id="commentsList"></div>
+      <div id="commentForm" style="margin-top:12px;display:none">
+        <textarea id="commentBody" rows="3" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;resize:vertical" placeholder="Napisz komentarz..."></textarea>
+        <button onclick="postComment()" style="margin-top:8px;padding:8px 16px;background:#1a56db;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer">Wyślij</button>
+      </div>
+    </div>
+  </div>
+</div>
+<button id="descToggle" onclick="toggleDescPanel()" style="position:fixed;bottom:56px;right:16px;z-index:20;background:#1a56db;color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.3);display:none">📝</button>
 
 <script type="importmap">
 {
@@ -221,6 +299,62 @@ window.showEmbed = function() {
   prompt('Embed code:', '<iframe src="/e/__JOB_ID__" width="800" height="500" frameborder="0"></iframe>');
 };
 </script>
+<script>
+let _descVisible = false;
+let _jobId = __JOB_ID__;
+function toggleDescPanel() {
+  _descVisible = !_descVisible;
+  const p = document.getElementById('descriptionPanel');
+  if (p) p.style.display = _descVisible ? 'block' : 'none';
+}
+function renderDescription(title, tags, bodyHtml, youtubeUrl) {
+  const hasDesc = title || tags.length || bodyHtml || youtubeUrl;
+  if (!hasDesc) return;
+  document.getElementById('descToggle').style.display = 'block';
+  document.getElementById('descTitle').textContent = title || '';
+  document.getElementById('descTags').innerHTML = tags.map(function(t){return '<span style="padding:2px 8px;border:1px solid #d1d5db;border-radius:999px;font-size:11px;color:#64748b">'+t+'</span>'}).join('');
+  document.getElementById('descBody').innerHTML = bodyHtml || '';
+  if (youtubeUrl) {
+    const match = youtubeUrl.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]+)/);
+    if (match) {
+      document.getElementById('descYoutube').style.display = 'block';
+      document.getElementById('descYoutubeFrame').src = 'https://www.youtube.com/embed/' + match[1];
+    }
+  }
+}
+function renderComments(comments) {
+  const el = document.getElementById('commentsList');
+  if (!comments || !comments.length) { el.innerHTML = '<div style="color:#94a3b8;font-size:13px">Brak komentarzy</div>'; return; }
+  el.innerHTML = comments.map(function(c){
+    const d = c.created_at ? new Date(c.created_at).toLocaleDateString('pl-PL') : '';
+    return '<div class="comment-item"><span class="comment-user">'+(c.username||'anon')+'</span><span class="comment-date">'+d+'</span><div class="comment-body">'+(c.body||'').replace(/</g,'&lt;')+'</div></div>';
+  }).join('');
+}
+async function loadComments() {
+  try {
+    const r = await fetch('/api/jobs/' + _jobId + '/comments');
+    if (r.ok) { const d = await r.json(); renderComments(d); }
+  } catch(e) {}
+}
+async function postComment() {
+  const body = document.getElementById('commentBody').value.trim();
+  if (!body) return;
+  const token = localStorage.getItem('mt_token');
+  if (!token) { alert('Zaloguj się by komentować'); return; }
+  try {
+    const r = await fetch('/api/jobs/' + _jobId + '/comments', {
+      method: 'POST',
+      headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
+      body: JSON.stringify({body: body})
+    });
+    if (r.ok) { document.getElementById('commentBody').value = ''; loadComments(); }
+    else { const e = await r.json().catch(function(){}); alert(e.detail || 'Błąd'); }
+  } catch(e) { alert('Błąd sieci'); }
+}
+loadComments();
+if (localStorage.getItem('mt_token')) document.getElementById('commentForm').style.display = 'block';
+__DESC_INIT__
+</script>
 <div id="adBottom" style="position:fixed;bottom:0;left:0;right:0;z-index:20;display:flex;justify-content:center;background:rgba(255,255,255,.92);border-top:1px solid #e5e7eb;padding:8px 16px"><div class="ad-slot" data-slot="page_bottom" style="max-width:728px;min-height:90px;width:100%"></div></div>
 <script>
 (function(){
@@ -292,6 +426,19 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
 
     # robots for unlisted shares
     robots_tag = '<meta name="robots" content="noindex, nofollow">' if getattr(share, "visibility", "public") == "unlisted" else ""
+    # description / blog panel data
+    _desc_title = str(getattr(job, "title", None) or job.original_filename or "")
+    _tags_raw = getattr(job, "tags", None)
+    _tags_parsed = _tags_list(_tags_raw)
+    _tags_escaped = [html.escape(str(t)) for t in _tags_parsed]
+    _desc_body_html = _md_to_html(getattr(job, "description", None) or "")
+    _yt = str(getattr(job, "youtube_url", None) or "")
+    # Build JS-safe literals via json.dumps
+    _js_title = json.dumps(_desc_title)
+    _js_tags = json.dumps(_tags_escaped)
+    _js_body = json.dumps(_desc_body_html)
+    _js_youtube = json.dumps(_yt)
+    _desc_init_js = f"renderDescription({_js_title},{_js_tags},{_js_body},{_js_youtube});"
     html_page = _render_share(
         _SHARE_HTML_TEMPLATE,
         lang=lang,
@@ -314,6 +461,11 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
         processing_time=proc_time,
         file_size_orig=file_size_orig,
         orig_size_word=orig_size_word,
+        desc_title=html.escape(_desc_title),
+        desc_tags=",".join(_tags_escaped),
+        desc_body=_desc_body_html,
+        desc_youtube=html.escape(_yt),
+        desc_init=_desc_init_js,
     )
 
     return HTMLResponse(html_page)
