@@ -95,6 +95,16 @@ _SHARE_HTML_TEMPLATE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 __ROBOTS__
 <title>__FILENAME__ — 3dhosty.com</title>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="3dhosty.com">
+<meta property="og:title" content="__FILENAME__ — 3dhosty.com">
+<meta property="og:description" content="__OG_DESC__">
+<meta property="og:image" content="__OG_IMAGE__">
+<meta property="og:url" content="__OG_URL__">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="__FILENAME__ — 3dhosty.com">
+<meta name="twitter:description" content="__OG_DESC__">
+<meta name="twitter:image" content="__OG_IMAGE__">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='24' font-size='24'>📁</text></svg>">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -466,6 +476,10 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
         desc_body=_desc_body_html,
         desc_youtube=html.escape(_yt),
         desc_init=_desc_init_js,
+        og_desc=html.escape((getattr(job, "description", None) or getattr(job, "title", None) or job.original_filename or "Model 3D")[:180]),
+        og_image=f"/api/preview/{job.uuid}",
+        og_url=f"/s/{token}",
+
     )
 
     return HTMLResponse(html_page)

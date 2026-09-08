@@ -271,6 +271,28 @@
                 </div>
             </div>
 
+            <!-- CHARTS -->
+            <div class="charts-row" style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin:16px 0">
+                <div class="panel" style="padding:16px">
+                    <h3 style="font-size:14px;margin-bottom:12px" data-i18n="chartUploads">Uploady (30 dni)</h3>
+                    <canvas id="chartUploads" height="120"></canvas>
+                </div>
+                <div class="panel" style="padding:16px">
+                    <h3 style="font-size:14px;margin-bottom:12px" data-i18n="chartTop">Top uploadersi</h3>
+                    <div id="topUploadersList" style="font-size:13px;color:var(--text-muted)"></div>
+                </div>
+            </div>
+            <div class="panel" id="topModelsPanel" style="padding:16px;margin-bottom:16px;display:none">
+                <h3 style="font-size:14px;margin-bottom:12px" data-i18n="chartTopModels">Najpopularniejsze modele</h3>
+                <div id="topModelsList" style="font-size:13px"></div>
+            </div>
+            <div id="userDetail" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <h3 id="userDetailTitle">Użytkownik</h3>
+                    <button class="btn-outline" onclick="closeUserDetail()">✕</button>
+                </div>
+                <div id="userDetailBody" style="font-size:13px;color:var(--text-muted);margin-top:8px"></div>
+            </div>
             <!-- TABS -->
             <div class="panel">
                 <div class="admin-tabs">
@@ -521,6 +543,35 @@
             jobShare: 'Udostepnij', jobPreview: 'Podglad 3D',
             jobStatus: 'Status', jobUser: 'Uzytkownik',
             jobDeleteConfirm: 'Usunac to przetworzenie? Tej operacji nie mozna cofnuc.'
+        ,
+            authGateBack: 'Powrot',
+            authGateDesc: 'Zaloguj sie jako administrator, aby kontynuowac.',
+            authLoginBtn: 'Zaloguj',
+            chartTop: 'Top uploadersi',
+            chartTopModels: 'Najpopularniejsze modele',
+            chartUploads: 'Uploady (30 dni)',
+            creditAdjustDesc: 'Reczna zmiana kredytow uzytkownika',
+            geoCities: 'Miasta (geolokalizacja)',
+            jobDelete: 'Usun',
+            jobDlStl: 'Pobierz STL',
+            jobFilterDone: 'Gotowe',
+            jobFilterError: 'Bledy',
+            jobFilterPending: 'Oczekujace',
+            navAdminBadge: 'ADMIN',
+            navTitle: 'Panel administracyjny',
+            statDownloads: 'Pobrania',
+            statJobsSub: 'Praca przetworzenia',
+            statUsersSub: 'Laczna liczba kont',
+            tabGeo: 'Geolokalizacja',
+            tabJobs: 'Pliki',
+            thCreditsLeft: 'Kredyty',
+            thDate: 'Data',
+            thFaces: 'Scianki',
+            thJobsCount: 'Pliki',
+            thJoined: 'Rejestracja',
+            thMode: 'Tryb',
+            thStatus: 'Status',
+            thUser: 'Uzytkownik'
         },
         en: {
             navBack: 'Back', navTitle: 'Admin Panel', navAdminBadge: 'ADMIN',
@@ -556,7 +607,36 @@
             jobShare: 'Share', jobPreview: '3D Preview',
             jobStatus: 'Status', jobUser: 'User',
             jobDeleteConfirm: 'Delete this conversion? This action cannot be undone.'
-        }
+        ,
+            authGateBack: 'Back',
+            authGateDesc: 'Log in as admin to continue.',
+            authLoginBtn: 'Log in',
+            chartTop: 'Top uploaders',
+            chartTopModels: 'Most popular models',
+            chartUploads: 'Uploads (30 days)',
+            creditAdjustDesc: 'Manual credit adjustment',
+            geoCities: 'Cities (geolocation)',
+            jobDelete: 'Delete',
+            jobDlStl: 'Download STL',
+            jobFilterDone: 'Done',
+            jobFilterError: 'Errors',
+            jobFilterPending: 'Pending',
+            navAdminBadge: 'ADMIN',
+            navTitle: 'Admin Panel',
+            statDownloads: 'Downloads',
+            statJobsSub: 'Processing jobs',
+            statUsersSub: 'Total accounts',
+            tabGeo: 'Geolocation',
+            tabJobs: 'Files',
+            thCreditsLeft: 'Credits',
+            thDate: 'Date',
+            thFaces: 'Faces',
+            thJobsCount: 'Files',
+            thJoined: 'Registered',
+            thMode: 'Mode',
+            thStatus: 'Status',
+            thUser: 'User'
+}
     };
 
     let currentLang = localStorage.getItem('mt_lang') || (navigator.language.startsWith('pl') ? 'pl' : 'en');
@@ -678,8 +758,57 @@
             document.getElementById('statDownloads').textContent = d.total_downloads ?? '—';
             const bytes = d.total_storage_bytes ?? 0;
             document.getElementById('statStorage').innerHTML = fmtBytes(bytes) + ' <span class="storage-fmt">' + bytes.toLocaleString() + ' B</span>';
+            drawUploadsChart(d.daily_uploads_last_30d || []);
+            renderTopUploaders(d.storage_by_user || []);
+            if(d.top_models) renderTopModels(d.top_models);
         } catch (e) { /* stats will show dashes */ }
     }
+    function drawUploadsChart(rows){
+        const cv = document.getElementById('chartUploads');
+        if(!cv || !rows.length) return;
+        const ctx = cv.getContext('2d');
+        const W=cv.width=cv.offsetWidth*2, H=cv.height=120*2;
+        ctx.clearRect(0,0,W,H);
+        const max=Math.max(1,...rows.map(r=>r.count));
+        const pad=12, bw=(W-pad*2)/rows.length;
+        rows.forEach((r,i)=>{
+            const h=Math.round((r.count/max)*(H-pad*2));
+            const x=pad+i*bw+2, y=H-pad-h;
+            ctx.fillStyle='#6366f1';
+            ctx.fillRect(x,y,bw-4,h);
+            if(rows.length<=30 && r.count>0){
+                ctx.fillStyle='#111827'; ctx.font='10px sans-serif'; ctx.fillText(String(r.count),x,y-4);
+            }
+        });
+        const avg=Math.round(rows.reduce((a,r)=>a+r.count,0)/rows.length);
+        ctx.fillStyle='#9ca3af'; ctx.font='11px sans-serif';
+        ctx.fillText((max>0?rows[rows.length-1].date:'')+'  avg/day '+avg, pad, 14);
+    }
+    function renderTopUploaders(list){
+        const el=document.getElementById('topUploadersList');
+        if(!list.length){ el.innerHTML='<span style="color:var(--text-muted)">'+t('emptyUsers')+'</span>'; return; }
+        el.innerHTML=list.slice(0,10).map((u,i)=>'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f3f4f6"><span>'+(i+1)+'. '+(u.email||u.username||'user#'+u.user_id)+'</span><span>'+fmtBytes(u.total_size_bytes)+' ('+u.job_count+')</span></div>').join('');
+    }
+    function renderTopModels(list){
+        const wrap=document.getElementById('topModelsPanel');
+        const el=document.getElementById('topModelsList');
+        if(!list || !list.length) { wrap.style.display='none'; return; }
+        wrap.style.display='block';
+        el.innerHTML=list.map((j,i)=>'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f3f4f6"><span>'+(i+1)+'. '+(j.title||j.filename||j.uuid).slice(0,40)+'</span><span>'+Number(j.views||0)+' views</span></div>').join('');
+    }
+    async function openUserDetail(uid){
+        const d=document.getElementById('userDetail'), t=document.getElementById('userDetailTitle'), b=document.getElementById('userDetailBody');
+        d.style.display='block'; t.textContent='User #'+uid; b.textContent='Wczytywanie...';
+        try{
+            const j=await api('/api/admin/users/'+uid);
+            const info=j.user||j;
+            const files=j.files||[];
+            t.textContent=(info.username||info.email||'user#'+uid)+' #' + uid;
+            b.innerHTML='<div>email: '+(info.email||'-')+'</div><div>rejestracja: '+(info.created_at||'-')+'</div><div>pliki: '+files.length+'</div>'+files.slice(0,20).map(f=>'<div style="margin:4px 0">'+(f.title||f.original_filename||f.uuid)+' — '+fmtBytes(f.file_size_bytes||0)+'</div>').join('') + (files.length>20?'<div>... +'+(files.length-20)+'</div>':'');
+        }catch(e){ b.textContent='Blad ladowania: '+(e.message||e); }
+        d.scrollIntoView({behavior:'smooth'});
+    }
+    function closeUserDetail(){ document.getElementById('userDetail').style.display='none'; }
     function fmtBytes(b) {
         if (!b) return '0 B';
         if (b < 1024) return b + ' B';
