@@ -1206,18 +1206,17 @@
     /* ── ADS MANAGEMENT ─────────────────────────────────────────── */
     let _allAdSlots = [];
     async function loadAdSlots(){
-        let d = _allAdSlots || [];
+        let d = null;
         try {
             const resp = await api('/api/ads/admin/slots');
-            if(Array.isArray(resp) && resp.length) {
-                d = resp;
-                _allAdSlots = d;
-                try{ localStorage.setItem('_adSlots', JSON.stringify(d)); }catch(e){}
-            }
+            if(Array.isArray(resp)) { d = resp; _allAdSlots = d; try{ localStorage.setItem('_adSlots', JSON.stringify(d)); }catch(e){} }
         }catch(e){
             const cached = localStorage.getItem('_adSlots');
-            if(cached){ try{ _allAdSlots=JSON.parse(cached); d=_allAdSlots; }catch(e){} }
+            if(cached){ try{ d=JSON.parse(cached); _allAdSlots=d; }catch(e){} }
         }
+        if(d===null){ d = _allAdSlots || []; }
+        if(!Array.isArray(d)) d = [];
+        console.log('[ADS] loadAdSlots result:', d.length, 'slots', d.map(function(s){return s.slot_key}));
         if(!d.length){
             document.getElementById('adsBody').innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:24px">Brak slotów reklamowych</td></tr>';
             return;

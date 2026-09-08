@@ -1702,7 +1702,7 @@
             const r = await fetch('/api/ads/slots');
             if (!r.ok) return;
             const d = await r.json();
-            const slots = d.slots || d;
+            const slots = d.slots || d; console.log('[ADS] public loadAdSlots:', Array.isArray(slots)?slots.length:'not-array', slots);
             if (Array.isArray(slots)) {
                 const counts = {};
                 slots.forEach(function(s) {
