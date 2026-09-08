@@ -2,8 +2,9 @@
 import html as _html
 from datetime import datetime
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import PlainTextResponse, Response
+from sqlalchemy.orm import Session
 
 from . import models
 from .database import get_db
@@ -20,7 +21,7 @@ def _fmt_date(dt) -> str:
 
 
 @router.get("/sitemap.xml", response_class=Response)
-def sitemap(request: Request, db=next(get_db())):
+def sitemap(request: Request, db: Session = Depends(get_db)):
     urls = []
     # Homepage
     urls.append(f"  <url><loc>{DOMAIN}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>")

@@ -23,6 +23,7 @@ from .routes_community import router as community_router
 from .routes_comments import router as comments_router
 from .routes_sales import router as sales_router
 from .routes_folders import router as folders_router
+from .routes_sitemap import router as sitemap_router
 
 app = FastAPI(title="3dhosty.com", version="1.0.0")
 
