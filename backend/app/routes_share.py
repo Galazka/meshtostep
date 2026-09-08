@@ -503,6 +503,10 @@ def embed_page(job_id: int, db: Session = Depends(get_db)) -> HTMLResponse:
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta property="og:title" content="{filename} — 3dhosty.com">
+<meta property="og:description" content="Podgląd 3D — {faces} ścian STEP">
+<meta property="og:image" content="https://3dhosty.com/api/preview/{uuid}">
+<meta name="twitter:card" content="summary_large_image">
 <title>{filename} — 3dhosty.com</title>
 <style>
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
@@ -522,6 +526,7 @@ def embed_page(job_id: int, db: Session = Depends(get_db)) -> HTMLResponse:
 <div class="top">
   <h1>{filename}</h1>
   <a href="/api/download/{uuid}">Download STEP ({faces} faces, {size_kb} KB)</a>
+  <a href="/s/{uuid}" style="background:#6366f1;font-size:11px;padding:5px 12px" target="_blank">Pełna strona ↗</a>
 </div>
 <div id="viewer3d"></div>
 <script type="importmap">

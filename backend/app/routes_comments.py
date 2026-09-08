@@ -7,6 +7,10 @@ from sqlalchemy.orm import Session
 from . import models
 from .auth import get_current_user, require_admin, require_user
 from .database import get_db
+import time as _time
+_user_last_comment: dict[int, float] = {}  # user_id -> last timestamp
+
+
 
 router = APIRouter(tags=["comments"])
 
@@ -51,6 +55,12 @@ def create_comment(
         raise HTTPException(400, "Pusty komentarz")
     if len(req.body) > 5000:
         raise HTTPException(400, "Komentarz max 5000 znakow")
+    # Rate limit: 1 comment per 60s per user
+    now = _time.time()
+    last = _user_last_comment.get(user.id, 0)
+    if now - last < 60:
+        raise HTTPException(429, "Za czesto! Poczekaj chwile.")
+    _user_last_comment[user.id] = now
 
     job = db.query(models.Job).filter(models.Job.id == job_id).first()
     if not job:
