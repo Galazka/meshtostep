@@ -511,11 +511,25 @@
                 </div>
             </div>
             <button class="btn-auth" id="authSubmit" onclick="doAuth()" data-i18n="authLoginBtn">Zaloguj</button>
-            <div class="forgot-link" id="forgotLink"><a onclick="alert('TODO: reset password')" data-i18n="authForgot">Zapomniales hasla?</a></div>
+            <div class="forgot-link" id="forgotLink"><a onclick="openForgotModal()" data-i18n="authForgot">Zapomniales hasla?</a></div>
+            <div class="forgot-link" id="resetLink"><a href="/api/auth/reset" onclick="event.preventDefault();location=this.href">Resetowanie (link email)</a></div>
             <div class="switch" id="authSwitch"><span data-i18n="authNoAccount">Nie masz konta?</span> <a onclick="toggleAuth()" data-i18n="authFreeSignup">Zaloz za darmo</a></div>
         </div>
     </div>
 
+    
+    <div class="modal-bg" id="forgotModal">
+        <div class="modal" style="width:420px;max-width:95vw">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <h3 data-i18n="authForgotTitle">Resetowanie hasla</h3>
+                <button class="modal-close" onclick="closeForgotModal()">&times;</button>
+            </div>
+            <p style="font-size:13px;color:var(--text-muted);margin-bottom:12px" data-i18n="authForgotDesc">Podaj email — wyslemy link do ustawienia nowego hasla (wazny 60 min).</p>
+            <div class="auth-error" id="forgotError"></div>
+            <input id="forgotEmail" type="email" data-i18n-placeholder="authEmailPh" placeholder="email" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:12px">
+            <button class="btn btn-primary" style="width:100%" onclick="sendForgotPassword()" data-i18n="authForgotSend">Wyslij link</button>
+        </div>
+    </div>
     <div class="job-modal-bg" id="jobModal">
         <div class="job-modal">
             <div class="job-modal-head">
@@ -682,7 +696,22 @@
         window.dispatchEvent(new Event('three-ready'));
     </script>
 
-    <script>
+    async function openForgotModal(){ document.getElementById('forgotModal').classList.add('active'); document.getElementById('forgotError').style.display='none'; }
+function closeForgotModal(){ document.getElementById('forgotModal').classList.remove('active'); }
+async function sendForgotPassword(){
+    const email=document.getElementById('forgotEmail').value.trim();
+    if(!email){ showForgotErr('Podaj email.'); return; }
+    try{
+        const r=await fetch('/api/auth/forgot-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+        const d=await r.json();
+        if(!r.ok) throw new Error(d.detail||t('errorGeneric'));
+        showForgotOK(d.detail||'Wyslano link. Sprawdz poczte.');
+    }catch(e){ showForgotErr(e.message||String(e)); }
+}
+function showForgotErr(msg){ const e=document.getElementById('forgotError'); e.textContent=msg; e.style.display='block'; e.style.color='var(--err)'; }
+function showForgotOK(msg){ const e=document.getElementById('forgotError'); e.textContent=msg; e.style.display='block'; e.style.color='var(--ok)'; }
+
+<script>
     const I18N = {
         pl: {
             navConverter: 'Konwerter', navPricing: 'Cennik', navMyFiles: 'Moje pliki',
@@ -854,6 +883,10 @@
             trustSupport: 'Wsparcie',
             visPrivate: 'Prywatny',
             visUnlisted: 'Unlisted - tylko link'
+        ,
+            authForgotDesc: 'Podaj email — wyslemy link do ustawienia nowego hasla (wazny 60 min).',
+            authForgotSend: 'Wyslij link',
+            authForgotTitle: 'Resetowanie hasla'
         },
         en: {
             navConverter: 'Converter', navPricing: 'Pricing', navMyFiles: 'My Files',
@@ -1024,6 +1057,10 @@
             trustSupport: 'Support',
             visPrivate: 'Private',
             visUnlisted: 'Unlisted - link only'
+,
+            authForgotDesc: 'Enter email — we will send a link to set a new password (valid 60 min).',
+            authForgotSend: 'Send link',
+            authForgotTitle: 'Reset password'
 
         }
     };
