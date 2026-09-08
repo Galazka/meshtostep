@@ -243,7 +243,10 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
 .btn-primary{background:#1a56db;color:#fff}
 .btn-sec{background:#f1f5f9;color:#1e293b}
 .wrap{max-width:1100px;margin:0 auto;padding:20px;display:grid;grid-template-columns:1fr 340px;gap:20px}
-#viewer{width:100%;height:420px;background:#f0f2f5;border-radius:12px;overflow:hidden}
+#viewer{width:100%;height:420px;background:#f0f2f5;border-radius:12px;overflow:hidden;position:relative}
+.viewer-toolbar{position:absolute;top:8px;right:8px;display:flex;gap:4px;z-index:10}
+.viewer-toolbar button{background:rgba(255,255,255,.9);border:1px solid #e2e8f0;border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;backdrop-filter:blur(4px)}
+.viewer-toolbar button:hover{background:#fff;border-color:#1a56db;color:#1a56db}
 .desc{white-space:pre-wrap;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-top:12px}
 .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .tag{background:#e8eefb;color:#1a56db;padding:3px 8px;border-radius:999px;font-size:12px;text-decoration:none}
@@ -262,11 +265,15 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
 </header>
 <div class="wrap">
   <div>
-    <div id="viewer"></div>
+    <div id="viewer">
+      <div class="viewer-toolbar">
+        <button id="btnFs" title="Pełny ekran">⛶</button>
+        <button id="btnColor" title="Kolor modelu" style="width:28px;height:28px;border-radius:50%;background:#3b82f6"></button>
+      </div>
+    </div>
     <h1 style="margin:12px 0 4px;font-size:20px">__TITLE__</h1>
     <div style="color:#64748b;font-size:13px">by <a href="/u/__USERNAME__">__USERNAME__</a> · __DATE__ · __VIS_LABEL__</div>
     <div class="tags">__TAG_HTML__</div>
-    <div class="desc">__DESC__</div>
     __YOUTUBE__
   </div>
   <div class="side">
@@ -283,15 +290,33 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
 const el=document.getElementById('viewer');
+const viewerWrap = el;
 const scene=new THREE.Scene();scene.background=new THREE.Color(0xf0f2f5);
 const camera=new THREE.PerspectiveCamera(50, el.clientWidth/el.clientHeight, 0.1, 1000);camera.position.set(0,40,60);
 const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(el.clientWidth, el.clientHeight);renderer.setPixelRatio(window.devicePixelRatio);el.appendChild(renderer.domElement);
 const controls=new OrbitControls(camera, renderer.domElement);controls.enableDamping=true;controls.enableRotate=true;controls.enablePan=true;controls.enableZoom=true;controls.minDistance=5;controls.maxDistance=500;controls.minPolarAngle=0.1;controls.maxPolarAngle=Math.PI-0.1;
 scene.add(new THREE.AmbientLight(0x404060,1.2));const d1=new THREE.DirectionalLight(0x3b82f6,1.0);d1.position.set(30,50,30);scene.add(d1);
 const d2=new THREE.DirectionalLight(0x8888ff,0.5);d2.position.set(-20,10,-30);scene.add(d2);
-new STLLoader().load('/api/stl-preview/__UUID__', g=>{g.computeBoundingBox();const c=new THREE.Vector3();g.boundingBox.getCenter(c);g.translate(-c.x,-c.y,-c.z);const s=new THREE.Vector3();g.boundingBox.getSize(s);const mx=Math.max(s.x,s.y,s.z);if(mx>0)g.scale(30/mx,30/mx,30/mx);const m=new THREE.Mesh(g,new THREE.MeshPhongMaterial({color:0x3b82f6,specular:0x6666aa,shininess:40}));m.rotation.x=-Math.PI/2;scene.add(m);},undefined,()=>{el.style.display='none'});
+let viewerMesh=null;
+new STLLoader().load('/api/stl-preview/__UUID__', g=>{g.computeBoundingBox();const c=new THREE.Vector3();g.boundingBox.getCenter(c);g.translate(-c.x,-c.y,-c.z);const s=new THREE.Vector3();g.boundingBox.getSize(s);const mx=Math.max(s.x,s.y,s.z);if(mx>0)g.scale(30/mx,30/mx,30/mx);viewerMesh=new THREE.Mesh(g,new THREE.MeshPhongMaterial({color:0x3b82f6,specular:0x6666aa,shininess:40}));viewerMesh.rotation.x=-Math.PI/2;scene.add(viewerMesh);},undefined,()=>{el.style.display='none'});
 function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera);}animate();
 window.addEventListener('resize',()=>{camera.aspect=el.clientWidth/el.clientHeight;camera.updateProjectionMatrix();renderer.setSize(el.clientWidth,el.clientHeight);});
+// Fullscreen
+document.getElementById('btnFs').onclick=()=>{
+  if(!document.fullscreenElement){viewerWrap.requestFullscreen().catch(()=>{});}
+  else{document.exitFullscreen();}
+};
+document.addEventListener('fullscreenchange',()=>{
+  setTimeout(()=>{camera.aspect=viewerWrap.clientWidth/viewerWrap.clientHeight;camera.updateProjectionMatrix();renderer.setSize(viewerWrap.clientWidth,viewerWrap.clientHeight);},100);
+});
+// Color picker
+const colors=['#ffffff','#9ca3af','#3b82f6','#22c55e','#ef4444','#f97316','#a855f7','#06b6d4'];
+let colorIdx=0;
+document.getElementById('btnColor').onclick=()=>{
+  colorIdx=(colorIdx+1)%colors.length;
+  document.getElementById('btnColor').style.background=colors[colorIdx];
+  if(viewerMesh)viewerMesh.material.color.set(colors[colorIdx]);
+};
 </script>
 <!-- ── Opis / blog + Komentarze ── -->
 <div style="max-width:800px;margin:24px auto;padding:0 16px">
