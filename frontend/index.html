@@ -370,6 +370,14 @@
                 <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text-secondary);margin-bottom:6px"><span id="quotaLabel">Wykorzystano 0 / 100 MB</span><span id="quotaPct">0%</span></div>
                 <div style="height:8px;background:var(--border-light);border-radius:99px;overflow:hidden"><div id="quotaFill" style="height:100%;width:0;background:var(--primary);transition:width .3s"></div></div>
             </div>
+            <div id="authorStats" style="display:none;margin-bottom:16px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:12px 16px">
+                <div style="display:flex;gap:20px;flex-wrap:wrap;font-size:13px;color:var(--text-secondary)">
+                    <span>📦 <b id="stModels" style="color:var(--text)">0</b> modeli</span>
+                    <span>🌐 <b id="stPublic" style="color:var(--text)">0</b> publicznych</span>
+                    <span>👁 <b id="stViews" style="color:var(--text)">0</b> wyświetleń</span>
+                    <span>❤️ <b id="stLikes" style="color:var(--text)">0</b> polubień</span>
+                </div>
+            </div>
             <div id="myFilesToolbar" style="display:none;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px">
                 <button onclick="quickUpload()" style="padding:10px 18px;background:#1a56db;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:14px;box-shadow:0 2px 8px rgba(26,86,219,.25)" data-i18n="mfQuickUpload">↑ Wgraj STL</button>
                 <input id="mfSearch" data-i18n-placeholder="mfSearchPh" placeholder="Szukaj po nazwie..." style="flex:1;min-width:160px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px" oninput="mfRender()">
@@ -596,7 +604,17 @@
                 <div class="ed-field">
                     <label data-i18n="editorDescLab">Opis (markdown)</label>
                     <textarea id="edDesc" class="ed-input ed-textarea" data-i18n-placeholder="editorDescPh" placeholder="Opis (markdown) — jak blog: wstęp, zdjęcia, parametry, linki"></textarea>
-                    <div class="ed-hint">Markdown: **pogrubienie** *kursywa* `kod` [link](url) # Nagłówek - lista &gt; cytat — obrazy dodaj galerią poniżej ↓</div>
+                    <div class="ed-hint" style="display:flex;flex-wrap:wrap;gap:4px;align-items:center">
+                    <span style="margin-right:8px">Markdown:</span>
+                    <button onclick="edInsert('**','**')" style="padding:2px 6px;font-size:11px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;cursor:pointer" title="Pogrubienie">B</button>
+                    <button onclick="edInsert('*','*')" style="padding:2px 6px;font-size:11px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;cursor:pointer;font-style:italic" title="Kursywa">I</button>
+                    <button onclick="edInsert('# ','')" style="padding:2px 6px;font-size:11px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;cursor:pointer" title="Nagłówek">H</button>
+                    <button onclick="edInsert('`','`')" style="padding:2px 6px;font-size:11px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;cursor:pointer;font-family:monospace" title="Kod inline">&lt;/&gt;</button>
+                    <button onclick="edInsert('[',''](url)')" style="padding:2px 6px;font-size:11px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;cursor:pointer" title="Link">🔗</button>
+                    <button onclick="edInsert('\n- ','')" style="padding:2px 6px;font-size:11px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;cursor:pointer" title="Lista">•</button>
+                    <button onclick="edInsert('> ','')" style="padding:2px 6px;font-size:11px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;cursor:pointer" title="Cytat">&gt;</button>
+                    <span id="edCharCount" style="margin-left:auto;font-size:11px;color:#94a3b8">0 znaków</span>
+                </div>
                 </div>
                 <div class="ed-field">
                     <label data-i18n="editorPreview">Podgląd</label>
@@ -1260,6 +1278,20 @@
             fill.style.background=q.percent>90?'#dc2626':q.percent>75?'#d97706':'var(--primary)';
         }catch(e){}
     }
+    async function loadAuthorStats(){
+        if(!token) return;
+        try{
+            const r=await fetch('/api/jobs-author-stats',{headers:{'Authorization':'Bearer '+token}});
+            if(!r.ok) return;
+            const s=await r.json();
+            const bar=document.getElementById('authorStats');
+            if(bar) bar.style.display='block';
+            if(document.getElementById('stModels')) document.getElementById('stModels').textContent=s.total_models||0;
+            if(document.getElementById('stPublic')) document.getElementById('stPublic').textContent=s.public_models||0;
+            if(document.getElementById('stViews')) document.getElementById('stViews').textContent=s.total_views||0;
+            if(document.getElementById('stLikes')) document.getElementById('stLikes').textContent=s.total_likes||0;
+        }catch(e){}
+    }
     async function loadFolders(){
         if(!token) return;
         try{
@@ -1474,7 +1506,7 @@
             return;
         }
         try {
-            loadQuota(); loadFolders();
+            loadQuota(); loadFolders(); loadAuthorStats();
             const r = await fetch('/api/jobs', {headers:{'Authorization': 'Bearer '+token}});
             if (!r.ok) { document.getElementById('myFilesEmpty').style.display = 'block'; document.getElementById('mfGrid').style.display = 'none'; document.getElementById('myFilesToolbar').style.display='none'; return; }
             const d = await r.json();
@@ -1630,17 +1662,35 @@
             const d = await r.json();
             const slots = d.slots || d;
             if (Array.isArray(slots)) {
-                slots.forEach(s => {
-                    const el = document.querySelector('.ad-slot[data-slot="' + s.slot + '"]');
-                    if (el && s.ad_code) el.innerHTML = s.ad_code;
+                const counts = {};
+                slots.forEach(function(s) {
+                    const key = s.position || s.slot_key || s.slot;
+                    counts[key] = (counts[key] || 0) + 1;
+                    const sel = '.ad-slot[data-slot="' + key + '"]';
+                    let el = document.querySelector(sel);
+                    if (el && counts[key] > 1) {
+                        // multiple slots same position: append clone below
+                        const clone = document.createElement('div');
+                        clone.className = 'ad-slot';
+                        clone.setAttribute('data-slot', key + '-' + counts[key]);
+                        el.parentNode.insertBefore(clone, el.nextSibling);
+                        el = clone;
+                    }
+                    if (el && s.ad_code) {
+                        el.innerHTML = s.ad_code;
+                        // track impression
+                        try { fetch('/api/ads/impression/' + s.id, {method:'POST'}).catch(function(){}); } catch(e) {}
+                    }
                 });
             } else {
-                for (const [slot, code] of Object.entries(slots)) {
+                for (const slot in slots) {
+                    if (!Object.prototype.hasOwnProperty.call(slots, slot)) continue;
+                    const code = slots[slot];
                     const el = document.querySelector('.ad-slot[data-slot="' + slot + '"]');
                     if (el && code) el.innerHTML = code;
                 }
             }
-        } catch(e) {}
+        } catch(e) { console.error('loadAdSlots:', e); }
     }
 
     function logout() { token=null; localStorage.removeItem('mt_token'); location.reload(); }
@@ -2012,7 +2062,23 @@
             }catch(e){}
         }
 
-        /* ═══════ EDITOR MODAL ═══════ */
+        function edInsert(before, after) {
+            var desc = document.getElementById('edDesc');
+            var start = desc.selectionStart, end = desc.selectionEnd;
+            var sel = desc.value.substring(start, end);
+            desc.value = desc.value.substring(0, start) + before + sel + after + desc.value.substring(end);
+            desc.focus();
+            desc.selectionStart = start + before.length;
+            desc.selectionEnd = start + before.length + sel.length;
+            desc.dispatchEvent(new Event('input'));
+        }
+        function edUpdateCharCount() {
+            var desc = document.getElementById('edDesc');
+            var cnt = document.getElementById('edCharCount');
+            if (desc && cnt) cnt.textContent = desc.value.length + ' znaków';
+        }
+
+    /* ═══════ EDITOR MODAL ═══════ */
         let _edJobId = null;
         let _edDescListener = null;
 
@@ -2071,7 +2137,7 @@
             const previewEl = document.getElementById('edPreview');
             previewEl.innerHTML = _mdToHtml(descEl.value);
             if (_edDescListener) descEl.removeEventListener('input', _edDescListener);
-            _edDescListener = function() { previewEl.innerHTML = _mdToHtml(descEl.value); };
+            _edDescListener = function() { previewEl.innerHTML = _mdToHtml(descEl.value); edUpdateCharCount(); };
             descEl.addEventListener('input', _edDescListener);
 
             // gallery from existing images in description
@@ -2089,6 +2155,7 @@
             });
 
             document.getElementById('edSaveStatus').textContent = '';
+            edUpdateCharCount();
             document.getElementById('editorModal').classList.add('show');
         }
 

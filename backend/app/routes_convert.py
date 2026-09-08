@@ -431,6 +431,21 @@ def share_download(token: str, db: Session = Depends(get_db)):
 
 
 # --- User jobs list ---
+
+# --- Author stats ---
+@router.get("/jobs-author-stats")
+def author_stats(user: models.User = Depends(require_user), db: Session = Depends(get_db)):
+    """Return author-specific statistics."""
+    jobs = db.query(models.Job).filter(models.Job.user_id == user.id).all()
+    total_models = len(jobs)
+    total_views = sum(j.views or 0 for j in jobs)
+    total_likes = sum(j.likes or 0 for j in jobs)
+    public_models = sum(1 for j in jobs if j.visibility == "public")
+    done_models = sum(1 for j in jobs if j.status == "done")
+    total_size = sum(j.file_size_bytes or 0 for j in jobs)
+    return {"total_models": total_models, "done_models": done_models, "public_models": public_models, "total_views": total_views, "total_likes": total_likes, "total_size_bytes": total_size}
+
+
 @router.get("/jobs")
 def list_jobs(user: models.User = Depends(require_user), db: Session = Depends(get_db)):
     jobs = db.query(models.Job).filter(
@@ -441,7 +456,8 @@ def list_jobs(user: models.User = Depends(require_user), db: Session = Depends(g
         out.append({"id": j.id, "uuid": j.uuid, "filename": j.original_filename, "title": j.title, "status": j.status,
              "mode": j.mode, "faces": j.result_faces, "processing_time_s": j.processing_time_s,
              "created_at": str(j.created_at), "folder_id": j.folder_id, "preview_image": j.preview_image,
-             "visibility": j.visibility, "slug": j.slug, "file_size_bytes": j.file_size_bytes, "result_size_bytes": j.result_size_bytes, "dims_mm": j.dims_mm})
+             "visibility": j.visibility, "slug": j.slug, "file_size_bytes": j.file_size_bytes, "result_size_bytes": j.result_size_bytes, "dims_mm": j.dims_mm,
+             "views": j.views or 0, "likes": j.likes or 0, "description": (j.description or "")[:5000], "tags": j.tags or [], "youtube_url": j.youtube_url or "", "is_paid": j.is_paid, "price_cents": j.price_cents})
     return out
 
 

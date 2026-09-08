@@ -55,6 +55,17 @@ def ad_click(
     }
 
 
+
+@router.post("/impression/{slot_id}")
+def track_impression(slot_id: int, db: Session = Depends(get_db)):
+    """Track ad impression (no auth required)."""
+    slot = db.query(models.AdSlot).filter(models.AdSlot.id == slot_id).first()
+    if slot:
+        slot.impressions += 1
+        db.commit()
+    return {"ok": True}
+
+
 # ── Admin CRUD ──────────────────────────────────────────────────────
 class AdSlotReq(BaseModel):
     name: str

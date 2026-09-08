@@ -1171,27 +1171,35 @@
     /* ── ADS MANAGEMENT ─────────────────────────────────────────── */
     let _allAdSlots = [];
     async function loadAdSlots(){
+        let d = _allAdSlots || [];
         try {
-            const d = await api('/api/ads/admin/slots');
-            _allAdSlots = d;
-            if(d && d.length) try{ localStorage.setItem('_adSlots', JSON.stringify(d)); }catch(e){}
+            const resp = await api('/api/ads/admin/slots');
+            if(Array.isArray(resp) && resp.length) {
+                d = resp;
+                _allAdSlots = d;
+                try{ localStorage.setItem('_adSlots', JSON.stringify(d)); }catch(e){}
+            }
         }catch(e){
             const cached = localStorage.getItem('_adSlots');
-            if(cached){ try{ _allAdSlots=JSON.parse(cached); }catch(e){} }
+            if(cached){ try{ _allAdSlots=JSON.parse(cached); d=_allAdSlots; }catch(e){} }
         }
-            document.getElementById('adsBody').innerHTML = d.map(s =>
-                '<tr>' +
-                '<td>' + s.id + '</td><td>' + (s.name||'') + '</td><td><code>' + s.slot_key + '</code></td>' +
-                '<td>' + s.ad_type + '</td>' +
-                '<td><span style="color:' + (s.is_active ? 'var(--ok)' : 'var(--err)') + '">' + (s.is_active ? 'TAK' : 'NIE') + '</span></td>' +
+        if(!d.length){
+            document.getElementById('adsBody').innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:24px">Brak slotów reklamowych</td></tr>';
+            return;
+        }
+        document.getElementById('adsBody').innerHTML = d.map(function(s){
+            var isActive = s.is_active ? true : false;
+            return '<tr>' +
+                '<td>' + s.id + '</td><td>' + (s.name||'') + '</td><td><code>' + (s.slot_key||s.position||'') + '</code></td>' +
+                '<td>' + (s.ad_type||'') + '</td>' +
+                '<td><span style="color:' + (isActive ? 'var(--ok)' : 'var(--err)') + '">' + (isActive ? 'TAK' : 'NIE') + '</span></td>' +
                 '<td>' + (s.impressions||0) + '</td><td>' + (s.clicks||0) + '</td>' +
                 '<td>' +
-                    '<button class="btn-sm" onclick="toggleAdSlot(' + s.id + ')">' + (s.is_active ? 'Wyłącz' : 'Włącz') + '</button> ' +
-                    '<button class="btn-sm" onclick="openAdSlotModal(_allAdSlots.find(x=>x.id===' + s.id + '))">Edytuj</button> ' +
+                    '<button class="btn-sm" onclick="toggleAdSlot(' + s.id + ')">' + (isActive ? 'Wyłącz' : 'Włącz') + '</button> ' +
+                    '<button class="btn-sm" onclick="openAdSlotModal(_allAdSlots.find(function(x){return x.id===' + s.id + '}))">Edytuj</button> ' +
                     '<button class="btn-sm danger" onclick="deleteAdSlot(' + s.id + ')">Usuń</button>' +
-                '</td></tr>'
-            ).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:24px">Brak slotów reklamowych</td></tr>';
-        } catch(e) { console.error('loadAdSlots:', e); }
+                '</td></tr>';
+        }).join('');
     }
 
     async function toggleAdSlot(id) {
@@ -1240,7 +1248,6 @@
     }
 
     async function saveAdSlot(id) {
-        if(id) try{ const d = await api('/api/ads/admin/slots'); localStorage.setItem('_adSlots', JSON.stringify(d)); }catch(e){}
         const body = {
             name: document.getElementById('adName').value,
             slot_key: document.getElementById('adSlotKey').value,
@@ -1263,7 +1270,7 @@
     function pickAdPos(pos){ pickedPos=pos; document.querySelectorAll('.admap-cell').forEach(b=>b.classList.toggle('active', b.dataset.pos===pos)); document.getElementById('adMapPreview').textContent='Wybrano: '+pos+' — użyj przy tworzeniu slota (pole Pozycja).'; }
     // highlight map by active slots
     function highlightAdMap(slots){ const counts={}; slots.forEach(s=>{const p=s.position||s.slot_key; counts[p]=(counts[p]||0)+1}); document.querySelectorAll('.admap-cell').forEach(b=>{const c=counts[b.dataset.pos]||0; b.textContent = b.textContent.split(' —')[0] + (c?` — ${c} slotów`:''); b.style.borderStyle=c?'solid':'dashed';}); }
-    const _origLoad=loadAdSlots; loadAdSlots=async function(){ await _origLoad(); try{const r=await api('/api/ads/admin/slots'); highlightAdMap(r);}catch(e){} }
+    const _origLoadAdSlots=loadAdSlots; loadAdSlots=async function(){ await _origLoadAdSlots(); highlightAdMap(_allAdSlots); }
     if (window.location.search.includes('tab=ads')) switchAdminTab('ads');
     </script>
 </body>
