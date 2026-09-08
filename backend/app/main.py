@@ -136,6 +136,7 @@ app.include_router(comments_router)
 app.include_router(sales_router)
 app.include_router(folders_router)
 
+app.include_router(sitemap_router, tags=['sitemap'])
 
 @app.get("/api/health")
 def health():
@@ -167,30 +168,6 @@ def health():
 
 
 # ── Serve frontend ──────────────────────────────────────────────────
-@app.get("/sitemap.xml", include_in_schema=False)
-def sitemap():
-    from .database import SessionLocal
-    from . import models
-    db_s = SessionLocal()
-    try:
-        jobs = db_s.query(models.Job).filter(models.Job.status=="done", models.Job.visibility=="public").order_by(models.Job.created_at.desc()).limit(5000).all()
-        urls = ["https://3dhosty.com/", "https://3dhosty.com/admin"]
-        for j in jobs:
-            if j.slug and j.user and getattr(j.user,"username",None):
-                urls.append(f"https://3dhosty.com/u/{j.user.username}/{j.slug}")
-            else:
-                urls.append(f"https://3dhosty.com/s/{j.uuid}" if hasattr(j,"uuid") else "https://3dhosty.com/")
-        xml = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + "".join(f"<url><loc>{u}</loc></url>" for u in urls) + "</urlset>"
-        from fastapi.responses import Response
-        return Response(content=xml, media_type="application/xml")
-    finally:
-        db_s.close()
-
-@app.get("/robots.txt", include_in_schema=False)
-def robots():
-    from fastapi.responses import PlainTextResponse
-    return PlainTextResponse("User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nSitemap: https://3dhosty.com/sitemap.xml\n")
-
 FRONTEND_DIR = Path(__file__).parent.parent.parent / "frontend"
 
 
