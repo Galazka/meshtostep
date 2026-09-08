@@ -255,17 +255,42 @@ def stl_preview(job_uuid: str, db: Session = Depends(get_db)):
 
 @router.get("/preview/{job_uuid}")
 def preview_image(job_uuid: str, db: Session = Depends(get_db)):
-    """Serve JPG preview if exists, else 404 — frontend falls back to 3D thumb."""
+    """Serve JPG preview → auto-gen thumb from mesh → 404 only if no mesh at all."""
     job = db.query(models.Job).filter(models.Job.uuid == job_uuid).first()
     if not job:
         raise HTTPException(404, "Job nie znaleziony")
+    # 1) stored preview
     if job.preview_image and os.path.exists(job.preview_image):
         return FileResponse(job.preview_image, media_type="image/jpeg")
-    # try JOBS_DIR preview
-    p = JOBS_DIR / job_uuid / "preview.jpg"
-    if p.exists():
-        return FileResponse(str(p), media_type="image/jpeg")
-    raise HTTPException(404, "Preview nie istnieje")
+    # 2) preview.jpg in job dir
+    jp = JOBS_DIR / job_uuid / "preview.jpg"
+    if jp.exists():
+        return FileResponse(str(jp), media_type="image/jpeg")
+    # 3) cached thumb.png
+    tp = JOBS_DIR / job_uuid / "thumb.png"
+    if tp.exists():
+        return FileResponse(str(tp), media_type="image/png")
+    # 4) auto-generate thumb from mesh on the fly (trimesh+matplotlib)
+    src_dir = JOBS_DIR / job_uuid
+    if src_dir.exists():
+        mesh_file = None
+        for ext in (".stl", ".3mf", ".obj", ".step"):
+            for f in src_dir.iterdir():
+                if f.suffix.lower() == ext:
+                    mesh_file = str(f); break
+            if mesh_file: break
+        if mesh_file:
+            try:
+                _auto_thumb(mesh_file, str(tp))
+                return FileResponse(str(tp), media_type="image/png")
+            except Exception:
+                pass
+    # 5) 1x1 placeholder PNG so img tag doesn't break
+    import io
+    placeholder = io.BytesIO(b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc\xf8\x0f\x00\x00\x01\x01\x00\x05\x18\xd8N\x00\x00\x00\x00IEND\xaeB`\x82')
+    from starlette.responses import StreamingResponse
+    placeholder.seek(0)
+    return StreamingResponse(placeholder, media_type="image/png")
 
 
 # --- Server-side STL thumbnail (trimesh + matplotlib) ---
