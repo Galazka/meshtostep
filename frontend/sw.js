@@ -1,4 +1,4 @@
-const CACHE = '3dhosty-v2';
+const CACHE = '3dhosty-v3';
 const ASSETS = ['/', '/manifest.json', '/logo.png'];
 
 self.addEventListener('install', e => {

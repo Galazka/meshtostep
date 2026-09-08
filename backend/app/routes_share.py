@@ -533,7 +533,7 @@ def embed_page(job_id: int, db: Session = Depends(get_db)) -> HTMLResponse:
 </div>
 <div id="viewer3d"></div>
 <script type="importmap">
-{{"imports":{{"three":"https://unpkg.com/three@0.164.1/build/three.module.js","three/addons/":"https://unpkg.com/three@0.164.1/examples/jsm/"}}}}
+{{"imports":{{"three":"/vendor/three/three.module.js","three/addons/":"/vendor/three/"}}}}
 </script>
 <script type="module">
 import * as THREE from 'three';
