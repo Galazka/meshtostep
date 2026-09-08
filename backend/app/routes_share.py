@@ -250,7 +250,7 @@ scene.background = new THREE.Color(0xf0f2f5);
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0, 40, 60);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });  /* 3dhosty share viewer */;
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 el.appendChild(renderer.domElement);
@@ -290,7 +290,10 @@ new STLLoader().load('/api/stl-preview/__UUID__', (g) => {
   }));
   m.rotation.x = -Math.PI / 2;
   scene.add(m);
-}, undefined, () => { el.style.display = 'none'; });
+}, undefined, (err) => {
+  console.error('STL load error:', err);
+  el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#64748b;font-size:14px;flex-direction:column;gap:8px"><span style="font-size:32px">△</span>Nie mozna zaladowac podgladu 3D</div>';
+});
 
 function animate() {
   requestAnimationFrame(animate);

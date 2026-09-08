@@ -396,6 +396,90 @@ def user_profile(username: str, db: Session = Depends(get_db)):
         user = db.query(models.User).filter(models.User.email.ilike(f"{username}@%")).first()
         if not user:
             return HTMLResponse("<h1>Uzytkownik nie znaleziony</h1>", status_code=404)
-    jobs = db.query(models.Job).filter(models.Job.user_id == user.id, models.Job.status == "done", models.Job.visibility == "public").order_by(models.Job.created_at.desc()).limit(24).all()
-    items = "".join(f'<a href="/u/{username}/{j.slug}" style="display:block;border:1px solid #e2e8f0;border-radius:8px;padding:12px;text-decoration:none;color:#1e293b"><div style="font-weight:600">{html.escape(j.title or j.original_filename)}</div><div style="font-size:12px;color:#64748b">{j.result_faces or "?"} faces · { (j.views or 0)} views</div></a>' for j in jobs if j.slug)
-    return HTMLResponse(f"""<!DOCTYPE html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{html.escape(username)} — 3dhosty.com</title><style>body{{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b}} .wrap{{max-width:1000px;margin:0 auto;padding:20px}} .grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}}</style></head><body><div class="wrap"><a href="/" style="color:#1a56db;font-weight:800;text-decoration:none">3dhosty.com</a><h1 style="margin:12px 0">{html.escape(username)}</h1><div style="color:#64748b;margin-bottom:16px">{html.escape(user.bio or "")}</div><div class="grid">{items or "<div>Brak publicznych modeli</div>"}</div></div></body></html>""")
+    jobs = (
+        db.query(models.Job)
+        .filter(models.Job.user_id == user.id, models.Job.status == "done", models.Job.visibility == "public")
+        .order_by(models.Job.created_at.desc())
+        .limit(48)
+        .all()
+    )
+    total_views = sum(j.views or 0 for j in jobs)
+    model_count = len(jobs)
+    member_since = user.created_at.strftime("%b %Y") if getattr(user, "created_at", None) else ""
+    avatar_letter = (username or "?")[0].upper()
+    avatar_img = (
+        f'<img src="{html.escape(user.avatar_url)}" alt="" style="width:80px;height:80px;border-radius:50%;object-fit:cover">'
+        if getattr(user, "avatar_url", None)
+        else f'<div style="width:80px;height:80px;border-radius:50%;background:#1a56db;color:#fff;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700">{html.escape(avatar_letter)}</div>'
+    )
+    cards = ""
+    for j in jobs:
+        if not j.slug:
+            continue
+        title = html.escape(j.title or j.original_filename or "model")
+        faces = j.result_faces or "?"
+        views = j.views or 0
+        preview_url = f"/api/preview/{j.uuid}"
+        cards += (
+            f'<a href="/u/{html.escape(username)}/{html.escape(j.slug)}" class="card">'
+            f'<img src="{preview_url}" alt="{title}" loading="lazy">'
+            f'<div class="card-body">'
+            f'<div class="card-title">{title}</div>'
+            f'<div class="card-meta">{faces} faces · {views} views</div>'
+            f'</div></a>'
+        )
+    if not cards:
+        cards = '<div style="grid-column:1/-1;text-align:center;color:#94a3b8;padding:40px 0">Brak publicznych modeli</div>'
+    page = f"""<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{html.escape(username)} — 3dhosty.com</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+body{{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;line-height:1.6}}
+.top{{background:#fff;border-bottom:1px solid #e2e8f0;padding:12px 20px;display:flex;align-items:center}}
+.top a{{font-weight:800;color:#1a56db;text-decoration:none;font-size:18px}}
+.wrap{{max-width:1000px;margin:0 auto;padding:24px 20px}}
+.profile{{display:flex;gap:20px;align-items:center;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:24px;margin-bottom:24px}}
+.profile-info{{flex:1}}
+.profile-info h1{{font-size:22px;font-weight:800;margin-bottom:2px}}
+.profile-info .bio{{font-size:14px;color:#64748b;margin-bottom:8px}}
+.stats{{display:flex;gap:16px;flex-wrap:wrap}}
+.stat{{font-size:13px;color:#475569}}
+.stat strong{{color:#1e293b}}
+.section-title{{font-size:16px;font-weight:700;margin-bottom:12px}}
+.grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}}
+.card{{display:flex;flex-direction:column;background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;text-decoration:none;color:#1e293b;transition:box-shadow .15s}}
+.card:hover{{box-shadow:0 4px 16px rgba(0,0,0,.08)}}
+.card img{{width:100%;aspect-ratio:4/3;object-fit:cover;background:#f0f2f5}}
+.card-body{{padding:12px}}
+.card-title{{font-weight:600;font-size:14px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+.card-meta{{font-size:12px;color:#64748b}}
+@media(max-width:600px){{.profile{{flex-direction:column;text-align:center}}.stats{{justify-content:center}}}}
+</style>
+</head>
+<body>
+<header class="top"><a href="/">3dhosty.com</a></header>
+<div class="wrap">
+  <div class="profile">
+    {avatar_img}
+    <div class="profile-info">
+      <h1>{html.escape(username)}</h1>
+      <div class="bio">{html.escape(user.bio or "Brak opisu")}</div>
+      <div class="stats">
+        <span class="stat"><strong>{model_count}</strong> modeli</span>
+        <span class="stat"><strong>{total_views}</strong> wyświetleń</span>
+        <span class="stat">Członek od <strong>{member_since}</strong></span>
+      </div>
+    </div>
+  </div>
+  <div class="section-title">Modele publiczne</div>
+  <div class="grid">{cards}</div>
+</div>
+</body>
+</html>"""
+    return HTMLResponse(page)

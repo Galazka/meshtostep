@@ -58,7 +58,7 @@ async def security_middleware(request: Request, call_next):
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "font-src 'self' https://fonts.gstatic.com; "
         "img-src 'self' data: https:; "
-        "connect-src 'self'; "
+        "connect-src 'self' data: https: blob:; "
         "frame-src https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; "
         "frame-ancestors 'self'; "
         "worker-src 'self' blob:; "

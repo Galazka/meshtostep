@@ -240,7 +240,10 @@
         .fs-controls button.fs-close { margin-left: auto; }
         .fs-viewer { flex: 1; position: relative; overflow: hidden; }
         .fs-viewer canvas { display: block; }
-    </style>
+    
+        /* dark mode */
+
+</style>
 </head>
 <body>
     <nav class="nav">
@@ -264,6 +267,7 @@
                     <button onclick="logout()" data-i18n="navLogout">Wyloguj</button>
                 </span>
             </div>
+            <button class="lang-toggle" id="themeToggle" onclick="toggleTheme()" title="Tryb ciemny">🌙</button>
             <button class="lang-toggle" id="langToggle" onclick="toggleLang()">EN</button>
         </div>
     </nav>
@@ -365,6 +369,17 @@
             <button class="btn-primary" id="convertBtn" onclick="doConvert()" data-i18n="convertBtn">Konwertuj</button>
             <div class="result" id="result"></div>
             <div id="viewer3d"></div>
+            <div id="meshColorBar" style="display:none;margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+                <span style="font-size:12px;color:var(--text-muted);margin-right:4px">Kolor:</span>
+                <button onclick="setMeshColor(0x1a56db)" style="width:24px;height:24px;border-radius:50%;border:2px solid var(--border);cursor:pointer;background:#1a56db" title="Navy"></button>
+                <button onclick="setMeshColor(0x059669)" style="width:24px;height:24px;border-radius:50%;border:2px solid var(--border);cursor:pointer;background:#059669" title="Emerald"></button>
+                <button onclick="setMeshColor(0xdc2626)" style="width:24px;height:24px;border-radius:50%;border:2px solid var(--border);cursor:pointer;background:#dc2626" title="Ruby"></button>
+                <button onclick="setMeshColor(0x7c3aed)" style="width:24px;height:24px;border-radius:50%;border:2px solid var(--border);cursor:pointer;background:#7c3aed" title="Violet"></button>
+                <button onclick="setMeshColor(0xf59e0b)" style="width:24px;height:24px;border-radius:50%;border:2px solid var(--border);cursor:pointer;background:#f59e0b" title="Amber"></button>
+                <button onclick="setMeshColor(0xec4899)" style="width:24px;height:24px;border-radius:50%;border:2px solid var(--border);cursor:pointer;background:#ec4899" title="Pink"></button>
+                <button onclick="setMeshColor(0xffffff)" style="width:24px;height:24px;border-radius:50%;border:2px solid var(--border);cursor:pointer;background:#ffffff" title="White"></button>
+                <button onclick="setMeshColor(0x64748b)" style="width:24px;height:24px;border-radius:50%;border:2px solid var(--border);cursor:pointer;background:#64748b" title="Slate"></button>
+            </div>
             <div class="ad-slot" data-slot="after_convert"></div>
         </div>
     </div>
@@ -608,7 +623,13 @@
     #editorModal .ed-actions{display:flex;gap:10px;padding:12px 24px 16px;border-top:1px solid #e2e8f0;align-items:center;flex-wrap:wrap}
     #editorModal .ed-hint{font-size:12px;color:#94a3b8}
     @media(max-width:720px){#editorModal .ed-grid{grid-template-columns:1fr}}
-    </style>
+    
+        /* dark mode */
+        html[data-theme="dark"] { --bg: #0f172a; --bg-alt: #111827; --card: #1e293b; --border: #2a3347; --border-light: #22304a; --text: #e2e8f0; --text-secondary: #94a3b8; --text-muted: #64748b; --shadow: 0 1px 3px rgba(0,0,0,.3); --shadow-md: 0 4px 12px rgba(0,0,0,.4); color-scheme: dark; }
+        html[data-theme="dark"] body { background: var(--bg); color: var(--text); }
+        html[data-theme="dark"] .hero, html[data-theme="dark"] .section-alt { background: #0f172a !important; }
+        html[data-theme="dark"] #viewer3d { background: #111827 !important; }
+</style>
     <div class="job-modal-bg" id="editorModal">
         <div class="job-modal" id="editorModalBox">
             <div class="job-modal-head">
@@ -1095,6 +1116,31 @@ function showForgotOK(msg){ const e=document.getElementById('forgotError'); e.te
         }
     }
 
+    
+    /* Dark mode */
+    (function(){
+        const saved = localStorage.getItem('mt_theme');
+        if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    })();
+    function toggleTheme() {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        if (isDark) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('mt_theme','light'); }
+        else { document.documentElement.setAttribute('data-theme', 'dark'); localStorage.setItem('mt_theme','dark'); }
+        const btn = document.getElementById('themeToggle');
+        if (btn) btn.textContent = isDark ? '🌙' : '☀️';
+        if (_threeScene) {
+            const bg = document.documentElement.getAttribute('data-theme') === 'dark' ? 0x111827 : 0xf0f2f5;
+            _threeScene.background = new THREE.Color(bg);
+        }
+    }
+    /* Mesh color */
+    function setMeshColor(hex) {
+        if (!_threeScene) return;
+        _threeScene.traverse(function(c) {
+            if (c.isMesh) { c.material.color.setHex(hex); c.material.needsUpdate = true; }
+        });
+    }
+
     function switchTab(name) {
         document.querySelectorAll('.nav-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -1305,6 +1351,7 @@ function showForgotOK(msg){ const e=document.getElementById('forgotError'); e.te
             container.style.minHeight = '400px';
             container.innerHTML = '<div class="v3d-loading">\u0141adowanie modelu 3D...</div>';
             container.style.display = 'block';
+            var mcb=document.getElementById('meshColorBar');if(mcb)mcb.style.display='flex';
             init3DViewer(container);
             const ext = url.split('.').pop().toLowerCase().split('?')[0];
             const mat = new THREE.MeshPhongMaterial({ color: 0x1a56db, specular: 0x93b8ea, shininess: 40 });
