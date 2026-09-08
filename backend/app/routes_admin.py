@@ -484,6 +484,30 @@ def list_jobs(admin: models.User = Depends(require_admin), db: Session = Depends
 
 # ── Delete job ───────────────────────────────────────────────────────
 @router.delete("/jobs/{job_id}")
+
+# Bulk delete jobs by admin
+@router.post("/jobs/bulk-delete")
+def admin_bulk_delete(
+    payload: dict,
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    ids = payload.get("ids") or []
+    if not isinstance(ids, list) or not ids:
+        raise HTTPException(400, "ids required")
+    ids = [int(x) for x in ids if str(x).isdigit()][:500]
+    jobs = db.query(models.Job).filter(models.Job.id.in_(ids)).all()
+    jobs_dir = os.path.join(settings.DATA_DIR, "files")
+    for job in jobs:
+        db.query(models.ShareLink).filter(models.ShareLink.job_id == job.id).delete()
+        job_dir = os.path.join(jobs_dir, job.uuid)
+        if os.path.isdir(job_dir):
+            shutil.rmtree(job_dir, ignore_errors=True)
+        db.delete(job)
+    db.commit()
+    return {"ok": True, "deleted": len(jobs)}
+
+
 def delete_job(
     job_id: int,
     admin: models.User = Depends(require_admin),

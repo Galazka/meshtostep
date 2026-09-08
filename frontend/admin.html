@@ -1170,10 +1170,15 @@
 
     /* ── ADS MANAGEMENT ─────────────────────────────────────────── */
     let _allAdSlots = [];
-    async function loadAdSlots() {
+    async function loadAdSlots(){
         try {
             const d = await api('/api/ads/admin/slots');
             _allAdSlots = d;
+            if(d && d.length) try{ localStorage.setItem('_adSlots', JSON.stringify(d)); }catch(e){}
+        }catch(e){
+            const cached = localStorage.getItem('_adSlots');
+            if(cached){ try{ _allAdSlots=JSON.parse(cached); }catch(e){} }
+        }
             document.getElementById('adsBody').innerHTML = d.map(s =>
                 '<tr>' +
                 '<td>' + s.id + '</td><td>' + (s.name||'') + '</td><td><code>' + s.slot_key + '</code></td>' +
@@ -1190,13 +1195,13 @@
     }
 
     async function toggleAdSlot(id) {
-        try { await api('/api/ads/admin/slots/' + id + '/toggle', {method:'POST'}); loadAdSlots(); }
+        try { await api('/api/ads/admin/slots/' + id + '/toggle', {method:'POST'}); loadAdSlots(); try{ localStorage.setItem('_adSlots', JSON.stringify(_allAdSlots)); }catch(e){} }
         catch(e) { alert(e.message); }
     }
 
     async function deleteAdSlot(id) {
         if (!confirm('Usunąć slot reklamowy?')) return;
-        try { await api('/api/ads/admin/slots/' + id, {method:'DELETE'}); loadAdSlots(); }
+        try { await api('/api/ads/admin/slots/' + id, {method:'DELETE'}); loadAdSlots(); try{ localStorage.setItem('_adSlots', JSON.stringify(_allAdSlots)); }catch(e){} }
         catch(e) { alert(e.message); }
     }
 
@@ -1235,6 +1240,7 @@
     }
 
     async function saveAdSlot(id) {
+        if(id) try{ const d = await api('/api/ads/admin/slots'); localStorage.setItem('_adSlots', JSON.stringify(d)); }catch(e){}
         const body = {
             name: document.getElementById('adName').value,
             slot_key: document.getElementById('adSlotKey').value,
@@ -1247,6 +1253,7 @@
         try {
             if (id) { await api('/api/ads/admin/slots/' + id, {method:'PUT', body}); }
             else { await api('/api/ads/admin/slots', {method:'POST', body}); }
+            try{ const d = await api('/api/ads/admin/slots'); localStorage.setItem('_adSlots', JSON.stringify(d)); }catch(e){}
             document.getElementById('userModal').classList.remove('show');
             loadAdSlots();
         } catch(e) { alert(e.message); }
