@@ -948,6 +948,48 @@
         window.scrollTo(0, 0);
     }
 
+    
+    let discoverOffset = 0;
+    async function doDiscover(more){
+        if(!more) discoverOffset = 0;
+        const q = document.getElementById('discoverQ').value || '';
+        const sort = document.getElementById('discoverSort').value || 'latest';
+        const params = new URLSearchParams({q: q, sort: sort, offset: discoverOffset, limit: 24});
+        const grid = document.getElementById('discoverGrid');
+        if(!more) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px">Ładowanie...</div>';
+        try{
+            const r = await fetch('/api/models?'+params.toString());
+            if(!r.ok) throw 0;
+            const d = await r.json();
+            const items = d.items || d || [];
+            const html = items.map(function(m){
+                const img = m.preview_image ? m.preview_image : (m.uuid ? '/api/thumb/'+m.uuid : '');
+                return '<a href="'+(m.vanity||'/s/'+m.uuid)+'" style="display:block;border:1px solid var(--border);border-radius:10px;overflow:hidden;text-decoration:none;color:inherit;background:#fff">'
+                + (img ? '<img src="'+img+'" style="width:100%;height:140px;object-fit:cover" onerror="this.style.display=\'none\'">' : '<div style="height:140px;background:var(--bg-alt);display:flex;align-items:center;justify-content:center;color:var(--text-muted)">📄</div>')
+                + '<div style="padding:10px 12px"><div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+String(m.title||m.slug||'Model').replace(/</g,'&lt;')+'</div>'
+                + '<div style="font-size:11px;color:var(--text-muted)">'+(m.username?'by '+String(m.username).replace(/</g,'&lt;')+' · ':'')+(m.faces||'?')+' ścian'+(m.price_cents?' · '+(m.price_cents/100).toFixed(2)+' USD':'')+'</div></div></a>';
+            }).join('');
+            if(more) grid.innerHTML += html; else grid.innerHTML = html || '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px">Brak wyników</div>';
+            document.getElementById('discoverMore').style.display = (items.length >= 24) ? 'block' : 'none';
+        }catch(e){
+            if(!more) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px">Błąd wyszukiwania</div>';
+        }
+    }
+    async function loadPopularTags(){
+        try{
+            const r = await fetch('/api/tags');
+            if(!r.ok) return;
+            const tags = await r.json();
+            const box = document.getElementById('discoverTags');
+            if(!box) return;
+            box.innerHTML = (tags||[]).slice(0,20).map(function(tg){
+                const name = typeof tg==='string' ? tg : (tg.name||tg.tag);
+                return '<button onclick="document.getElementById(\'discoverQ\').value=\''+String(name).replace(/'/g,'')+'\';doDiscover()" style="padding:4px 10px;border:1px solid var(--border);border-radius:999px;background:#fff;font-size:12px;cursor:pointer;color:var(--text-secondary)">'+String(name).replace(/</g,'&lt;')+'</button>';
+            }).join('');
+        }catch(e){}
+    }
+    document.addEventListener('DOMContentLoaded', function(){ loadPopularTags(); });
+
     function toggleFaq(btn) {
         const item = btn.closest('.faq-item');
         const isOpen = item.classList.contains('open');

@@ -291,7 +291,7 @@
                             <thead>
                                 <tr>
                                     <th style="width:30px"></th>
-                                    <th>ID</th>
+                                    <th><input type="checkbox" id="jobsSelectAll" onchange="toggleJobsAll(this.checked)" style="width:14px;height:14px"></th><th>ID</th>
                                     <th data-i18n="thEmail">Email</th>
                                     <th data-i18n="thCreditsLeft">Kredyty</th>
                                     <th data-i18n="thJobsCount">Pliki</th>
@@ -301,6 +301,11 @@
                             </thead>
                             <tbody id="usersBody"></tbody>
                         </table>
+                        <div id="adminBulkBar" style="display:none;align-items:center;gap:12px;padding:12px 16px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;margin-top:12px">
+                            <span style="font-weight:600;font-size:13px">Zaznaczono: <span id="adminBulkCount">0</span></span>
+                            <button onclick="adminBulkDelete()" style="padding:8px 16px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">🗑 Usuń zaznaczone</button>
+                            <button onclick="_adminSelectedJobs.clear();updateBulkBar();renderJobs()" style="padding:8px 16px;background:#fff;border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer">Anuluj</button>
+                        </div>
                     </div>
                     <div class="cleanup-bar">
                         <label for="maxFilesInput">Max plikow na uzytkownika:</label>
@@ -1038,6 +1043,35 @@
 
     /* ═══════════════════════ JOBS ═══════════════════════ */
     let _jobsData = [];
+    
+    let _adminSelectedJobs = new Set();
+    function toggleJobsAll(checked){
+        _adminSelectedJobs.clear();
+        if(checked) _jobsData.forEach(function(j){ _adminSelectedJobs.add(j.id); });
+        renderJobs();
+        updateBulkBar();
+    }
+    function toggleJobSelect(id){
+        if(_adminSelectedJobs.has(id)) _adminSelectedJobs.delete(id); else _adminSelectedJobs.add(id);
+        updateBulkBar();
+    }
+    function updateBulkBar(){
+        const bar=document.getElementById('adminBulkBar');
+        const cnt=document.getElementById('adminBulkCount');
+        if(bar&&cnt){ cnt.textContent=_adminSelectedJobs.size; bar.style.display=_adminSelectedJobs.size>0?'flex':'none'; }
+    }
+    async function adminBulkDelete(){
+        if(!_adminSelectedJobs.size) return;
+        if(!confirm('Usunac '+_adminSelectedJobs.size+' plikow?')) return;
+        const ids=Array.from(_adminSelectedJobs);
+        try{
+            const r=await api('/api/admin/jobs/bulk-delete', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ids:ids})});
+            toast(r.deleted+' plikow usunietych','success');
+            _adminSelectedJobs.clear();
+            updateBulkBar();
+            loadJobs();
+        }catch(e){ toast(e.message,'error'); }
+    }
     let _allJobsData = [];
 
     async function loadJobs() {
@@ -1074,6 +1108,7 @@
             const date = j.created_at ? new Date(j.created_at).toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-US') : '—';
             const time = j.processing_time_s != null ? j.processing_time_s + 's' : '—';
             return '<tr onclick="openJobModal(' + j.id + ')" title="' + t('jobPreview') + '">' +
+                '<td><input type="checkbox" onclick="event.stopPropagation();toggleJobSelect('+j.id+')" '+( _adminSelectedJobs.has(j.id)?'checked':'')+' style="width:14px;height:14px"></td>' +
                 '<td>' + j.id + '</td>' +
                 '<td class="cell-ellipsis">' + esc(j.user_email || j.user_id || '—') + '</td>' +
                 '<td class="cell-ellipsis">' + esc(j.filename || '—') + '</td>' +
