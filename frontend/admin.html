@@ -488,13 +488,14 @@
     <div class="toast" id="toast"></div>
 
     <script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
-            "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
+        {
+            "imports": {
+                "three": "/vendor/three/three.module.js",
+                "three/addons/controls/OrbitControls.js": "/vendor/three/OrbitControls.js",
+                "three/addons/loaders/STLLoader.js": "/vendor/three/STLLoader.js"
+            }
         }
-    }
-    </script>
+        </script>
     <script type="module">
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';

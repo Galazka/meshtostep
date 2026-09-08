@@ -695,13 +695,16 @@
     </div>
 
     <script type="importmap">
-    {
-        "imports": {
-            "three": "/vendor/three/three.module.js",
-            "three/addons/": "/vendor/three/"
+        {
+            "imports": {
+                "three": "/vendor/three/three.module.js",
+                "three/addons/controls/OrbitControls.js": "/vendor/three/OrbitControls.js",
+                "three/addons/loaders/STLLoader.js": "/vendor/three/STLLoader.js",
+                "three/addons/loaders/OBJLoader.js": "/vendor/three/OBJLoader.js",
+                "three/addons/loaders/3MFLoader.js": "/vendor/three/3MFLoader.js"
+            }
         }
-    }
-    </script>
+        </script>
     <script type="module">
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
