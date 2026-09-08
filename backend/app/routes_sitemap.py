@@ -47,7 +47,7 @@ def sitemap(request: Request, db: Session = Depends(get_db)):
             )
         slug = j.slug or f"model-{j.id}"
         loc = f"{DOMAIN}/u/{_html.escape(username)}/{_html.escape(slug)}"
-        lastmod = _fmt_date(j.updated_at or j.created_at)
+        lastmod = _fmt_date(j.completed_at or j.created_at)
         # views weight
         prio = "0.8" if (j.views or 0) > 10 else "0.5"
         urls.append(
