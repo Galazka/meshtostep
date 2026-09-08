@@ -221,6 +221,19 @@ window.showEmbed = function() {
   prompt('Embed code:', '<iframe src="/e/__JOB_ID__" width="800" height="500" frameborder="0"></iframe>');
 };
 </script>
+<div id="adBottom" style="position:fixed;bottom:0;left:0;right:0;z-index:20;display:flex;justify-content:center;background:rgba(255,255,255,.92);border-top:1px solid #e5e7eb;padding:8px 16px"><div class="ad-slot" data-slot="page_bottom" style="max-width:728px;min-height:90px;width:100%"></div></div>
+<script>
+(function(){
+  fetch('/api/ads/slots').then(function(r){return r.ok?r.json():[]}).then(function(d){
+    var slots=Array.isArray(d)?d:(d.slots||[]);
+    slots.forEach(function(s){
+      var key=s.position||s.slot_key;
+      var el=document.querySelector('.ad-slot[data-slot="'+key+'"]');
+      if(el&&s.ad_code){el.innerHTML=s.ad_code;}
+    });
+  }).catch(function(){});
+})();
+</script>
 </body>
 </html>"""
 

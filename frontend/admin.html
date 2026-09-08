@@ -1275,7 +1275,9 @@
             '</select></label>' +
             '<label>Kolejność: <input type="number" id="adSort" value="' + (slot?.sort_order||0) + '" style="width:100px;padding:8px;border:1px solid var(--border);border-radius:6px"></label>' +
             '<label><input type="checkbox" id="adActive"' + (slot?.is_active!==false?' checked':'') + '> Aktywny</label>' +
-            '<label>Kod reklamy (HTML/JS):<textarea id="adCode" rows="8" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:12px">' + esc(slot?.ad_code||'') + '</textarea></label>' +
+            '<label>Kod reklamy (HTML/JS):<textarea id="adCode" rows="8" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:12px" oninput="document.getElementById('adPreviewBox').innerHTML=this.value||'<span style=color:#94a3b8>Tutaj pojawi sie podglad</span>'">' + esc(slot?.ad_code||'') + '</textarea></label>' +
+            '<div style="font-size:11px;color:#64748b;margin:4px 0">Wklej kod AdSense (pionowy 300x250 lub poziomy 728x90) lub wlasny HTML/JS/IMG</div>' +
+            '<div style="border:1px dashed #d1d5db;border-radius:6px;padding:8px;min-height:90px;background:#fafbfc;margin-bottom:8px"><div id="adPreviewBox" style="text-align:center">' + (esc(slot?.ad_code||'') || '<span style="color:#94a3b8">Tutaj pojawi sie podglad</span>') + '</div></div>' +
             '<div style="display:flex;gap:8px">' +
                 '<button class="btn primary" onclick="saveAdSlot(' + (slot?.id||'') + ')">' + (isNew ? 'Dodaj' : 'Zapisz') + '</button>' +
                 '<button class="btn" onclick="document.getElementById(\'userModal\').classList.remove(\'show\')">Anuluj</button>' +

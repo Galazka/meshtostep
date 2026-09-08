@@ -51,7 +51,10 @@
         .nav-tab:hover { color: var(--text); background: var(--bg-alt); text-decoration: none; }
         .nav-tab.active { color: var(--primary); background: var(--primary-light); }
         .nav-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-        .ad-slot { display: block; margin: 24px auto; max-width: 728px; min-height: 90px; text-align: center; }
+            .ad-slot { display: block; margin: 24px auto; max-width: 728px; min-height: 90px; text-align: center; padding: 0; overflow: hidden; }
+    .ad-slot:empty::before { content: attr(data-slot) ' — brak reklamy (wpisz kod w Admin → Reklamy)'; font-size: 11px; color: #94a3b8; }
+    .ad-slot iframe, .ad-slot ins { max-width: 100%; }
+    .ad-slot img { max-width: 100%; height: auto; }
         .retention-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--primary-light); color: var(--primary); padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; margin-right: 8px; }
         .retention-badge button { background: none; border: none; color: var(--primary); cursor: pointer; font-size: 11px; text-decoration: underline; padding: 0; font-family: inherit; }
         .lang-toggle { background: var(--bg-alt) !important; border: 1px solid var(--border) !important; border-radius: 6px; padding: 6px 12px !important; font-weight: 600; color: var(--text-secondary) !important; cursor: pointer; font-family: inherit; font-size: 13px; transition: all .15s; }
@@ -1700,39 +1703,30 @@
     async function loadAdSlots() {
         try {
             const r = await fetch('/api/ads/slots');
-            if (!r.ok) return;
-            const d = await r.json();
-            const slots = d.slots || d; console.log('[ADS] public loadAdSlots:', Array.isArray(slots)?slots.length:'not-array', slots);
-            if (Array.isArray(slots)) {
-                const counts = {};
-                slots.forEach(function(s) {
-                    const key = s.position || s.slot_key || s.slot;
-                    counts[key] = (counts[key] || 0) + 1;
-                    const sel = '.ad-slot[data-slot="' + key + '"]';
-                    let el = document.querySelector(sel);
-                    if (el && counts[key] > 1) {
-                        // multiple slots same position: append clone below
-                        const clone = document.createElement('div');
-                        clone.className = 'ad-slot';
-                        clone.setAttribute('data-slot', key + '-' + counts[key]);
-                        el.parentNode.insertBefore(clone, el.nextSibling);
-                        el = clone;
-                    }
-                    if (el && s.ad_code) {
-                        el.innerHTML = s.ad_code;
-                        // track impression
-                        try { fetch('/api/ads/impression/' + s.id, {method:'POST'}).catch(function(){}); } catch(e) {}
-                    }
-                });
-            } else {
-                for (const slot in slots) {
-                    if (!Object.prototype.hasOwnProperty.call(slots, slot)) continue;
-                    const code = slots[slot];
-                    const el = document.querySelector('.ad-slot[data-slot="' + slot + '"]');
-                    if (el && code) el.innerHTML = code;
+            if (!r.ok) { console.warn('[ADS] /api/ads/slots status:', r.status); return; }
+            const data = await r.json();
+            console.log('[ADS] public loadAdSlots response:', JSON.stringify(data).slice(0,300));
+            const slots = Array.isArray(data) ? data : (data.slots || data.items || []);
+            if (!slots.length) { console.log('[ADS] no active slots'); return; }
+            const counts = {};
+            slots.forEach(function(s) {
+                const key = s.position || s.slot_key || s.slot;
+                if (!key || !s.ad_code) return;
+                counts[key] = (counts[key] || 0) + 1;
+                let el = document.querySelector('.ad-slot[data-slot="' + key + '"]');
+                if (!el) { console.warn('[ADS] no placeholder for slot:', key); return; }
+                if (counts[key] > 1) {
+                    var clone = document.createElement('div');
+                    clone.className = 'ad-slot';
+                    clone.setAttribute('data-slot', key + '-' + counts[key]);
+                    el.parentNode.insertBefore(clone, el.nextSibling);
+                    el = clone;
                 }
-            }
-        } catch(e) { console.error('loadAdSlots:', e); }
+                el.innerHTML = s.ad_code;
+                console.log('[ADS] injected', key, '→', el.children.length, 'elements');
+                try { fetch('/api/ads/impression/' + s.id, {method:'POST'}).catch(function(){}); } catch(e) {}
+            });
+        } catch(e) { console.error('[ADS] loadAdSlots error:', e); }
     }
 
     function logout() { token=null; localStorage.removeItem('mt_token'); location.reload(); }
