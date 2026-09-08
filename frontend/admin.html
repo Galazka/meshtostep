@@ -659,6 +659,8 @@
     }
 
     /* ═══════════════════════ TABS ═══════════════════════ */
+    let _geoLoaded = false;
+    let _adsLoaded = false;
     function switchAdminTab(name) {
         document.querySelectorAll('.admin-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
         document.querySelectorAll('.tab-content').forEach(p => p.classList.remove('active'));
@@ -1122,12 +1124,11 @@
     }
 
     /* ═══════════════════════ GEO STATS ═══════════════════════ */
-    let _geoLoaded = false;
 
     async function loadGeoStats() {
         _geoLoaded = true;
         try {
-            const d = await api('/api/admin/geo-stats');
+            const d = await api('/api/admin/geo');
             renderGeo(d);
         } catch (e) {
             document.getElementById('geoCountries').innerHTML = '<div class="empty-state"><p>' + t('emptyGeo') + '</p></div>';
