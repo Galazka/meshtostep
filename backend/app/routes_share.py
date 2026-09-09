@@ -211,6 +211,7 @@ __ROBOTS__
   </div>
 </header>
 <div id="viewer3d"></div>
+<div id="shareColorBar" style="position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:20;display:flex;gap:6px;background:rgba(255,255,255,.92);padding:6px 12px;border-radius:999px;border:1px solid #e2e8f0"></div>
 <div id="descriptionPanel" style="display:none;position:fixed;bottom:48px;left:0;right:0;z-index:15;background:rgba(255,255,255,0.95);border-top:1px solid #e5e7eb;max-height:45vh;overflow-y:auto;padding:24px 32px;font-size:14px;line-height:1.7">
   <div style="max-width:800px;margin:0 auto">
     <div id="descTitle" style="font-size:20px;font-weight:700;margin-bottom:12px"></div>
@@ -286,13 +287,13 @@ new STLLoader().load('/api/stl-preview/__UUID__', (g) => {
   g.boundingBox.getSize(s);
   const mx = Math.max(s.x, s.y, s.z);
   if (mx > 0) g.scale(30 / mx, 30 / mx, 30 / mx);
-  const m = new THREE.Mesh(g, new THREE.MeshPhongMaterial({
+  window._shareMesh = new THREE.Mesh(g, new THREE.MeshPhongMaterial({
     color: 0x3b82f6,
     specular: 0x6666aa,
     shininess: 40
   }));
-  m.rotation.x = -Math.PI / 2;
-  scene.add(m);
+  window._shareMesh.rotation.x = -Math.PI / 2;
+  scene.add(window._shareMesh);
 }, undefined, (err) => {
   console.error('STL load error:', err);
   el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#64748b;font-size:14px;flex-direction:column;gap:8px"><span style="font-size:32px">△</span>Nie mozna zaladowac podgladu 3D</div>';
@@ -304,6 +305,24 @@ function animate() {
   renderer.render(scene, camera);
 }
 animate();
+
+// Color picker for share viewer
+(function(){
+  var colors=['#3b82f6','#ffffff','#9ca3af','#22c55e','#ef4444','#f97316','#a855f7','#06b6d4'];
+  var bar=document.getElementById('shareColorBar');
+  if(!bar)return;
+  colors.forEach(function(hex){
+    var d=document.createElement('div');
+    d.style.cssText='width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;background:'+hex;
+    d.onclick=function(){
+      if(window._shareMesh) window._shareMesh.material.color.set(hex);
+      var kids=bar.querySelectorAll('div');
+      for(var i=0;i<kids.length;i++)kids[i].style.borderColor='transparent';
+      d.style.borderColor='#333';
+    };
+    bar.appendChild(d);
+  });
+})();
 
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
