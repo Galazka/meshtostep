@@ -1,5 +1,5 @@
-const CACHE = '3dfile-v1';
-const ASSETS = ['/', '/manifest.json', '/logo.png'];
+const CACHE = '3dfile-v2';
+const ASSETS = ['/', '/manifest.json', '/logo.png?v=2'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).catch(()=>{}));

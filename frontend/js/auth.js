@@ -14,8 +14,8 @@ try{
     showForgotOK(d.detail||'Wyslano link. Sprawdz poczte.');
 }catch(e){ showForgotErr(e.message||String(e)); }
 }
-function showForgotErr(msg){ const e=document.getElementById('forgotError'); e.textContent=msg; e.style.display='block'; e.style.color='var(--err)'; }
-function showForgotOK(msg){ const e=document.getElementById('forgotError'); e.textContent=msg; e.style.display='block'; e.style.color='var(--ok)'; }
+function showForgotErr(msg){ const e=document.getElementById('forgotError'); e.textContent=msg; e.style.display='block'; e.style.color='var(--error)'; }
+function showForgotOK(msg){ const e=document.getElementById('forgotError'); e.textContent=msg; e.style.display='block'; e.style.color='var(--success)'; }
 
 let authMode = 'login';
 
