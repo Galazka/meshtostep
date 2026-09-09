@@ -109,8 +109,7 @@ def stats(admin: models.User = Depends(require_admin), db: Session = Depends(get
     # legacy fields for backward compat with old frontend
     jobs_done = jobs_by_status.get("done", 0)
     jobs_error = jobs_by_status.get("error", 0)
-    revenue_usd = db.query(func.sum(models.Payment.amount_usd)).filter(
-        models.Payment.status == "completed").scalar() or 0
+    revenue_usd = 0  # payments removed — ads only
     shares_active = db.query(models.ShareLink).filter(
         models.ShareLink.is_active == True).count()  # noqa: E712
     total_share_views = db.query(func.sum(models.ShareLink.views)).scalar() or 0
@@ -397,15 +396,6 @@ def user_detail(
         .all()
     )
 
-    # Payment history
-    payments = (
-        db.query(models.Payment)
-        .filter(models.Payment.user_id == user_id)
-        .order_by(desc(models.Payment.created_at))
-        .limit(10)
-        .all()
-    )
-
     # Last geo activity
     last_geo = (
         db.query(models.GeoLog)
@@ -437,10 +427,6 @@ def user_detail(
             "id": j.id, "filename": j.original_filename, "status": j.status,
             "mode": j.mode, "created_at": str(j.created_at),
         } for j in recent_jobs],
-        "payments": [{
-            "id": p.id, "amount_usd": p.amount_usd,
-            "status": p.status, "created_at": str(p.created_at),
-        } for p in payments],
     }
 
 

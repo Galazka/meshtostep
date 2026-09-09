@@ -1,4 +1,4 @@
-// main.js — entry: tabs/routing, theme, FAQ, payments, ads, home-recent, modal glue, init.
+// main.js — entry: tabs/routing, theme, FAQ, ads, home-recent, modal glue, init.
 import { applyI18n } from './i18n.js';
 import { token } from './shared.js';
 import { refreshThreeTheme } from './viewer3d.js';

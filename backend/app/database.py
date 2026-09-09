@@ -54,8 +54,7 @@ def _migrate_columns():
                 ("slug","VARCHAR(120)"),("title","VARCHAR(200)"),("description","TEXT"),
                 ("tags","VARCHAR(500)"),("youtube_url","VARCHAR(512)"),
                 ("visibility","VARCHAR(20) DEFAULT 'public'"),("views","INTEGER DEFAULT 0"),
-                ("likes","INTEGER DEFAULT 0"),("is_paid","BOOLEAN DEFAULT FALSE"),
-                ("price_cents","INTEGER DEFAULT 0"),("preview_image","VARCHAR(512)"),
+                ("likes","INTEGER DEFAULT 0"),("preview_image","VARCHAR(512)"),
             ]:
                 add_col(conn, "jobs", col, dtype, existing)
         except Exception as e:
@@ -99,8 +98,8 @@ def _migrate_columns():
             print(f"[3dfile] folder_id migrate: {e}")
         conn.commit()
     # ensure tables exist
-    _tbl_map = {"comments": "Comment", "sales": "Sale", "ad_slots": "AdSlot", "folders": "Folder", "job_ratings": "JobRating"}
-    for tbl in ["comments","sales","ad_slots","folders","job_ratings"]:
+    _tbl_map = {"comments": "Comment", "ad_slots": "AdSlot", "folders": "Folder", "job_ratings": "JobRating"}
+    for tbl in ["comments","ad_slots","folders","job_ratings"]:
         try:
             if not inspect(engine).has_table(tbl):
                 from . import models as m

@@ -538,7 +538,7 @@ def list_jobs(user: models.User = Depends(require_user), db: Session = Depends(g
              "mode": j.mode, "faces": j.result_faces, "processing_time_s": j.processing_time_s,
              "created_at": str(j.created_at), "folder_id": j.folder_id, "preview_image": f"/api/preview/{j.uuid}",
              "visibility": j.visibility, "slug": j.slug, "file_size_bytes": j.file_size_bytes, "result_size_bytes": j.result_size_bytes, "dims_mm": j.dims_mm,
-             "views": j.views or 0, "likes": j.likes or 0, "description": (j.description or "")[:5000], "tags": j.tags or [], "youtube_url": j.youtube_url or "", "is_paid": j.is_paid, "price_cents": j.price_cents})
+             "views": j.views or 0, "likes": j.likes or 0, "description": (j.description or "")[:5000], "tags": j.tags or [], "youtube_url": j.youtube_url or ""})
     return out
 
 
@@ -565,7 +565,7 @@ def rename_job(job_id: int, payload: dict, user: models.User = Depends(require_u
     job = db.query(models.Job).filter(models.Job.id == job_id).first()
     if not job or (job.user_id != user.id and not user.is_admin):
         raise HTTPException(404, "Job nie znaleziony")
-    # extended: accept title + description/tags/youtube_url/visibility/is_paid/price_cents/folder_id/slug
+    # extended: accept title + description/tags/youtube_url/visibility/folder_id/slug
     updated = {}
     if "title" in payload or "name" in payload:
         title = (payload.get("title") or payload.get("name") or "").strip()[:200]
@@ -606,17 +606,6 @@ def rename_job(job_id: int, payload: dict, user: models.User = Depends(require_u
         if v in ("public","private","unlisted"):
             job.visibility = v
             updated["visibility"] = v
-    if "is_paid" in payload:
-        job.is_paid = bool(payload.get("is_paid"))
-        updated["is_paid"] = job.is_paid
-    if "price_cents" in payload:
-        try:
-            pc = int(payload.get("price_cents") or 0)
-            pc = max(0, min(pc, 9999999))
-            job.price_cents = pc
-            updated["price_cents"] = pc
-        except Exception:
-            raise HTTPException(400, "price_cents int")
     # optional folder move
     if "folder_id" in payload:
         fid = payload.get("folder_id")
@@ -639,7 +628,7 @@ def rename_job(job_id: int, payload: dict, user: models.User = Depends(require_u
         raise HTTPException(400, "Brak pol do aktualizacji")
     db.commit()
     db.refresh(job)
-    return {"ok": True, "title": job.title, "slug": job.slug, "folder_id": job.folder_id, "visibility": job.visibility, "description": job.description, "tags": job.tags, "youtube_url": job.youtube_url, "is_paid": job.is_paid, "price_cents": job.price_cents, "updated": updated}
+    return {"ok": True, "title": job.title, "slug": job.slug, "folder_id": job.folder_id, "visibility": job.visibility, "description": job.description, "tags": job.tags, "youtube_url": job.youtube_url, "updated": updated}
 
 
 @router.patch("/jobs/{job_id}/meta")

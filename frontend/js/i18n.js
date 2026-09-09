@@ -186,7 +186,7 @@ const I18N = {
         heroTitle: 'Convert <span class="hl">STL \u2192 STEP</span><br>in seconds',
         heroDesc: 'Upload a mesh file. Download an editable STEP solid.<br>Our proprietary conversion engine + automatic geometry optimization.',
         heroPricing: 'Free. Unlimited conversions.',
-        trustStripe: 'Secure payments via Stripe', trustDelete: 'Free storage',
+        trustStripe: 'Free hosting, no limits', trustDelete: 'Free storage',
         trustRODO: 'Private links (unlisted)', trustSupport: 'Support PL EN',
         dropText: 'Drag <strong>STL/3MF/OBJ</strong> file here<br>or click to choose',
         modeAuto: 'Auto \u2014 balance detail / size', modeUltra: 'Ultra \u2014 min. faces',

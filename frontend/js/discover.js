@@ -20,7 +20,7 @@ function doDiscover(more){
             return '<a href="'+(m.vanity||'/s/'+m.uuid)+'" style="display:block;border:1px solid var(--border);border-radius:10px;overflow:hidden;text-decoration:none;color:inherit;background:#fff">'
             + (img ? '<img src="'+img+'" style="width:100%;height:140px;object-fit:cover" onerror="this.style.display=\'none\'">' : '<div style="height:140px;background:var(--bg-alt);display:flex;align-items:center;justify-content:center;color:var(--text-muted)">\uD83D\uDCC4</div>')
             + '<div style="padding:10px 12px"><div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+String(m.title||m.slug||'Model').replace(/</g,'&lt;')+'</div>'
-            + '<div style="font-size:11px;color:var(--text-muted)">'+(m.username?'by '+String(m.username).replace(/</g,'&lt;')+' \u00b7 ':'')+(m.faces||'?')+' \u015b\u0105cian'+(m.price_cents?' \u00b7 '+(m.price_cents/100).toFixed(2)+' USD':'')+'</div></div></a>';
+            + '<div style="font-size:11px;color:var(--text-muted)">'+(m.username?'by '+String(m.username).replace(/</g,'&lt;')+' \u00b7 ':'')+(m.faces||'?')+' \u015b\u0105cian'+'</div></div></a>';
         }).join('');
         if(more) grid.innerHTML += html; else grid.innerHTML = html || '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px">Brak wynik\u00f3w</div>';
         document.getElementById('discoverMore').style.display = (items.length >= 24) ? 'block' : 'none';

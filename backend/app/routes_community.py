@@ -61,7 +61,7 @@ def _md_to_html(md: str) -> str:
 def search_models(
     q: str = Query("", description="search query"),
     tag: str = Query("", description="filter by tag"),
-    sort: str = Query("latest", description="latest|popular|price"),
+    sort: str = Query("latest", description="latest|popular"),
     limit: int = Query(24, ge=1, le=60),
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
@@ -82,8 +82,6 @@ def search_models(
         query = query.filter(models.Job.tags.ilike(f"%{tag}%"))
     if sort == "popular":
         query = query.order_by(models.Job.views.desc(), models.Job.created_at.desc())
-    elif sort == "price":
-        query = query.order_by(models.Job.price_cents.asc())
     else:
         query = query.order_by(models.Job.created_at.desc())
     total = query.count()
@@ -102,8 +100,6 @@ def search_models(
             "visibility": j.visibility,
             "views": j.views or 0,
             "likes": j.likes or 0,
-            "is_paid": bool(j.is_paid),
-            "price_cents": j.price_cents or 0,
             "faces": j.result_faces,
             "dims_mm": getattr(j, "dims_mm", None),
             "created_at": str(j.created_at),
@@ -146,7 +142,6 @@ def get_model(job_id: int, db: Session = Depends(get_db), user: models.User = De
         "youtube_id": _youtube_embed(j.youtube_url or ""),
         "visibility": j.visibility,
         "views": j.views, "likes": j.likes or 0,
-        "is_paid": bool(j.is_paid), "price_cents": j.price_cents or 0,
         "faces": j.result_faces, "mode": j.mode,
         "dims_mm": getattr(j, "dims_mm", None),
         "original_filename": j.original_filename,
@@ -198,18 +193,6 @@ def update_model(job_id: int, payload: dict, user: models.User = Depends(get_cur
             if q:
                 raise HE(409, "Slug zajety")
             j.slug = slug
-    if "is_paid" in payload:
-        j.is_paid = bool(payload["is_paid"])
-    if "price_cents" in payload:
-        try:
-            pc = int(payload["price_cents"])
-        except:
-            raise HE(400, "price_cents int")
-        if pc < 0 or pc > 1000000:
-            raise HE(400, "Cena poza zakresem")
-        j.price_cents = pc
-        if pc > 0:
-            j.is_paid = True
     db.commit()
     return {"ok": True, "slug": j.slug, "visibility": j.visibility}
 
@@ -524,10 +507,7 @@ def vanity_page(username: str, slug: str, request: Request, db: Session = Depend
     size_kb = f"{(job.result_size_bytes or 0)//1024} KB" if job.result_size_bytes else "?"
     # find a share token if exists
     token_share = job.shares[0].token if job.shares else ""
-    paid_box = ""
-    if job.is_paid and job.price_cents:
-        price = job.price_cents / 100
-        paid_box = f'<div style="margin-top:12px;padding:12px;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px"><div style="font-weight:700">Platny model — {price:.2f} USD</div><div style="font-size:12px;color:#92400e">Prowizja 20% dla 3dfile.link</div><button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="buy({job.id})">Kup teraz</button></div><script>function buy(id){{fetch(`/api/models/${{id}}/purchase`,{{method:"POST",headers:{{"Authorization":localStorage.getItem("token")?"Bearer "+localStorage.getItem("token"):""}}}}).then(r=>r.json()).then(j=>{{if(j.checkout_url) location=j.checkout_url; else alert(JSON.stringify(j))}})}}<\/script>'
+    paid_box = ""  # payments removed — free hosting, ads only
     likes = job.likes or 0
     html_page = _VANITY_HTML.replace("__LANG__","pl").replace("__TITLE__",title).replace("__META_DESC__", (desc[:150] or title)).replace("__ROBOTS__", robots).replace("__CANONICAL__", f"https://3dfile.link/u/{html.escape(username)}/{html.escape(slug)}").replace("__PILLS__", f'<span class="pill">{faces} ścian</span><span class="pill">{html.escape(job.mode or "auto")}</span><span class="pill">{vis_label}</span>').replace("__UUID__", job.uuid).replace("__JOBID__", str(job.id)).replace("__USERNAME__", html.escape(username)).replace("__DATE__", str(job.created_at)[:10] if job.created_at else "").replace("__VIS_LABEL__", vis_label).replace("__TAG_HTML__", tag_html).replace("__YOUTUBE__", yt_html).replace("__FILENAME__", html.escape(job.original_filename or "")).replace("__FACES__", str(faces)).replace("__SIZE__", size_kb).replace("__TOKEN__", token_share).replace("__VIEWS__", str(job.views or 0)).replace("__LIKES__", str(likes)).replace("__PAID_BOX__", paid_box).replace("__DESCTITLE__", json.dumps(html.escape(job.title or job.original_filename or ""))).replace("__DESCBODY__", json.dumps(_md_to_html(job.description or ""))).replace("__DESCTAGS__", json.dumps(tags)).replace("__DESCYOUTUBE__", json.dumps(str(job.youtube_url or ""))).replace("__OG_IMAGE__", f"https://3dfile.link/api/preview/{job.uuid}")
     return HTMLResponse(html_page)

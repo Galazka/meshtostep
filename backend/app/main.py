@@ -17,11 +17,9 @@ from .routes_auth import router as auth_router
 from .routes_convert import router as convert_router
 from .routes_admin import router as admin_router
 from .routes_share import router as share_router
-from .routes_payments import router as payments_router
 from .routes_ads import router as ads_router
 from .routes_community import router as community_router
 from .routes_comments import router as comments_router
-from .routes_sales import router as sales_router
 from .routes_folders import router as folders_router
 from .routes_sitemap import router as sitemap_router
 
@@ -130,11 +128,9 @@ app.include_router(auth_router)
 app.include_router(convert_router)
 app.include_router(admin_router)
 app.include_router(share_router)
-app.include_router(payments_router)
 app.include_router(ads_router)
 app.include_router(community_router)
 app.include_router(comments_router)
-app.include_router(sales_router)
 app.include_router(folders_router)
 
 app.include_router(sitemap_router, tags=['sitemap'])

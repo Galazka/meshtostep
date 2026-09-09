@@ -11,9 +11,6 @@ class Settings(BaseSettings):
     CORS_ORIGINS: str = "*"
     APP_NAME: str = "3dfile.link"
     APP_URL: str = "https://3dfile.link"
-    STRIPE_SECRET_KEY: str = ""
-    STRIPE_WEBHOOK_SECRET: str = ""
-    STRIPE_CURRENCY: str = "usd"
     # -- auth hardening --
     ADMIN_EMAIL: str = ""  # bootstrap admin on first run
     ADMIN_PASSWORD: str = ""

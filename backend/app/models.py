@@ -1,4 +1,4 @@
-"""Database models: users, jobs, shares, comments, sales, geo, ads. — 3dfile.link"""
+"""Database models: users, jobs, shares, comments, geo, ads. — 3dfile.link"""
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, ForeignKey, Text
 from sqlalchemy.orm import declarative_base, relationship
@@ -38,8 +38,6 @@ class User(Base):
     shares = relationship("ShareLink", back_populates="user")
     geo_logs = relationship("GeoLog", back_populates="user")
     comments = relationship("Comment", back_populates="user")
-    sales_as_seller = relationship("Sale", back_populates="seller", foreign_keys="Sale.seller_id")
-    sales_as_buyer = relationship("Sale", back_populates="buyer", foreign_keys="Sale.buyer_id")
 
 
 class Job(Base):
@@ -70,8 +68,6 @@ class Job(Base):
     visibility = Column(String(20), default="public")  # public / unlisted / private
     views = Column(Integer, default=0)
     likes = Column(Integer, default=0)
-    is_paid = Column(Boolean, default=False)
-    price_cents = Column(Integer, default=0)  # price in cents (USD or PLN — frontend decides)
     preview_image = Column(String(512), nullable=True)
     folder_id = Column(Integer, ForeignKey("folders.id"), nullable=True, index=True)
     # ponytail: no folder nesting (single level). Add Folder.parent_id when needed.
@@ -124,37 +120,6 @@ class JobRating(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     stars = Column(Integer, nullable=False)  # 1-5
     created_at = Column(DateTime, default=datetime.utcnow)
-
-
-class Sale(Base):
-    """Paid model purchase — 20% commission."""
-    __tablename__ = "sales"
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    job_id = Column(Integer, ForeignKey("jobs.id"), nullable=False, index=True)
-    seller_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    buyer_id = Column(Integer, ForeignKey("users.id"), nullable=True)  # null for anon Stripe checkout
-    amount_cents = Column(Integer, nullable=False)
-    commission_cents = Column(Integer, nullable=False)  # 20%
-    seller_payout_cents = Column(Integer, nullable=False)
-    stripe_session_id = Column(String(200), nullable=True)
-    stripe_payment_id = Column(String(200), nullable=True)
-    status = Column(String(20), default="pending")  # pending/completed/failed/refunded
-    created_at = Column(DateTime, default=datetime.utcnow)
-    completed_at = Column(DateTime, nullable=True)
-    job = relationship("Job")
-    seller = relationship("User", back_populates="sales_as_seller", foreign_keys=[seller_id])
-    buyer = relationship("User", back_populates="sales_as_buyer", foreign_keys=[buyer_id])
-
-class Payment(Base):
-    __tablename__ = "payments"
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    amount_usd = Column(Float, nullable=False)
-    status = Column(String(20), default="pending")
-    payment_method = Column(String(20))
-    reference = Column(String(100))
-    created_at = Column(DateTime, default=datetime.utcnow)
-    user = relationship("User")
 
 
 class GeoLog(Base):
