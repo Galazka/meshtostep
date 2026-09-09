@@ -26,7 +26,6 @@ ENV PYTHONPATH=/app/backend
 ENV FREECAD_CMD=freecadcmd
 ENV DATABASE_URL=sqlite:///./data/meshtostep.db
 ENV DATA_DIR=/data
-VOLUME /data
 ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8000

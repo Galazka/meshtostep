@@ -307,3 +307,19 @@ async function doReset() {{
   }} catch(e) {{ msg.textContent='Blad sieci'; msg.style.display='block'; }}
 }}
 </script></body></html>""")
+
+
+
+@router.get("/quota")
+def quota(user: models.User = Depends(require_user), db: Session = Depends(get_db)):
+    from sqlalchemy import func
+    total = db.query(func.coalesce(func.sum(models.Job.file_size_bytes), 0)).filter(
+        models.Job.user_id == user.id
+    ).scalar()
+    return {
+        "limit_bytes": user.quota_limit_bytes,
+        "used_bytes": int(total or 0),
+        "limit_mb": round((user.quota_limit_bytes or 0) / 1048576),
+        "used_mb": round(int(total or 0) / 1048576, 1),
+        "percent": round(int(total or 0) / max(user.quota_limit_bytes, 1) * 100, 1),
+    }
