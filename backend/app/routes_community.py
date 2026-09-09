@@ -1,5 +1,5 @@
 import json
-"""Community routes: vanity URL /u/{username}/{slug}, search, tags, model detail — 3dhosty.com"""
+"""Community routes: vanity URL /u/{username}/{slug}, search, tags, model detail — 3dfile.link"""
 import re
 import html
 from typing import Optional
@@ -271,7 +271,7 @@ _VANITY_HTML = """<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>__TITLE__ — 3dhosty.com</title>
+<title>__TITLE__ — 3dfile.link</title>
 <meta name="description" content="__META_DESC__">
 __ROBOTS__
 <link rel="canonical" href="__CANONICAL__">
@@ -311,7 +311,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
 </head>
 <body>
 <header class="top">
-  <a class="logo" href="/">3dhosty.com</a>
+  <a class="logo" href="/">3dfile.link</a>
   <div class="pills">__PILLS__</div>
   <div class="actions"><a class="btn btn-primary" href="/api/download/__UUID__">⬇ Pobierz STEP</a> <a class="btn btn-sec" href="/e/__JOBID__">Embed</a></div>
 </header>
@@ -527,9 +527,9 @@ def vanity_page(username: str, slug: str, request: Request, db: Session = Depend
     paid_box = ""
     if job.is_paid and job.price_cents:
         price = job.price_cents / 100
-        paid_box = f'<div style="margin-top:12px;padding:12px;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px"><div style="font-weight:700">Platny model — {price:.2f} USD</div><div style="font-size:12px;color:#92400e">Prowizja 20% dla 3dhosty.com</div><button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="buy({job.id})">Kup teraz</button></div><script>function buy(id){{fetch(`/api/models/${{id}}/purchase`,{{method:"POST",headers:{{"Authorization":localStorage.getItem("token")?"Bearer "+localStorage.getItem("token"):""}}}}).then(r=>r.json()).then(j=>{{if(j.checkout_url) location=j.checkout_url; else alert(JSON.stringify(j))}})}}<\/script>'
+        paid_box = f'<div style="margin-top:12px;padding:12px;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px"><div style="font-weight:700">Platny model — {price:.2f} USD</div><div style="font-size:12px;color:#92400e">Prowizja 20% dla 3dfile.link</div><button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="buy({job.id})">Kup teraz</button></div><script>function buy(id){{fetch(`/api/models/${{id}}/purchase`,{{method:"POST",headers:{{"Authorization":localStorage.getItem("token")?"Bearer "+localStorage.getItem("token"):""}}}}).then(r=>r.json()).then(j=>{{if(j.checkout_url) location=j.checkout_url; else alert(JSON.stringify(j))}})}}<\/script>'
     likes = job.likes or 0
-    html_page = _VANITY_HTML.replace("__LANG__","pl").replace("__TITLE__",title).replace("__META_DESC__", (desc[:150] or title)).replace("__ROBOTS__", robots).replace("__CANONICAL__", f"https://3dhosty.com/u/{html.escape(username)}/{html.escape(slug)}").replace("__PILLS__", f'<span class="pill">{faces} ścian</span><span class="pill">{html.escape(job.mode or "auto")}</span><span class="pill">{vis_label}</span>').replace("__UUID__", job.uuid).replace("__JOBID__", str(job.id)).replace("__USERNAME__", html.escape(username)).replace("__DATE__", str(job.created_at)[:10] if job.created_at else "").replace("__VIS_LABEL__", vis_label).replace("__TAG_HTML__", tag_html).replace("__YOUTUBE__", yt_html).replace("__FILENAME__", html.escape(job.original_filename or "")).replace("__FACES__", str(faces)).replace("__SIZE__", size_kb).replace("__TOKEN__", token_share).replace("__VIEWS__", str(job.views or 0)).replace("__LIKES__", str(likes)).replace("__PAID_BOX__", paid_box).replace("__DESCTITLE__", json.dumps(html.escape(job.title or job.original_filename or ""))).replace("__DESCBODY__", json.dumps(_md_to_html(job.description or ""))).replace("__DESCTAGS__", json.dumps(tags)).replace("__DESCYOUTUBE__", json.dumps(str(job.youtube_url or ""))).replace("__OG_IMAGE__", f"https://3dhosty.com/api/preview/{job.uuid}")
+    html_page = _VANITY_HTML.replace("__LANG__","pl").replace("__TITLE__",title).replace("__META_DESC__", (desc[:150] or title)).replace("__ROBOTS__", robots).replace("__CANONICAL__", f"https://3dfile.link/u/{html.escape(username)}/{html.escape(slug)}").replace("__PILLS__", f'<span class="pill">{faces} ścian</span><span class="pill">{html.escape(job.mode or "auto")}</span><span class="pill">{vis_label}</span>').replace("__UUID__", job.uuid).replace("__JOBID__", str(job.id)).replace("__USERNAME__", html.escape(username)).replace("__DATE__", str(job.created_at)[:10] if job.created_at else "").replace("__VIS_LABEL__", vis_label).replace("__TAG_HTML__", tag_html).replace("__YOUTUBE__", yt_html).replace("__FILENAME__", html.escape(job.original_filename or "")).replace("__FACES__", str(faces)).replace("__SIZE__", size_kb).replace("__TOKEN__", token_share).replace("__VIEWS__", str(job.views or 0)).replace("__LIKES__", str(likes)).replace("__PAID_BOX__", paid_box).replace("__DESCTITLE__", json.dumps(html.escape(job.title or job.original_filename or ""))).replace("__DESCBODY__", json.dumps(_md_to_html(job.description or ""))).replace("__DESCTAGS__", json.dumps(tags)).replace("__DESCYOUTUBE__", json.dumps(str(job.youtube_url or ""))).replace("__OG_IMAGE__", f"https://3dfile.link/api/preview/{job.uuid}")
     return HTMLResponse(html_page)
 
 @router.get("/u/{username}", response_class=HTMLResponse)
@@ -578,7 +578,7 @@ def user_profile(username: str, db: Session = Depends(get_db)):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{html.escape(username)} — 3dhosty.com</title>
+<title>{html.escape(username)} — 3dfile.link</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -606,7 +606,7 @@ body{{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;li
 </style>
 </head>
 <body>
-<header class="top"><a href="/">3dhosty.com</a></header>
+<header class="top"><a href="/">3dfile.link</a></header>
 <div class="wrap">
   <div class="profile">
     {avatar_img}

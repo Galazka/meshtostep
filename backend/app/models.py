@@ -1,4 +1,4 @@
-"""Database models: users, jobs, shares, comments, sales, geo, ads. — 3dhosty.com"""
+"""Database models: users, jobs, shares, comments, sales, geo, ads. — 3dfile.link"""
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, ForeignKey, Text
 from sqlalchemy.orm import declarative_base, relationship

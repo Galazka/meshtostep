@@ -1,4 +1,4 @@
-"""Dynamic sitemap.xml + robots.txt serving for 3dhosty.com."""
+"""Dynamic sitemap.xml + robots.txt serving for 3dfile.link."""
 import html as _html
 from datetime import datetime
 
@@ -11,7 +11,7 @@ from .database import get_db
 
 router = APIRouter()
 
-DOMAIN = "https://3dhosty.com"
+DOMAIN = "https://3dfile.link"
 
 
 def _fmt_date(dt) -> str:
@@ -74,5 +74,5 @@ def robots_txt():
         "Disallow: /admin\n"
         "Disallow: /s/\n"
         "\n"
-        "Sitemap: https://3dhosty.com/sitemap.xml\n"
+        "Sitemap: https://3dfile.link/sitemap.xml\n"
     )

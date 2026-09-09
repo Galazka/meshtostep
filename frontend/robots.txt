@@ -5,4 +5,4 @@ Disallow: /api/
 Disallow: /admin
 Disallow: /s/
 
-Sitemap: https://3dhosty.com/sitemap.xml
+Sitemap: https://3dfile.link/sitemap.xml

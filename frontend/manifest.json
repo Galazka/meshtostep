@@ -1,6 +1,6 @@
 {
-  "name": "3dhosty.com — hosting 3D",
-  "short_name": "3dhosty",
+  "name": "3dfile.link — hosting 3D",
+  "short_name": "3dfile",
   "description": "Hosting i konwersja modeli 3D (STL -> STEP).",
   "start_url": "/",
   "display": "standalone",

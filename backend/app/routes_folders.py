@@ -1,4 +1,4 @@
-"""Folders CRUD — 3dhosty.com"""
+"""Folders CRUD — 3dfile.link"""
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from . import models

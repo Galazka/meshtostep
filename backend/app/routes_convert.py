@@ -1,4 +1,4 @@
-"""Conversion routes: upload, convert, download, share. — 3dhosty.com"""
+"""Conversion routes: upload, convert, download, share. — 3dfile.link"""
 import os
 import uuid
 import time
@@ -178,7 +178,7 @@ async def convert_file(
         job.processing_time_s = round(time.time() - t0, 1)
         job.completed_at = datetime.utcnow()
         job.credits_used = 0
-        # Auto-generate thumbnail PNG server-side (3dhosty.com — ponytail: cache thumb.png, no extra deps beyond trimesh+matplotlib)
+        # Auto-generate thumbnail PNG server-side (3dfile.link — ponytail: cache thumb.png, no extra deps beyond trimesh+matplotlib)
         try:
             thumb_out = job_dir / "thumb.png"
             if stl_file and not thumb_out.exists():

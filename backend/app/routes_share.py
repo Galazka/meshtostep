@@ -94,15 +94,15 @@ _SHARE_HTML_TEMPLATE = """<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 __ROBOTS__
-<title>__FILENAME__ — 3dhosty.com</title>
+<title>__FILENAME__ — 3dfile.link</title>
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="3dhosty.com">
-<meta property="og:title" content="__FILENAME__ — 3dhosty.com">
+<meta property="og:site_name" content="3dfile.link">
+<meta property="og:title" content="__FILENAME__ — 3dfile.link">
 <meta property="og:description" content="__OG_DESC__">
 <meta property="og:image" content="__OG_IMAGE__">
 <meta property="og:url" content="__OG_URL__">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="__FILENAME__ — 3dhosty.com">
+<meta name="twitter:title" content="__FILENAME__ — 3dfile.link">
 <meta name="twitter:description" content="__OG_DESC__">
 <meta name="twitter:image" content="__OG_IMAGE__">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='24' font-size='24'>📁</text></svg>">
@@ -254,7 +254,7 @@ scene.background = new THREE.Color(0xf0f2f5);
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0, 40, 60);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });  /* 3dhosty share viewer */;
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });  /* 3dfile share viewer */;
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 el.appendChild(renderer.domElement);
@@ -502,7 +502,7 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
         desc_youtube=html.escape(_yt),
         desc_init=_desc_init_js,
         og_desc=html.escape((getattr(job, "description", None) or getattr(job, "title", None) or job.original_filename or "Model 3D")[:180]),
-        og_image=f"https://3dhosty.com/api/preview/{job.uuid}",
+        og_image=f"https://3dfile.link/api/preview/{job.uuid}",
         og_url=f"/s/{token}",
 
     )
@@ -528,11 +528,11 @@ def embed_page(job_id: int, db: Session = Depends(get_db)) -> HTMLResponse:
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta property="og:title" content="{filename} — 3dhosty.com">
+<meta property="og:title" content="{filename} — 3dfile.link">
 <meta property="og:description" content="Podgląd 3D — {faces} ścian STEP">
-<meta property="og:image" content="https://3dhosty.com/api/preview/{uuid}">
+<meta property="og:image" content="https://3dfile.link/api/preview/{uuid}">
 <meta name="twitter:card" content="summary_large_image">
-<title>{filename} — 3dhosty.com</title>
+<title>{filename} — 3dfile.link</title>
 <style>
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
   html, body {{ height: 100%; }}

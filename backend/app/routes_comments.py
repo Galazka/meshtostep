@@ -1,4 +1,4 @@
-"""Comments routes — public read + auth create + admin delete. — 3dhosty.com"""
+"""Comments routes — public read + auth create + admin delete. — 3dfile.link"""
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Optional

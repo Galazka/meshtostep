@@ -31,3 +31,7 @@ value = "usd"
 [[variables]]
 key = "CORS_ORIGINS"
 value = "https://meshtostep.up.railway.app"
+
+[[volumes]]
+mount_path = '/data'
+source = 'data'

@@ -25,7 +25,7 @@ from .routes_sales import router as sales_router
 from .routes_folders import router as folders_router
 from .routes_sitemap import router as sitemap_router
 
-app = FastAPI(title="3dhosty.com", version="1.0.0")
+app = FastAPI(title="3dfile.link", version="1.0.0")
 
 # ── CORS (restrict in production) ───────────────────────────────────
 origins = settings.CORS_ORIGINS.split(",") if settings.CORS_ORIGINS != "*" else ["*"]
@@ -164,7 +164,7 @@ def health():
         "freecad": fc_ok,
         "freecad_path": freecad,
         "database": db_ok,
-        "app": "3dhosty.com v1.1",
+        "app": "3dfile.link v1.1",
     }
 
 
@@ -186,4 +186,4 @@ if FRONTEND_DIR.exists():
 def startup():
     os.makedirs(settings.DATA_DIR, exist_ok=True)
     init_db()
-    print("[3dhosty] DB ready, app started")
+    print("[3dfile] DB ready, app started")

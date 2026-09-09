@@ -10,8 +10,8 @@ class Settings(BaseSettings):
     FREECAD_CMD: str = "/usr/bin/freecadcmd"  # Docker path
     DATA_DIR: str = "./data"
     CORS_ORIGINS: str = "*"
-    APP_NAME: str = "3dhosty.com"
-    APP_URL: str = "https://3dhosty.com"
+    APP_NAME: str = "3dfile.link"
+    APP_URL: str = "https://3dfile.link"
     STRIPE_SECRET_KEY: str = ""
     STRIPE_WEBHOOK_SECRET: str = ""
     STRIPE_CURRENCY: str = "usd"

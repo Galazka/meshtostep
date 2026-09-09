@@ -1,4 +1,4 @@
-"""Paid models — 20% commission — 3dhosty.com"""
+"""Paid models — 20% commission — 3dfile.link"""
 import os
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
