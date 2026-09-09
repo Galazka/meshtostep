@@ -234,10 +234,10 @@ __ROBOTS__
 {
   "imports": {
     "three": "/vendor/three/three.module.js",
-    "three/addons/controls/OrbitControls.js": "/vendor/three/OrbitControls.js",
-    "three/addons/loaders/STLLoader.js": "/vendor/three/STLLoader.js",
-    "three/addons/loaders/OBJLoader.js": "/vendor/three/OBJLoader.js",
-    "three/addons/loaders/3MFLoader.js": "/vendor/three/3MFLoader.js"
+    "three/addons/controls/OrbitControls.js": "/vendor/three/controls/OrbitControls.js",
+    "three/addons/loaders/STLLoader.js": "/vendor/three/loaders/STLLoader.js",
+    "three/addons/loaders/OBJLoader.js": "/vendor/three/loaders/OBJLoader.js",
+    "three/addons/loaders/3MFLoader.js": "/vendor/three/loaders/3MFLoader.js"
   }
 }
 </script>
@@ -555,7 +555,7 @@ def embed_page(job_id: int, db: Session = Depends(get_db)) -> HTMLResponse:
 </div>
 <div id="viewer3d"></div>
 <script type="importmap">
-{{"imports":{{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/STLLoader.js"}}}}
+{{"imports":{{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js"}}}}
 </script>
 <script type="module">
 import * as THREE from 'three';

@@ -307,7 +307,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
 .side{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;height:fit-content}
 @media(max-width:900px){.wrap{grid-template-columns:1fr}#viewer{height:300px}.pills{display:none}}
 </style>
-<script type="importmap">{"imports":{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/STLLoader.js"}}</script>
+<script type="importmap">{"imports":{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js"}}</script>
 </head>
 <body>
 <header class="top">

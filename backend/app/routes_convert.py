@@ -508,7 +508,7 @@ def list_jobs(user: models.User = Depends(require_user), db: Session = Depends(g
     for j in jobs:
         out.append({"id": j.id, "uuid": j.uuid, "filename": j.original_filename, "title": j.title, "status": j.status,
              "mode": j.mode, "faces": j.result_faces, "processing_time_s": j.processing_time_s,
-             "created_at": str(j.created_at), "folder_id": j.folder_id, "preview_image": j.preview_image,
+             "created_at": str(j.created_at), "folder_id": j.folder_id, "preview_image": f"/api/preview/{j.uuid}",
              "visibility": j.visibility, "slug": j.slug, "file_size_bytes": j.file_size_bytes, "result_size_bytes": j.result_size_bytes, "dims_mm": j.dims_mm,
              "views": j.views or 0, "likes": j.likes or 0, "description": (j.description or "")[:5000], "tags": j.tags or [], "youtube_url": j.youtube_url or "", "is_paid": j.is_paid, "price_cents": j.price_cents})
     return out
