@@ -99,8 +99,8 @@ def _migrate_columns():
             print(f"[3dhosty] folder_id migrate: {e}")
         conn.commit()
     # ensure tables exist
-    _tbl_map = {"comments": "Comment", "sales": "Sale", "ad_slots": "AdSlot", "folders": "Folder"}
-    for tbl in ["comments","sales","ad_slots","folders"]:
+    _tbl_map = {"comments": "Comment", "sales": "Sale", "ad_slots": "AdSlot", "folders": "Folder", "job_ratings": "JobRating"}
+    for tbl in ["comments","sales","ad_slots","folders","job_ratings"]:
         try:
             if not inspect(engine).has_table(tbl):
                 from . import models as m

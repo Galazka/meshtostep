@@ -119,6 +119,16 @@ class Comment(Base):
     user = relationship("User", back_populates="comments")
 
 
+class JobRating(Base):
+    """Star rating 1-5 per user per job — one vote per user, update allowed."""
+    __tablename__ = "job_ratings"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    job_id = Column(Integer, ForeignKey("jobs.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    stars = Column(Integer, nullable=False)  # 1-5
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 class Sale(Base):
     """Paid model purchase — 20% commission."""
     __tablename__ = "sales"

@@ -81,6 +81,23 @@ def create_comment(
     }
 
 
+# ── Owner/Admin: delete comment ───────────────────────────────────
+@router.delete("/api/jobs/comments/{comment_id}")
+def delete_comment(
+    comment_id: int,
+    user: models.User = Depends(require_user),
+    db: Session = Depends(get_db),
+):
+    c = db.query(models.Comment).filter(models.Comment.id == comment_id).first()
+    if not c:
+        raise HTTPException(404, "Komentarz nie znaleziony")
+    if c.user_id != user.id and not user.is_admin:
+        raise HTTPException(403, "Brak uprawnień")
+    db.delete(c)
+    db.commit()
+    return {"ok": True}
+
+
 # ── Admin: hide comment ───────────────────────────────────────────
 @router.delete("/api/admin/comments/{comment_id}")
 def hide_comment(
