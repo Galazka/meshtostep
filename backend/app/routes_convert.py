@@ -152,92 +152,119 @@ async def convert_file(
     db.commit()
     db.refresh(job)
 
-    out_step = str(job_dir / (Path(file.filename).stem + ".step"))
-    result = convert(str(src), out_step, mode=mode)
+    # ── hosting-first: upload bez FreeCAD, thumb + dims z trimesh ──
+    stl_file = str(src)
+    try:
+        import trimesh
+        m = trimesh.load(stl_file, force="mesh")
+        if hasattr(m, 'bounds') and m.bounds is not None:
+            bmin, bmax = m.bounds
+            d = bmax - bmin
+            job.dims_mm = f"{round(float(d[0]),1)} x {round(float(d[1]),1)} x {round(float(d[2]),1)} mm"
+        if hasattr(m, 'faces'):
+            job.result_faces = len(m.faces)
+    except Exception: pass
+    try:
+        thumb_out = job_dir / "thumb.png"
+        if not thumb_out.exists():
+            _auto_thumb(stl_file, thumb_out)
+    except Exception: pass
+    job.status = "hosted"
+    job.processing_time_s = round(time.time() - t0, 1)
+    job.completed_at = datetime.utcnow()
+    db.commit()
+    return {
+        "ok": True, "job_id": job.id, "uuid": job_uuid,
+        "faces": job.result_faces or 0, "step_size_kb": 0,
+        "time_s": job.processing_time_s, "mode": mode,
+        "filename": file.filename, "slug": job.slug,
+        "vanity": f"/u/{user.username}/{job.slug}" if user and getattr(user,"username",None) and job.slug else None,
+        "visibility": job.visibility, "hosted": True,
+    }
 
+
+@router.post("/convert-on-demand/{job_uuid}")
+def convert_on_demand(job_uuid: str, mode: str = "auto", db: Session = Depends(get_db)):
+    """Konwersja mesh→STEP na żądanie (przy pobieraniu). Hosting-first: zero CPU na upload."""
+    job = db.query(models.Job).filter(models.Job.uuid == job_uuid).first()
+    if not job:
+        raise HTTPException(404, "Job nie znaleziony")
+    # już przekonwertowany → zwróć od razu
+    if job.status == "done" and job.result_step_path and os.path.exists(job.result_step_path):
+        sz = os.path.getsize(job.result_step_path)
+        return {"ok": True, "cached": True, "uuid": job_uuid, "step_size_kb": sz // 1024}
+    t0 = time.time()
+    job_dir = JOBS_DIR / job_uuid
+    src = None
+    if job_dir.exists():
+        for ext in (".stl", ".3mf", ".obj", ".step"):
+            for f in job_dir.iterdir():
+                if f.suffix.lower() == ext and f.suffix.lower() != ".step":
+                    src = str(f); break
+            if src: break
+    if not src:
+        raise HTTPException(404, "Plik źródłowy niedostępny")
+    job.status = "converting"
+    db.commit()
+    out_step = str(job_dir / (Path(job.original_filename).stem + ".step"))
+    result = convert(src, out_step, mode=mode)
     if result["ok"]:
         job.status = "done"
-        # Calculate dimensions via trimesh (STL/OBJ/3MF safe)
-        try:
-            stl_dir = os.path.join(JOBS_DIR, job.uuid)
-            stl_file = None
-            for fn in os.listdir(stl_dir):
-                if fn.lower().endswith(('.stl','.3mf','.obj')):
-                    stl_file = os.path.join(stl_dir, fn); break
-            if stl_file:
-                try:
-                    import trimesh
-                    m = trimesh.load(stl_file, force="mesh")
-                    if hasattr(m, 'bounds') and m.bounds is not None:
-                        bmin, bmax = m.bounds
-                        d = bmax - bmin
-                        job.dims_mm = f"{round(float(d[0]),1)} x {round(float(d[1]),1)} x {round(float(d[2]),1)} mm"
-                except Exception: pass
-        except Exception: pass
         job.result_step_path = out_step
         job.result_faces = result["faces"]
         job.result_size_bytes = result["result_size"]
         job.processing_time_s = round(time.time() - t0, 1)
         job.completed_at = datetime.utcnow()
-        # Auto-generate thumbnail PNG server-side (3dfile.link — ponytail: cache thumb.png, no extra deps beyond trimesh+matplotlib)
-        try:
-            thumb_out = job_dir / "thumb.png"
-            if stl_file and not thumb_out.exists():
-                _auto_thumb(stl_file, thumb_out)
-        except Exception: pass
         db.commit()
-        return {
-            "ok": True,
-            "job_id": job.id,
-            "uuid": job_uuid,
-            "faces": result["faces"],
-            "step_size_kb": result["result_size"] // 1024,
-            "time_s": job.processing_time_s,
-            "mode": mode,
-            "filename": Path(file.filename).stem + ".step",
-            "slug": job.slug,
-            "vanity": f"/u/{user.username}/{job.slug}" if user and getattr(user,"username",None) and job.slug else None,
-            "visibility": job.visibility,
-        }
-    else:
-        job.status = "error"
-        job.error_msg = result["error"][:2000]
-        db.commit()
-        raise HTTPException(500, result["error"][:500])
+        return {"ok": True, "cached": False, "uuid": job_uuid,
+                "step_size_kb": result["result_size"] // 1024,
+                "time_s": job.processing_time_s}
+    job.status = "error"
+    job.error_msg = result["error"][:2000]
+    db.commit()
+    raise HTTPException(500, result["error"][:500])
 
 
 @router.get("/download/{job_uuid}")
 def download(job_uuid: str, format: str = "step", db: Session = Depends(get_db)):
-    job = db.query(models.Job).filter(models.Job.uuid == job_uuid, models.Job.status == "done").first()
+    job = db.query(models.Job).filter(models.Job.uuid == job_uuid).first()
     if not job:
         raise HTTPException(404, "Job nie znaleziony")
+    # hosting-first: oryginał dostępny od razu niezależnie od statusu
     fmt = format.lower()
-    if fmt == "3mf":
-        # find original 3mf if exists, else 404 — ponytail: no on-fly 3MF export, serve source
+    if fmt == "3mf" or fmt == "obj":
         src_dir = JOBS_DIR / job_uuid
         if src_dir.exists():
             for f in src_dir.iterdir():
-                if f.suffix.lower() == ".3mf":
-                    return FileResponse(str(f), filename=Path(job.original_filename).stem + ".3mf", media_type="application/vnd.ms-package.3dmanufacturing-3dmodel+xml")
-        raise HTTPException(404, "Plik 3MF niedostępny — wgraj źródło .3mf")
-    if fmt == "stl" and job.result_stl_path and os.path.exists(job.result_stl_path):
-        path = job.result_stl_path
-    else:
-        path = job.result_step_path
-    if not path or not os.path.exists(path):
-        raise HTTPException(404, "Plik nie istnieje")
-    return FileResponse(
-        path,
-        filename=Path(job.original_filename).stem + f".{fmt if fmt in ('step','stl') else 'step'}",
-        media_type="application/step" if fmt == "step" else "application/octet-stream",
-    )
+                if f.suffix.lower() == "." + fmt:
+                    mt = "application/octet-stream"
+                    return FileResponse(str(f), filename=Path(job.original_filename).stem + f".{fmt}", media_type=mt)
+        if fmt == "3mf":
+            raise HTTPException(404, "Plik 3MF niedostępny")
+    if fmt == "stl":
+        src_dir = JOBS_DIR / job_uuid
+        if src_dir.exists():
+            for f in src_dir.iterdir():
+                if f.suffix.lower() == ".stl":
+                    return FileResponse(str(f), filename=Path(job.original_filename).stem + ".stl", media_type="model/stl")
+        if job.result_stl_path and os.path.exists(job.result_stl_path):
+            return FileResponse(job.result_stl_path, filename=Path(job.original_filename).stem + ".stl", media_type="model/stl")
+        raise HTTPException(404, "Plik STL niedostępny")
+    # STEP: wymaga konwersji
+    if fmt == "step":
+        if job.status == "done" and job.result_step_path and os.path.exists(job.result_step_path):
+            return FileResponse(job.result_step_path, filename=Path(job.original_filename).stem + ".step", media_type="application/step")
+        if job.status == "hosted":
+            raise HTTPException(400, "STEP nie gotowy — najpierw POST /api/convert-on-demand/{uuid}")
+        raise HTTPException(404, "STEP nie istnieje")
+    raise HTTPException(400, f"Nieznany format: {fmt}")
 
 
 @router.get("/stl-preview/{job_uuid}")
 def stl_preview(job_uuid: str, db: Session = Depends(get_db)):
     """Return the original mesh (STL/3MF/OBJ) for Three.js preview."""
     job = db.query(models.Job).filter(
-        models.Job.uuid == job_uuid, models.Job.status == "done"
+        models.Job.uuid == job_uuid
     ).first()
     if not job:
         raise HTTPException(404, "Job nie znaleziony")

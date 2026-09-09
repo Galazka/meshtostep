@@ -116,7 +116,6 @@
         .status-badge.done { background: var(--ok-bg); color: var(--ok); }
         .status-badge.error { background: var(--err-bg); color: var(--err); }
         .status-badge.pending { background: var(--warn-bg); color: var(--warn); }
-        .credit-display { font-weight: 600; color: var(--primary); }
 
         /* ── MODAL ── */
         .modal-bg { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.5); backdrop-filter: blur(4px); z-index: 999; justify-content: center; align-items: center; }
@@ -134,10 +133,6 @@
         .detail-item .detail-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
         .detail-item .detail-value { font-size: 15px; font-weight: 600; color: var(--text); }
 
-        /* ── CREDIT ADJUSTMENT ── */
-        .credit-form { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
-        .credit-form input { width: 100px; background: var(--bg-alt); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; font-size: 14px; font-family: inherit; text-align: center; font-weight: 600; }
-        .credit-form input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
         .btn-sm { padding: 8px 18px; border-radius: 8px; font-weight: 600; font-size: 13px; border: none; cursor: pointer; font-family: inherit; transition: all .15s; }
         .btn-sm.primary { background: var(--primary); color: #fff; }
         .btn-sm.primary:hover { background: var(--primary-hover); }
@@ -315,7 +310,6 @@
                                     <th style="width:30px"></th>
                                     <th><input type="checkbox" id="jobsSelectAll" onchange="toggleJobsAll(this.checked)" style="width:14px;height:14px"></th><th>ID</th>
                                     <th data-i18n="thEmail">Email</th>
-                                    <th data-i18n="thCreditsLeft">Kredyty</th>
                                     <th data-i18n="thJobsCount">Pliki</th>
                                     <th>Rozmiar</th>
                                     <th data-i18n="thJoined">Ostatnia aktywnosc</th>
@@ -436,13 +430,6 @@
                 <div id="modalContent" style="display:none">
                     <div class="user-detail-grid" id="userDetailGrid"></div>
 
-                    <h4 style="font-size:14px;font-weight:700;margin-bottom:8px" data-i18n="creditAdjustTitle">Regulacja kredytow</h4>
-                    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px" data-i18n="creditAdjustDesc">Dodaj lub odejmij kredyty. Ujemna wartosc = odejmowanie.</p>
-                    <div class="credit-form">
-                        <input type="number" id="creditAmount" placeholder="+10" value="" style="width:100px">
-                        <button class="btn-sm primary" id="creditBtn" onclick="adjustCredits()" data-i18n="creditAdjustBtn">Zastosuj</button>
-                        <span id="creditResult" style="font-size:13px;font-weight:500;"></span>
-                    </div>
 
                     <h4 style="font-size:14px;font-weight:700;margin:24px 0 8px" data-i18n="userJobsTitle">Ostatnie przetworzenia</h4>
                     <div style="max-height:240px;overflow-y:auto;">
@@ -857,7 +844,6 @@
                 '<td><span class="toggle-arrow" id="arrow-' + u.id + '">&#9654;</span></td>' +
                 '<td>' + u.id + '</td>' +
                 '<td class="cell-ellipsis">' + esc(u.email || '—') + '</td>' +
-                '<td class="credit-display">' + (u.credits ?? '—') + '</td>' +
                 '<td>' + (u.job_count ?? '—') + '</td>' +
                 '<td>' + sizeStr + '</td>' +
                 '<td>' + lastActive + '</td>' +
@@ -946,8 +932,6 @@
         modal.classList.add('show');
         document.getElementById('modalLoading').style.display = 'block';
         document.getElementById('modalContent').style.display = 'none';
-        document.getElementById('creditAmount').value = '';
-        document.getElementById('creditResult').textContent = '';
         try {
             _currentUser = await api('/api/admin/users/' + id);
             renderUserDetail();
@@ -965,7 +949,6 @@
         grid.innerHTML =
             '<div class="detail-item"><div class="detail-label">' + t('userDetailId') + '</div><div class="detail-value">' + u.id + '</div></div>' +
             '<div class="detail-item"><div class="detail-label">' + t('userDetailEmail') + '</div><div class="detail-value">' + esc(u.email || '—') + '</div></div>' +
-            '<div class="detail-item"><div class="detail-label">' + t('userDetailCredits') + '</div><div class="detail-value" style="color:var(--primary)">' + (u.credits ?? '—') + '</div></div>' +
             '<div class="detail-item"><div class="detail-label">' + t('userDetailJobs') + '</div><div class="detail-value">' + (u.jobs_count ?? u.job_count ?? (u.jobs ? u.jobs.length : '—')) + '</div></div>' +
             '<div class="detail-item"><div class="detail-label">' + t('userDetailCountry') + '</div><div class="detail-value">' + esc(u.country || '—') + '</div></div>' +
             '<div class="detail-item"><div class="detail-label">' + t('userDetailCity') + '</div><div class="detail-value">' + esc(u.city || '—') + '</div></div>' +
@@ -994,30 +977,6 @@
         _currentUser = null;
     }
 
-    /* ═══════════════════════ CREDIT ADJUSTMENT ═══════════════════════ */
-    async function adjustCredits() {
-        if (!_currentUser) return;
-        const amount = parseInt(document.getElementById('creditAmount').value, 10);
-        if (isNaN(amount)) return;
-        const btn = document.getElementById('creditBtn');
-        btn.disabled = true;
-        try {
-            const d = await api('/api/admin/users/' + _currentUser.id + '/credits', {
-                method: 'POST',
-                body: { amount: amount }
-            });
-            _currentUser.credits = d.credits ?? d.new_credits ?? (_currentUser.credits + amount);
-            document.getElementById('creditResult').textContent = '✓ ' + t('creditSuccess') + ' (' + _currentUser.credits + ')';
-            document.getElementById('creditResult').style.color = 'var(--ok)';
-            renderUserDetail();
-            loadUsers();
-            loadStats();
-        } catch (e) {
-            document.getElementById('creditResult').textContent = '✗ ' + t('creditError');
-            document.getElementById('creditResult').style.color = 'var(--err)';
-        }
-        btn.disabled = false;
-    }
 
     /* ═══════════════════════ JOB PREVIEW MODAL ═══════════════════════ */
     let _jobThreeRenderer = null, _jobThreeScene = null, _jobThreeCamera = null,
@@ -1329,8 +1288,6 @@
         if (e.key === 'Enter') document.getElementById('authPass').focus();
     });
 
-    /* Enter key on credit amount */
-    document.getElementById('creditAmount').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') adjustCredits();
     });
 
