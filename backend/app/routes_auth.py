@@ -119,7 +119,6 @@ def register(body: RegisterReq, request: Request, db: Session = Depends(get_db))
     user = models.User(
         email=email_lower,
         password_hash=hash_password(body.password),
-        credits=settings.FREE_CREDITS,
         verification_token=token,
         email_verified=not settings.EMAIL_VERIFICATION_REQUIRED,
         terms_accepted_at=now,
@@ -139,7 +138,6 @@ def register(body: RegisterReq, request: Request, db: Session = Depends(get_db))
         "user": {
             "id": user.id,
             "email": user.email,
-            "credits": user.credits,
             "email_verified": user.email_verified,
         },
         "message": (
@@ -188,7 +186,6 @@ def login(body: LoginReq, request: Request, db: Session = Depends(get_db)):
         "user": {
             "id": user.id,
             "email": user.email,
-            "credits": user.credits,
             "is_admin": user.is_admin,
             "email_verified": user.email_verified,
         },

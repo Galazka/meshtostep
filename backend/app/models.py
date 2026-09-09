@@ -13,7 +13,6 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False, index=True)
     username = Column(String(50), unique=True, nullable=True, index=True)  # for /u/{username}/{slug}
     password_hash = Column(String(255), nullable=False)
-    credits = Column(Integer, default=3, nullable=False)
     is_admin = Column(Boolean, default=False)
     keep_files_forever = Column(Boolean, default=False)
     retention_days = Column(Integer, default=30)
@@ -38,7 +37,6 @@ class User(Base):
     folders = relationship("Folder", back_populates="user", cascade="all, delete-orphan")
     shares = relationship("ShareLink", back_populates="user")
     geo_logs = relationship("GeoLog", back_populates="user")
-    credit_adjustments = relationship("CreditAdjustment", back_populates="user", foreign_keys="CreditAdjustment.user_id")
     comments = relationship("Comment", back_populates="user")
     sales_as_seller = relationship("Sale", back_populates="seller", foreign_keys="Sale.seller_id")
     sales_as_buyer = relationship("Sale", back_populates="buyer", foreign_keys="Sale.buyer_id")
@@ -61,7 +59,6 @@ class Job(Base):
     result_stl_path = Column(String(512))
     error_msg = Column(Text)
     processing_time_s = Column(Float)
-    credits_used = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime)
     # community fields
@@ -148,30 +145,16 @@ class Sale(Base):
     seller = relationship("User", back_populates="sales_as_seller", foreign_keys=[seller_id])
     buyer = relationship("User", back_populates="sales_as_buyer", foreign_keys=[buyer_id])
 
-
-class CreditPack(Base):
-    __tablename__ = "credit_packs"
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(50), nullable=False)
-    credits = Column(Integer, nullable=False)
-    price_usd = Column(Float, nullable=False)
-    is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-
 class Payment(Base):
     __tablename__ = "payments"
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    pack_id = Column(Integer, ForeignKey("credit_packs.id"), nullable=True)
     amount_usd = Column(Float, nullable=False)
-    credits_granted = Column(Integer, default=0)
     status = Column(String(20), default="pending")
     payment_method = Column(String(20))
     reference = Column(String(100))
     created_at = Column(DateTime, default=datetime.utcnow)
     user = relationship("User")
-    pack = relationship("CreditPack")
 
 
 class GeoLog(Base):
@@ -187,20 +170,6 @@ class GeoLog(Base):
     endpoint = Column(String(200), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     user = relationship("User", back_populates="geo_logs")
-
-
-class CreditAdjustment(Base):
-    __tablename__ = "credit_adjustments"
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    admin_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    amount = Column(Integer, nullable=False)
-    reason = Column(Text, nullable=True)
-    credits_before = Column(Integer, nullable=False)
-    credits_after = Column(Integer, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    user = relationship("User", back_populates="credit_adjustments", foreign_keys=[user_id])
-    admin = relationship("User", foreign_keys=[admin_id])
 
 
 class AdSlot(Base):

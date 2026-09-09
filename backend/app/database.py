@@ -118,14 +118,11 @@ def init_db():
         print(f"[3dfile] Migration warning: {e}")
     db = SessionLocal()
     try:
-        if db.query(models.CreditPack).count() == 0:
-            db.add_all([models.CreditPack(name="Start 5", credits=5, price_usd=0.99),models.CreditPack(name="Pack 25", credits=25, price_usd=2.99),models.CreditPack(name="Pack 100", credits=100, price_usd=7.99)])
-            db.commit()
         if settings.ADMIN_EMAIL and settings.ADMIN_PASSWORD:
             admin = db.query(models.User).filter(models.User.email == settings.ADMIN_EMAIL.lower().strip()).first()
             if not admin:
                 from .auth import hash_password
-                admin = models.User(email=settings.ADMIN_EMAIL.lower().strip(), password_hash=hash_password(settings.ADMIN_PASSWORD), credits=999999, is_admin=True, email_verified=True)
+                admin = models.User(email=settings.ADMIN_EMAIL.lower().strip(), password_hash=hash_password(settings.ADMIN_PASSWORD), is_admin=True, email_verified=True)
                 db.add(admin); db.commit()
                 print(f"[3dfile] Bootstrap admin {settings.ADMIN_EMAIL}")
             elif not admin.is_admin:

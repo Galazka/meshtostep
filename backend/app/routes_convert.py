@@ -30,7 +30,16 @@ def _auto_thumb(mesh_file: str, thumb_path):
     import matplotlib.pyplot as plt
     from mpl_toolkits.mplot3d.art3d import Poly3DCollection
     import trimesh
-    mesh = trimesh.load(mesh_file, force="mesh")
+    # ponytail: trimesh handles STL natively; OBJ/3MF need force="mesh" + process
+    try:
+        mesh = trimesh.load(mesh_file, force="mesh")
+    except Exception:
+        # fallback: try without force, then concatenate if scene
+        scene = trimesh.load(mesh_file)
+        if hasattr(scene, 'geometry') and scene.geometry:
+            mesh = trimesh.util.concatenate(list(scene.geometry.values()))
+        else:
+            raise
     fig = plt.figure(figsize=(4, 3), dpi=125)
     ax = fig.add_subplot(111, projection="3d")
     ax.set_facecolor("#f0f2f5"); fig.patch.set_facecolor("#f0f2f5")
@@ -148,7 +157,7 @@ async def convert_file(
 
     if result["ok"]:
         job.status = "done"
-        # Calculate dimensions from STL bounding box
+        # Calculate dimensions via trimesh (STL/OBJ/3MF safe)
         try:
             stl_dir = os.path.join(JOBS_DIR, job.uuid)
             stl_file = None
@@ -156,28 +165,20 @@ async def convert_file(
                 if fn.lower().endswith(('.stl','.3mf','.obj')):
                     stl_file = os.path.join(stl_dir, fn); break
             if stl_file:
-                import struct
-                with open(stl_file, 'rb') as f:
-                    header = f.read(80)
-                    num_triangles = struct.unpack('<I', f.read(4))[0]
-                    min_x=min_y=min_z=float('inf'); max_x=max_y=max_z=float('-inf')
-                    for _ in range(min(num_triangles, 500000)):
-                        f.read(12)  # normal
-                        for _ in range(3):
-                            x,y,z = struct.unpack('<fff', f.read(12))
-                            min_x=min(min_x,x); max_x=max(max_x,x)
-                            min_y=min(min_y,y); max_y=max(max_y,y)
-                            min_z=min(min_z,z); max_z=max(max_z,z)
-                        f.read(2)  # attr
-                    dims_str = f"{round(max_x-min_x,1)} x {round(max_y-min_y,1)} x {round(max_z-min_z,1)} mm"
-                    job.dims_mm = dims_str
+                try:
+                    import trimesh
+                    m = trimesh.load(stl_file, force="mesh")
+                    if hasattr(m, 'bounds') and m.bounds is not None:
+                        bmin, bmax = m.bounds
+                        d = bmax - bmin
+                        job.dims_mm = f"{round(float(d[0]),1)} x {round(float(d[1]),1)} x {round(float(d[2]),1)} mm"
+                except Exception: pass
         except Exception: pass
         job.result_step_path = out_step
         job.result_faces = result["faces"]
         job.result_size_bytes = result["result_size"]
         job.processing_time_s = round(time.time() - t0, 1)
         job.completed_at = datetime.utcnow()
-        job.credits_used = 0
         # Auto-generate thumbnail PNG server-side (3dfile.link — ponytail: cache thumb.png, no extra deps beyond trimesh+matplotlib)
         try:
             thumb_out = job_dir / "thumb.png"

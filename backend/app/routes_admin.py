@@ -109,7 +109,6 @@ def stats(admin: models.User = Depends(require_admin), db: Session = Depends(get
     # legacy fields for backward compat with old frontend
     jobs_done = jobs_by_status.get("done", 0)
     jobs_error = jobs_by_status.get("error", 0)
-    credits_sold = db.query(func.sum(models.Payment.credits_granted)).scalar() or 0
     revenue_usd = db.query(func.sum(models.Payment.amount_usd)).filter(
         models.Payment.status == "completed").scalar() or 0
     shares_active = db.query(models.ShareLink).filter(
@@ -132,13 +131,11 @@ def stats(admin: models.User = Depends(require_admin), db: Session = Depends(get
         "jobs": total_jobs,
         "jobs_done": jobs_done,
         "jobs_error": jobs_error,
-        "credits_sold": credits_sold,
         "revenue_usd": revenue_usd,
         "revenue": revenue_usd,
         "shares_active": shares_active,
         "total_share_views": total_share_views,
         "total_revenue": revenue_usd,
-        "credits_used": total_jobs,
     }
 
 
@@ -244,7 +241,6 @@ def list_users(admin: models.User = Depends(require_admin), db: Session = Depend
             "id": u.id,
             "username": u.username,
             "email": u.email,
-            "credits": u.credits,
             "is_admin": u.is_admin,
             "created_at": str(u.created_at),
             "last_login": str(u.last_login) if u.last_login else None,
@@ -392,15 +388,6 @@ def user_detail(
         .filter(models.ShareLink.user_id == user_id).scalar() or 0
     )
 
-    # Credit adjustments
-    adjustments = (
-        db.query(models.CreditAdjustment)
-        .filter(models.CreditAdjustment.user_id == user_id)
-        .order_by(desc(models.CreditAdjustment.created_at))
-        .limit(20)
-        .all()
-    )
-
     # Recent jobs
     recent_jobs = (
         db.query(models.Job)
@@ -431,7 +418,6 @@ def user_detail(
         "id": user.id,
         "email": user.email,
         "username": user.username,
-        "credits": user.credits,
         "is_admin": user.is_admin,
         "created_at": str(user.created_at),
         "last_login": str(user.last_login),
@@ -447,17 +433,12 @@ def user_detail(
         "last_ip": last_geo.ip_address if last_geo else None,
         "last_country": last_geo.country if last_geo else None,
         "last_city": last_geo.city if last_geo else None,
-        "adjustments": [{
-            "id": a.id, "amount": a.amount, "reason": a.reason,
-            "credits_before": a.credits_before, "credits_after": a.credits_after,
-            "admin_id": a.admin_id, "created_at": str(a.created_at),
-        } for a in adjustments],
         "recent_jobs": [{
             "id": j.id, "filename": j.original_filename, "status": j.status,
             "mode": j.mode, "created_at": str(j.created_at),
         } for j in recent_jobs],
         "payments": [{
-            "id": p.id, "amount_usd": p.amount_usd, "credits_granted": p.credits_granted,
+            "id": p.id, "amount_usd": p.amount_usd,
             "status": p.status, "created_at": str(p.created_at),
         } for p in payments],
     }
@@ -563,7 +544,6 @@ def adjust_credits(
 
     return {
         "ok": True,
-        "credits": user.credits,
         "adjustment_id": adjustment.id,
     }
 

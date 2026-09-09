@@ -14,7 +14,7 @@ restartPolicyMaxRetries = 3
 
 [[variables]]
 key = "APP_URL"
-value = "https://meshtostep.up.railway.app"
+value = "https://3dfile.link"
 
 [[variables]]
 key = "FREE_CREDITS"
@@ -30,4 +30,4 @@ value = "usd"
 
 [[variables]]
 key = "CORS_ORIGINS"
-value = "https://meshtostep.up.railway.app"
+value = "https://3dfile.link,https://meshtostep-production.up.railway.app"
