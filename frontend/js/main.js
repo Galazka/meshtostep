@@ -101,8 +101,9 @@ loadHomeRecent();
 applyI18n();
 if (token) fetchUser();
 setupDropZone();
-loadAdSlots();
+if(localStorage.getItem('mt_cookie_consent')==='accepted') loadAdSlots();
 
 window.toggleTheme = toggleTheme;
+window.loadAdSlots = loadAdSlots;
 // go() and toggleFaq() are defined inline in index.html (navigation + FAQ accordion)
 window.toggleFaqCompat = null;

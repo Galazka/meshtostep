@@ -552,6 +552,37 @@ def list_jobs(user: models.User = Depends(require_user), db: Session = Depends(g
     return out
 
 
+
+# --- Email share link ---
+@router.post("/share/{token}/email")
+def email_share(token: str, payload: dict, user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    from .mail import send_share_link
+    recipient = (payload.get("recipient_email") or "").strip()
+    if not recipient or "@" not in recipient:
+        raise HTTPException(400, "Podaj poprawny email")
+    # rate limit: 5 emails/min per user
+    key = f"email_{user.id}"
+    hits = _email_hits.get(key, [])
+    now = time.time()
+    hits = [h for h in hits if now - h < 60]
+    if len(hits) >= 5:
+        raise HTTPException(429, "Za dużo wiadomości — poczekaj chwilę")
+    hits.append(now)
+    _email_hits[key] = hits
+    # find share link + job
+    share = db.query(models.ShareLink).filter(models.ShareLink.token == token).first()
+    if not share:
+        raise HTTPException(404, "Link nie znaleziony")
+    job = db.query(models.Job).filter(models.Job.id == share.job_id).first()
+    title = getattr(job, "title", None) or getattr(job, "original_filename", "Model 3D")
+    sent = send_share_link(recipient, token, getattr(user, "email", ""), title)
+    if not sent:
+        raise HTTPException(500, "SMTP nie skonfigurowane — nie wysłano")
+    return {"ok": True, "message": f"Wysłano do {recipient}"}
+
+
+_email_hits: dict = {}
+
 # --- Bulk delete ---
 @router.post("/jobs/bulk-delete")
 def bulk_delete(payload: dict, user: models.User = Depends(require_user), db: Session = Depends(get_db)):

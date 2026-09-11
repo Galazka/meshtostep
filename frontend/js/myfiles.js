@@ -59,9 +59,19 @@ function copyShareUrl() {
     toast(t('shareLinkPrompt'), 'success');
 }
 function doEmbed(jobId) {
-    const code = '<iframe src="/e/' + jobId + '" width="800" height="500" frameborder="0" allowfullscreen></iframe>';
-    prompt('Embed iframe code:', code);
+    document.getElementById('embedModal').classList.add('show');
+    _embedJobId = jobId;
+    const ta = document.getElementById('embedCode');
+    if (ta) ta.value = '<iframe src="https://3dfile.link/e/' + jobId + '" width="800" height="500" frameborder="0" allowfullscreen></iframe>';
 }
+let _embedJobId = null;
+
+function copyEmbedCode() {
+    const ta = document.getElementById('embedCode');
+    if (!ta) return;
+    navigator.clipboard.writeText(ta.value).then(() => toast('Kod skopiowany', 'success')).catch(() => { ta.select(); document.execCommand('copy'); toast('Kod skopiowany', 'success'); });
+}
+
 
 let _mfFolders = [];
 let _mfSelected = new Set();
@@ -113,6 +123,94 @@ function mfCountInFolder(fid){
     if(fid==='__none') return _myJobsData.filter(function(j){return j.folder_id==null}).length;
     return _myJobsData.filter(function(j){return String(j.folder_id||'')===String(fid)}).length;
 }
+
+function showShareEmailModal() {
+    const el = document.getElementById('shareEmailModal');
+    if (el) { el.classList.add('show'); return; }
+    const modal = document.createElement('div');
+    modal.id = 'shareEmailModal';
+    modal.style = 'display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:3000;align-items:center;justify-content:center;';
+    modal.innerHTML = \`
+      <div style="background:#fff;padding:32px;border-radius:12px;width:90%;max-width:400px;box-shadow:0 10px 30px rgba(0,0,0,.5);position:relative;max-height:90vh;overflow:auto">
+        <h3 style="margin-top:0;color:#1a56db">Wyślij link mailem</h3>
+        <p>Wpisz adres email odbiorcy</p>
+        <input type="email" id="shareEmailInput" style="width:100%;padding:12px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:16px;font-size:14px" placeholder="example@email.com">
+        <div style="display:flex;gap:8px">
+          <button onclick="shareEmailSend()" style="flex:1;background:#1a56db;color:#fff;border:none;border-radius:8px;padding:10px;font-weight:600;cursor:pointer">Wyślij</button>
+          <button onclick="document.getElementById('shareEmailModal').classList.remove('show')" style="flex:1;background:#e2e8f0;border:none;border-radius:8px;padding:10px;font-size:14px;cursor:pointer">Anuluj</button>
+        </div>
+        <div id="shareEmailResult" style="margin-top:16px;font-size:12px"></div>
+        <button onclick="document.getElementById('shareEmailModal').classList.remove('show')" style="position:absolute;top:8px;right:16px;border:none;background:none;font-size:24px;color:#64748b;cursor:pointer">×</button>
+      </div>
+\`;
+    document.body.appendChild(modal);
+    modal.classList.add('show');
+}
+
+function shareEmailSend() {
+    const inp = document.getElementById('shareEmailInput');
+    const result = document.getElementById('shareEmailResult');
+    if (!inp) { result.textContent = 'Błąd: modal nie znaleziony'; return; }
+    const email = inp.value.trim();
+    if (!email || !email.includes('@')) { result.textContent = 'Podaj poprawny adres email'; return; }
+    result.textContent = 'Wysyłanie...';
+    fetch('/api/share/' + _shareJobId + '/email', {
+        method: 'POST',
+        headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
+        body: JSON.stringify({ recipient_email: email })
+    }).then(r => r.json()).then(d => {
+        if (d.ok) { result.textContent = 'Wysłano!'; setTimeout(()=>{ document.getElementById('shareEmailModal').classList.remove('show'); }, 2000); }
+        else { result.textContent = d.detail||'Błąd'; }
+    }).catch(()=>{ result.textContent = 'Błąd połączenia'; });
+}
+
+
+// ═══ DOWNLOAD DIALOG ═══
+let _dlJobId = null;
+function showDownloadDialog(jobId, fileName) {
+    _dlJobId = jobId;
+    const info = document.getElementById('downloadInfo');
+    if (info) info.textContent = 'Pobierz: ' + (fileName || jobId);
+    const opts = document.getElementById('downloadOptions');
+    if (!opts) return;
+    opts.innerHTML = '';
+    var formats = [
+        {fmt:'stl', label:'Mesh — STL (uniwersalny)'},
+        {fmt:'obj', label:'Mesh — OBJ (z teksturami)'},
+        {fmt:'3mf', label:'Mesh — 3MF (druk 3D)'},
+        {fmt:'step', label:'Solid — STEP (CAD/CAM)'}
+    ];
+    formats.forEach(function(f) {
+        var btn = document.createElement('button');
+        btn.className = 'nav-btn nav-btn-primary';
+        btn.style.cssText = 'width:100%;padding:12px 16px;text-align:left;font-size:14px';
+        btn.textContent = f.label;
+        btn.onclick = function() { _downloadFile(_dlJobId, f.fmt); };
+        opts.appendChild(btn);
+    });
+    document.getElementById('downloadModal').classList.add('show');
+}
+
+async function _downloadFile(uuid, fmt) {
+    document.getElementById('downloadModal').classList.remove('show');
+    toast('Pobieranie ' + fmt.toUpperCase() + '...');
+    try {
+        var url = '/api/download/' + uuid + '?format=' + fmt;
+        var headers = {};
+        if (token) headers['Authorization'] = 'Bearer ' + token;
+        var r = await fetch(url, {headers: headers});
+        if (!r.ok) { toast('Błąd: ' + r.statusText); return; }
+        var blob = await r.blob();
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'model.' + fmt;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+    } catch(e) { toast('Błąd pobierania: ' + e.message); }
+}
+
 function mfSelectFolder(fid){
     const sel=document.getElementById('mfFolderFilter');
     if(sel) sel.value=fid;
@@ -238,8 +336,7 @@ function mfRender(){
         + '<button onclick="event.stopPropagation(); if(confirm(\'Usunąć?\')) deleteMyJob('+j.id+')" style="padding:6px 8px;background:var(--bg);color:var(--error);border:1px solid #fecaca;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:inherit">Usuń</button>'
         + '</div>'
         + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
-        + '<a href="/api/download/'+j.uuid+'?format=step" style="flex:1;text-align:center;padding:7px 8px;background:var(--primary);color:#fff;border-radius:var(--radius-sm);font-size:12px;font-weight:600;text-decoration:none">STEP</a>'
-        + (is3mf ? '<a href="/api/download/'+j.uuid+'?format=3mf" style="flex:1;text-align:center;padding:7px 8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-weight:600;text-decoration:none;color:var(--text)">3MF</a>' : '')
+        + '<button onclick="event.stopPropagation();showDownloadDialog(\''+j.uuid+'\',\''+(j.title||j.original_filename||'').replace(/'/g,"\\'")+'\')" style="flex:1;padding:7px 8px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Pobierz</button>'
         + '<button onclick="openShareModalFor('+j.id+')" style="flex:1;padding:7px 8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:inherit">Udostępnij</button>'
         + '</div>'
         + '</div></div>';
@@ -915,3 +1012,9 @@ window.openEditor = openEditor;
 window.closeEditorModal = closeEditorModal;
 window.edSave = edSave;
 window.edUploadImages = edUploadImages;
+
+window.showDownloadDialog = showDownloadDialog;
+window.showEmbedDialog = doEmbed;
+window.copyEmbedCode = copyEmbedCode;
+window.showShareEmailModal = showShareEmailModal;
+window.shareEmailSend = shareEmailSend;

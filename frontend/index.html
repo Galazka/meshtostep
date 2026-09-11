@@ -358,6 +358,14 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
                 Moje pliki
             </button>
+            <button class="nav-link" onclick="go('hiw')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                Jak to działa
+            </button>
+            <button class="nav-link" onclick="go('faq')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r=".5"/></svg>
+                FAQ
+            </button>
         </div>
         <div class="nav-right">
             <button class="nav-btn" id="themeToggle" onclick="toggleTheme()" title="Tryb ciemny">🌙</button>
@@ -434,7 +442,7 @@
     </div>
 
     <div class="ad-slot" data-slot="hero_bottom"></div>
-    <div class="ad-slot" data-slot="hero_top"></div>
+    <div class="ad-slot" data-slot="hero_top" style="margin:0 auto 24px"></div>
 
     <div class="features">
         <div class="features-grid">
@@ -703,6 +711,7 @@
             <div id="shareResult" style="display:none">
                 <input type="text" id="shareUrl" readonly style="width:100%;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:12px;font-family:inherit;font-size:13px" onclick="this.select()">
                 <button class="nav-btn nav-btn-primary" style="width:100%" onclick="copyShareUrl()" data-i18n="shareCopy">Kopiuj link</button>
+                <button class="nav-btn" style="width:100%;margin-top:8px" onclick="showShareEmailModal()">✉️ Wyślij mailem</button>
                 <div style="display:flex;gap:8px;margin-top:10px">
                     <button class="nav-btn" style="flex:1;font-size:12px" id="shareAnonBtn" onclick="toggleShareAnon()">🔒 Link bez nicka: OFF</button>
                 </div>
@@ -811,7 +820,7 @@
 
 <script>
 // Navigation: hash routing + page switching
-var _pages = ['home','discover','files','faq','konto'];
+var _pages = ['home','discover','files','hiw','faq','konto'];
 function go(p) {
     if (!_pages.includes(p)) p = 'home';
     document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
@@ -823,6 +832,7 @@ function go(p) {
     if (p === 'files' && window.loadMyJobs) window.loadMyJobs();
     if (p === 'konto' && window.loadAccount) window.loadAccount();
     if (p === 'discover' && window.doDiscover) window.doDiscover();
+    if (p === 'hiw') { var el = document.getElementById('how-it-works'); if (el) el.scrollIntoView({behavior:'smooth'}); }
     closeDropdown();
 }
 window.go = go;
@@ -855,5 +865,62 @@ window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault();
 document.getElementById('pwaInstallBtn').addEventListener('click', async function() { if (!_deferredPrompt) return; _deferredPrompt.prompt(); await _deferredPrompt.userChoice; _deferredPrompt = null; document.getElementById('pwaBanner').style.display = 'none'; });
 document.getElementById('pwaDismiss').addEventListener('click', function() { document.getElementById('pwaBanner').style.display = 'none'; });
 </script>
+
+<!-- ═══ COOKIE CONSENT ═══ -->
+<div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1e293b;color:#e2e8f0;padding:16px 24px;font-size:14px;border-top:2px solid #3b82f6">
+  <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+    <div style="flex:1;min-width:300px">
+      🍪 Używamy localStorage do ustawień. Reklamy (Google AdSense) mogą używać cookies.
+      <a href="/prywatnosc" style="color:#93c5fd;margin-left:8px">Polityka prywatności</a>
+    </div>
+    <div style="display:flex;gap:8px;flex-shrink:0">
+      <button onclick="cookieConsent(true)" style="background:#3b82f6;color:#fff;border:none;border-radius:6px;padding:8px 20px;font-weight:600;cursor:pointer">Akceptuję</button>
+      <button onclick="cookieConsent(false)" style="background:#475569;color:#e2e8f0;border:none;border-radius:6px;padding:8px 20px;font-weight:500;cursor:pointer">Tylko niezbędne</button>
+    </div>
+  </div>
+</div>
+<script>
+function cookieConsent(accept) {
+  localStorage.setItem('mt_cookie_consent', accept ? 'accepted' : 'rejected');
+  document.getElementById('cookieBanner').style.display = 'none';
+  if (accept && window.loadAdSlots) loadAdSlots();
+  else { document.querySelectorAll('.ad-slot').forEach(function(el){ el.innerHTML = ''; }); }
+}
+(function() {
+  var c = localStorage.getItem('mt_cookie_consent');
+  if (!c) document.getElementById('cookieBanner').style.display = 'block';
+  else if (c === 'accepted' && window.loadAdSlots) { try { loadAdSlots(); } catch(e){} }
+})();
+</script>
+
+
+<!-- ═══ DOWNLOAD DIALOG ═══ -->
+<div class="modal-overlay" id="downloadModal">
+  <div class="modal-box" style="max-width:440px">
+    <button class="modal-close" onclick="document.getElementById('downloadModal').classList.remove('show')">×</button>
+    <h2 style="margin-top:0">Pobierz model</h2>
+    <div id="downloadInfo" style="margin-bottom:16px;font-size:13px;color:var(--text-secondary)"></div>
+    <div style="display:flex;flex-direction:column;gap:8px" id="downloadOptions"></div>
+  </div>
+</div>
+
+
+<!-- ═══ EMBED DIALOG ═══ -->
+<div class="modal-overlay" id="embedModal">
+  <div class="modal-box" style="max-width:520px">
+    <button class="modal-close" onclick="document.getElementById('embedModal').classList.remove('show')">×</button>
+    <h2 style="margin-top:0">Osadź model 3D</h2>
+    <div style="margin-bottom:12px">
+      <label style="font-size:13px;font-weight:600">Rozmiar:</label>
+      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap" id="embedSizes"></div>
+    </div>
+    <textarea id="embedCode" readonly style="width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;font-family:monospace;font-size:12px;resize:none;height:80px;margin-bottom:12px"></textarea>
+    <div style="display:flex;gap:8px">
+      <button onclick="copyEmbedCode()" style="flex:1;padding:10px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer">📋 Kopiuj kod</button>
+      <button onclick="document.getElementById('embedModal').classList.remove('show')" style="padding:10px 20px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-family:inherit">Zamknij</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
