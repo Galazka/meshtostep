@@ -262,123 +262,32 @@ def download(job_uuid: str, format: str = "step", db: Session = Depends(get_db))
 
 @router.get("/stl-preview/{job_uuid}")
 def stl_preview(job_uuid: str, db: Session = Depends(get_db)):
-    """Return the original mesh (STL/3MF/OBJ) for Three.js preview.
-    If original mesh missing, return a unit cube STL so preview doesn't break.
-    """
+    """Return the original mesh (STL/3MF/OBJ) for Three.js preview."""
     job = db.query(models.Job).filter(
         models.Job.uuid == job_uuid
     ).first()
     if not job:
         raise HTTPException(404, "Job nie znaleziony")
-    # 1) try converted STL
     stl_path = job.result_stl_path
+    src_dir = JOBS_DIR / job_uuid
     if stl_path and os.path.exists(stl_path):
         return FileResponse(stl_path, media_type="model/stl")
-    # 2) try source file in JOBS_DIR
-    src_dir = JOBS_DIR / job_uuid
     if src_dir.exists():
         for ext in (".stl", ".3mf", ".obj"):
             for f in src_dir.iterdir():
                 if f.suffix.lower() == ext:
                     mt = "model/stl" if ext == ".stl" else "application/octet-stream"
                     return FileResponse(str(f), media_type=mt)
-    # 3) fallback: generate a unit cube STL in memory
-    cube_stl = """solid cube
-    facet 0 0 0 1 0 0 0 1 1
-        outer loop
-            vertex 0 0 0
-            vertex 1 0 0
-            vertex 1 1 0
-        endloop
-    endfacet
-    facet 0 0 0 1 0 0 0 0 1
-        outer loop
-            vertex 0 0 0
-            vertex 0 1 0
-            vertex 1 1 0
-        endloop
-    endfacet
-    facet 0 0 0 0 0 1 1 0 1
-        outer loop
-            vertex 0 0 1
-            vertex 1 0 1
-            vertex 1 1 1
-        endloop
-    endfacet
-    facet 0 0 0 0 0 1 1 1 1
-        outer loop
-            vertex 0 0 1
-            vertex 0 1 1
-            vertex 1 1 1
-        endloop
-    endfacet
-    facet 0 0 0 -1 0 0 0 0 0
-        outer loop
-            vertex 0 0 0
-            vertex 0 1 0
-            vertex 0 1 1
-        endloop
-    endfacet
-    facet 0 0 0 -1 0 0 0 0 1
-        outer loop
-            vertex 0 0 1
-            vertex 0 0 0
-            vertex 0 1 0
-        endloop
-    endfacet
-    facet 0 0 0 0 -1 0 0 1 0
-        outer loop
-            vertex 0 1 0
-            vertex 0 1 1
-            vertex 0 0 1
-        endloop
-    endfacet
-    facet 0 0 0 0 -1 0 0 0 0
-        outer loop
-            vertex 0 0 0
-            vertex 0 0 1
-            vertex 0 1 1
-        endloop
-    endfacet
-    facet 0 0 0 0 0 -1 0 0 0
-        outer loop
-            vertex 0 0 0
-            vertex 1 0 0
-            vertex 1 0 1
-        endloop
-    endfacet
-    facet 0 0 0 0 0 -1 1 0 0
-        outer loop
-            vertex 1 0 1
-            vertex 0 0 0
-            vertex 1 0 0
-        endloop
-    endfacet
-    facet 0 0 0 0 0 -1 1 1 0
-        outer loop
-            vertex 1 1 0
-            vertex 1 0 0
-            vertex 1 0 1
-        endloop
-    endfacet
-    facet 0 0 0 0 0 -1 0 1 0
-        outer loop
-            vertex 0 1 0
-            vertex 1 1 0
-            vertex 1 1 1
-        endloop
-    endfacet
-    facet 0 0 0 0 0 -1 0 0 1
-        outer loop
-            vertex 0 0 1
-            vertex 0 1 1
-            vertex 1 1 1
-        endloop
-    endfacet
-    endsolid cube
-    """
-    from io import BytesIO
-    return FileResponse(BytesIO(cube_stl.encode('utf-8')), media_type="model/stl")@router.get("/preview/{job_uuid}")
+    # If only thumb exists, serve the preview image instead
+    thumb = src_dir / "thumb.png"
+    if thumb.exists():
+        from starlette.responses import StreamingResponse
+        import io
+        thumb_bytes = thumb.read_bytes()
+        return StreamingResponse(io.BytesIO(thumb_bytes), media_type="image/png")
+    raise HTTPException(404, "STL preview niedostepny")
+
+@router.get("/preview/{job_uuid}")
 def preview_image(job_uuid: str, db: Session = Depends(get_db)):
     """Serve JPG preview → auto-gen thumb from mesh → 404 only if no mesh at all."""
     job = db.query(models.Job).filter(models.Job.uuid == job_uuid).first()
