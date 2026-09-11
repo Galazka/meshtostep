@@ -201,7 +201,8 @@ __ROBOTS__
 <body>
 <header class="topbar">
   <div class="file-block">
-    <div class="file" title="__FILENAME__">📁 __FILENAME__</div>
+    <a href="/" style="text-decoration:none;margin-right:8px;flex-shrink:0"><img src="/logo.png?v=2" alt="3DFILE" style="height:24px" onerror="this.style.display='none'"></a>
+    <div class="file" title="__FILENAME__">__FILENAME__</div>
     <div class="shared-by">__AUTHOR_INFO__</div>
   </div>
   <div class="pills">__CONV_INFO__</div>
@@ -296,7 +297,10 @@ new STLLoader().load('/api/stl-preview/__UUID__', (g) => {
   scene.add(window._shareMesh);
 }, undefined, (err) => {
   console.error('STL load error:', err);
-  el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#64748b;font-size:14px;flex-direction:column;gap:8px"><span style="font-size:32px">△</span>Nie mozna zaladowac podgladu 3D</div>';
+  var img=new Image();
+  img.onload=function(){el.innerHTML='';img.style.cssText='width:100%;height:100%;object-fit:contain';el.appendChild(img);};
+  img.onerror=function(){el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#64748b;font-size:14px;flex-direction:column;gap:8px"><span style="font-size:32px">△</span>Podglad 3D niedostepny</div>';};
+  img.src='/api/preview/{uuid}';
 });
 
 function animate() {

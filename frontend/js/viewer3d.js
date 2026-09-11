@@ -123,9 +123,18 @@ function loadSTLIntoViewer(url, jobUuid) {
             _fitCameraToObject(obj);
             _capturePreview(jobUuid);
         }
+        function showJpgFallback(){
+            var ldd = document.getElementById('viewer3d-loading');
+            if (ldd) ldd.remove();
+            if(!jobUuid) return;
+            var img=new Image();
+            img.onload=function(){ container.innerHTML=''; img.style.cssText='width:100%;height:100%;object-fit:contain;border-radius:12px'; container.appendChild(img); };
+            img.onerror=function(){ container.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">Podglad 3D niedostepny</div>'; };
+            img.src='/api/preview/'+jobUuid;
+        }
         function onErr(e){
             console.error('loadSTLIntoViewer error', e);
-            toast('Nie uda\u0142o si\u0119 wczyta\u0107 podgl\u0105du 3D', 'error');
+            showJpgFallback();
         }
 
         if (ext === 'obj') {
@@ -135,16 +144,25 @@ function loadSTLIntoViewer(url, jobUuid) {
             const loader = new window._3MFLoader();
             loader.load(url, addMesh, undefined, onErr);
         } else {
-            const loader = new window._STLLoader();
-            loader.load(url, function(geometry) {
-                try{
-                    geometry.computeBoundingBox();
-                    const bb = geometry.boundingBox, center = new THREE.Vector3();
-                    bb.getCenter(center); geometry.translate(-center.x, -center.y, -center.z);
-                    const mesh=new THREE.Mesh(geometry, mat);
-                    addMesh(mesh);
-                }catch(e){ onErr(e); }
-            }, undefined, onErr);
+            // Sanity check: HEAD request to reject HTML error pages / corrupt files
+            fetch(url, {method:'HEAD'}).then(function(h){
+                var len = parseInt(h.headers.get('content-length')||'0', 10);
+                var ct = (h.headers.get('content-type')||'').toLowerCase();
+                if ((ct.indexOf('text/html')>=0) || (len > 500*1024*1024)) { onErr(new Error('bad file')); return; }
+                loadStlNow();
+            }).catch(loadStlNow);
+            function loadStlNow(){
+                const loader = new window._STLLoader();
+                loader.load(url, function(geometry) {
+                    try{
+                        geometry.computeBoundingBox();
+                        const bb = geometry.boundingBox, center = new THREE.Vector3();
+                        bb.getCenter(center); geometry.translate(-center.x, -center.y, -center.z);
+                        const mesh=new THREE.Mesh(geometry, mat);
+                        addMesh(mesh);
+                    }catch(e){ onErr(e); }
+                }, undefined, onErr);
+            }
         }
     });
 }

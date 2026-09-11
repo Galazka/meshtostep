@@ -294,7 +294,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
 </head>
 <body>
 <header class="top">
-  <a class="logo" href="/">3dfile.link</a>
+  <a class="logo" href="/"><img src="/logo.png?v=2" alt="3DFILE" style="height:28px" onerror="this.style.display='none'"></a>
   <div class="pills">__PILLS__</div>
   <div class="actions"><a class="btn btn-primary" href="/api/download/__UUID__">⬇ Pobierz STEP</a> <a class="btn btn-sec" href="/e/__JOBID__">Embed</a></div>
 </header>
@@ -338,7 +338,13 @@ const controls=new OrbitControls(camera, renderer.domElement);controls.enableDam
 scene.add(new THREE.AmbientLight(0x404060,1.2));const d1=new THREE.DirectionalLight(0x3b82f6,1.0);d1.position.set(30,50,30);scene.add(d1);
 const d2=new THREE.DirectionalLight(0x8888ff,0.5);d2.position.set(-20,10,-30);scene.add(d2);
 let viewerMesh=null;
-new STLLoader().load('/api/stl-preview/__UUID__', g=>{g.computeBoundingBox();const c=new THREE.Vector3();g.boundingBox.getCenter(c);g.translate(-c.x,-c.y,-c.z);const s=new THREE.Vector3();g.boundingBox.getSize(s);const mx=Math.max(s.x,s.y,s.z);if(mx>0)g.scale(30/mx,30/mx,30/mx);viewerMesh=new THREE.Mesh(g,new THREE.MeshPhongMaterial({color:0x3b82f6,specular:0x6666aa,shininess:40}));viewerMesh.rotation.x=-Math.PI/2;scene.add(viewerMesh);},undefined,()=>{el.style.display='none'});
+new STLLoader().load('/api/stl-preview/__UUID__', g=>{g.computeBoundingBox();const c=new THREE.Vector3();g.boundingBox.getCenter(c);g.translate(-c.x,-c.y,-c.z);const s=new THREE.Vector3();g.boundingBox.getSize(s);const mx=Math.max(s.x,s.y,s.z);if(mx>0)g.scale(30/mx,30/mx,30/mx);viewerMesh=new THREE.Mesh(g,new THREE.MeshPhongMaterial({color:0x3b82f6,specular:0x6666aa,shininess:40}));viewerMesh.rotation.x=-Math.PI/2;scene.add(viewerMesh);},undefined,()=>{
+    // Fallback: try JPG preview
+    var img=new Image();
+    img.onload=function(){el.innerHTML='';img.style.cssText='width:100%;height:100%;object-fit:contain;border-radius:12px';el.appendChild(img);};
+    img.onerror=function(){el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#64748b;font-size:14px;flex-direction:column;gap:8px"><span style="font-size:32px">△</span>Podglad 3D niedostepny</div>';};
+    img.src='/api/preview/__UUID__';
+});
 function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera);}animate();
 window.addEventListener('resize',()=>{camera.aspect=el.clientWidth/el.clientHeight;camera.updateProjectionMatrix();renderer.setSize(el.clientWidth,el.clientHeight);});
 // Fullscreen

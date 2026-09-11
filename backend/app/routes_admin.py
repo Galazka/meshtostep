@@ -1,4 +1,4 @@
-"""Admin routes: stats, geo stats, users, per-user detail, credit adjustments."""
+"""Admin routes: stats, geo stats, users, per-user detail."""
 import os
 import shutil
 from datetime import datetime, timedelta
@@ -491,6 +491,75 @@ def delete_job(
     db.delete(job)
     db.commit()
     return {"ok": True}
+
+
+# ── Orphan cleanup: jobs whose mesh files are gone from disk ─────────
+@router.get("/orphans")
+def list_orphans(
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """List jobs whose mesh files no longer exist on disk (broken previews)."""
+    from pathlib import Path
+    jobs_dir = Path(settings.DATA_DIR) / "files"
+    orphans = []
+    jobs = db.query(models.Job).filter(models.Job.status != "deleted").all()
+    for job in jobs:
+        ok = False
+        # check known path
+        if job.result_stl_path and os.path.exists(job.result_stl_path):
+            ok = True
+        else:
+            d = jobs_dir / job.uuid
+            if d.is_dir():
+                for f in d.iterdir():
+                    if f.suffix.lower() in (".stl", ".3mf", ".obj", ".step"):
+                        ok = True
+                        break
+        if not ok:
+            orphans.append({
+                "id": job.id, "uuid": job.uuid,
+                "filename": job.original_filename, "title": job.title,
+                "status": job.status, "user_id": job.user_id,
+                "created_at": str(job.created_at),
+            })
+    return {"count": len(orphans), "orphans": orphans}
+
+
+@router.post("/orphans/delete")
+def delete_orphans(
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Delete all orphan jobs (no mesh files on disk). Irreversible."""
+    from pathlib import Path
+    jobs_dir = Path(settings.DATA_DIR) / "files"
+    deleted = 0
+    jobs = db.query(models.Job).filter(models.Job.status != "deleted").all()
+    for job in jobs:
+        ok = False
+        if job.result_stl_path and os.path.exists(job.result_stl_path):
+            ok = True
+        else:
+            d = jobs_dir / job.uuid
+            if d.is_dir():
+                for f in d.iterdir():
+                    if f.suffix.lower() in (".stl", ".3mf", ".obj", ".step"):
+                        ok = True
+                        break
+        if not ok:
+            db.query(models.ShareLink).filter(models.ShareLink.job_id == job.id).delete()
+            db.query(models.Comment).filter(models.Comment.job_id == job.id).delete()
+            from . import models as _m
+            db.query(_m.JobRating).filter(_m.JobRating.job_id == job.id).delete()
+            d = jobs_dir / job.uuid
+            if d.is_dir():
+                import shutil as _sh
+                _sh.rmtree(d, ignore_errors=True)
+            db.delete(job)
+            deleted += 1
+    db.commit()
+    return {"ok": True, "deleted": deleted}
 
 
 # ── Credit adjustment ───────────────────────────────────────────────

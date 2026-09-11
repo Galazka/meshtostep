@@ -44,7 +44,7 @@
         .nav-right { display: flex; align-items: center; gap: 12px; }
         .lang-toggle { background: var(--bg-alt) !important; border: 1px solid var(--border) !important; border-radius: 6px; padding: 6px 12px !important; font-weight: 600; color: var(--text-secondary) !important; cursor: pointer; font-family: inherit; font-size: 13px; transition: all .15s; }
         .lang-toggle:hover { border-color: var(--primary) !important; color: var(--primary) !important; }
-        .nav-admin-badge { background: var(--err-bg); color: var(--err); padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; border: 1px solid #fecaca; }
+        .nav-admin-badge { background: var(--err-bg); color: var(--error); padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; border: 1px solid #fecaca; }
 
         /* ── LAYOUT ── */
         .admin-wrap { max-width: 1400px; margin: 0 auto; padding: 24px 32px; }
@@ -57,9 +57,9 @@
         .stat-card .stat-value { font-size: 32px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
         .stat-card .stat-sub { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
         .stat-card.primary .stat-value { color: var(--primary); }
-        .stat-card.success .stat-value { color: var(--ok); }
+        .stat-card.success .stat-value { color: var(--success); }
         .stat-card.warning .stat-value { color: var(--warn); }
-        .stat-card.danger .stat-value { color: var(--err); }
+        .stat-card.danger .stat-value { color: var(--error); }
 
         /* ── EXPANDABLE ROWS ── */
         .expand-row { display: none; }
@@ -76,7 +76,7 @@
         .cleanup-bar label { font-size: 13px; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
         .cleanup-bar input[type=number] { width: 80px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; font-family: inherit; background: var(--bg-alt); }
         .cleanup-bar input[type=number]:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-        .btn-danger { background: var(--err); color: #fff; border: none; border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: opacity .15s; }
+        .btn-danger { background: var(--error); color: #fff; border: none; border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: opacity .15s; }
         .btn-danger:hover { opacity: .85; }
         .storage-fmt { font-size: 12px; color: var(--text-secondary); }
 
@@ -113,8 +113,8 @@
         .admin-table tbody tr:last-child td { border-bottom: none; }
         .admin-table .cell-ellipsis { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .status-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
-        .status-badge.done { background: var(--ok-bg); color: var(--ok); }
-        .status-badge.error { background: var(--err-bg); color: var(--err); }
+        .status-badge.done { background: var(--ok-bg); color: var(--success); }
+        .status-badge.error { background: var(--err-bg); color: var(--error); }
         .status-badge.pending { background: var(--warn-bg); color: var(--warn); }
 
         /* ── MODAL ── */
@@ -136,9 +136,9 @@
         .btn-sm { padding: 8px 18px; border-radius: 8px; font-weight: 600; font-size: 13px; border: none; cursor: pointer; font-family: inherit; transition: all .15s; }
         .btn-sm.primary { background: var(--primary); color: #fff; }
         .btn-sm.primary:hover { background: var(--primary-hover); }
-        .btn-sm.danger { background: var(--err-bg); color: var(--err); border: 1px solid #fecaca; }
+        .btn-sm.danger { background: var(--err-bg); color: var(--error); border: 1px solid #fecaca; }
         .btn-sm.danger:hover { background: #fecaca; }
-        .btn-sm.success { background: var(--ok-bg); color: var(--ok); border: 1px solid #bbf7d0; }
+        .btn-sm.success { background: var(--ok-bg); color: var(--success); border: 1px solid #bbf7d0; }
         .btn-sm.success:hover { background: #d1fae5; }
         .btn-sm:disabled { opacity: .5; cursor: not-allowed; }
 
@@ -168,8 +168,8 @@
         /* ── TOAST ── */
         .toast { position: fixed; bottom: 24px; right: 24px; background: var(--text); color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; z-index: 1000; opacity: 0; transform: translateY(10px); transition: all .3s; pointer-events: none; }
         .toast.show { opacity: 1; transform: translateY(0); }
-        .toast.success { background: var(--ok); }
-        .toast.error { background: var(--err); }
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--error); }
 
         /* ── EMPTY STATE ── */
         .empty-state { text-align: center; padding: 48px 24px; color: var(--text-muted); }
@@ -232,7 +232,7 @@
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5m7-7l-7 7 7 7"/></svg>
                     <span data-i18n="navBack">Powrot</span>
                 </a>
-                <div class="nav-logo">3dfile.link</div>
+                <a href="/" class="nav-logo"><img src="/logo.png?v=2" alt="3DFILE" style="height:28px" onerror="this.style.display='none'"></a>
                 <span class="nav-title" data-i18n="navTitle">Admin Panel</span>
             </div>
             <div class="nav-right">
@@ -327,6 +327,7 @@
                         <label for="maxFilesInput">Max plikow na uzytkownika:</label>
                         <input type="number" id="maxFilesInput" value="10" min="1" max="10000">
                         <button class="btn-danger" onclick="runCleanup()" id="cleanupBtn">Wyczysc nadmiar plikow</button>
+                        <button class="btn-danger" onclick="runOrphanCleanup()" id="orphanBtn" style="background:#7c3aed">Usun zepsute podglady</button>
                         <span id="cleanupResult" style="font-size:13px;font-weight:500;"></span>
                     </div>
                 </div>
@@ -899,7 +900,7 @@
                         '</tr>';
                 }).join('') + '</tbody></table>';
         } catch (e) {
-            inner.innerHTML = '<div style="padding:8px;color:var(--err);font-size:13px">Blad: ' + esc(e.message) + '</div>';
+            inner.innerHTML = '<div style="padding:8px;color:var(--error);font-size:13px">Blad: ' + esc(e.message) + '</div>';
         }
     }
 
@@ -907,19 +908,39 @@
         const btn = document.getElementById('cleanupBtn');
         const result = document.getElementById('cleanupResult');
         const maxFiles = parseInt(document.getElementById('maxFilesInput').value, 10);
-        if (isNaN(maxFiles) || maxFiles < 1) { result.textContent = 'Podaj liczbe >= 1'; result.style.color = 'var(--err)'; return; }
+        if (isNaN(maxFiles) || maxFiles < 1) { result.textContent = 'Podaj liczbe >= 1'; result.style.color = 'var(--error)'; return; }
         btn.disabled = true;
         result.textContent = 'Przetwarzanie...';
         result.style.color = 'var(--text-secondary)';
         try {
             const d = await api('/api/admin/cleanup', { method: 'POST', body: { max_files_per_user: maxFiles } });
             result.textContent = 'Usunięto ' + d.deleted_count + ' plikow z ' + d.affected_users + ' uzytkownikow (limit: ' + d.max_files_per_user + ')';
-            result.style.color = d.deleted_count > 0 ? 'var(--ok)' : 'var(--text-secondary)';
+            result.style.color = d.deleted_count > 0 ? 'var(--success)' : 'var(--text-secondary)';
             loadStats();
             loadUsers();
         } catch (e) {
             result.textContent = 'Blad: ' + e.message;
-            result.style.color = 'var(--err)';
+            result.style.color = 'var(--error)';
+        }
+        btn.disabled = false;
+    }
+
+    async function runOrphanCleanup() {
+        const btn = document.getElementById('orphanBtn');
+        const result = document.getElementById('cleanupResult');
+        btn.disabled = true;
+        try {
+            const chk = await api('/api/admin/orphans');
+            if (!chk.count) { result.textContent = 'Brak zepsutych podgladow.'; result.style.color = 'var(--text-secondary)'; btn.disabled = false; return; }
+            if (!confirm('Usunac ' + chk.count + ' modeli bez plikow? Tej operacji nie mozna cofnac.')) { btn.disabled = false; return; }
+            result.textContent = 'Usuwanie ' + chk.count + '...';
+            const d = await api('/api/admin/orphans/delete', { method: 'POST', body: {} });
+            result.textContent = 'Usunieto ' + d.deleted + ' zepsutych modeli.';
+            result.style.color = 'var(--success)';
+            loadStats(); loadUsers();
+        } catch (e) {
+            result.textContent = 'Blad: ' + e.message;
+            result.style.color = 'var(--error)';
         }
         btn.disabled = false;
     }
@@ -936,7 +957,7 @@
             _currentUser = await api('/api/admin/users/' + id);
             renderUserDetail();
         } catch (e) {
-            document.getElementById('modalBody').innerHTML = '<div style="text-align:center;padding:32px;color:var(--err)">' + e.message + '</div>';
+            document.getElementById('modalBody').innerHTML = '<div style="text-align:center;padding:32px;color:var(--error)">' + e.message + '</div>';
         }
     }
 
@@ -1314,7 +1335,7 @@
             return '<tr>' +
                 '<td>' + s.id + '</td><td>' + (s.name||'') + '</td><td><code>' + (s.slot_key||s.position||'') + '</code></td>' +
                 '<td>' + (s.ad_type||'') + '</td>' +
-                '<td><span style="color:' + (isActive ? 'var(--ok)' : 'var(--err)') + '">' + (isActive ? 'TAK' : 'NIE') + '</span></td>' +
+                '<td><span style="color:' + (isActive ? 'var(--success)' : 'var(--error)') + '">' + (isActive ? 'TAK' : 'NIE') + '</span></td>' +
                 '<td>' + (s.impressions||0) + '</td><td>' + (s.clicks||0) + '</td>' +
                 '<td>' +
                     '<button class="btn-sm" onclick="toggleAdSlot(' + s.id + ')">' + (isActive ? 'Wyłącz' : 'Włącz') + '</button> ' +
