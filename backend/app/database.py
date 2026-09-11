@@ -126,5 +126,31 @@ def init_db():
                 print(f"[3dfile] Bootstrap admin {settings.ADMIN_EMAIL}")
             elif not admin.is_admin:
                 admin.is_admin=True; db.commit()
+        # Ad slots: clean junk + seed if empty
+        try:
+            from .models import AdSlot
+            junk = db.query(AdSlot).filter(
+                AdSlot.ad_code.like("%><%")
+            ).all()
+            for j in junk:
+                db.delete(j)
+            if junk:
+                db.commit()
+                print(f"[3dfile] Cleaned {len(junk)} junk ad slots")
+            if db.query(AdSlot).count() == 0:
+                for s in [
+                    ("Hero top", "hero_top", 99),
+                    ("Hero bottom", "hero_bottom", 100),
+                    ("After convert", "after_convert", 50),
+                    ("Page bottom", "page_bottom", 200),
+                    ("Search top", "search_top", 75),
+                ]:
+                    db.add(AdSlot(name=s[0], slot_key=s[1], position=s[1],
+                                  ad_code="<!-- AdSense: wstaw kod -->", ad_type="adsense",
+                                  sort_order=s[2], is_active=True))
+                db.commit()
+                print("[3dfile] Seeded 5 default ad slots")
+        except Exception as e:
+            print(f"[3dfile] Ad slot seed warning: {e}")
     finally:
         db.close()
