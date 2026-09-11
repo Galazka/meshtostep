@@ -146,10 +146,11 @@ function loadSTLIntoViewer(url, jobUuid) {
         } else {
             // Sanity check: HEAD request to reject HTML error pages / corrupt files
             fetch(url, {method:'HEAD'}).then(function(h){
-                var len = parseInt(h.headers.get('content-length')||'0', 10);
-                var ct = (h.headers.get('content-type')||'').toLowerCase();
-                if ((ct.indexOf('text/html')>=0) || (len > 500*1024*1024)) { onErr(new Error('bad file')); return; }
-                loadStlNow();
+                            if (!h.ok) { showJpgFallback(); return; }
+                            var len = parseInt(h.headers.get('content-length')||'0', 10);
+                            var ct = (h.headers.get('content-type')||'').toLowerCase();
+                            if ((ct.indexOf('text/html')>=0) || (len > 500*1024*1024)) { onErr(new Error('bad file')); return; }
+                            loadStlNow();
             }).catch(loadStlNow);
             function loadStlNow(){
                 const loader = new window._STLLoader();

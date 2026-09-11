@@ -299,7 +299,7 @@ new STLLoader().load('/api/stl-preview/__UUID__', (g) => {
   var img=new Image();
   img.onload=function(){el.innerHTML='';img.style.cssText='width:100%;height:100%;object-fit:contain';el.appendChild(img);};
   img.onerror=function(){el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#64748b;font-size:14px;flex-direction:column;gap:8px"><span style="font-size:32px">△</span>Podglad 3D niedostepny</div>';};
-  img.src='/api/preview/{uuid}';
+  img.src='/api/preview/__UUID__';
 });
 
 function animate() {
