@@ -123,10 +123,8 @@ __ROBOTS__
     align-items: center;
     gap: 16px;
     padding: 10px 16px;
-    background: rgba(14, 14, 22, 0.88);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border-bottom: 1px solid #2a2a3a;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
   }
   .file-block { min-width: 0; max-width: 30vw; }
   .file {
@@ -136,7 +134,7 @@ __ROBOTS__
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .shared-by { font-size: 12px; color: #888; margin-top: 2px; }
+  .shared-by { font-size: 12px; color: #64748b; margin-top: 2px; }
   .shared-by:empty { display: none; }
   .pills {
     display: flex;
@@ -149,10 +147,10 @@ __ROBOTS__
   .pill {
     font-size: 12px;
     padding: 4px 12px;
-    border: 1px solid #2a2a3a;
+    border: 1px solid #e2e8f0;
     border-radius: 999px;
-    background: #fff;
-    color: #bbb;
+    background: #f8fafc;
+    color: #475569;
     white-space: nowrap;
   }
   .actions { display: flex; gap: 8px; margin-left: auto; flex-shrink: 0; }
@@ -172,7 +170,7 @@ __ROBOTS__
   }
   .btn:hover { opacity: 0.85; }
   .btn-primary { background: #1a56db; color: #fff; }
-  .btn-secondary { background: #2a2a3a; color: #1e293b; }
+  .btn-secondary { background: #e5e7eb; color: #374151; }
   #viewer3d {
     position: fixed;
     inset: 0;
@@ -207,7 +205,7 @@ __ROBOTS__
   </div>
   <div class="pills">__CONV_INFO__</div>
   <div class="actions">
-    <a class="btn btn-primary" href="/api/share/__TOKEN__/download">⬇ __DOWNLOAD_BTN__</a>
+    <a class="btn btn-primary" href="https://3dfile.link/api/share/__TOKEN__/download">⬇ __DOWNLOAD_BTN__</a>
     <button class="btn btn-secondary" onclick="showEmbed()">⧉ __EMBED_BTN__</button>
   </div>
 </header>
@@ -288,6 +286,7 @@ new STLLoader().load('/api/stl-preview/__UUID__', (g) => {
   g.boundingBox.getSize(s);
   const mx = Math.max(s.x, s.y, s.z);
   if (mx > 0) g.scale(30 / mx, 30 / mx, 30 / mx);
+  document.getElementById('shareColorBar').style.display='flex';
   window._shareMesh = new THREE.Mesh(g, new THREE.MeshPhongMaterial({
     color: 0x3b82f6,
     specular: 0x6666aa,
@@ -314,7 +313,8 @@ animate();
 (function(){
   var colors=['#3b82f6','#ffffff','#9ca3af','#22c55e','#ef4444','#f97316','#a855f7','#06b6d4'];
   var bar=document.getElementById('shareColorBar');
-  if(!bar)return;
+    if(!bar)return;
+    bar.style.display='none';
   colors.forEach(function(hex){
     var d=document.createElement('div');
     d.style.cssText='width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;background:'+hex;
@@ -543,7 +543,7 @@ def embed_page(job_id: int, db: Session = Depends(get_db)) -> HTMLResponse:
   body {{ font: 13px/1.4 system-ui, sans-serif; background: #f7f9fc; color: #1e293b;
     display: flex; flex-direction: column; }}
   .top {{ display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 14px; border-bottom: 1px solid #2a2a3a; background: #fff; }}
+    padding: 10px 14px; border-bottom: 1px solid #e2e8f0; background: #fff; }}
   .top h1 {{ font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden;
     text-overflow: ellipsis; margin-right: 12px; }}
   .top a {{ display: inline-block; padding: 6px 16px; background: #3b82f6; flex-shrink: 0;

@@ -278,13 +278,7 @@ def stl_preview(job_uuid: str, db: Session = Depends(get_db)):
                 if f.suffix.lower() == ext:
                     mt = "model/stl" if ext == ".stl" else "application/octet-stream"
                     return FileResponse(str(f), media_type=mt)
-    # If only thumb exists, serve the preview image instead
-    thumb = src_dir / "thumb.png"
-    if thumb.exists():
-        from starlette.responses import StreamingResponse
-        import io
-        thumb_bytes = thumb.read_bytes()
-        return StreamingResponse(io.BytesIO(thumb_bytes), media_type="image/png")
+    # No mesh file at all
     raise HTTPException(404, "STL preview niedostepny")
 
 @router.get("/preview/{job_uuid}")
@@ -513,7 +507,33 @@ def share_download(token: str, db: Session = Depends(get_db)):
     job = share.job
     path = job.result_step_path
     if not path or not os.path.exists(path):
-        raise HTTPException(404, "Plik usunięty")
+        # Auto-convert hosted job on first download
+        job_dir = JOBS_DIR / job.uuid
+        src = None
+        if job_dir.exists():
+            for ext in (".stl", ".3mf", ".obj"):
+                for f in job_dir.iterdir():
+                    if f.suffix.lower() == ext:
+                        src = str(f); break
+                if src: break
+        if not src:
+            raise HTTPException(404, "Plik usuniety")
+        dst_step = str(job_dir / "result.step")
+        from .engine import convert as _engine_convert
+        job.status = "converting"
+        db.commit()
+        res = _engine_convert(src, dst_step, mode=job.mode or "auto")
+        if not res.get("ok"):
+            job.status = "hosted"
+            db.commit()
+            raise HTTPException(500, "Konwersja nieudana")
+        job.status = "done"
+        job.result_step_path = dst_step
+        job.result_faces = res.get("faces", job.result_faces)
+        job.result_size_bytes = os.path.getsize(dst_step) if os.path.exists(dst_step) else job.result_size_bytes
+        job.completed_at = datetime.utcnow()
+        db.commit()
+        path = dst_step
 
     share.downloads += 1
     db.commit()
