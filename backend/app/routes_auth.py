@@ -131,7 +131,9 @@ def register(body: RegisterReq, request: Request, db: Session = Depends(get_db))
     db.commit()
     db.refresh(user)
 
-    # TODO: send verification email via SMTP if settings.EMAIL_VERIFICATION_REQUIRED
+    if settings.EMAIL_VERIFICATION_REQUIRED:
+        from .mail import send_verification
+        send_verification(email_lower, token)
     jwt_token = create_token(user.id, user.email)
     return {
         "token": jwt_token,
@@ -197,7 +199,6 @@ def me(user: models.User = Depends(require_user)):
     return {
         "id": user.id,
         "email": user.email,
-        "credits": user.credits,
         "is_admin": user.is_admin,
         "email_verified": user.email_verified,
         "created_at": str(user.created_at),
@@ -236,8 +237,11 @@ def forgot_password(body: ResetReq, request: Request, db: Session = Depends(get_
         user.reset_token = token
         user.reset_expires = datetime.utcnow() + timedelta(hours=settings.PASSWORD_RESET_HOURS)
         db.commit()
-        # TODO: send reset email via SMTP
-        print(f"[PASSWORD RESET] {user.email} -> {settings.APP_URL}/reset?token={token}")
+        from .mail import send_reset
+        sent = send_reset(user.email, token)
+        if not sent:
+            # dev fallback: log link when SMTP not configured
+            print(f"[PASSWORD RESET] {user.email} -> {settings.APP_URL}/api/auth/reset?token={token}")
 
     return {"message": "Jesli email istnieje, otrzymasz link do resetu hasla"}
 

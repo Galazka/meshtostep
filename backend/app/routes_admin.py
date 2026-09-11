@@ -562,47 +562,6 @@ def delete_orphans(
     return {"ok": True, "deleted": deleted}
 
 
-# ── Credit adjustment ───────────────────────────────────────────────
-class CreditAdjustReq(BaseModel):
-    amount: int  # positive = grant, negative = revoke
-    reason: str = ""
-
-
-@router.post("/users/{user_id}/credits")
-def adjust_credits(
-    user_id: int,
-    body: CreditAdjustReq,
-    admin: models.User = Depends(require_admin),
-    db: Session = Depends(get_db),
-):
-    """Manually adjust a user's credits with full audit trail."""
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    if not user:
-        raise HTTPException(404, "User not found")
-
-    if body.amount == 0:
-        raise HTTPException(400, "Amount cannot be zero")
-
-    credits_before = user.credits
-    user.credits = max(0, user.credits + body.amount)
-
-    adjustment = models.CreditAdjustment(
-        user_id=user_id,
-        admin_id=admin.id,
-        amount=body.amount,
-        reason=body.reason or None,
-        credits_before=credits_before,
-        credits_after=user.credits,
-    )
-    db.add(adjustment)
-    db.commit()
-
-    return {
-        "ok": True,
-        "adjustment_id": adjustment.id,
-    }
-
-
 # ── Toggle keep_files_forever (lifetime plan) ────────────────────────
 class KeepFilesReq(BaseModel):
     keep_files_forever: bool
