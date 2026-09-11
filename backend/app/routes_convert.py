@@ -333,6 +333,12 @@ def stl_thumbnail(job_uuid: str, db: Session = Depends(get_db)):
         return FileResponse(str(thumb_path), media_type="image/png")
     # find mesh file
     src_dir = JOBS_DIR / job_uuid
+    if not src_dir.exists():
+        # job dir doesn't exist — return logo as placeholder
+        logo = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend", "logo.png")
+        if os.path.exists(logo):
+            return FileResponse(logo, media_type="image/png")
+        raise HTTPException(404, "Job dir niedostepny")
     mesh_file = None
     if src_dir.exists():
         for ext in (".stl", ".3mf", ".obj"):
@@ -341,6 +347,10 @@ def stl_thumbnail(job_uuid: str, db: Session = Depends(get_db)):
                     mesh_file = str(f); break
             if mesh_file: break
     if not mesh_file:
+        # fallback: return logo as thumbnail placeholder
+        logo = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend", "logo.png")
+        if os.path.exists(logo):
+            return FileResponse(logo, media_type="image/png")
         raise HTTPException(404, "Mesh niedostepny")
     try:
         import matplotlib
