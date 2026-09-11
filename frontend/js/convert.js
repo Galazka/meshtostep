@@ -26,6 +26,8 @@ function pickFile(f) {
     if (res) { res.classList.remove('show'); res.style.display = ''; }
     const vw = document.getElementById('viewer3d');
     if (vw) { vw.classList.remove('show'); vw.style.display = ''; }
+    // Auto-start upload
+    setTimeout(() => { doConvert(); }, 100);
 }
 
 async function doConvert() {
