@@ -1,8 +1,0 @@
-User-agent: *
-Allow: /api/ads/slots
-Allow: /api/tags
-Disallow: /api/
-Disallow: /admin
-Disallow: /s/
-
-Sitemap: https://3dfile.link/sitemap.xml

@@ -585,7 +585,7 @@ def material_estimate(job_uuid: str, db: Session = Depends(get_db)):
             except Exception:
                 pass
     if not vol:
-        raise HTTPException(404, "Brak danych objetosci")
+        return {"volume_cm3": 0, "dims_mm": job.dims_mm, "estimates": {}, "note": "Brak danych objetosci — upload ponownie"}
     out = {"volume_cm3": vol, "dims_mm": job.dims_mm, "estimates": {}}
     for mat, density in MATERIALS.items():
         for infill in (10, 20, 50, 100):

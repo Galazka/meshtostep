@@ -300,8 +300,10 @@ const d2 = new THREE.DirectionalLight(0x8888ff, 0.5);
 d2.position.set(-20, 10, -30);
 scene.add(d2);
 
-// STEP/IGES B-Rep via OCCT WASM (client-side, zero server cost)
-if (window.loadStepWithOcct) {
+// STEP/IGES B-Rep via OCCT WASM (client-side, zero server cost). STL/3MF/OBJ skip WASM.
+var _fn = (window.__shareFilename || '').toLowerCase();
+var _isStep = _fn.endsWith('.step') || _fn.endsWith('.stp') || _fn.endsWith('.iges') || _fn.endsWith('.igs');
+if (window.loadStepWithOcct && window.__shareStatus === "done" && _isStep) {
   fetch('/api/stl-preview/__UUID__').then(function(r){return r.arrayBuffer();}).then(function(buf){
     window.loadStepWithOcct(buf).then(function(mesh){
       if(!mesh){ loadStlFallback(); return; }
@@ -574,6 +576,8 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
         og_desc=html.escape((getattr(job, "description", None) or getattr(job, "title", None) or job.original_filename or "Model 3D")[:180]),
         og_image=f"https://3dfile.link/api/og/{job.uuid}",
         og_url=f"https://3dfile.link/s/{token}",
+        share_status=job.status,
+        share_filename=job.original_filename or "",
 
     )
 

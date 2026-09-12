@@ -30,7 +30,7 @@ def sitemap(request: Request, db: Session = Depends(get_db)):
     jobs = (
         db.query(models.Job)
         .filter(
-            models.Job.status == "done",
+            models.Job.status.in_(["done", "hosted"]),
             models.Job.visibility == "public",
             models.Job.slug.isnot(None),
             models.Job.slug != "",
@@ -68,11 +68,12 @@ def sitemap(request: Request, db: Session = Depends(get_db)):
 def robots_txt():
     return PlainTextResponse(
         "User-agent: *\n"
+        "Allow: /\n"
+        "Disallow: /api/\n"
         "Allow: /api/ads/slots\n"
         "Allow: /api/tags\n"
-        "Disallow: /api/\n"
         "Disallow: /admin\n"
-        "Disallow: /s/\n"
+        "Disallow: /e/\n"
         "\n"
         "Sitemap: https://3dfile.link/sitemap.xml\n"
     )

@@ -67,7 +67,7 @@ def search_models(
     db: Session = Depends(get_db),
 ):
     query = db.query(models.Job).filter(
-        models.Job.status == "done",
+        models.Job.status.in_(["done", "hosted"]),
         models.Job.visibility == "public",
     )
     if q:
@@ -110,7 +110,7 @@ def search_models(
 
 @router.get("/api/tags")
 def list_tags(db: Session = Depends(get_db)):
-    rows = db.query(models.Job.tags).filter(models.Job.visibility == "public", models.Job.status == "done").all()
+    rows = db.query(models.Job.tags).filter(models.Job.visibility == "public", models.Job.status.in_(["done", "hosted"])).all()
     counter = {}
     for (tags,) in rows:
         if not tags:
@@ -124,7 +124,7 @@ def list_tags(db: Session = Depends(get_db)):
 
 @router.get("/api/models/{job_id}")
 def get_model(job_id: int, db: Session = Depends(get_db), user: models.User = Depends(get_current_user)):
-    j = db.query(models.Job).filter(models.Job.id == job_id, models.Job.status == "done").first()
+    j = db.query(models.Job).filter(models.Job.id == job_id, models.Job.status.in_(["done", "hosted"])).first()
     if not j:
         raise HTTPException(404, "Model nie znaleziony")
     if j.visibility == "private" and (not user or (j.user_id != user.id and not user.is_admin)):
@@ -491,7 +491,7 @@ def vanity_page(username: str, slug: str, request: Request, db: Session = Depend
         user = db.query(models.User).filter(models.User.email.ilike(f"{username}@%")).first()
         if not user:
             return HTMLResponse("<h1>Uzytkownik nie znaleziony</h1>", status_code=404)
-    job = db.query(models.Job).filter(models.Job.user_id == user.id, models.Job.slug == slug, models.Job.status == "done").first()
+    job = db.query(models.Job).filter(models.Job.user_id == user.id, models.Job.slug == slug, models.Job.status.in_(["done", "hosted"])).first()
     if not job:
         return HTMLResponse("<h1>Model nie znaleziony</h1>", status_code=404)
     # visibility check
@@ -515,7 +515,7 @@ def vanity_page(username: str, slug: str, request: Request, db: Session = Depend
     token_share = job.shares[0].token if job.shares else ""
     paid_box = ""  # payments removed — free hosting, ads only
     likes = job.likes or 0
-    html_page = _VANITY_HTML.replace("__LANG__","pl").replace("__TITLE__",title).replace("__META_DESC__", (desc[:150] or title)).replace("__ROBOTS__", robots).replace("__CANONICAL__", f"https://3dfile.link/u/{html.escape(username)}/{html.escape(slug)}").replace("__PILLS__", f'<span class="pill">{faces} ścian</span><span class="pill">{html.escape(job.mode or "auto")}</span><span class="pill">{vis_label}</span>').replace("__UUID__", job.uuid).replace("__JOBID__", str(job.id)).replace("__USERNAME__", html.escape(username)).replace("__DATE__", str(job.created_at)[:10] if job.created_at else "").replace("__VIS_LABEL__", vis_label).replace("__TAG_HTML__", tag_html).replace("__YOUTUBE__", yt_html).replace("__FILENAME__", html.escape(job.original_filename or "")).replace("__FACES__", str(faces)).replace("__SIZE__", size_kb).replace("__TOKEN__", token_share).replace("__VIEWS__", str(job.views or 0)).replace("__LIKES__", str(likes)).replace("__PAID_BOX__", paid_box).replace("__DESCTITLE__", json.dumps(html.escape(job.title or job.original_filename or ""))).replace("__DESCBODY__", json.dumps(_md_to_html(job.description or ""))).replace("__DESCTAGS__", json.dumps(tags)).replace("__DESCYOUTUBE__", json.dumps(str(job.youtube_url or ""))).replace("__OG_IMAGE__", f"https://3dfile.link/api/preview/{job.uuid}")
+    html_page = _VANITY_HTML.replace("__LANG__","pl").replace("__TITLE__",title).replace("__META_DESC__", (desc[:150] or title)).replace("__ROBOTS__", robots).replace("__CANONICAL__", f"https://3dfile.link/u/{html.escape(username)}/{html.escape(slug)}").replace("__PILLS__", f'<span class="pill">{faces} ścian</span><span class="pill">{html.escape(job.mode or "auto")}</span><span class="pill">{vis_label}</span>').replace("__UUID__", job.uuid).replace("__JOBID__", str(job.id)).replace("__USERNAME__", html.escape(username)).replace("__DATE__", str(job.created_at)[:10] if job.created_at else "").replace("__VIS_LABEL__", vis_label).replace("__TAG_HTML__", tag_html).replace("__YOUTUBE__", yt_html).replace("__FILENAME__", html.escape(job.original_filename or "")).replace("__FACES__", str(faces)).replace("__SIZE__", size_kb).replace("__TOKEN__", token_share).replace("__VIEWS__", str(job.views or 0)).replace("__LIKES__", str(likes)).replace("__PAID_BOX__", paid_box).replace("__DESCTITLE__", json.dumps(html.escape(job.title or job.original_filename or ""))).replace("__DESCBODY__", json.dumps(_md_to_html(job.description or ""))).replace("__DESCTAGS__", json.dumps(tags)).replace("__DESCYOUTUBE__", json.dumps(str(job.youtube_url or ""))).replace("__OG_IMAGE__", f"https://3dfile.link/api/og/{job.uuid}")
     return HTMLResponse(html_page)
 
 @router.get("/u/{username}", response_class=HTMLResponse)
@@ -527,7 +527,7 @@ def user_profile(username: str, db: Session = Depends(get_db)):
             return HTMLResponse("<h1>Uzytkownik nie znaleziony</h1>", status_code=404)
     jobs = (
         db.query(models.Job)
-        .filter(models.Job.user_id == user.id, models.Job.status == "done", models.Job.visibility == "public")
+        .filter(models.Job.user_id == user.id, models.Job.status.in_(["done", "hosted"]), models.Job.visibility == "public")
         .order_by(models.Job.created_at.desc())
         .limit(48)
         .all()
