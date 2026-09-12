@@ -400,7 +400,7 @@ async function loadComments() {
 
 // Material / filament calculator
 (function(){
-  var uuid = __UUID__;
+  var uuid = '__UUID__';
   fetch('/api/material/' + uuid).then(function(r){return r.ok?r.json():null}).then(function(d){
     if(!d||!d.estimates) return;
     var el = document.getElementById('materialCalc');
