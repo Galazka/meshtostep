@@ -509,8 +509,10 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
         title = "Link nie istnieje" if is_pl else "Link not found"
         return HTMLResponse(f"<h1>{title}</h1>", status_code=404)
 
-    # Increment view counter
-    share.views = (share.views or 0) + 1
+    # Increment view counter (atomic)
+    db.query(models.ShareLink).filter(models.ShareLink.id == share.id).update(
+        {models.ShareLink.views: models.ShareLink.views + 1}
+    )
     db.commit()
 
     job = share.job

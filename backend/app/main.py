@@ -28,11 +28,18 @@ from .routes_interstitial import router as interstitial_router
 app = FastAPI(title="3dfile.link", version="1.0.0")
 
 # ── CORS (restrict in production) ───────────────────────────────────
-origins = settings.CORS_ORIGINS.split(",") if settings.CORS_ORIGINS != "*" else ["*"]
+# allow_credentials=True is INCOMPATIBLE with allow_origins=["*"] — browsers reject it.
+# When ORIGINS="*" we disable credentials; otherwise use explicit list.
+if settings.CORS_ORIGINS == "*":
+    origins = ["*"]
+    allow_creds = False
+else:
+    origins = [o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()]
+    allow_creds = True
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=True,
+    allow_credentials=allow_creds,
     allow_methods=["*"],
     allow_headers=["*"],
 )

@@ -232,7 +232,7 @@ def set_rating(job_id: int, payload: dict, user: models.User = Depends(get_curre
     avg = round(sum(x.stars for x in rows) / len(rows), 1) if rows else 0
     return {"ok": True, "avg": avg, "count": len(rows), "mine": stars}
 
-# ---- Like: toggle, one like per user ----
+# ---- Like: dedup via user_likes table, one like per user per job ----
 @router.post("/api/jobs/{job_id}/like")
 def toggle_like(job_id: int, user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
     from fastapi import HTTPException as HE
@@ -241,12 +241,19 @@ def toggle_like(job_id: int, user: models.User = Depends(get_current_user), db: 
     job = db.query(models.Job).filter(models.Job.id == job_id).first()
     if not job:
         raise HE(404, "Model nie znaleziony")
-    # reuse JobRating? no — simple counter via likes + dedup table not tracked.
-    # Use likes column directly: each POST = +1 (no toggle without extra table).
-    # To keep honest, track via a lightweight approach: user can like once per 24h via separate check.
+    existing = db.query(models.UserLike).filter(
+        models.UserLike.job_id == job_id, models.UserLike.user_id == user.id
+    ).first()
+    if existing:
+        # unlike: remove + decrement
+        db.delete(existing)
+        job.likes = max((job.likes or 1) - 1, 0)
+        db.commit()
+        return {"ok": True, "likes": job.likes, "liked": False}
+    db.add(models.UserLike(job_id=job_id, user_id=user.id))
     job.likes = (job.likes or 0) + 1
     db.commit()
-    return {"ok": True, "likes": job.likes}
+    return {"ok": True, "likes": job.likes, "liked": True}
 
 # ---- Vanity page /u/{username}/{slug} ----
 _VANITY_HTML = """<!DOCTYPE html>

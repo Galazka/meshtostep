@@ -123,6 +123,15 @@ class JobRating(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class UserLike(Base):
+    """One like per user per job — toggleable."""
+    __tablename__ = "user_likes"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    job_id = Column(Integer, ForeignKey("jobs.id"), nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 class GeoLog(Base):
     __tablename__ = "geo_logs"
     id = Column(Integer, primary_key=True, autoincrement=True)

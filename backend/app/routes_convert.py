@@ -3,10 +3,11 @@ import os
 import uuid
 import time
 import shutil
+from collections import defaultdict
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -190,8 +191,15 @@ async def convert_file(
 
 
 @router.post("/convert-on-demand/{job_uuid}")
-def convert_on_demand(job_uuid: str, mode: str = "auto", db: Session = Depends(get_db)):
+def convert_on_demand(job_uuid: str, request: Request, mode: str = "auto", db: Session = Depends(get_db)):
     """Konwersja mesh→STEP na żądanie (przy pobieraniu). Hosting-first: zero CPU na upload."""
+    # rate limit: 3 conversions/min per IP
+    ip = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip() or (request.client.host if request.client else "unknown")
+    now = time.time()
+    _od_hits[ip] = [t for t in _od_hits[ip] if now - t < 60]
+    if len(_od_hits[ip]) >= 3:
+        raise HTTPException(429, "Za dużo konwersji — poczekaj chwilę")
+    _od_hits[ip].append(now)
     job = db.query(models.Job).filter(models.Job.uuid == job_uuid).first()
     if not job:
         raise HTTPException(404, "Job nie znaleziony")
@@ -545,7 +553,10 @@ def share_download(token: str, db: Session = Depends(get_db)):
         db.commit()
         path = dst_step
 
-    share.downloads += 1
+    # atomic increment — avoids lost-update race under concurrent downloads
+    db.query(models.ShareLink).filter(models.ShareLink.id == share.id).update(
+        {models.ShareLink.downloads: models.ShareLink.downloads + 1}
+    )
     db.commit()
 
     fmt = share.format
@@ -727,6 +738,7 @@ def email_share(token: str, payload: dict, user: models.User = Depends(get_curre
 
 
 _email_hits: dict = {}
+_od_hits: dict = defaultdict(list)
 
 # --- Bulk delete ---
 @router.post("/jobs/bulk-delete")
