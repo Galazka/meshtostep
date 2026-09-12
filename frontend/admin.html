@@ -2,11 +2,11 @@
 <html lang="pl">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>3dfile.link — Admin Panel</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>3dfile.link — Admin Panel</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+        <style>
         :root {
             --primary: #1a56db;
             --primary-hover: #1648b8;
@@ -291,11 +291,14 @@
             <!-- TABS -->
             <div class="panel">
                 <div class="admin-tabs">
-                    <button class="admin-tab active" onclick="switchAdminTab('users')" data-tab="users" data-i18n="tabUsers">Uzytkownicy</button>
-                    <button class="admin-tab" onclick="switchAdminTab('jobs')" data-tab="jobs" data-i18n="tabJobs">Przetworzenia</button>
-                    <button class="admin-tab" onclick="switchAdminTab('geo')" data-tab="geo" data-i18n="tabGeo">Statystyki geolokalizacji</button>
-                    <button class="admin-tab" onclick="switchAdminTab('ads')" data-tab="ads">Reklamy</button>
-                </div>
+                                    <button class="admin-tab active" onclick="switchAdminTab('users')" data-tab="users" data-i18n="tabUsers">Uzytkownicy</button>
+                                    <button class="admin-tab" onclick="switchAdminTab('jobs')" data-tab="jobs" data-i18n="tabJobs">Przetworzenia</button>
+                                    <button class="admin-tab" onclick="switchAdminTab('stats')" data-tab="stats" data-i18n="tabStats">Statystyki</button>
+                                    <button class="admin-tab" onclick="switchAdminTab('queue')" data-tab="queue" data-i18n="tabQueue">Kolejka</button>
+                                    <button class="admin-tab" onclick="switchAdminTab('geo')" data-tab="geo" data-i18n="tabGeo">Geo</button>
+                                    <button class="admin-tab" onclick="switchAdminTab('export')" data-tab="export" data-i18n="tabExport">Eksport</button>
+                                    <button class="admin-tab" onclick="switchAdminTab('ads')" data-tab="ads">Reklamy</button>
+                                </div>
 
                 <!-- USERS TAB -->
                 <div class="tab-content active" id="tab-users">
@@ -415,6 +418,132 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- EXPORT TAB -->
+                <div class="tab-content" id="tab-export">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Eksport danych</h2>
+                            <p class="subtitle">Eksportuj dane użytkowników do JSON lub CSV</p>
+                        </div>
+                        <div class="panel-body padded">
+                            <div class="filter-bar">
+                                <input type="text" id="exportSearch" placeholder="Szukaj użytkownika po email..." data-i18n-placeholder="exportSearchPh" oninput="filterExport()">
+                                <select id="exportFormat" onchange="filterExport()">
+                                    <option value="json">JSON</option>
+                                    <option value="csv">CSV</option>
+                                </select>
+                                <button class="btn primary" onclick="exportUsers()">Eksportuj zaznaczonych</button>
+                                <span class="filter-count" id="exportCount"></span>
+                            </div>
+                            <div style="max-height:500px;overflow-y:auto;">
+                                <table class="admin-table" id="exportTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th data-i18n="thEmail">Email</th>
+                                            <th data-i18n="thUsername">Username</th>
+                                            <th data-i18n="thMarketingConsent">Zgoda marketingowa</th>
+                                            <th data-i18n="thCreated">Utworzono</th>
+                                            <th data-i18n="thJobCount">Przetworzenia</th>
+                                            <th data-i18n="thStorage">Użyto miejsca</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="exportBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QUEUE TAB -->
+                <div class="tab-content" id="tab-queue">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Kolejka zadań</h2>
+                            <p class="subtitle">Monitoruj zadania w trakcie przetwarzania</p>
+                        </div>
+                        <div class="panel-body padded">
+                            <div id="queueStats" style="margin-bottom:24px;padding:16px;background:var(--bg-alt);border-radius:var(--radius);border:1px solid var(--border);">
+                                <!-- Queue stats will appear here -->
+                            </div>
+                            <div class="filter-bar">
+                                <input type="text" id="queueSearch" placeholder="Szukaj po nazwie pliku..." data-i18n-placeholder="queueSearchPh" oninput="filterQueue()">
+                                <select id="queueStatusFilter" onchange="filterQueue()">
+                                    <option value="">Wszystkie statusy</option>
+                                    <option value="pending">W kolejce</option>
+                                    <option value="processing">Przetwarzanie</option>
+                                    <option value="done">Ukończone</option>
+                                    <option value="error">Błędy</option>
+                                </select>
+                                <span class="filter-count" id="queueCount"></span>
+                            </div>
+                            <div style="max-height:500px;overflow-y:auto;">
+                                <table class="admin-table" id="queueTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th data-i18n="thFile">Plik</th>
+                                            <th data-i18n="thStatus">Status</th>
+                                            <th data-i18n="thTime">Czas (s)</th>
+                                            <th data-i18n="thDate">Data</th>
+                                            <th data-i18n="thUser">Użytkownik</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="queueJobsBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STATS TAB -->
+                <div class="tab-content" id="tab-stats">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Statystyki</h2>
+                            <p class="subtitle">Przegląd kluczowych metryk systemu</p>
+                        </div>
+                        <div class="panel-body padded">
+                            <div class="stats-grid" id="statsGridExport">
+                                <div class="stat-card primary">
+                                    <div class="stat-label" data-i18n="statUsers">Użytkownicy</div>
+                                    <div class="stat-value" id="statUsersExport">—</div>
+                                    <div class="stat-sub" data-i18n="statUsersSub">Liczba kont</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label" data-i18n="statJobs">Przetworzenia</div>
+                                    <div class="stat-value" id="statJobsExport">—</div>
+                                    <div class="stat-sub" data-i18n="statJobsSub">Liczba zadań</div>
+                                </div>
+                                <div class="stat-card success">
+                                    <div class="stat-label">Marketing consent</div>
+                                    <div class="stat-value" id="statMarketingConsent">—</div>
+                                    <div class="stat-sub">Użytkownicy zgody na marketing</div>
+                                </div>
+                                <div class="stat-card warning">
+                                    <div class="stat-label" data-i18n="statStorage">Użycie miejsca</div>
+                                    <div class="stat-value" id="statStorageExport">—</div>
+                                    <div class="stat-sub">Suma rozmiarów plików</div>
+                                </div>
+                                <div class="stat-card danger">
+                                    <div class="stat-label" data-i18n="statDownloads">Pobrania</div>
+                                    <div class="stat-value" id="statDownloadsExport">—</div>
+                                    <div class="stat-sub">Łączne pobrania publiczne</div>
+                                </div>
+                            </div>
+                            <div class="panel" style="margin-top:24px;">
+                                <h3 style="font-size:14px;margin-bottom:12px" data-i18n="chartUploads">Uploady (30 dni)</h3>
+                                <canvas id="chartUploadsExport" height="120"></canvas>
+                            </div>
+                            <div class="panel" style="margin-top:16px;">
+                                <h3 style="font-size:14px;margin-bottom:12px" data-i18n="chartTop">Top uploadersi</h3>
+                                <div id="topUploadersListExport" style="font-size:13px;color:var(--text-muted)"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -559,9 +688,32 @@
             thJobsCount: 'Pliki',
             thJoined: 'Rejestracja',
             thMode: 'Tryb',
-            thStatus: 'Status',
-            thUser: 'Uzytkownik'
-        },
+                        thStatus: 'Status',
+                        thUser: 'Uzytkownik'
+                    },
+                    tabStats: 'Statystyki',
+        tabQueue: 'Kolejka',
+        tabExport: 'Eksport',
+        statUsers: 'Użytkownicy',
+        statUsersSub: 'Liczba kont',
+        statJobs: 'Przetworzenia',
+        statJobsSub: 'Liczba zadań',
+        statMarketingConsent: 'Zgoda marketingowa',
+        statStorage: 'Użycie miejsca',
+        statStorageSub: 'Suma rozmiarów plików',
+        statDownloads: 'Pobrania',
+        statDownloadsSub: 'Łączne pobrania publiczne',
+        chartUploads: 'Uploady (30 dni)',
+        chartTop: 'Top uploadersi',
+        emptyStats: 'Brak danych statystycznych',
+        exportSearchPh: 'Szukaj użytkownika po email...',
+        exportFormat: 'Format',
+        exportUsers: 'Eksportuj zaznaczonych',
+        exportCount: 'zaznaczonych / wszystkich',
+        queueSearchPh: 'Szukaj po nazwie pliku...',
+        queueStatusFilter: 'Filtruj według statusu',
+        queueCount: 'zadań / wszystkich',
+},
         en: {
             navBack: 'Back', navTitle: 'Admin Panel', navAdminBadge: 'ADMIN',
             authGateTitle: 'Admin Panel', authGateDesc: 'Log in as an administrator to continue.',
@@ -730,13 +882,21 @@
     /* ═══════════════════════ TABS ═══════════════════════ */
     let _geoLoaded = false;
     let _adsLoaded = false;
-    function switchAdminTab(name) {
+    async function switchAdminTab(name) {
         document.querySelectorAll('.admin-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
         document.querySelectorAll('.tab-content').forEach(p => p.classList.remove('active'));
-        document.getElementById('tab-' + name).classList.add('active');
+        const target = document.getElementById('tab-' + name);
+        if (target) target.classList.add('active');
         if (name === 'geo' && !_geoLoaded) loadGeoStats();
         if (name === 'ads' && !_adsLoaded) { loadAdSlots(); _adsLoaded = true; }
+        if (name === 'stats' && !_statsLoaded) { loadStats(); _statsLoaded = true; }
+        if (name === 'queue' && !_queueLoaded) { loadQueue(); _queueLoaded = true; }
+        if (name === 'export' && !_exportLoaded) { loadExport(); _exportLoaded = true; }
     }
+
+    let _statsLoaded = false;
+    let _queueLoaded = false;
+    let _exportLoaded = false;
 
     /* ═══════════════════════ STATS ═══════════════════════ */
     async function loadStats() {
@@ -806,7 +966,102 @@
         return (b / 1073741824).toFixed(2) + ' GB';
     }
 
-    /* ═══════════════════════ USERS ═══════════════════════ */
+
+
+    async function loadQueue() {
+        try {
+            const d = await api('/api/admin/queue');
+            const el = document.getElementById('queueStats');
+            if (!el) return;
+            el.innerHTML = `
+                <div class="stat-item"><span>Processing (24h):</span> <strong>${d.done_24h ?? 0}</strong></div>
+                <div class="stat-item"><span>Errors (24h):</span> <strong>${d.error_24h ?? 0}</strong></div>
+                <div class="stat-item"><span>Avg time:</span> <strong>${(d.avg_processing_time_s ?? 0).toFixed(1)}s</strong></div>
+                <div class="stat-item"><span>Total processed:</span> <strong>${d.total_processed ?? 0}</strong></div>
+            `;
+            const jobsBody = document.getElementById('queueJobsBody');
+            if (!jobsBody) return;
+            const jobs = d.jobs || [];
+            if (!jobs.length) {
+                jobsBody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">Brak zadań w kolejce</td></tr>';
+                return;
+            }
+            jobsBody.innerHTML = jobs.map(j => {
+                const status = j.status === 'done' ? 'done' : j.status === 'error' ? 'error' : 'pending';
+                return `<tr>
+                    <td>${j.id ?? '—'}</td>
+                    <td class="cell-ellipsis">${j.filename ?? '—'}</td>
+                    <td><span class="status-badge ${status}">${j.status ?? '—'}</span></td>
+                    <td>${(j.processing_time_s ?? 0).toFixed(1)}s</td>
+                    <td>${j.created_at ? new Date(j.created_at).toLocaleString() : '—'}</td>
+                    <td>${j.user_email ?? j.user_id ?? 'anon'}</td>
+                </tr>`;
+            }).join('');
+        } catch (e) {
+            console.error('Queue load error:', e);
+            document.getElementById('queueStats').innerHTML = '<div style="color:var(--error)">Błąd ładowania kolejki</div>';
+            document.getElementById('queueJobsBody').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">Błąd ładowania danych</td></tr>';
+        }
+    }
+
+    async function loadExport() {
+            try {
+                const d = await api('/api/admin/stats');
+                const exportStatsEl = document.getElementById('exportStats');
+                if (exportStatsEl) {
+                    exportStatsEl.innerHTML = `
+                            <div class="stat-item"><span>Total users:</span> <strong>${d.total_users ?? d.users ?? 0}</strong></div>
+                            <div class="stat-item"><span>Total jobs:</span> <strong>${d.total_jobs ?? d.jobs ?? 0}</strong></div>
+                            <div class="stat-item"><span>Marketing consent:</span> <strong>${d.marketing_consent_users ?? 0}</strong></div>
+                            <div class="stat-item"><span>Storage used:</span> <strong>${fmtBytes(d.total_storage_bytes ?? 0)}</strong></div>
+                        `;
+                }
+            } catch (e) {
+                console.error('Export stats load error:', e);
+                const exportStatsEl = document.getElementById('exportStats');
+                if (exportStatsEl) {
+                    exportStatsEl.innerHTML = '<div style="color:var(--error)">Błąd ładowania statystyk</div>';
+                }
+            }
+        }
+
+        async function exportUsers() {
+            try {
+                const format = document.getElementById('exportFormat')?.value || 'json';
+                const search = document.getElementById('exportSearch')?.value?.trim() || '';
+                const btn = document.querySelector('button[onclick="exportUsers()"]');
+                const originalText = btn?.textContent;
+                btn.disabled = true;
+                btn.textContent = 'Eksportowanie...';
+                const body = { format };
+                if (search) body.search = search;
+                const result = await api('/api/admin/users/export', { method: 'POST', body: body });
+                if (!result.ok) throw new Error('Export failed');
+                let filename = `3dfile-link-users-${new Date().toISOString().slice(0,10)}`;
+                if (result.format === 'csv') {
+                    filename += '.csv';
+                    const blob = new Blob([result.data], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url; a.download = filename; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                } else {
+                    filename += '.json';
+                    const blob = new Blob([JSON.stringify(result.data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url; a.download = filename; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                }
+                toast('Eksport zakończony pomyślnie', 'success');
+            } catch (e) {
+                console.error('Export error:', e);
+                toast('Błąd podczas eksportu: ' + e.message, 'error');
+            } finally {
+                const btn = document.querySelector('button[onclick="exportUsers()"]');
+                if (btn) { btn.disabled = false; btn.textContent = 'Eksportuj zaznaczonych'; }
+            }
+        }
+
+        /* ═══════════════════════ USERS ═══════════════════════ */
     let _usersData = [];
     let _allUsersData = [];
 
@@ -1282,7 +1537,7 @@
     if (token) { checkAdmin(); }
     else { showAuthGate(); }
 
-    function loadAll() {
+        function loadAll() {
         loadStats();
         loadUsers();
         loadJobs();

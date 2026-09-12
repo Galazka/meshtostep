@@ -49,14 +49,15 @@ app.add_middleware(
 async def csp_middleware(request: Request, call_next):
     response = await call_next(request)
     csp = (
-        "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; "
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-        "img-src 'self' data: https:; "
-        "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; "
-        "frame-ancestors 'self'; "
-        "worker-src 'self' blob:; "
-    )
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com; "
+            "img-src 'self' data: https:; "
+            "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; "
+            "frame-ancestors 'self'; "
+            "worker-src 'self' blob:; "
+        )
     response.headers["Content-Security-Policy"] = csp
     # HTML never cached — fresh UI every load
     if request.url.path == "/" or request.url.path.endswith(".html"):

@@ -15,6 +15,34 @@ from .database import get_db
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
+def _delete_job(db: Session, job_id: int):
+    job = db.query(models.Job).filter(models.Job.id == job_id).first()
+    if not job:
+        return
+    # Delete shares
+    db.query(models.ShareLink).filter(models.ShareLink.job_id == job.id).delete()
+    # Delete comments
+    db.query(models.Comment).filter(models.Comment.job_id == job.id).delete()
+    # Delete file directory
+    job_dir = os.path.join(settings.DATA_DIR, "files", job.uuid)
+    if os.path.isdir(job_dir):
+        shutil.rmtree(job_dir, ignore_errors=True)
+    db.delete(job)
+
+
+def _delete_user(db: Session, user_id: int):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        return
+    # Delete all jobs of the user (and their shares, comments, and file directories)
+    jobs = db.query(models.Job).filter(models.Job.user_id == user_id).all()
+    for job in jobs:
+        _delete_job(db, job.id)
+    # Delete geo logs
+    db.query(models.GeoLog).filter(models.GeoLog.user_id == user_id).delete()
+    # Delete the user
+    db.delete(user)
+
 
 # ── Overview stats ───────────────────────────────────────────────────
 @router.get("/stats")
@@ -115,27 +143,28 @@ def stats(admin: models.User = Depends(require_admin), db: Session = Depends(get
     total_share_views = db.query(func.sum(models.ShareLink.views)).scalar() or 0
 
     return {
-        # required new keys
-        "total_users": total_users,
-        "total_jobs": total_jobs,
-        "total_downloads": int(total_downloads),
-        "total_storage_bytes": int(total_storage_bytes),
-        "storage_by_user": storage_by_user,
-        "daily_uploads_last_30d": daily_uploads_last_30d,
-        "jobs_by_status": jobs_by_status,
-        "top_models": top_models,
-        # legacy / compat aliases
-        "users": total_users,
-        "jobs_total": total_jobs_all,
-        "jobs": total_jobs,
-        "jobs_done": jobs_done,
-        "jobs_error": jobs_error,
-        "revenue_usd": revenue_usd,
-        "revenue": revenue_usd,
-        "shares_active": shares_active,
-        "total_share_views": total_share_views,
-        "total_revenue": revenue_usd,
-    }
+            # required new keys
+            "total_users": total_users,
+            "total_jobs": total_jobs,
+            "total_downloads": int(total_downloads),
+            "total_storage_bytes": int(total_storage_bytes),
+            "storage_by_user": storage_by_user,
+            "daily_uploads_last_30d": daily_uploads_last_30d,
+            "jobs_by_status": jobs_by_status,
+            "top_models": top_models,
+            "marketing_consent_users": marketing_consent_users,
+                    # legacy / compat aliases
+            "users": total_users,
+            "jobs_total": total_jobs_all,
+            "jobs": total_jobs,
+            "jobs_done": jobs_done,
+            "jobs_error": jobs_error,
+            "revenue_usd": revenue_usd,
+            "revenue": revenue_usd,
+            "shares_active": shares_active,
+            "total_share_views": total_share_views,
+            "total_revenue": revenue_usd,
+        }
 
 
 # ── Geo stats ───────────────────────────────────────────────────────
@@ -456,17 +485,10 @@ def delete_job(
     admin: models.User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    job = db.query(models.Job).filter(models.Job.id == job_id).first()
-    if not job:
-        raise HTTPException(404, "Job not found")
-    db.query(models.ShareLink).filter(models.ShareLink.job_id == job.id).delete()
-    jobs_dir = os.path.join(settings.DATA_DIR, "files")
-    job_dir = os.path.join(jobs_dir, job.uuid)
-    if os.path.isdir(job_dir):
-        shutil.rmtree(job_dir, ignore_errors=True)
-    db.delete(job)
+    _delete_job(db, job_id)
     db.commit()
     return {"ok": True}
+
 
 
 # Bulk delete jobs by admin
@@ -490,6 +512,27 @@ def admin_bulk_delete(
         db.delete(job)
     db.commit()
     return {"ok": True, "deleted": len(jobs)}
+@router.post("/users/bulk-delete")
+def admin_bulk_delete_users(
+    payload: dict,
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    ids = payload.get("ids") or []
+    if not isinstance(ids, list) or not ids:
+        raise HTTPException(400, "ids required")
+    ids = [int(x) for x in ids if str(x).isdigit()]
+    deleted = 0
+    for user_id in ids:
+        try:
+            _delete_user(db, user_id)
+            deleted += 1
+        except Exception as e:
+            # Log the error but continue
+            print(f"Error deleting user {user_id}: {e}")
+    db.commit()
+    return {"ok": True, "deleted": deleted}
+
 
 
 # ── Orphan cleanup: jobs whose mesh files are gone from disk ─────────
@@ -580,3 +623,154 @@ def toggle_keep_files(
     user.keep_files_forever = body.keep_files_forever
     db.commit()
     return {"ok": True, "keep_files_forever": user.keep_files_forever}
+
+# ── Export users to CSV/JSON ──────────────────────────────────────
+class ExportReq(BaseModel):
+    user_ids: list[int] | None = None
+    format: str = "json"  # json or csv
+
+@router.post("/users/export")
+def export_users(
+    body: ExportReq | None = None,
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Export user data to JSON or CSV."""
+    if body is None:
+        body = ExportReq()
+    query = db.query(models.User)
+    if body.user_ids:
+        query = query.filter(models.User.id.in_(body.user_ids))
+    users = query.limit(1000).all()
+
+    data = [{
+        "id": u.id, "email": u.email, "username": u.username,
+        "is_admin": u.is_admin, "created_at": str(u.created_at),
+        "last_login": str(u.last_login) if u.last_login else None,
+        "marketing_consent": u.marketing_consent,
+        "keep_files_forever": u.keep_files_forever,
+    } for u in users]
+
+    if body.format == "csv":
+        import csv, io
+        output = io.StringIO()
+        writer = csv.DictWriter(output, fieldnames=data[0].keys() if data else [])
+        writer.writeheader()
+        writer.writerows(data)
+        return {"ok": True, "format": "csv", "data": output.getvalue(), "count": len(data)}
+    return {"ok": True, "format": "json", "data": data, "count": len(data)}
+
+
+# ── Bulk email to marketing ──────────────────────────────────────
+class BulkEmailReq(BaseModel):
+    user_ids: list[int] | None = None
+    subject: str
+    body: str
+
+@router.post("/users/bulk-email")
+def bulk_email(
+    body: BulkEmailReq,
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Send marketing email to selected users (must have marketing_consent)."""
+    query = db.query(models.User).filter(models.User.marketing_consent == True)
+    if body.user_ids:
+        query = query.filter(models.User.id.in_(body.user_ids))
+    users = query.limit(500).all()
+    sent = 0
+    errors = []
+    for u in users:
+        try:
+            from .mail import send_mail
+            ok = send_mail(u.email, body.subject, body.body)
+            if ok:
+                sent += 1
+            else:
+                errors.append(u.email)
+        except Exception as e:
+            errors.append(f"{u.email}: {e}")
+    db.commit()
+    return {"ok": True, "sent": sent, "errors": errors, "total": len(users)}
+
+
+# ── Reset user metadata ──────────────────────────────────────────
+class ResetReq(BaseModel):
+    user_ids: list[int] | None = None
+    reset_jobs: bool = False
+    reset_files: bool = False
+
+@router.post("/users/bulk-reset")
+def bulk_reset(
+    body: ResetReq,
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Reset metadata for selected users."""
+    query = db.query(models.User)
+    if body.user_ids:
+        query = query.filter(models.User.id.in_(body.user_ids))
+    users = query.limit(100).all()
+    reset = 0
+    for u in users:
+        if body.reset_jobs:
+            jobs = db.query(models.Job).filter(models.Job.user_id == u.id).all()
+            for j in jobs:
+                _delete_job(db, j.id)
+        if body.reset_files:
+            # keep user, just clear retention flags
+            u.keep_files_forever = False
+        reset += 1
+    db.commit()
+    return {"ok": True, "reset": reset}
+
+
+# ── Queue / recent jobs ──────────────────────────────────────────────
+@router.get("/queue")
+def queue_stats(
+    limit: int = 100,
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Return recent jobs with processing stats for the queue tab."""
+    now = datetime.utcnow()
+    since_24h = now - timedelta(hours=24)
+    done_24h = db.query(models.Job).filter(
+        models.Job.status == "done", models.Job.completed_at >= since_24h
+    ).count()
+    error_24h = db.query(models.Job).filter(
+        models.Job.status == "error", models.Job.completed_at >= since_24h
+    ).count()
+    avg_time = (
+        db.query(func.avg(models.Job.processing_time_s))
+        .filter(models.Job.status == "done", models.Job.completed_at >= since_24h)
+        .scalar()
+    ) or 0.0
+    total_processed = db.query(models.Job).filter(
+        models.Job.status == "done"
+    ).count()
+
+    jobs = (
+        db.query(models.Job)
+        .join(models.User, models.Job.user_id == models.User.id, isouter=True)
+        .order_by(models.Job.created_at.desc())
+        .limit(limit)
+        .all()
+    )
+    return {
+        "done_24h": int(done_24h),
+        "error_24h": int(error_24h),
+        "avg_processing_time_s": float(avg_time),
+        "total_processed": int(total_processed),
+        "jobs": [
+            {
+                "id": j.id,
+                "filename": j.original_filename,
+                "status": j.status,
+                "processing_time_s": float(j.processing_time_s or 0),
+                "created_at": str(j.created_at),
+                "user_email": j.user.email if j.user else None,
+            }
+            for j in jobs
+        ],
+    }
