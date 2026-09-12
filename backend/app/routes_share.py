@@ -211,6 +211,28 @@ __ROBOTS__
 </header>
 <div id="viewer3d"></div>
 <div id="shareColorBar" style="position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:20;display:flex;gap:6px;background:rgba(255,255,255,.92);padding:6px 12px;border-radius:999px;border:1px solid #e2e8f0"></div>
+<div id="materialCalc" style="display:none;position:fixed;bottom:12px;left:16px;z-index:20;background:rgba(255,255,255,.95);border:1px solid #e2e8f0;border-radius:10px;padding:12px 16px;font-size:12px;min-width:220px;box-shadow:0 2px 12px rgba(0,0,0,.08)">
+  <div style="font-weight:600;margin-bottom:8px;color:#1e293b">Estymacja druku 3D</div>
+  <div style="display:flex;gap:6px;margin-bottom:6px">
+    <select id="matSelect" style="flex:1;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;font-size:11px">
+      <option value="PLA">PLA (1.24 g/cm&sup3;)</option>
+      <option value="PETG">PETG (1.27 g/cm&sup3;)</option>
+      <option value="ABS">ABS (1.04 g/cm&sup3;)</option>
+      <option value="TPU">TPU (1.21 g/cm&sup3;)</option>
+      <option value="ASA">ASA (1.07 g/cm&sup3;)</option>
+    </select>
+    <select id="infillSelect" style="width:60px;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;font-size:11px">
+      <option value="10">10%</option>
+      <option value="20" selected>20%</option>
+      <option value="50">50%</option>
+      <option value="100">100%</option>
+    </select>
+  </div>
+  <div id="matResult" style="color:#475569">
+    <span id="matWeight">--</span> g &middot; <span id="matCost">--</span> z&#322;
+  </div>
+  <div id="matVolume" style="color:#94a3b8;font-size:10px;margin-top:4px"></div>
+</div>
 <div id="descriptionPanel" style="display:none;position:fixed;bottom:48px;left:0;right:0;z-index:15;background:rgba(255,255,255,0.95);border-top:1px solid #e5e7eb;max-height:45vh;overflow-y:auto;padding:24px 32px;font-size:14px;line-height:1.7">
   <div style="max-width:800px;margin:0 auto">
     <div id="descTitle" style="font-size:20px;font-weight:700;margin-bottom:12px"></div>
@@ -375,6 +397,31 @@ async function loadComments() {
     if (r.ok) { const d = await r.json(); renderComments(d); }
   } catch(e) {}
 }
+
+// Material / filament calculator
+(function(){
+  var uuid = '__UUID__';
+  fetch('/api/material/' + uuid).then(function(r){return r.ok?r.json():null}).then(function(d){
+    if(!d||!d.estimates) return;
+    var el = document.getElementById('materialCalc');
+    if(el) el.style.display = 'block';
+    var volEl = document.getElementById('matVolume');
+    if(volEl) volEl.textContent = 'Objetosc: ' + d.volume_cm3 + ' cm3' + (d.dims_mm ? ' | ' + d.dims_mm : '');
+    function updateCalc(){
+      var mat = document.getElementById('matSelect').value;
+      var infill = document.getElementById('infillSelect').value;
+      var key = mat + '_' + infill;
+      var e = d.estimates[key];
+      if(e){
+        document.getElementById('matWeight').textContent = e.weight_g;
+        document.getElementById('matCost').textContent = e.cost_pln;
+      }
+    }
+    document.getElementById('matSelect').onchange = updateCalc;
+    document.getElementById('infillSelect').onchange = updateCalc;
+    updateCalc();
+  }).catch(function(){});
+})();
 async function postComment() {
   const body = document.getElementById('commentBody').value.trim();
   if (!body) return;
@@ -507,7 +554,7 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
         desc_init=_desc_init_js,
         og_desc=html.escape((getattr(job, "description", None) or getattr(job, "title", None) or job.original_filename or "Model 3D")[:180]),
         og_image=f"https://3dfile.link/api/preview/{job.uuid}",
-        og_url=f"/s/{token}",
+        og_url=f"https://3dfile.link/s/{token}",
 
     )
 

@@ -163,6 +163,12 @@ async def convert_file(
             job.dims_mm = f"{round(float(d[0]),1)} x {round(float(d[1]),1)} x {round(float(d[2]),1)} mm"
         if hasattr(m, 'faces'):
             job.result_faces = len(m.faces)
+        # volume for filament calculator
+        try:
+            vol = m.volume if hasattr(m, 'volume') else 0
+            job.volume_cm3 = round(float(vol) / 1000, 3)  # mm³ → cm³
+        except Exception:
+            pass
     except Exception: pass
     try:
         thumb_out = job_dir / "thumb.png"
@@ -547,7 +553,52 @@ def share_download(token: str, db: Session = Depends(get_db)):
     )
 
 
+# --- Material / filament estimate ---
+MATERIALS = {"PLA": 1.24, "PETG": 1.27, "ABS": 1.04, "TPU": 1.21, "ASA": 1.07}
+FILAMENT_PRICE_PLN_G = 0.12  # ~120 PLN/kg avg
+
+
+@router.get("/material/{job_uuid}")
+def material_estimate(job_uuid: str, db: Session = Depends(get_db)):
+    """Estimate filament weight + cost from mesh volume."""
+    job = db.query(models.Job).filter(models.Job.uuid == job_uuid).first()
+    if not job:
+        raise HTTPException(404, "Job nie znaleziony")
+    vol = job.volume_cm3
+    if not vol:
+        # lazy compute from mesh on disk
+        src_dir = JOBS_DIR / job_uuid
+        mesh_file = None
+        if src_dir.exists():
+            for ext in (".stl", ".3mf", ".obj"):
+                for f in src_dir.iterdir():
+                    if f.suffix.lower() == ext:
+                        mesh_file = str(f); break
+                if mesh_file: break
+        if mesh_file:
+            try:
+                import trimesh
+                m = trimesh.load(mesh_file, force="mesh")
+                vol = round(float(m.volume) / 1000, 3) if hasattr(m, "volume") else 0
+                job.volume_cm3 = vol
+                db.commit()
+            except Exception:
+                pass
+    if not vol:
+        raise HTTPException(404, "Brak danych objetosci")
+    out = {"volume_cm3": vol, "dims_mm": job.dims_mm, "estimates": {}}
+    for mat, density in MATERIALS.items():
+        for infill in (10, 20, 50, 100):
+            w_g = round(vol * density * (infill / 100), 1)
+            out["estimates"][f"{mat}_{infill}"] = {
+                "weight_g": w_g,
+                "cost_pln": round(w_g * FILAMENT_PRICE_PLN_G, 2),
+            }
+    return out
+
+
 # --- User jobs list ---
+
 
 # --- Author stats ---
 @router.get("/jobs-author-stats")

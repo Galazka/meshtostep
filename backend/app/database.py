@@ -55,6 +55,7 @@ def _migrate_columns():
                 ("tags","VARCHAR(500)"),("youtube_url","VARCHAR(512)"),
                 ("visibility","VARCHAR(20) DEFAULT 'public'"),("views","INTEGER DEFAULT 0"),
                 ("likes","INTEGER DEFAULT 0"),("preview_image","VARCHAR(512)"),
+                ("dims_mm","VARCHAR(60)"),("volume_cm3","FLOAT"),
             ]:
                 add_col(conn, "jobs", col, dtype, existing)
         except Exception as e:
