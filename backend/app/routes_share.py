@@ -105,6 +105,7 @@ __ROBOTS__
 <meta name="twitter:title" content="__FILENAME__ — 3dfile.link">
 <meta name="twitter:description" content="__OG_DESC__">
 <meta name="twitter:image" content="__OG_IMAGE__">
+__JSON_LD__
 <script src="/js/cadviewer.js" defer></script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='24' font-size='24'>📁</text></svg>">
 <style>
@@ -211,7 +212,9 @@ __ROBOTS__
   </div>
 </header>
 <div id="viewer3d"></div>
-<div id="shareColorBar" style="position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:20;display:flex;gap:6px;background:rgba(255,255,255,.92);padding:6px 12px;border-radius:999px;border:1px solid #e2e8f0"></div>
+<div id="shareColorBar" style="position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:20;display:none;gap:6px;background:rgba(255,255,255,.92);padding:6px 12px;border-radius:999px;border:1px solid #e2e8f0">
+  <button id="wireBtn" style="border:none;background:#f1f5f9;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer" onclick="(function(){var m=window._shareMesh;if(!m)return;m.material.wireframe=!m.material.wireframe;this.textContent=m.material.wireframe?'Siatka ✓':'Siatka';}).call(this)">Siatka</button>
+</div>
 <div id="materialCalc" style="display:none;position:fixed;bottom:12px;left:16px;z-index:20;background:rgba(255,255,255,.95);border:1px solid #e2e8f0;border-radius:10px;padding:12px 16px;font-size:12px;min-width:220px;box-shadow:0 2px 12px rgba(0,0,0,.08)">
   <div style="font-weight:600;margin-bottom:8px;color:#1e293b">Estymacja druku 3D</div>
   <div style="display:flex;gap:6px;margin-bottom:6px">
@@ -361,10 +364,11 @@ animate();
   colors.forEach(function(hex){
     var d=document.createElement('div');
     d.style.cssText='width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;background:'+hex;
+    d.className='swatch';
     d.onclick=function(){
       if(window._shareMesh) window._shareMesh.material.color.set(hex);
-      var kids=bar.querySelectorAll('div');
-      for(var i=0;i<kids.length;i++)kids[i].style.borderColor='transparent';
+      var kids=bar.querySelectorAll('.swatch');
+        for(var i=0;i<kids.length;i++){var o=kids[i].firstChild;kids[i].style.borderColor='transparent';}
       d.style.borderColor='#333';
     };
     bar.appendChild(d);
@@ -578,7 +582,8 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
         og_url=f"https://3dfile.link/s/{token}",
         share_status=job.status,
         share_filename=job.original_filename or "",
-
+        json_ld=f"""<script type="application/ld+json">
+{{"@context":"https://schema.org","@type":"3DModel","name":{json.dumps(html.escape(job.title or job.original_filename or ""))},"description":{json.dumps((getattr(job, "description", None) or "")[:300])},"encoding":{{"@type":"MediaObject","fileFormat":"STEP/STL","contentUrl":"https://3dfile.link/api/download/{job.uuid}"}},"image":"https://3dfile.link/api/og/{job.uuid}","url":"https://3dfile.link/s/{token}"}}</script>""",
     )
 
     return HTMLResponse(html_page)
