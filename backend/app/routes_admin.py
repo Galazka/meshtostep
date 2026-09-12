@@ -449,8 +449,25 @@ def list_jobs(admin: models.User = Depends(require_admin), db: Session = Depends
     } for j in jobs]
 
 
-# ── Delete job ───────────────────────────────────────────────────────
+# ── Delete job ────────────────────────────────────────────────────────
 @router.delete("/jobs/{job_id}")
+def delete_job(
+    job_id: int,
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    job = db.query(models.Job).filter(models.Job.id == job_id).first()
+    if not job:
+        raise HTTPException(404, "Job not found")
+    db.query(models.ShareLink).filter(models.ShareLink.job_id == job.id).delete()
+    jobs_dir = os.path.join(settings.DATA_DIR, "files")
+    job_dir = os.path.join(jobs_dir, job.uuid)
+    if os.path.isdir(job_dir):
+        shutil.rmtree(job_dir, ignore_errors=True)
+    db.delete(job)
+    db.commit()
+    return {"ok": True}
+
 
 # Bulk delete jobs by admin
 @router.post("/jobs/bulk-delete")
@@ -473,24 +490,6 @@ def admin_bulk_delete(
         db.delete(job)
     db.commit()
     return {"ok": True, "deleted": len(jobs)}
-
-
-def delete_job(
-    job_id: int,
-    admin: models.User = Depends(require_admin),
-    db: Session = Depends(get_db),
-):
-    job = db.query(models.Job).filter(models.Job.id == job_id).first()
-    if not job:
-        raise HTTPException(404, "Job not found")
-    db.query(models.ShareLink).filter(models.ShareLink.job_id == job.id).delete()
-    jobs_dir = os.path.join(settings.DATA_DIR, "files")
-    job_dir = os.path.join(jobs_dir, job.uuid)
-    if os.path.isdir(job_dir):
-        shutil.rmtree(job_dir, ignore_errors=True)
-    db.delete(job)
-    db.commit()
-    return {"ok": True}
 
 
 # ── Orphan cleanup: jobs whose mesh files are gone from disk ─────────

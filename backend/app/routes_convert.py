@@ -236,6 +236,8 @@ def download(job_uuid: str, format: str = "step", db: Session = Depends(get_db))
     job = db.query(models.Job).filter(models.Job.uuid == job_uuid).first()
     if not job:
         raise HTTPException(404, "Job nie znaleziony")
+    if job.visibility == "private":
+        raise HTTPException(403, "Prywatny model")
     # hosting-first: oryginał dostępny od razu niezależnie od statusu
     fmt = format.lower()
     if fmt == "3mf" or fmt == "obj":
@@ -274,6 +276,8 @@ def stl_preview(job_uuid: str, db: Session = Depends(get_db)):
     ).first()
     if not job:
         raise HTTPException(404, "Job nie znaleziony")
+    if job.visibility == "private":
+        raise HTTPException(403, "Prywatny model")
     stl_path = job.result_stl_path
     src_dir = JOBS_DIR / job_uuid
     if stl_path and os.path.exists(stl_path):
@@ -641,11 +645,15 @@ def og_image(job_uuid: str, db: Session = Depends(get_db)):
         faces = job.result_faces or "?"
         dims = job.dims_mm or "?"
         try:
-            font = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 32)
-            font_small = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 22)
+            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 32)
+            font_small = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 22)
         except Exception:
-            font = ImageFont.load_default()
-            font_small = font
+            try:
+                font = ImageFont.truetype("DejaVuSans.ttf", 32)
+                font_small = ImageFont.truetype("DejaVuSans.ttf", 22)
+            except Exception:
+                font = ImageFont.load_default()
+                font_small = font
         draw.text((680, 120), name, fill=(30, 41, 59), font=font)
         draw.text((680, 190), f"{faces} scianek", fill=(100, 116, 139), font=font_small)
         draw.text((680, 225), f"Rozmiary: {dims}", fill=(100, 116, 139), font=font_small)

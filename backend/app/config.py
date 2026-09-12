@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./data/meshtostep.db"
-    SECRET_KEY: str = "CHANGE-ME-in-production-use-openssl-rand-hex-32"
+    SECRET_KEY: str
     MAX_FILE_MB: int = 200
     FREECAD_CMD: str = "/usr/bin/freecadcmd"  # Docker path
     DATA_DIR: str = "./data"

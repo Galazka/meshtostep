@@ -588,7 +588,7 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
 def embed_page(job_id: int, db: Session = Depends(get_db)) -> HTMLResponse:
     """Minimal embed page — Three.js viewer + download for iframe use."""
     job = db.query(models.Job).filter(
-        models.Job.id == job_id, models.Job.status == "done"  # noqa
+        models.Job.id == job_id, models.Job.status.in_(["done", "hosted"])
     ).first()
     if not job:
         return HTMLResponse("<h1>Job not found</h1>", status_code=404)
