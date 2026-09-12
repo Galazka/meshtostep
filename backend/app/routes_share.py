@@ -105,6 +105,7 @@ __ROBOTS__
 <meta name="twitter:title" content="__FILENAME__ — 3dfile.link">
 <meta name="twitter:description" content="__OG_DESC__">
 <meta name="twitter:image" content="__OG_IMAGE__">
+<script src="/js/cadviewer.js" defer></script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='24' font-size='24'>📁</text></svg>">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -299,7 +300,25 @@ const d2 = new THREE.DirectionalLight(0x8888ff, 0.5);
 d2.position.set(-20, 10, -30);
 scene.add(d2);
 
-new STLLoader().load('/api/stl-preview/__UUID__', (g) => {
+// STEP/IGES B-Rep via OCCT WASM (client-side, zero server cost)
+if (window.loadStepWithOcct) {
+  fetch('/api/stl-preview/__UUID__').then(function(r){return r.arrayBuffer();}).then(function(buf){
+    window.loadStepWithOcct(buf).then(function(mesh){
+      if(!mesh){ loadStlFallback(); return; }
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(mesh.positions, 3));
+      if(mesh.normals.length) geo.setAttribute('normal', new THREE.BufferAttribute(mesh.normals, 3));
+      geo.computeBoundingSphere();
+      const m = new THREE.Mesh(geo, new THREE.MeshPhongMaterial({ color: 0x3b82f6, specular: 0x6666aa, shininess: 40 }));
+      m.rotation.x = -Math.PI/2;
+      scene.add(m);
+      document.getElementById('shareColorBar').style.display='flex';
+      window._shareMesh = m;
+    }).catch(loadStlFallback);
+  }).catch(loadStlFallback);
+} else { loadStlFallback(); }
+function loadStlFallback() {
+  new STLLoader().load('/api/stl-preview/__UUID__', (g) => {
   g.computeBoundingBox();
   const c = new THREE.Vector3();
   g.boundingBox.getCenter(c);
@@ -316,7 +335,7 @@ new STLLoader().load('/api/stl-preview/__UUID__', (g) => {
   }));
   window._shareMesh.rotation.x = -Math.PI / 2;
   scene.add(window._shareMesh);
-}, undefined, (err) => {
+  }, undefined, (err) => {
   console.error('STL load error:', err);
   var img=new Image();
   img.onload=function(){el.innerHTML='';img.style.cssText='width:100%;height:100%;object-fit:contain';el.appendChild(img);};
