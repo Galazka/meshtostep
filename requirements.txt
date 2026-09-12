@@ -1,7 +1,7 @@
 # MeshToStep — backend dependencies
 fastapi==0.115.12
 uvicorn[standard]==0.34.3
-python-multipart==0.20
+python-multipart==0.0.20
 sqlalchemy==2.0.41
 aiofiles==24.1.0
 python-jose[cryptography]==3.4.0
