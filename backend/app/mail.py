@@ -36,9 +36,9 @@ def send_reset(to: str, token: str):
     send_mail(to, "3dfile.link — reset hasła",
               f"<p>Kliknij link aby ustawić nowe hasło (ważny {settings.PASSWORD_RESET_HOURS}h):</p><p><a href='{url}'>{url}</a></p>")
 
-def send_share_link(to: str, token: str, sender_email: str = "", job_title: str = ""):
+def send_share_link(to: str, token: str, sender_email: str = "", job_title: str = "", job_uuid: str = ""):
     url = f"{settings.APP_URL}/s/{token}"
-    preview_url = f"{settings.APP_URL}/api/preview/{token}"
+    preview_url = f"{settings.APP_URL}/api/preview/{job_uuid or token}"
     title = job_title or "Model 3D"
     send_mail(to, f"{sender_email or 'Ktoś'} udostępnił Ci model: {title}",
               f"""<div style="font-family:system-ui,sans-serif;max-width:500px;margin:0 auto;padding:24px">

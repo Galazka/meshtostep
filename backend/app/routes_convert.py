@@ -711,13 +711,13 @@ def list_jobs(user: models.User = Depends(require_user), db: Session = Depends(g
 
 # --- Email share link ---
 @router.post("/share/{token}/email")
-def email_share(token: str, payload: dict, user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+def email_share(token: str, payload: dict, request: Request, user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
     from .mail import send_share_link
     recipient = (payload.get("recipient_email") or "").strip()
     if not recipient or "@" not in recipient:
         raise HTTPException(400, "Podaj poprawny email")
-    # rate limit: 5 emails/min per user
-    key = f"email_{user.id}"
+    # rate limit: 5 emails/min per user or IP (anon crash guard)
+    key = f"email_{user.id}" if user else f"email_ip_{(request.headers.get('x-forwarded-for') or '').split(',')[0].strip() or 'x'}"
     hits = _email_hits.get(key, [])
     now = time.time()
     hits = [h for h in hits if now - h < 60]
@@ -731,7 +731,7 @@ def email_share(token: str, payload: dict, user: models.User = Depends(get_curre
         raise HTTPException(404, "Link nie znaleziony")
     job = db.query(models.Job).filter(models.Job.id == share.job_id).first()
     title = getattr(job, "title", None) or getattr(job, "original_filename", "Model 3D")
-    sent = send_share_link(recipient, token, getattr(user, "email", ""), title)
+    sent = send_share_link(recipient, token, getattr(user, "email", "") if user else "", title, job_uuid=job.uuid if job else None)
     if not sent:
         raise HTTPException(500, "SMTP nie skonfigurowane — nie wysłano")
     return {"ok": True, "message": f"Wysłano do {recipient}"}

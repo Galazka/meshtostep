@@ -1,6 +1,6 @@
 """Database models: users, jobs, shares, comments, geo, ads. — 3dfile.link"""
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, ForeignKey, Text, UniqueConstraint
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
@@ -130,6 +130,7 @@ class UserLike(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     job_id = Column(Integer, ForeignKey("jobs.id"), nullable=False, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+    __table_args__ = (UniqueConstraint("user_id", "job_id", name="uq_userlike_user_job"),)
 
 
 class GeoLog(Base):

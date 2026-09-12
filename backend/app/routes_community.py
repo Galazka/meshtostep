@@ -30,6 +30,14 @@ def _is_youtube_valid(url: str) -> bool:
     return _youtube_embed(url) is not None
 
 
+def _safe_url(url: str) -> str:
+    """Allowlist: only http/https. javascript:/data:/vbscript: → empty (link stripped)."""
+    u = str(url or "").strip()
+    if re.match(r"^https?://", u, re.IGNORECASE):
+        return u
+    return ""
+
+
 def _md_to_html(md: str) -> str:
     if not md:
         return ""
@@ -40,8 +48,8 @@ def _md_to_html(md: str) -> str:
         return f"\x00CODE{len(code_blocks)-1}\x00"
     esc = re.sub(r"```(.*?)```", _cb, esc, flags=re.DOTALL)
     esc = re.sub(r"`([^`\n]+)`", r"<code>\1</code>", esc)
-    esc = re.sub(r"!\[([^\]]*)\]\(([^)\s]+)\)", r'<img src="\2" alt="\1" loading="lazy">', esc)
-    esc = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", r'<a href="\2" target="_blank" rel="noopener">\1</a>', esc)
+    esc = re.sub(r"!\[([^\]]*)\]\(([^)\s]+)\)", lambda m: f'<img src="{_safe_url(m.group(2))}" alt="{m.group(1)}" loading="lazy">' if _safe_url(m.group(2)) else '', esc)
+    esc = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", lambda m: f'<a href="{_safe_url(m.group(2))}" target="_blank" rel="noopener">{m.group(1)}</a>' if _safe_url(m.group(2)) else m.group(1), esc)
     esc = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", esc)
     esc = re.sub(r"(?<!\*)\*([^\*\n]+)\*(?!\*)", r"<em>\1</em>", esc)
     parts = re.split(r"\n\s*\n", esc)
@@ -250,10 +258,15 @@ def toggle_like(job_id: int, user: models.User = Depends(get_current_user), db: 
         job.likes = max((job.likes or 1) - 1, 0)
         db.commit()
         return {"ok": True, "likes": job.likes, "liked": False}
-    db.add(models.UserLike(job_id=job_id, user_id=user.id))
-    job.likes = (job.likes or 0) + 1
-    db.commit()
-    return {"ok": True, "likes": job.likes, "liked": True}
+    try:
+        db.add(models.UserLike(job_id=job_id, user_id=user.id))
+        job.likes = (job.likes or 0) + 1
+        db.commit()
+        return {"ok": True, "likes": job.likes, "liked": True}
+    except Exception:
+        db.rollback()
+        # race: concurrent insert won — treat as already liked
+        return {"ok": True, "likes": job.likes or 0, "liked": True}
 
 # ---- Vanity page /u/{username}/{slug} ----
 _VANITY_HTML = """<!DOCTYPE html>

@@ -13,6 +13,14 @@ from . import models
 router = APIRouter(tags=["share"])
 
 
+def _safe_url(url: str) -> str:
+    """Allowlist: only http/https. javascript:/data:/vbscript: → plain text."""
+    u = str(url or "").strip()
+    if re.match(r"^https?://", u, re.IGNORECASE):
+        return u
+    return ""
+
+
 def _md_to_html(md: str) -> str:
     """Tiny markdown→HTML (escaped first, safe tags only). ponytail: ceiling=basic md; upgrade to markdown lib when tables/lists needed."""
     if not md:
@@ -24,8 +32,8 @@ def _md_to_html(md: str) -> str:
         return f"\x00CODE{len(code_blocks)-1}\x00"
     esc = re.sub(r"```(.*?)```", _cb, esc, flags=re.DOTALL)
     esc = re.sub(r"`([^`\n]+)`", r"<code>\1</code>", esc)
-    esc = re.sub(r"!\[([^\]]*)\]\(([^)\s]+)\)", r'<img src="\2" alt="\1" loading="lazy">', esc)
-    esc = re.sub(r"\[([^\]]+)\]\(([^)\s]+)\)", r'<a href="\2" target="_blank" rel="noopener">\1</a>', esc)
+    esc = re.sub(r"!\[([^\]]*)\]\(([^)\\s]+)\\)", lambda m: f'<img src="{_safe_url(m.group(2))}" alt="{m.group(1)}" loading="lazy">' if _safe_url(m.group(2)) else '', esc)
+    esc = re.sub(r"\[([^\]]+)\]\(([^)\\s]+)\\)", lambda m: f'<a href="{_safe_url(m.group(2))}" target="_blank" rel="noopener">{m.group(1)}</a>' if _safe_url(m.group(2)) else m.group(1), esc)
     esc = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", esc)
     esc = re.sub(r"(?<!\*)\*([^*\n]+)\*(?!\*)", r"<em>\1</em>", esc)
     parts = re.split(r"\n\s*\n", esc)

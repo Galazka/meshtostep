@@ -1,5 +1,6 @@
 """JWT auth + password hashing."""
 import hashlib
+import hmac
 import secrets
 from datetime import datetime, timedelta
 from typing import Optional
@@ -28,7 +29,10 @@ def hash_password(password: str) -> str:
 def verify_password(plain: str, hashed: str) -> bool:
     try:
         salt, h = hashed.split(":")
-        return hashlib.pbkdf2_hmac("sha256", plain.encode(), salt.encode(), 100000).hex() == h
+        return hmac.compare_digest(
+            hashlib.pbkdf2_hmac("sha256", plain.encode(), salt.encode(), 100000).hex(),
+            h
+        )
     except Exception:
         return False
 
