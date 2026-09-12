@@ -553,7 +553,7 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
         desc_youtube=html.escape(_yt),
         desc_init=_desc_init_js,
         og_desc=html.escape((getattr(job, "description", None) or getattr(job, "title", None) or job.original_filename or "Model 3D")[:180]),
-        og_image=f"https://3dfile.link/api/preview/{job.uuid}",
+        og_image=f"https://3dfile.link/api/og/{job.uuid}",
         og_url=f"https://3dfile.link/s/{token}",
 
     )

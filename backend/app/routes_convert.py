@@ -597,7 +597,67 @@ def material_estimate(job_uuid: str, db: Session = Depends(get_db)):
     return out
 
 
+# --- OG image generator (1200x630 for Discord/Twitter) ---
+@router.get("/og/{job_uuid}")
+def og_image(job_uuid: str, db: Session = Depends(get_db)):
+    """Generate 1200x630 social preview PNG from mesh thumbnail."""
+    job = db.query(models.Job).filter(models.Job.uuid == job_uuid).first()
+    if not job:
+        raise HTTPException(404, "Job nie znaleziony")
+    og_path = JOBS_DIR / job_uuid / "og.png"
+    if og_path.exists():
+        return FileResponse(str(og_path), media_type="image/png")
+    # find thumb or mesh
+    thumb_path = JOBS_DIR / job_uuid / "thumb.png"
+    if not thumb_path.exists():
+        # try to generate thumb from mesh
+        src_dir = JOBS_DIR / job_uuid
+        mesh_file = None
+        if src_dir.exists():
+            for ext in (".stl", ".3mf", ".obj"):
+                for f in src_dir.iterdir():
+                    if f.suffix.lower() == ext:
+                        mesh_file = str(f); break
+                if mesh_file: break
+        if mesh_file:
+            try:
+                _auto_thumb(mesh_file, str(thumb_path))
+            except Exception:
+                pass
+    if not thumb_path.exists():
+        raise HTTPException(404, "Brak miniatury")
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+        img = Image.new("RGB", (1200, 630), (255, 255, 255))
+        draw = ImageDraw.Draw(img)
+        # left panel: 3D thumbnail
+        thumb = Image.open(str(thumb_path)).convert("RGB")
+        thumb.thumbnail((600, 480))
+        x = (600 - thumb.width) // 2
+        y = (480 - thumb.height) // 2
+        img.paste(thumb, (x, y))
+        # right panel: text
+        name = (job.original_filename or "Model")[:60]
+        faces = job.result_faces or "?"
+        dims = job.dims_mm or "?"
+        try:
+            font = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 32)
+            font_small = ImageFont.truetype("C:/Windows/Fonts/arial.ttf", 22)
+        except Exception:
+            font = ImageFont.load_default()
+            font_small = font
+        draw.text((680, 120), name, fill=(30, 41, 59), font=font)
+        draw.text((680, 190), f"{faces} scianek", fill=(100, 116, 139), font=font_small)
+        draw.text((680, 225), f"Rozmiary: {dims}", fill=(100, 116, 139), font=font_small)
+        draw.text((680, 420), "3dfile.link", fill=(59, 130, 246), font=font)
+        img.save(str(og_path), "PNG")
+        return FileResponse(str(og_path), media_type="image/png")
+    except Exception as e:
+        return FileResponse(str(thumb_path), media_type="image/png")
+
+
 # --- User jobs list ---
+
 
 
 # --- Author stats ---

@@ -51,7 +51,7 @@ async def security_middleware(request: Request, call_next):
     csp = (
         "default-src 'self'; "
         "script-src 'self' 'unsafe-inline' 'unsafe-eval' "
-        "https://unpkg.com https://cdn.jsdelivr.net "
+        "https://unpkg.com https://cdn.jsdelivr.net https://cdn.skypack.dev "
         "https://pagead2.googlesyndication.com https://www.googletagmanager.com; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "font-src 'self' https://fonts.gstatic.com; "
