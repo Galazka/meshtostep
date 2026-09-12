@@ -23,6 +23,18 @@
     <link rel="icon" href="/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+    // Early stubs for inline onclick handlers — replaced by ES modules once they load
+    if(!window.showModal) window.showModal = function(m){ console.warn('showModal not ready:', m); };
+    if(!window.toggleLang) window.toggleLang = function(){};
+    if(!window.doDiscover) window.doDiscover = function(){};
+    if(!window.go) window.go = function(){};
+    if(!window.closeDropdown) window.closeDropdown = function(){};
+    if(!window.loadMyJobs) window.loadMyJobs = function(){};
+    if(!window.loadAccount) window.loadAccount = function(){};
+    if(!window.loadAdSlots) window.loadAdSlots = function(){};
+    if(!window.cookieConsent) window.cookieConsent = function(){};
+    </script>
     <style>
         :root {
             --primary: #2563eb;

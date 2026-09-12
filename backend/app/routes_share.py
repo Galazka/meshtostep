@@ -207,7 +207,7 @@ __JSON_LD__
   </div>
   <div class="pills">__CONV_INFO__</div>
   <div class="actions">
-    <a class="btn btn-primary" href="https://3dfile.link/api/share/__TOKEN__/download">⬇ __DOWNLOAD_BTN__</a>
+    <a class="btn btn-primary" href="/download-step/__UUID__" id="dlBtn">⬇ __DOWNLOAD_BTN__</a>
     <button class="btn btn-secondary" onclick="showEmbed()">⧉ __EMBED_BTN__</button>
   </div>
 </header>
@@ -236,6 +236,7 @@ __JSON_LD__
     <span id="matWeight">--</span> g &middot; <span id="matCost">--</span> z&#322;
   </div>
   <div id="matVolume" style="color:#94a3b8;font-size:10px;margin-top:4px"></div>
+  <div id="matAffiliates" style="margin-top:6px;font-size:10px;color:#94a3b8"></div>
 </div>
 <div id="descriptionPanel" style="display:none;position:fixed;bottom:48px;left:0;right:0;z-index:15;background:rgba(255,255,255,0.95);border-top:1px solid #e5e7eb;max-height:45vh;overflow-y:auto;padding:24px 32px;font-size:14px;line-height:1.7">
   <div style="max-width:800px;margin:0 auto">
@@ -440,6 +441,10 @@ async function loadComments() {
       if(e){
         document.getElementById('matWeight').textContent = e.weight_g;
         document.getElementById('matCost').textContent = e.cost_pln;
+      }
+      var aff = document.getElementById('matAffiliates');
+      if(aff){
+        aff.innerHTML = 'Kup filament: <a href="https://allegro.pl/listing?string=' + encodeURIComponent(mat+' filament') + '" target="_blank" rel="nofollow sponsored noopener" style="color:#1a56db">Allegro</a> &middot; <a href="https://www.amazon.pl/s?k=' + encodeURIComponent(mat+' filament 1.75') + '" target="_blank" rel="nofollow sponsored noopener" style="color:#1a56db">Amazon</a>';
       }
     }
     document.getElementById('matSelect').onchange = updateCalc;

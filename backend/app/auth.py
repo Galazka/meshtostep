@@ -16,7 +16,7 @@ from .database import get_db
 bearer = HTTPBearer(auto_error=False)
 
 ALGORITHM = "HS256"
-ACCESS_TOKEN_HOURS = 24 * 30  # 30 days
+ACCESS_TOKEN_HOURS = 24 * 7  # 7 days (was 30 — reduced, refresh via re-login)
 
 
 def hash_password(password: str) -> str:

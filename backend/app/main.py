@@ -22,6 +22,7 @@ from .routes_community import router as community_router
 from .routes_comments import router as comments_router
 from .routes_folders import router as folders_router
 from .routes_sitemap import router as sitemap_router
+from .routes_interstitial import router as interstitial_router
 
 app = FastAPI(title="3dfile.link", version="1.0.0")
 
@@ -138,6 +139,7 @@ app.include_router(comments_router)
 app.include_router(folders_router)
 
 app.include_router(sitemap_router, tags=['sitemap'])
+app.include_router(interstitial_router)
 
 @app.get("/api/health")
 def health():
@@ -179,6 +181,22 @@ def admin_page():
 
 if FRONTEND_DIR.exists():
     app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
+
+# Redirect legacy /prywatnosc and /regulamin to .html
+@app.get("/prywatnosc", include_in_schema=False)
+def privy_redirect():
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/prywatnosc.html", status_code=301)
+
+@app.get("/regulamin", include_in_schema=False)
+def regul_redirect():
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/regulamin.html", status_code=301)
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    from fastapi.responses import FileResponse
+    return FileResponse(str(FRONTEND_DIR / "logo.png"), media_type="image/png")
 
 
 # ── Startup ─────────────────────────────────────────────────────────

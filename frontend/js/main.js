@@ -7,6 +7,15 @@ import { setupDropZone } from './convert.js';
 import { loadMyJobs } from './myfiles.js';
 import { loadAccount } from './account.js';
 
+// Expose window globals for onclick handlers in index.html
+window.showModal = showModal;
+window.toggleLang = window.toggleLang || (() => {});
+window.toggleTheme = toggleTheme;
+window.go = window.go || (() => {});
+window.closeDropdown = window.closeDropdown || (() => {});
+window.loadMyJobs = loadMyJobs;
+window.loadAccount = loadAccount;
+
 function toggleTheme() {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     if (isDark) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('mt_theme','light'); }
@@ -45,15 +54,12 @@ async function loadAdSlots() {
                 el.parentNode.insertBefore(clone, el.nextSibling);
                 el = clone;
             }
-            // ad_code may be plain text like <test> — use textContent fallback if innerHTML produces empty visible text
-            if (s.ad_type === 'text' || s.ad_type === 'custom' || s.ad_code.trim().startsWith('<')) {
-                el.innerHTML = s.ad_code;
-                // if innerHTML produced no visible text (invalid tag like <test>), show as text
-                if (!el.textContent.trim()) el.textContent = s.ad_code;
-                if (!el.innerHTML.trim().includes('<')) el.textContent = s.ad_code;
-            } else {
-                el.innerHTML = s.ad_code;
-            }
+            // Sanitize ad_code: strip dangerous tags, keep safe ones
+            var _safe = s.ad_code.replace(/<script[\s\S]*?<\/script>/gi, '')
+                .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
+                .replace(/javascript\s*:/gi, '');
+            el.innerHTML = _safe;
+            if (!el.innerHTML.trim()) el.textContent = s.ad_code;
             console.log('[ADS] injected', key, '→', el.children.length, 'elements');
             try { fetch('/api/ads/impression/' + s.id, {method:'POST'}).catch(function(){}); } catch(e) {}
         });
