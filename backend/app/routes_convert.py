@@ -102,7 +102,7 @@ async def convert_file(
     job_uuid = uuid.uuid4().hex[:12]
     job_dir = JOBS_DIR / job_uuid
     job_dir.mkdir(exist_ok=True)
-    src = job_dir / file.filename
+    src = job_dir / Path(file.filename).name  # path traversal guard: strip dirs
     data = await file.read()
     if len(data) > settings.MAX_FILE_MB * 1024 * 1024:
         shutil.rmtree(job_dir, ignore_errors=True)
