@@ -1,4 +1,4 @@
-// myfiles.js — jobs grid, folders, bulk, share modal, job modal, fullscreen, editor (verbatim).
+// myfiles.js  -  jobs grid, folders, bulk, share modal, job modal, fullscreen, editor (verbatim).
 import { t } from './i18n.js';
 import { token } from './shared.js';
 import { toast } from './viewer3d.js';
@@ -124,25 +124,51 @@ function mfCountInFolder(fid){
     return _myJobsData.filter(function(j){return String(j.folder_id||'')===String(fid)}).length;
 }
 
-function showShareEmailModal() {
-    const el = document.getElementById('shareEmailModal');
-    if (el) { el.classList.add('show'); return; }
+// ═══ SHARE EMAIL ═══
+let _shareEmailJobId = null;
+
+function showShareEmailModal(jobId) {
+    _shareEmailJobId = jobId;
     const modal = document.createElement('div');
     modal.id = 'shareEmailModal';
     modal.style = 'display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:3000;align-items:center;justify-content:center;';
-    modal.innerHTML = \`
-      <div style="background:#fff;padding:32px;border-radius:12px;width:90%;max-width:400px;box-shadow:0 10px 30px rgba(0,0,0,.5);position:relative;max-height:90vh;overflow:auto">
-        <h3 style="margin-top:0;color:#1a56db">Wyślij link mailem</h3>
-        <p>Wpisz adres email odbiorcy</p>
-        <input type="email" id="shareEmailInput" style="width:100%;padding:12px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:16px;font-size:14px" placeholder="example@email.com">
-        <div style="display:flex;gap:8px">
-          <button onclick="shareEmailSend()" style="flex:1;background:#1a56db;color:#fff;border:none;border-radius:8px;padding:10px;font-weight:600;cursor:pointer">Wyślij</button>
-          <button onclick="document.getElementById('shareEmailModal').classList.remove('show')" style="flex:1;background:#e2e8f0;border:none;border-radius:8px;padding:10px;font-size:14px;cursor:pointer">Anuluj</button>
-        </div>
-        <div id="shareEmailResult" style="margin-top:16px;font-size:12px"></div>
-        <button onclick="document.getElementById('shareEmailModal').classList.remove('show')" style="position:absolute;top:8px;right:16px;border:none;background:none;font-size:24px;color:#64748b;cursor:pointer">×</button>
-      </div>
-\`;
+    const content = document.createElement('div');
+    content.style = 'background:#fff;padding:32px;border-radius:12px;width:90%;max-width:400px;box-shadow:0 10px 30px rgba(0,0,0,.5);position:relative;max-height:90vh;overflow:auto;';
+    const h3 = document.createElement('h3');
+    h3.style = 'margin-top:0;color:#1a56db;';
+    h3.textContent = 'Wyślij link mailem';
+    const p = document.createElement('p');
+    p.textContent = 'Wpisz adres email odbiorcy';
+    const inp = document.createElement('input');
+    inp.type = 'email';
+    inp.style = 'width:100%;padding:12px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:16px;font-size:14px;';
+    inp.placeholder = 'example@email.com';
+    const buttonsDiv = document.createElement('div');
+    buttonsDiv.style = 'display:flex;gap:8px;';
+    const btnSend = document.createElement('button');
+    btnSend.style = 'flex:1;background:#1a56db;color:#fff;border:none;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;';
+    btnSend.textContent = 'Wyślij';
+    btnSend.onclick = shareEmailSend;
+    const btnCancel = document.createElement('button');
+    btnCancel.style = 'flex:1;background:#e2e8f0;border:none;border-radius:8px;padding:10px;font-size:14px;cursor:pointer;';
+    btnCancel.textContent = 'Anuluj';
+    btnCancel.onclick = () => { modal.classList.remove('show'); };
+    buttonsDiv.appendChild(btnSend);
+    buttonsDiv.appendChild(btnCancel);
+    const resultDiv = document.createElement('div');
+    resultDiv.id = 'shareEmailResult';
+    resultDiv.style = 'margin-top:16px;font-size:12px;';
+    const closeBtn = document.createElement('button');
+    closeBtn.style = 'position:absolute;top:8px;right:16px;border:none;background:none;font-size:24px;color:#64748b;cursor:pointer;';
+    closeBtn.textContent = '×';
+    closeBtn.onclick = () => { modal.classList.remove('show'); };
+    content.appendChild(h3);
+    content.appendChild(p);
+    content.appendChild(inp);
+    content.appendChild(buttonsDiv);
+    content.appendChild(resultDiv);
+    content.appendChild(closeBtn);
+    modal.appendChild(content);
     document.body.appendChild(modal);
     modal.classList.add('show');
 }
@@ -154,7 +180,7 @@ function shareEmailSend() {
     const email = inp.value.trim();
     if (!email || !email.includes('@')) { result.textContent = 'Podaj poprawny adres email'; return; }
     result.textContent = 'Wysyłanie...';
-    fetch('/api/share/' + _shareJobId + '/email', {
+    fetch('/api/share/' + _shareEmailJobId + '/email', {
         method: 'POST',
         headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
         body: JSON.stringify({ recipient_email: email })
@@ -175,10 +201,10 @@ function showDownloadDialog(jobId, fileName) {
     if (!opts) return;
     opts.innerHTML = '';
     var formats = [
-        {fmt:'stl', label:'Mesh — STL (uniwersalny)'},
-        {fmt:'obj', label:'Mesh — OBJ (z teksturami)'},
-        {fmt:'3mf', label:'Mesh — 3MF (druk 3D)'},
-        {fmt:'step', label:'Solid — STEP (CAD/CAM)'}
+        {fmt:'stl', label:'Mesh  -  STL (uniwersalny)'},
+        {fmt:'obj', label:'Mesh  -  OBJ (z teksturami)'},
+        {fmt:'3mf', label:'Mesh  -  3MF (druk 3D)'},
+        {fmt:'step', label:'Solid  -  STEP (CAD/CAM)'}
     ];
     formats.forEach(function(f) {
         var btn = document.createElement('button');
