@@ -6,9 +6,12 @@ import { toast } from './viewer3d.js';
 let _shareJobId = null;
 let _shareAnon = false;
 let _shareVanityUrl = '';
+let _shareToken = '';
 
 function doShare(jobId) {
     _shareJobId = jobId;
+    _shareToken = '';
+    _shareVanityUrl = '';
     document.getElementById('shareUrl').value = '';
     document.getElementById('shareResult').style.display = 'none';
     document.getElementById('shareCreateBtn').style.display = '';
@@ -22,9 +25,7 @@ function toggleShareAnon(){
     if(btn) btn.textContent='🔒 Link bez nicka: '+(_shareAnon?'ON':'OFF');
     if(inp && _shareVanityUrl){
         if(_shareAnon){
-            var u=_shareVanityUrl;
-            var m=u.match(/\/u\/([^/]+)\/([^/]+)$/);
-            inp.value=m?'/s/'+m[2]:u;
+            inp.value=_shareToken?window.location.origin+'/s/'+_shareToken:'';
         } else inp.value=_shareVanityUrl;
     }
 }
@@ -45,7 +46,9 @@ async function createShareLink() {
         const r = await fetch('/api/share', {method:'POST', body:fd, headers: token?{'Authorization':'Bearer '+token}:{}});
         if (r.ok) {
             const d = await r.json();
-            document.getElementById('shareUrl').value = d.url;
+            _shareVanityUrl = d.vanity || '';
+            _shareToken = d.token || '';
+            document.getElementById('shareUrl').value = _shareVanityUrl || d.url;
             document.getElementById('shareResult').style.display = 'block';
             btn.style.display = 'none';
         }
@@ -379,7 +382,9 @@ function openShareModalFor(jobId){
     document.getElementById('shareResult').style.display='none';
     document.getElementById('shareCreateBtn').style.display='';
     document.getElementById('shareUrl').value='';
-    fetch('/api/jobs/'+jobId+'/share',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:'{}'}).then(function(r){return r.json()}).then(function(d){
+    fetch('/api/jobs/'+jobId+'/share',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({anon:_shareAnon,show_author:document.getElementById('shareShowAuthor')?document.getElementById('shareShowAuthor').checked:true})}).then(function(r){return r.json()}).then(function(d){
+        _shareVanityUrl=d.vanity||'';
+        _shareToken=d.token||'';
         document.getElementById('shareUrl').value=d.url||d.vanity||'';
         document.getElementById('shareResult').style.display='block';
         document.getElementById('shareCreateBtn').style.display='none';

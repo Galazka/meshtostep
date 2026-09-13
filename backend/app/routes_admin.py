@@ -442,7 +442,7 @@ def user_detail(
         "username": user.username,
         "is_admin": user.is_admin,
         "created_at": str(user.created_at),
-        "last_login": str(user.last_login),
+        "last_login": str(user.last_login) if user.last_login else None,
         "stats": {
             "total_conversions": total_jobs,
             "conversions_done": done_jobs,
@@ -451,7 +451,7 @@ def user_detail(
             "total_downloads": total_downloads,
             "total_share_views": total_share_views,
         },
-        "last_activity": str(last_geo.created_at) if last_geo else str(user.last_login),
+        "last_activity": str(last_geo.created_at) if last_geo else (str(user.last_login) if user.last_login else None),
         "last_ip": last_geo.ip_address if last_geo else None,
         "last_country": last_geo.country if last_geo else None,
         "last_city": last_geo.city if last_geo else None,

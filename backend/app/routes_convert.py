@@ -483,7 +483,13 @@ def create_share(
     db.add(share)
     db.commit()
 
-    return {"url": f"{settings.APP_URL}/s/{token}", "token": token}
+    vanity = None
+    if job.slug and getattr(user, "username", None) and show_author:
+        vanity = f"{settings.APP_URL}/u/{user.username}/{job.slug}"
+    if vanity:
+        share.slug = job.slug
+        db.commit()
+    return {"url": vanity or f"{settings.APP_URL}/s/{token}", "token": token, "vanity": vanity}
 
 
 @router.get("/share/{token}")

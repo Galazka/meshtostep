@@ -1,0 +1,5 @@
+{% if job.status == "done" and job.result_step_path %}
+    <a href="/api/download/{{ uuid }}?format=step">Download STEP ({faces} faces, {{ size_kb }} KB)</a>
+{% else %}
+    <a href="/api/convert-on-demand/{{ uuid }}">Convert to STEP</a>
+{% endif %}

@@ -8,11 +8,12 @@ let selectedFile = null;
 function setupDropZone() {
     const d = document.getElementById('dropZone');
     const inp = document.getElementById('fileInput');
+    if (!d || !inp) return;
     d.addEventListener('click', () => inp.click());
     d.addEventListener('dragover', e => { e.preventDefault(); d.classList.add('drag-over'); });
     d.addEventListener('dragleave', () => d.classList.remove('drag-over'));
-    d.addEventListener('drop', e => { e.preventDefault(); d.classList.remove('drag-over'); pickFile(e.dataTransfer.files[0]); });
-    inp.addEventListener('change', () => pickFile(inp.files[0]));
+    d.addEventListener('drop', e => { e.preventDefault(); d.classList.remove('drag-over'); pickFile(e.dataTransfer?.files?.[0]); });
+    inp.addEventListener('change', () => pickFile(inp.files?.[0]));
 }
 
 function pickFile(f) {
