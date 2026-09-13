@@ -59,8 +59,8 @@ async def csp_middleware(request: Request, call_next):
             "worker-src 'self' blob:; "
         )
     response.headers["Content-Security-Policy"] = csp
-    # HTML never cached — fresh UI every load
-    if request.url.path == "/" or request.url.path.endswith(".html"):
+    # HTML and SW never cached — fresh UI + immediate SW updates
+    if request.url.path == "/" or request.url.path.endswith(".html") or request.url.path == "/sw.js":
         response.headers["Cache-Control"] = "no-store"
     # HTTPS redirect (Railway terminates TLS, X-Forwarded-Proto = https)
     if request.headers.get("x-forwarded-proto") == "http":

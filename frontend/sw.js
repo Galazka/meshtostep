@@ -1,5 +1,5 @@
-const CACHE = '3dfile-v5';
-const ASSETS = ['/', '/manifest.json', '/logo.png?v=2'];
+const CACHE = '3dfile-v6';
+const ASSETS = ['/manifest.json', '/logo.png?v=2'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).catch(()=>{}));
@@ -22,8 +22,11 @@ self.addEventListener('fetch', e => {
     if (cached) return cached;
     return fetch(e.request).then(resp => {
       if (resp.ok) {
-        const cl = resp.clone();
-        caches.open(CACHE).then(c => c.put(e.request, cl));
+        const ct = resp.headers.get('content-type') || '';
+        if (!ct.includes('text/html')) {
+          const cl = resp.clone();
+          caches.open(CACHE).then(c => c.put(e.request, cl));
+        }
       }
       return resp;
     }).catch(() => cached);
