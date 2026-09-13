@@ -215,7 +215,7 @@ __JSON_LD__
   </div>
   <div class="pills">__CONV_INFO__</div>
   <div class="actions">
-    <a class="btn btn-primary" href="/download-step/__UUID__" id="dlBtn">⬇ __DOWNLOAD_BTN__</a>
+    <a class="btn btn-primary" href="#" id="dlBtn" onclick="convertAndDownload('__UUID__');return false">⬇ __DOWNLOAD_BTN__</a>
     <button class="btn btn-secondary" onclick="showEmbed()">⧉ __EMBED_BTN__</button>
   </div>
 </header>
@@ -392,6 +392,14 @@ window.addEventListener('resize', () => {
 
 window.showEmbed = function() {
   prompt('Embed code:', '<iframe src="/e/__JOB_ID__" width="800" height="500" frameborder="0"></iframe>');
+};
+window.convertAndDownload = function(uuid){
+  var btn = document.getElementById('dlBtn');
+  if(btn) btn.textContent='Konwertowanie...';
+  fetch('/api/convert-on-demand/'+uuid,{method:'POST'})
+    .then(function(r){return r.json();})
+    .then(function(d){if(d&&d.ok)window.location.href='/api/download/'+uuid+'?format=step';else alert('Błąd konwersji');})
+    .catch(function(){alert('Błąd sieci');});
 };
 </script>
 <script>

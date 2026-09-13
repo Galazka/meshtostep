@@ -49,7 +49,7 @@ body{font-family:Inter,-apple-system,sans-serif;background:#f8fafc;color:#1e293b
 <text class="timer-text" x="40" y="46" text-anchor="middle" id="countdown">5</text>
 </svg>
 <div class="ad-slot" id="interstitialAd"><span>Reklama</span></div>
-<a class="btn" id="downloadBtn" href="__DOWNLOAD_URL__" disabled>Pobierz plik STEP</a>
+<a class="btn" id="downloadBtn" href="#" disabled>Pobierz plik STEP</a>
 <div class="brand">Powered by <a href="https://3dfile.link">3dfile.link</a></div>
 </div>
 <script>
@@ -61,6 +61,23 @@ body{font-family:Inter,-apple-system,sans-serif;background:#f8fafc;color:#1e293b
     el.textContent=SEC;ring.setAttribute('stroke-dashoffset',(C*(1-SEC/5)).toFixed(1));SEC--;setTimeout(tick,1000);
   }
   tick();
+  btn.onclick = function(e){
+    e.preventDefault();
+    var uuid = '__UUID__';
+    btn.textContent = 'Konwertowanie...';
+    btn.disabled = true;
+    fetch('/api/convert-on-demand/' + uuid, {method:'POST'})
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d && d.ok){
+          window.location.href = '/api/download/' + uuid + '?format=step';
+        } else {
+          btn.textContent = 'Błąd — spróbuj ponownie';
+          btn.disabled = false;
+        }
+      })
+      .catch(function(){ btn.textContent = 'Błąd sieci'; btn.disabled = false; });
+  };
 })();
 </script>
 </body>
@@ -84,4 +101,5 @@ def interstitial_download(job_uuid: str, db: Session = Depends(get_db)):
     html = html.replace("__SIZE__", size_str)
     html = html.replace("__FORMAT_SRC__", src_ext or "STL")
     html = html.replace("__DOWNLOAD_URL__", download_url)
+    html = html.replace("__UUID__", job_uuid)
     return HTMLResponse(html)

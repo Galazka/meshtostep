@@ -316,7 +316,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
 <header class="top">
   <a class="logo" href="/"><img src="/logo.png?v=2" alt="3DFILE" style="height:28px" onerror="this.style.display='none'"></a>
   <div class="pills">__PILLS__</div>
-  <div class="actions"><a class="btn btn-primary" href="/api/download/__UUID__">⬇ Pobierz STEP</a> <a class="btn btn-sec" href="/e/__JOBID__">Embed</a></div>
+  <a class="btn btn-primary" href="#" onclick="convertAndDownload('__UUID__');return false">⬇ Pobierz STEP</a> <a class="btn btn-sec" href="/e/__JOBID__">Embed</a>
 </header>
 <div class="wrap">
   <div>
@@ -334,7 +334,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
   <div class="side">
     <div style="font-weight:700;margin-bottom:8px">Pliki</div>
     <div style="font-size:13px;color:#64748b;margin-bottom:12px">__FILENAME__ · __FACES__ ścianek · __SIZE__</div>
-    <a class="btn btn-primary" style="display:block;text-align:center" href="/api/download/__UUID__">Pobierz STEP</a>
+    <a class="btn btn-primary" style="display:block;text-align:center" href="#" onclick="convertAndDownload('__UUID__');return false">Pobierz STEP</a>
     <a class="btn btn-sec" style="display:block;text-align:center;margin-top:8px" href="/api/share/__TOKEN__/download">Pobierz via share</a>
     <div style="margin-top:16px;font-size:13px;color:#64748b">Wyświetlenia: <b id="viewsCount">__VIEWS__</b></div>
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center">
@@ -367,6 +367,14 @@ new STLLoader().load('/api/stl-preview/__UUID__', g=>{g.computeBoundingBox();con
 });
 function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera);}animate();
 window.addEventListener('resize',()=>{camera.aspect=el.clientWidth/el.clientHeight;camera.updateProjectionMatrix();renderer.setSize(el.clientWidth,el.clientHeight);});
+function convertAndDownload(uuid){
+  var btn = document.querySelector('.btn-primary[href]');
+  if(btn) btn.textContent='Konwertowanie...';
+  fetch('/api/convert-on-demand/'+uuid,{method:'POST'})
+    .then(function(r){return r.json();})
+    .then(function(d){if(d&&d.ok)window.location.href='/api/download/'+uuid+'?format=step';else alert('Błąd konwersji');})
+    .catch(function(){alert('Błąd sieci');});
+}
 // Fullscreen
 document.getElementById('btnFs').onclick=()=>{
   if(!document.fullscreenElement){viewerWrap.requestFullscreen().catch(()=>{});}
