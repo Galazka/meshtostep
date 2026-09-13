@@ -298,10 +298,11 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
 .btn-primary{background:#1a56db;color:#fff}
 .btn-sec{background:#f1f5f9;color:#1e293b}
 .wrap{max-width:1100px;margin:0 auto;padding:20px;display:grid;grid-template-columns:1fr 340px;gap:20px}
-#viewer{width:100%;height:420px;background:#f0f2f5;border-radius:12px;overflow:hidden;position:relative}
-.viewer-toolbar{position:absolute;top:8px;right:8px;display:flex;gap:4px;z-index:10}
-.viewer-toolbar button{background:rgba(255,255,255,.9);border:1px solid #e2e8f0;border-radius:6px;padding:6px 10px;font-size:12px;cursor:pointer;backdrop-filter:blur(4px)}
+#viewer{width:100%;height:500px;background:#f0f2f5;border-radius:12px;overflow:hidden;position:relative}
+.viewer-toolbar{position:absolute;top:8px;right:8px;display:flex;gap:6px;z-index:10;align-items:center}
+.viewer-toolbar button{background:rgba(255,255,255,.9);border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:14px;cursor:pointer;backdrop-filter:blur(4px)}
 .viewer-toolbar button:hover{background:#fff;border-color:#1a56db;color:#1a56db}
+.viewer-toolbar .bg-dots{display:flex;gap:3px;margin-left:4px}
 .desc{white-space:pre-wrap;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-top:12px}
 .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .tag{background:#e8eefb;color:#1a56db;padding:3px 8px;border-radius:999px;font-size:12px;text-decoration:none}
@@ -339,6 +340,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
       <div class="viewer-toolbar">
         <button id="btnFs" title="Pełny ekran">⛶</button>
         <button id="btnColor" title="Kolor modelu" style="width:28px;height:28px;border-radius:50%;background:#3b82f6"></button>
+        <div class="bg-dots" id="bgDots"></div>
       </div>
     </div>
     <h1 style="margin:12px 0 4px;font-size:20px">__TITLE__</h1>
@@ -420,19 +422,30 @@ document.addEventListener('fullscreenchange',()=>{
   setTimeout(()=>{camera.aspect=viewerWrap.clientWidth/viewerWrap.clientHeight;camera.updateProjectionMatrix();renderer.setSize(viewerWrap.clientWidth,viewerWrap.clientHeight);},100);
 });
 // Color picker
-const colors=['#ffffff','#9ca3af','#3b82f6','#22c55e','#ef4444','#f97316','#a855f7','#06b6d4'];
+const colors=['#ffffff','#9ca3af','#3b82f6','#22c55e','#ef4444','#f97316','#a855f7','#06b6d3'];
+const bgColors=['#f7f9fc','#f0f2f5','#ffffff','#1e293b','#000000','#e2e8f0'];
 let colorIdx=0;
 document.getElementById('btnColor').onclick=()=>{
   colorIdx=(colorIdx+1)%colors.length;
   document.getElementById('btnColor').style.background=colors[colorIdx];
   if(viewerMesh)viewerMesh.material.color.set(colors[colorIdx]);
 };
+(function(){
+  var bgDots=document.getElementById('bgDots');
+  if(!bgDots) return;
+  bgColors.forEach(function(hex){
+    var d=document.createElement('div');
+    d.style.cssText='width:14px;height:14px;border-radius:4px;cursor:pointer;border:1px solid #d1d5db;background:'+hex;
+    d.onclick=function(){scene.background=new THREE.Color(hex);};
+    bgDots.appendChild(d);
+  });
+})();
 function showEmbed(token){
-  var code='<div style="width:100%;max-width:512px;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden"><iframe src="'+window.location.origin+'/e/'+token+'" width="100%" height="420" style="border:0;border-radius:8px" loading="lazy" allowfullscreen></iframe><div style="padding:6px 12px;font-size:11px;color:#94a3b8;text-align:center">Osadzone z 3dfile.link</div></div>';
+  var code='<div style="width:100%;max-width:512px;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden"><iframe src="'+window.location.origin+'/e/'+token+'" width="100%" height="500" style="border:0;border-radius:8px" loading="lazy" allowfullscreen></iframe><div style="padding:6px 12px;font-size:11px;color:#94a3b8;text-align:center">Osadzone z 3dfile.link</div></div>';
   if(window.clipboard && navigator.clipboard&&navigator.clipboard.writeText){
     navigator.clipboard.writeText(code).then(function(){alert('Kod osadzania skopiowany do schowka');});
   } else {
-    prompt('Ctrl+C aby skopiować kod osadzania:', code);
+    prompt('Ctrl+C aby skopiowac kod osadzania:', code);
   }
 }
 window.convertAndDownload = convertAndDownload;

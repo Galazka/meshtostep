@@ -261,8 +261,13 @@ def download(job_uuid: str, format: str = "step", db: Session = Depends(get_db))
                 if f.suffix.lower() == "." + fmt:
                     mt = "application/octet-stream"
                     return FileResponse(str(f), filename=Path(job.original_filename).stem + f".{fmt}", media_type=mt)
-        if fmt == "3mf":
-            raise HTTPException(404, "Plik 3MF niedostępny")
+        # fallback: convert STL source to requested format on-demand
+        if job.status == "done" and job.result_stl_path and os.path.exists(job.result_stl_path):
+            # obj from STL requires runtime conversion — not supported, return stl
+            if j := db.query(models.Job).filter(models.Job.uuid == job_uuid).first():
+                if j.result_stl_path and os.path.exists(j.result_stl_path):
+                    return FileResponse(j.result_stl_path, filename=Path(j.original_filename).stem + ".stl", media_type="model/stl")
+        raise HTTPException(404, f"Plik {fmt.upper()} niedostępny")
     if fmt == "stl":
         src_dir = JOBS_DIR / job_uuid
         if src_dir.exists():

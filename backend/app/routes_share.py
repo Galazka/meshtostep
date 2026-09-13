@@ -233,8 +233,13 @@ __JSON_LD__
   </div>
 </header>
 <div id="viewer3d"></div>
-<div id="shareColorBar" style="position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:20;display:none;gap:6px;background:rgba(255,255,255,.92);padding:6px 12px;border-radius:999px;border:1px solid #e2e8f0">
-  <button id="wireBtn" style="border:none;background:#f1f5f9;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer" onclick="(function(){var m=window._shareMesh;if(!m)return;m.material.wireframe=!m.material.wireframe;this.textContent=m.material.wireframe?'__WIRE_ON__':'__WIRE_OFF__';}).call(this)">__WIRE_OFF__</button>
+<div id="shareColorBar" style="position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:20;display:none;gap:6px;background:rgba(255,255,255,.92);padding:6px 12px;border-radius:999px;border:1px solid #e2e8f0;align-items:center">
+  <span style="font-size:10px;color:#94a3b8;margin-right:2px">Tło:</span>
+  <div id="bgSwatches"></div>
+  <div style="width:1px;height:20px;background:#e2e8f0;margin:0 4px"></div>
+  <span style="font-size:10px;color:#94a3b8;margin-right:2px">Model:</span>
+  <div id="meshSwatches"></div>
+  <button id="wireBtn" style="border:none;background:#f1f5f9;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;margin-left:4px" onclick="(function(){var m=window._shareMesh;if(!m)return;m.material.wireframe=!m.material.wireframe;this.textContent=m.material.wireframe?'__WIRE_ON__':'__WIRE_OFF__';}).call(this)">__WIRE_OFF__</button>
 </div>
 <div id="materialCalc" style="display:none;position:fixed;bottom:12px;left:16px;z-index:20;background:rgba(255,255,255,.95);border:1px solid #e2e8f0;border-radius:10px;padding:12px 16px;font-size:12px;min-width:220px;box-shadow:0 2px 12px rgba(0,0,0,.08)">
   <div style="font-weight:600;margin-bottom:8px;color:#1e293b">Estymacja druku 3D</div>
@@ -380,23 +385,38 @@ function animate() {
 }
 animate();
 
-// Color picker for share viewer
+// Color picker for share viewer — bg + mesh swatches
 (function(){
-  var colors=['#3b82f6','#ffffff','#9ca3af','#22c55e','#ef4444','#f97316','#a855f7','#06b6d4'];
+  var bgColors=['#f0f2f5','#ffffff','#000000','#f7f9fc','#e2e8f0','#1e293b'];
+  var meshColors=['#3b82f6','#ffffff','#9ca3af','#22c55e','#ef4444','#f97316','#a855f7','#06b6d3'];
+  var bgBar=document.getElementById('bgSwatches');
+  var meshBar=document.getElementById('meshSwatches');
   var bar=document.getElementById('shareColorBar');
-    if(!bar)return;
-    bar.style.display='none';
-  colors.forEach(function(hex){
+  if(!bar)return;
+  bar.style.display='none';
+  bgColors.forEach(function(hex){
     var d=document.createElement('div');
-    d.style.cssText='width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;background:'+hex;
-    d.className='swatch';
+    d.style.cssText='width:20px;height:20px;border-radius:50%;cursor:pointer;border:2px solid transparent;background:'+hex;
+    d.className='bg-swatch';
     d.onclick=function(){
-      if(window._shareMesh) window._shareMesh.material.color.set(hex);
-      var kids=bar.querySelectorAll('.swatch');
-        for(var i=0;i<kids.length;i++){var o=kids[i].firstChild;kids[i].style.borderColor='transparent';}
+      scene.background=new THREE.Color(hex);
+      var kids=bgBar.querySelectorAll('.bg-swatch');
+      for(var i=0;i<kids.length;i++) kids[i].style.borderColor='transparent';
       d.style.borderColor='#333';
     };
-    bar.appendChild(d);
+    bgBar.appendChild(d);
+  });
+  meshColors.forEach(function(hex){
+    var d=document.createElement('div');
+    d.style.cssText='width:20px;height:20px;border-radius:50%;cursor:pointer;border:2px solid transparent;background:'+hex;
+    d.className='m-swatch';
+    d.onclick=function(){
+      if(window._shareMesh) window._shareMesh.material.color.set(hex);
+      var kids=meshBar.querySelectorAll('.m-swatch');
+      for(var i=0;i<kids.length;i++) kids[i].style.borderColor='transparent';
+      d.style.borderColor='#333';
+    };
+    meshBar.appendChild(d);
   });
 })();
 
