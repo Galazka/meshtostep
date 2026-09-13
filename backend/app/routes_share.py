@@ -214,7 +214,21 @@ __JSON_LD__
     <div class="shared-by">__AUTHOR_INFO__</div>
   </div>
   <div class="pills">__CONV_INFO__</div>
-  <div class="actions">
+  <div class="actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <select id="dlFormat" style="padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;background:#fff">
+      <option value="step">Solid — STEP (CAD/CAM)</option>
+      <option value="igs">Solid — IGES (CAD)</option>
+      <option value="stl">Mesh — STL (uniwersalny)</option>
+      <option value="obj">Mesh — OBJ (z teksturami)</option>
+      <option value="3mf">Mesh — 3MF (druk 3D)</option>
+    </select>
+    <select id="dlQuality" style="padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;background:#fff">
+      <option value="ultra">Ultra — min. ścianek</option>
+      <option value="auto" selected>Auto — balans detale/rozmiar</option>
+      <option value="light">Lekko — scala koplanarne</option>
+      <option value="smooth">Gładki — wygładzanie</option>
+      <option value="off">Bez optymalizacji</option>
+    </select>
     <a class="btn btn-primary" href="#" id="dlBtn" onclick="convertAndDownload('__UUID__');return false">⬇ __DOWNLOAD_BTN__</a>
     <button class="btn btn-secondary" onclick="showEmbed()">⧉ __EMBED_BTN__</button>
   </div>
@@ -400,11 +414,15 @@ window.addEventListener('resize', () => {
     prompt('Embed code:', '<iframe src=\"/e/__JOB_ID__\" width=\"800\" height=\"500\" frameborder=\"0\"></iframe>');
   };
   window.convertAndDownload = function(uuid){
+    var fmtSel = document.getElementById('dlFormat');
+    var fmt = fmtSel ? fmtSel.value : 'step';
+    var qSel = document.getElementById('dlQuality');
+    var mode = qSel ? qSel.value : 'auto';
     var btn = document.getElementById('dlBtn');
     if(btn) btn.textContent='Konwertowanie...';
-    fetch('/api/convert-on-demand/'+uuid,{method:'POST'})
+    fetch('/api/convert-on-demand/'+uuid+'?mode='+mode,{method:'POST'})
       .then(function(r){return r.json();})
-      .then(function(d){if(d&&d.ok)window.location.href='/api/download/'+uuid+'?format=step';else alert('Błąd konwersji');})
+      .then(function(d){if(d&&d.ok)window.location.href='/api/download/'+uuid+'?format='+fmt;else alert('Błąd konwersji');})
       .catch(function(){alert('Błąd sieci');});
   };
 })();
