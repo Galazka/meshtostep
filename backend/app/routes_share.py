@@ -217,7 +217,6 @@ __JSON_LD__
   <div class="actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
     <select id="dlFormat" style="padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;background:#fff">
       <option value="step">Solid — STEP (CAD/CAM)</option>
-      <option value="igs">Solid — IGES (CAD)</option>
       <option value="stl">Mesh — STL (uniwersalny)</option>
       <option value="obj">Mesh — OBJ (z teksturami)</option>
       <option value="3mf">Mesh — 3MF (druk 3D)</option>
@@ -419,11 +418,16 @@ window.addEventListener('resize', () => {
     var qSel = document.getElementById('dlQuality');
     var mode = qSel ? qSel.value : 'auto';
     var btn = document.getElementById('dlBtn');
-    if(btn) btn.textContent='Konwertowanie...';
-    fetch('/api/convert-on-demand/'+uuid+'?mode='+mode,{method:'POST'})
-      .then(function(r){return r.json();})
-      .then(function(d){if(d&&d.ok)window.location.href='/api/download/'+uuid+'?format='+fmt;else alert('Błąd konwersji');})
-      .catch(function(){alert('Błąd sieci');});
+    if(btn) btn.textContent='Pobieranie...';
+    if(fmt === 'step'){
+      if(btn) btn.textContent='Konwertowanie...';
+      fetch('/api/convert-on-demand/'+uuid+'?mode='+mode,{method:'POST'})
+        .then(function(r){return r.json();})
+        .then(function(d){if(d&&d.ok)window.location.href='/api/download/'+uuid+'?format=step';else alert('Błąd konwersji');})
+        .catch(function(){alert('Błąd sieci');});
+    } else {
+      window.location.href='/api/download/'+uuid+'?format='+fmt;
+    }
   };
 })();
 let _descVisible = false;
