@@ -41,6 +41,7 @@ async function createShareLink() {
     fd.append('job_id', _shareJobId);
     fd.append('fmt', 'step');
     fd.append('show_author', document.getElementById('shareShowAuthor').checked);
+    fd.append('anon', _shareAnon);
     fd.append('expires_days', document.getElementById('shareExpiry').value);
     try {
         const r = await fetch('/api/share', {method:'POST', body:fd, headers: token?{'Authorization':'Bearer '+token}:{}});
@@ -48,7 +49,12 @@ async function createShareLink() {
             const d = await r.json();
             _shareVanityUrl = d.vanity || '';
             _shareToken = d.token || '';
-            document.getElementById('shareUrl').value = _shareVanityUrl || d.url;
+            // anon → token URL, inaczej vanity
+            if (_shareAnon || !d.vanity) {
+                document.getElementById('shareUrl').value = window.location.origin + '/s/' + d.token;
+            } else {
+                document.getElementById('shareUrl').value = d.vanity;
+            }
             document.getElementById('shareResult').style.display = 'block';
             btn.style.display = 'none';
         }
@@ -504,12 +510,9 @@ function openJobModal(jobId) {
     const heroSection = document.getElementById('jobPreviewHero');
     const heroImg = document.getElementById('jobPreviewHeroImg');
     const jp = j.preview_image || '/api/preview/' + j.uuid;
-    heroSection.style.display = 'block';
     heroImg.src = jp;
-    heroImg.onerror = function() {
-        heroSection.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:24px;background:var(--bg-subtle);border:1px solid var(--border-light);border-radius:8px;margin:12px 24px 0"><div style="font-size:28px">📄</div><div style="font-weight:600;font-size:14px;color:var(--text);text-align:center">'+(j.title||j.filename||('Job #'+j.id)).replace(/</g,'&lt;')+'</div><div style="font-size:12px;color:var(--text-secondary)">Podgląd niedostępny</div></div>';
-        heroSection.style.display = 'block';
-    };
+    // JPG hero = fallback only (shown by showJobModalErr when 3D fails).
+    heroSection.style.display = 'none';
     _jobCurrentStlUrl = '/api/stl-preview/' + j.uuid;
     document.getElementById('jobFullscreenBtn').style.display = '';
     loadJobModalSTL('/api/stl-preview/' + j.uuid);
@@ -541,7 +544,10 @@ function closeJobModal() {
     if (_job3Renderer) { _job3Renderer.dispose(); _job3Renderer = null; }
     if (_job3Controls) { try { _job3Controls.dispose(); } catch(e) {} _job3Controls = null; }
     const c = document.getElementById('jobPreviewCanvas');
-    if (c) c.innerHTML = '';
+    if (c) { c.innerHTML = ''; }
+    // Reset JPG hero fallback
+    const heroSection = document.getElementById('jobPreviewHero');
+    if (heroSection) heroSection.style.display = 'none';
 }
 
 /* ═══════ FULLSCREEN 3D OVERLAY ═══════ */
@@ -697,8 +703,10 @@ function _jobModalDeps(cb, errCb) {
 
 function showJobModalErr() {
     const c = document.getElementById('jobPreviewCanvas');
-    if (c) c.innerHTML =
-        '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-secondary)">Podglad niedostepny</div>';
+    if (c) c.innerHTML = '';
+    // Fallback: JPG hero when 3D fails.
+    const heroSection = document.getElementById('jobPreviewHero');
+    if (heroSection) heroSection.style.display = 'block';
 }
 
 function loadJobModalSTL(url) {

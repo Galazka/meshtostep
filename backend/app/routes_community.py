@@ -363,7 +363,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
       <option value="off">Off</option>
     </select>
     <a class="btn btn-primary" style="display:block;text-align:center" href="#" onclick="convertAndDownload('__UUID__');return false">Pobierz</a>
-    <a class="btn btn-sec" style="display:block;text-align:center;margin-top:8px" href="/api/share/__TOKEN__/download">Pobierz via share</a>
+    <a class="btn btn-sec" style="display:block;text-align:center;margin-top:8px" href="#" onclick="showEmbed('__TOKEN__');return false">Kod osadzania</a>
     <div style="margin-top:16px;font-size:13px;color:#64748b">Wyświetlenia: <b id="viewsCount">__VIEWS__</b></div>
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center">
       <button id="likeBtn" onclick="doLike()" style="border:1px solid #e2e8f0;background:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:4px">♥ <span id="likesCount">__LIKES__</span></button>
@@ -396,9 +396,9 @@ new STLLoader().load('/api/stl-preview/__UUID__', g=>{g.computeBoundingBox();con
 function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera);}animate();
 window.addEventListener('resize',()=>{camera.aspect=el.clientWidth/el.clientHeight;camera.updateProjectionMatrix();renderer.setSize(el.clientWidth,el.clientHeight);});
 function convertAndDownload(uuid){
-  var fmtSel = document.getElementById('dlFormat');
+  var fmtSel = document.getElementById('dlFormat2') || document.getElementById('dlFormat');
   var fmt = fmtSel ? fmtSel.value : 'step';
-  var qSel = document.getElementById('dlQuality');
+  var qSel = document.getElementById('dlQuality2') || document.getElementById('dlQuality');
   var mode = qSel ? qSel.value : 'auto';
   var btn = document.querySelector('.btn-primary[href]');
   if(btn) btn.textContent='Konwertowanie...';
@@ -427,6 +427,16 @@ document.getElementById('btnColor').onclick=()=>{
   document.getElementById('btnColor').style.background=colors[colorIdx];
   if(viewerMesh)viewerMesh.material.color.set(colors[colorIdx]);
 };
+function showEmbed(token){
+  var code='<div style="width:100%;max-width:512px;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden"><iframe src="'+window.location.origin+'/e/'+token+'" width="100%" height="420" style="border:0;border-radius:8px" loading="lazy" allowfullscreen></iframe><div style="padding:6px 12px;font-size:11px;color:#94a3b8;text-align:center">Osadzone z 3dfile.link</div></div>';
+  if(window.clipboard && navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(code).then(function(){alert('Kod osadzania skopiowany do schowka');});
+  } else {
+    prompt('Ctrl+C aby skopiować kod osadzania:', code);
+  }
+}
+window.convertAndDownload = convertAndDownload;
+window.showEmbed = showEmbed;
 </script>
 <!-- ── Opis / blog + Komentarze ── -->
 <div style="max-width:800px;margin:24px auto;padding:0 16px">

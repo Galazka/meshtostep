@@ -50,6 +50,12 @@ def _auto_thumb(mesh_file: str, thumb_path):
         faces = faces[np.random.choice(len(faces), 8000, replace=False)]
     poly = Poly3DCollection(verts[faces], alpha=0.9, facecolor="#3b82f6", edgecolor="#1e40af", linewidths=0.1)
     ax.add_collection3d(poly)
+    # Respect mesh aspect ratio: compute extents, set box_aspect
+    import numpy as np
+    extents = np.ptp(verts, axis=0)
+    max_ext = extents.max()
+    if max_ext > 0:
+        ax.set_box_aspect(extents / max_ext)
     ax.auto_scale_xyz(verts[:,0], verts[:,1], verts[:,2])
     ax.view_init(elev=20, azim=45); ax.set_axis_off()
     plt.tight_layout(pad=0)
@@ -390,6 +396,12 @@ def stl_thumbnail(job_uuid: str, db: Session = Depends(get_db)):
             faces = faces[idx]
         poly = Poly3DCollection(verts[faces], alpha=0.9, facecolor="#3b82f6", edgecolor="#1e40af", linewidths=0.1)
         ax.add_collection3d(poly)
+        # Respect mesh aspect ratio
+        import numpy as np
+        extents = np.ptp(verts, axis=0)
+        max_ext = extents.max()
+        if max_ext > 0:
+            ax.set_box_aspect(extents / max_ext)
         # auto-scale
         ax.auto_scale_xyz(verts[:,0], verts[:,1], verts[:,2])
         ax.view_init(elev=20, azim=45)
@@ -462,6 +474,7 @@ def create_share(
     fmt: str = Form("step"),
     expires_days: int = Form(7),
     show_author: bool = Form(True),
+    anon: bool = Form(False),
     user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -484,12 +497,14 @@ def create_share(
     db.commit()
 
     vanity = None
-    if job.slug and getattr(user, "username", None) and show_author:
+    # anon forces token-only URL (no /u/{username}/{slug})
+    final_show_author = show_author and not anon
+    if job.slug and getattr(user, "username", None) and final_show_author:
         vanity = f"{settings.APP_URL}/u/{user.username}/{job.slug}"
     if vanity:
         share.slug = job.slug
         db.commit()
-    return {"url": vanity or f"{settings.APP_URL}/s/{token}", "token": token, "vanity": vanity}
+    return {"url": vanity or f"{settings.APP_URL}/s/{token}", "token": token, "vanity": vanity, "anon": anon}
 
 
 @router.get("/share/{token}")
