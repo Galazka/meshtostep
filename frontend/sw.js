@@ -1,4 +1,4 @@
-const CACHE = '3dfile-v4';
+const CACHE = '3dfile-v5';
 const ASSETS = ['/', '/manifest.json', '/logo.png?v=2'];
 
 self.addEventListener('install', e => {
