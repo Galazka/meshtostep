@@ -142,6 +142,9 @@ def stats(admin: models.User = Depends(require_admin), db: Session = Depends(get
         models.ShareLink.is_active == True).count()  # noqa: E712
     total_share_views = db.query(func.sum(models.ShareLink.views)).scalar() or 0
 
+    # marketing consent users
+    marketing_consent_users = db.query(models.User).filter(models.User.marketing_consent == True).count()
+
     return {
             # required new keys
             "total_users": total_users,
