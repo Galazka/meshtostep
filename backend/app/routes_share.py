@@ -390,19 +390,21 @@ window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-window.showEmbed = function() {
-  prompt('Embed code:', '<iframe src="/e/__JOB_ID__" width="800" height="500" frameborder="0"></iframe>');
-};
-window.convertAndDownload = function(uuid){
-  var btn = document.getElementById('dlBtn');
-  if(btn) btn.textContent='Konwertowanie...';
-  fetch('/api/convert-on-demand/'+uuid,{method:'POST'})
-    .then(function(r){return r.json();})
-    .then(function(d){if(d&&d.ok)window.location.href='/api/download/'+uuid+'?format=step';else alert('Błąd konwersji');})
-    .catch(function(){alert('Błąd sieci');});
-};
 </script>
 <script>
+(function(){
+  window.showEmbed = function() {
+    prompt('Embed code:', '<iframe src=\"/e/__JOB_ID__\" width=\"800\" height=\"500\" frameborder=\"0\"></iframe>');
+  };
+  window.convertAndDownload = function(uuid){
+    var btn = document.getElementById('dlBtn');
+    if(btn) btn.textContent='Konwertowanie...';
+    fetch('/api/convert-on-demand/'+uuid,{method:'POST'})
+      .then(function(r){return r.json();})
+      .then(function(d){if(d&&d.ok)window.location.href='/api/download/'+uuid+'?format=step';else alert('Błąd konwersji');})
+      .catch(function(){alert('Błąd sieci');});
+  };
+})();
 let _descVisible = false;
 let _jobId = __JOB_ID__;
 function toggleDescPanel() {
@@ -450,8 +452,11 @@ async function loadComments() {
     var volEl = document.getElementById('matVolume');
     if(volEl) volEl.textContent = 'Objetosc: ' + d.volume_cm3 + ' cm3' + (d.dims_mm ? ' | ' + d.dims_mm : '');
     function updateCalc(){
-      var mat = document.getElementById('matSelect').value;
-      var infill = document.getElementById('infillSelect').value;
+      var matEl = document.getElementById('matSelect');
+      var infillEl = document.getElementById('infillSelect');
+      if(!matEl || !infillEl) return;
+      var mat = matEl.value;
+      var infill = infillEl.value;
       var key = mat + '_' + infill;
       var e = d.estimates[key];
       if(e){
