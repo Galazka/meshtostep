@@ -217,16 +217,16 @@ __JSON_LD__
   <div class="actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
     <select id="dlFormat" style="padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;background:#fff">
       <option value="step">Solid — STEP (CAD/CAM)</option>
-      <option value="stl">Mesh — STL (uniwersalny)</option>
-      <option value="obj">Mesh — OBJ (z teksturami)</option>
-      <option value="3mf">Mesh — 3MF (druk 3D)</option>
+      <option value="stl">Mesh — __FMT_STL__</option>
+      <option value="obj">Mesh — __FMT_OBJ__</option>
+      <option value="3mf">Mesh — __FMT_3MF__</option>
     </select>
     <select id="dlQuality" style="padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;background:#fff">
-      <option value="ultra">Ultra — min. ścianek</option>
-      <option value="auto" selected>Auto — balans detale/rozmiar</option>
-      <option value="light">Lekko — scala koplanarne</option>
-      <option value="smooth">Gładki — wygładzanie</option>
-      <option value="off">Bez optymalizacji</option>
+      <option value="ultra">__Q_ULTRA__</option>
+      <option value="auto" selected>__Q_AUTO__</option>
+      <option value="light">__Q_LIGHT__</option>
+      <option value="smooth">__Q_SMOOTH__</option>
+      <option value="off">__Q_OFF__</option>
     </select>
     <a class="btn btn-primary" href="#" id="dlBtn" onclick="convertAndDownload('__UUID__');return false">⬇ __DOWNLOAD_BTN__</a>
     <button class="btn btn-secondary" onclick="showEmbed()">⧉ __EMBED_BTN__</button>
@@ -234,7 +234,7 @@ __JSON_LD__
 </header>
 <div id="viewer3d"></div>
 <div id="shareColorBar" style="position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:20;display:none;gap:6px;background:rgba(255,255,255,.92);padding:6px 12px;border-radius:999px;border:1px solid #e2e8f0">
-  <button id="wireBtn" style="border:none;background:#f1f5f9;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer" onclick="(function(){var m=window._shareMesh;if(!m)return;m.material.wireframe=!m.material.wireframe;this.textContent=m.material.wireframe?'Siatka ✓':'Siatka';}).call(this)">Siatka</button>
+  <button id="wireBtn" style="border:none;background:#f1f5f9;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer" onclick="(function(){var m=window._shareMesh;if(!m)return;m.material.wireframe=!m.material.wireframe;this.textContent=m.material.wireframe?'__WIRE_ON__':'__WIRE_OFF__';}).call(this)">__WIRE_OFF__</button>
 </div>
 <div id="materialCalc" style="display:none;position:fixed;bottom:12px;left:16px;z-index:20;background:rgba(255,255,255,.95);border:1px solid #e2e8f0;border-radius:10px;padding:12px 16px;font-size:12px;min-width:220px;box-shadow:0 2px 12px rgba(0,0,0,.08)">
   <div style="font-weight:600;margin-bottom:8px;color:#1e293b">Estymacja druku 3D</div>
@@ -617,6 +617,14 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
         token=token,
         download_btn="Pobierz STEP" if is_pl else "Download STEP",
         embed_btn="Osadź" if is_pl else "Embed",
+        fmt_stl="STL (uniwersalny)" if is_pl else "STL (universal)",
+        fmt_obj="OBJ (z teksturami)" if is_pl else "OBJ (with textures)",
+        fmt_3mf="3MF (druk 3D)" if is_pl else "3MF (3D printing)",
+        q_ultra="Ultra — min. ścianek" if is_pl else "Ultra — min. faces",
+        q_auto="Auto — balans detale/rozmiar" if is_pl else "Auto — detail/size balance",
+        q_light="Lekko — scala koplanarne" if is_pl else "Light — merge coplanar",
+        q_smooth="Gładki — wygładzanie" if is_pl else "Smooth — smoothing",
+        q_off="Bez optymalizacji" if is_pl else "No optimization",
         uuid=job.uuid,
         job_id=job.id,
         conv_info=conv_info,
