@@ -499,8 +499,28 @@
     </div>
     <div class="steps">
         <div class="step"><div class="step-num">1</div><h3 data-i18n="hiwS1Title">Wgraj mesh</h3><p data-i18n="hiwS1Desc">Przeciągnij plik STL, 3MF lub OBJ. Do 200 MB.</p></div>
-        <div class="step"><div class="step-num">2</div><h3>Podgląd 3D</h3><p>Sprawdź model w przeglądarce na telefonie lub laptopie.</p></div>
-        <div class="step"><div class="step-num">3</div><h3>Udostępnij</h3><p>Jeden link do wklejenia na Printables, MakerWorld, w slicerze.</p></div>
+        <div class="step"><div class="step-num">2</div><h3 data-i18n="hiwS2Title">Silnik konwertuje</h3><p data-i18n="hiwS2Desc">Nasz autorski silnik przetwarza geometrię. Automatyczna optymalizacja i czyszczenie modelu.</p></div>
+        <div class="step"><div class="step-num">3</div><h3 data-i18n="hiwS3Title">Pobierz STEP</h3><p data-i18n="hiwS3Desc">Gotowy plik STEP do importu w CAD. Porównaj przed i po w podglądzie 3D.</p></div>
+    </div>
+    <div style="text-align:center;margin-top:32px">
+        <div style="display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin-bottom:20px">
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:220px;text-align:center">
+                <div style="font-size:32px;margin-bottom:8px">🖥️</div>
+                <div style="font-weight:700;margin-bottom:4px" data-i18n="hiwS1Title">Wgraj mesh</div>
+                <div style="font-size:13px;color:var(--text-secondary)" data-i18n="hiwS1Desc">Przeciągnij STL / 3MF / OBJ</div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:220px;text-align:center">
+                <div style="font-size:32px;margin-bottom:8px">⚙️</div>
+                <div style="font-weight:700;margin-bottom:4px" data-i18n="hiwS2Title">Silnik konwertuje</div>
+                <div style="font-size:13px;color:var(--text-secondary)" data-i18n="hiwS2Desc">Auto-optimizacja, 5 trybów</div>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:220px;text-align:center">
+                <div style="font-size:32px;margin-bottom:8px">📦</div>
+                <div style="font-weight:700;margin-bottom:4px" data-i18n="hiwS3Title">Pobierz STEP</div>
+                <div style="font-size:13px;color:var(--text-secondary)" data-i18n="hiwS3Desc">Gotowy dla CAD + 3D preview</div>
+            </div>
+        </div>
+        <p style="font-size:14px;color:var(--text-secondary);max-width:600px;margin:0 auto" data-i18n="hiwExtra">Wgraj plik, poczekaj kilka sekund, pobierz gotowy STEP. Działa na telefonie i laptopie. Za darmo, bez rejestracji.</p>
     </div>
 
     <div id="homeRecent" style="display:none;margin-bottom:48px">
@@ -606,29 +626,28 @@
     <div class="footer-inner">
         <div class="footer-brand">
             <img src="/logo.png?v=2" alt="3DFILE" onerror="this.style.display='none'">
-            <p>Hosting modeli 3D</p>
+            <p data-i18n="footerAbout">Hosting modeli 3D — wgraj STL / 3MF / OBJ, zobacz w 3D na telefonie, przekonwertuj do STEP dla CAD i udostępnij jednym linkiem. Za darmo, bez instalacji.</p>
         </div>
         <div class="footer-cols">
             <div class="footer-col">
-                <h4>Produkt</h4>
+                <h4 data-i18n="footerProduct">Produkt</h4>
                 <a href="#" onclick="go('home')" data-i18n="navConverter">Wgraj</a>
-                <a href="#" onclick="go('discover')">Odkrywaj</a>
-                <a href="#" onclick="go('faq')">FAQ</a>
+                <a href="#" onclick="go('discover')" data-i18n="navDiscover">Odkrywaj</a>
+                <a href="#" onclick="go('faq')" data-i18n="navFAQ">FAQ</a>
             </div>
             <div class="footer-col">
-                <h4>Prawne</h4>
+                <h4 data-i18n="footerLegal">Prawne</h4>
                 <a href="regulamin.html" data-i18n="footerRegulamin">Regulamin</a>
                 <a href="prywatnosc.html" data-i18n="footerPrivacy">Polityka prywatności</a>
             </div>
             <div class="footer-col">
-                <h4>Kontakt</h4>
-                <a href="mailto:support@3dfile.link">support@3dfile.link</a>
-                <a href="mailto:kontakt@3dfile.link">kontakt@3dfile.link</a>
+                <h4 data-i18n="footerContact">Kontakt</h4>
+                <a href="mailto:hallo@3dfile.link">hallo@3dfile.link</a>
             </div>
         </div>
     </div>
     <div class="footer-bottom">
-        © 2026 3dfile.link · Hosting 3D · Regulamin · Polityka prywatności
+        © 2026 3dfile.link · <a href="regulamin.html" style="color:inherit">Regulamin</a> · <a href="prywatnosc.html" style="color:inherit">Polityka prywatności</a> · <a href="mailto:hallo@3dfile.link" style="color:inherit">hallo@3dfile.link</a>
     </div>
 </footer>
 
