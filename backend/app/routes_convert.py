@@ -936,6 +936,8 @@ def delete_my_job(
         raise HTTPException(403, "Not your job")
     db.query(models.ShareLink).filter(models.ShareLink.job_id == job.id).delete()
     db.query(models.Comment).filter(models.Comment.job_id == job.id).delete()
+    db.query(models.JobRating).filter(models.JobRating.job_id == job.id).delete()
+    db.query(models.UserLike).filter(models.UserLike.job_id == job.id).delete()
     jobs_dir = Path(settings.DATA_DIR) / "files"
     job_dir = jobs_dir / job.uuid
     if job_dir.is_dir():

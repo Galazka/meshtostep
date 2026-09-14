@@ -873,11 +873,18 @@ const I18N = {
     async function loadStats() {
         try {
             const d = await api('/api/admin/stats');
-            document.getElementById('statUsers').textContent = d.total_users ?? d.users ?? '—';
-            document.getElementById('statJobs').textContent = d.total_jobs ?? d.jobs ?? '—';
-            document.getElementById('statDownloads').textContent = d.total_downloads ?? '—';
+            const setVal = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+            setVal('statUsers', d.total_users ?? d.users ?? '—');
+            setVal('statUsersExport', d.total_users ?? d.users ?? '—');
+            setVal('statJobs', d.total_jobs ?? d.jobs ?? '—');
+            setVal('statJobsExport', d.total_jobs ?? d.jobs ?? '—');
+            setVal('statMarketingConsent', d.marketing_consent_users ?? '—');
+            setVal('statMarketingConsentExport', d.marketing_consent_users ?? '—');
             const bytes = d.total_storage_bytes ?? 0;
-            document.getElementById('statStorage').innerHTML = fmtBytes(bytes) + ' <span class="storage-fmt">' + bytes.toLocaleString() + ' B</span>';
+            const storageTxt = fmtBytes(bytes) + ' <span class="storage-fmt">' + bytes.toLocaleString() + ' B</span>';
+            ['statStorage','statStorageExport'].forEach(id=>{ const e=document.getElementById(id); if(e) e.innerHTML = storageTxt; });
+            setVal('statDownloads', d.total_downloads ?? '—');
+            setVal('statDownloadsExport', d.total_downloads ?? '—');
             drawUploadsChart(d.daily_uploads_last_30d || []);
             renderTopUploaders(d.storage_by_user || []);
             if(d.top_models) renderTopModels(d.top_models);

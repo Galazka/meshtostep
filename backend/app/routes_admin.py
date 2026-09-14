@@ -21,6 +21,8 @@ def _delete_job(db: Session, job_id: int):
         return
     db.query(models.ShareLink).filter(models.ShareLink.job_id == job.id).delete()
     db.query(models.Comment).filter(models.Comment.job_id == job.id).delete()
+    db.query(models.JobRating).filter(models.JobRating.job_id == job.id).delete()
+    db.query(models.UserLike).filter(models.UserLike.job_id == job.id).delete()
     if job.uuid:
         job_dir = os.path.join(settings.DATA_DIR, "files", job.uuid)
         if os.path.isdir(job_dir):
