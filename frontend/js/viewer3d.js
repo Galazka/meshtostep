@@ -73,7 +73,7 @@ function init3DViewer(container) {
         _threeControls && _threeControls.dispose();
     }
     container.querySelectorAll('canvas').forEach(function(c){ c.remove(); });
-    const W = container.clientWidth || 640, H = container.clientHeight || 420;
+    const W = Math.min(container.clientWidth || 640, 1200), H = container.clientHeight || 420;
     _threeScene = new THREE.Scene();
     _threeScene.background = new THREE.Color(0xf0f2f5);
     _threeCamera = new THREE.PerspectiveCamera(50, W / H, 0.1, 1000);

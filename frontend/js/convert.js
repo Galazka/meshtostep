@@ -82,11 +82,10 @@ async function doConvert() {
 }
 
 function quickUpload(){
-    const input=document.createElement('input');
-    input.type='file';input.accept='.stl,.3mf,.obj';
+    const input=document.getElementById('mfFileInput') || document.createElement('input');
+    if(!input.id){ input.type='file'; input.accept='.stl,.3mf,.obj'; input.hidden=true; document.body.appendChild(input); }
     input.onchange=function(){
         if(!input.files.length) return;
-        // reuse the main dropzone flow — do NOT navigate away (preserves logged-in session & file)
         const file = input.files[0];
         selectedFile = file;
         document.getElementById('fileName').textContent = file.name;
@@ -99,8 +98,10 @@ function quickUpload(){
         if (vw) { vw.classList.remove('show'); vw.style.display = ''; }
         setTimeout(function(){ document.getElementById('dropZone').classList.add('has-file'); }, 10);
         toast('Plik gotowy: ' + file.name);
-        doConvert();
+        if(typeof go === 'function') go('home');
+        setTimeout(function(){ doConvert(); }, 200);
     };
+    input.value = '';
     input.click();
 }
 

@@ -74,7 +74,7 @@
         .nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
         .nav-inner { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 64px; max-width: 1200px; margin: 0 auto; }
         .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
-        .nav-logo img { height: 40px; width: auto; object-fit: contain; }
+        .nav-logo img { height: 56px; width: auto; object-fit: contain; }
         .nav-logo span { font-size: 18px; font-weight: 800; color: var(--text); letter-spacing: -.3px; }
         .nav-links { display: flex; gap: 2px; align-items: center; }
         .nav-link { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border: none; background: none; font-size: 14px; font-weight: 500; color: var(--text-secondary); cursor: pointer; border-radius: var(--radius-sm); transition: all var(--transition); font-family: inherit; }
@@ -255,7 +255,7 @@
         .footer { border-top: 1px solid var(--border); padding: 40px 24px; max-width: 1200px; margin: 0 auto; }
         .footer-inner { display: flex; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
         .footer-brand { flex-shrink: 0; }
-        .footer-brand img { height: 32px; object-fit: contain; }
+        .footer-brand img { height: 44px; object-fit: contain; }
         .footer-brand p { color: var(--text-muted); font-size: 13px; margin-top: 6px; }
         .footer-cols { display: flex; gap: 40px; }
         .footer-col h4 { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 10px; text-transform: uppercase; letter-spacing: .5px; }
@@ -570,7 +570,9 @@
             <div class="quota-track"><div class="quota-fill" id="quotaFill" style="width:0"></div></div>
         </div>
         <div class="files-toolbar" id="myFilesToolbar" style="display:none">
+            <input type="hidden" id="mfFolderFilter" value="">
             <button class="nav-btn nav-btn-primary" onclick="quickUpload()" data-i18n="mfQuickUpload">↑ Wgraj</button>
+            <input type="file" id="mfFileInput" accept=".stl,.3mf,.obj" hidden>
             <input id="mfSearch" data-i18n-placeholder="mfSearchPh" placeholder="Szukaj po nazwie..." oninput="mfRender()">
             <button class="nav-btn nav-btn-primary" onclick="mfCreateFolder()" data-i18n="mfCreateFolder">+ Folder</button>
             <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" id="mfSelectAll" onchange="mfToggleAll(this.checked)"> <span data-i18n="mfSelectAll">Wszystkie</span></label>
@@ -898,6 +900,32 @@ var _deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); _deferredPrompt = e; document.getElementById('pwaBanner').style.display = 'flex'; });
 document.getElementById('pwaInstallBtn').addEventListener('click', async function() { if (!_deferredPrompt) return; _deferredPrompt.prompt(); await _deferredPrompt.userChoice; _deferredPrompt = null; document.getElementById('pwaBanner').style.display = 'none'; });
 document.getElementById('pwaDismiss').addEventListener('click', function() { document.getElementById('pwaBanner').style.display = 'none'; });
+
+// Global drag-and-drop overlay — works anywhere on the page
+var _globalDropOverlay = document.getElementById('globalDropOverlay');
+if (!_globalDropOverlay) {
+    _globalDropOverlay = document.createElement('div');
+    _globalDropOverlay.id = 'globalDropOverlay';
+    _globalDropOverlay.style.cssText = 'position:fixed;inset:0;z-index:9998;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.4)';
+    _globalDropOverlay.innerHTML = '<div style="background:#fff;border-radius:14px;padding:40px;border:2px dashed var(--border);text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)"><div style="font-size:48px;margin-bottom:12px">📁</div><div style="font-size:18px;font-weight:600">Upuść plik tutaj</div><div style="color:var(--text-muted);font-size:13px;margin-top:6px">STL / 3MF / OBJ</div></div>';
+    document.body.appendChild(_globalDropOverlay);
+    window.addEventListener('dragover', function(e) {
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length && ['stl','3mf','obj'].includes((e.dataTransfer.files[0].name||'').split('.').pop().toLowerCase())) {
+            e.preventDefault(); e.stopPropagation(); _globalDropOverlay.style.display = 'flex';
+        }
+    }, true);
+    window.addEventListener('dragleave', function(e) {
+        if (e.target === document || e.target === _globalDropOverlay) _globalDropOverlay.style.display = 'none';
+    }, true);
+    window.addEventListener('drop', function(e) {
+        e.preventDefault(); e.stopPropagation(); _globalDropOverlay.style.display = 'none';
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+            var f = e.dataTransfer.files[0];
+            if (typeof handleSelectedFile !== 'undefined') handleSelectedFile(f);
+            else if (typeof pickFile !== 'undefined') pickFile(f);
+        }
+    }, true);
+}
 </script>
 
 <!-- ═══ COOKIE CONSENT ═══ -->
