@@ -44,6 +44,47 @@ def _delete_user(db: Session, user_id: int):
     db.delete(user)
 
 
+# ── Comments moderation ────────────────────────────────────────────
+@router.get("/comments")
+def list_comments_admin(admin: models.User = Depends(require_admin), db: Session = Depends(get_db)):
+    comments = db.query(models.Comment).order_by(models.Comment.created_at.desc()).limit(500).all()
+    return [
+        {
+            "id": c.id,
+            "body": c.body,
+            "job_id": c.job_id,
+            "username": getattr(getattr(c, "user", None), "username", None) or "anon",
+            "is_hidden": c.is_hidden,
+            "created_at": c.created_at.isoformat() if c.created_at else None,
+        }
+        for c in comments
+    ]
+
+
+@router.delete("/comments/{comment_id}")
+def delete_comment_admin(comment_id: int, admin: models.User = Depends(require_admin), db: Session = Depends(get_db)):
+    c = db.query(models.Comment).filter(models.Comment.id == comment_id).first()
+    if not c:
+        raise HTTPException(404, "Komentarz nie znaleziony")
+    db.delete(c)
+    db.commit()
+    return {"ok": True}
+
+
+class HideReq(BaseModel):
+    hide: bool = True
+
+
+@router.post("/comments/{comment_id}/hide")
+def hide_comment(comment_id: int, req: HideReq, admin: models.User = Depends(require_admin), db: Session = Depends(get_db)):
+    c = db.query(models.Comment).filter(models.Comment.id == comment_id).first()
+    if not c:
+        raise HTTPException(404, "Komentarz nie znaleziony")
+    c.is_hidden = req.hide
+    db.commit()
+    return {"ok": True, "is_hidden": c.is_hidden}
+
+
 # ── Overview stats ───────────────────────────────────────────────────
 @router.get("/stats")
 def stats(admin: models.User = Depends(require_admin), db: Session = Depends(get_db)):

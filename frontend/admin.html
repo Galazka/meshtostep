@@ -299,6 +299,7 @@
                                     <button class="admin-tab" onclick="switchAdminTab('geo')" data-tab="geo" data-i18n="tabGeo">Geo</button>
                                     <button class="admin-tab" onclick="switchAdminTab('export')" data-tab="export" data-i18n="tabExport">Eksport</button>
                                     <button class="admin-tab" onclick="switchAdminTab('ads')" data-tab="ads">Reklamy</button>
+                                    <button class="admin-tab" onclick="switchAdminTab('comments')" data-tab="comments">Komentarze</button>
                                 </div>
 
                 <!-- USERS TAB -->
@@ -416,6 +417,24 @@
                                     <tbody id="adsBody"></tbody>
                                 </table>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COMMENTS TAB -->
+                <div class="tab-content" id="tab-comments">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Komentarze</h2>
+                            <p class="subtitle">Moderacja — ukryj lub usuń komentarze</p>
+                        </div>
+                        <div class="panel-body padded">
+                            <table style="width:100%;border-collapse:collapse">
+                                <thead><tr style="border-bottom:1px solid var(--border)">
+                                    <th align="left">ID</th><th align="left">Użytkownik</th><th align="left">Model</th><th align="left">Treść</th><th align="left">Stan</th><th align="left">Czas</th><th align="left">Akcje</th>
+                                </tr></thead>
+                                <tbody id="commentsBody"></tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -835,7 +854,9 @@ const I18N = {
         if (name === 'stats' && !_statsLoaded) { loadStats(); _statsLoaded = true; }
         if (name === 'queue' && !_queueLoaded) { loadQueue(); _queueLoaded = true; }
         if (name === 'export' && !_exportLoaded) { loadExport(); _exportLoaded = true; }
+        if (name === 'comments' && !_commentsLoaded) { loadComments(); _commentsLoaded = true; }
     }
+    let _commentsLoaded = false;
 
     let _statsLoaded = false;
     let _queueLoaded = false;
@@ -1539,6 +1560,36 @@ const I18N = {
                     '<button class="btn-sm danger" onclick="deleteAdSlot(' + s.id + ')">Usuń</button>' +
                 '</td></tr>';
         }).join('');
+    }
+
+    /* ═══════════════════════ COMMENTS ═══════════════════════ */
+    let _allComments = [];
+    async function loadComments() {
+        try {
+            const d = await api('/api/admin/comments');
+            _allComments = d || [];
+            document.getElementById('commentsBody').innerHTML = _allComments.map(function(c) {
+                return '<tr>' +
+                    '<td>' + c.id + '</td><td>' + esc(c.username || 'anon') + '</td>' +
+                    '<td><a href="#" onclick="openJobModal(' + c.job_id + ');return false">#' + c.job_id + '</a></td>' +
+                    '<td style="max-width:300px;overflow:hidden;text-overflow:ellipsis">' + esc((c.body || '').slice(0,120)) + '</td>' +
+                    '<td><span style="color:' + (c.is_hidden ? 'var(--warning)' : 'var(--success)') + '">' + (c.is_hidden ? 'UKRYTY' : 'WIDOCZNY') + '</span></td>' +
+                    '<td>' + (c.created_at || '').slice(0,16).replace('T',' ') + '</td>' +
+                    '<td>' +
+                        '<button class="btn-sm" onclick="toggleComment(' + c.id + ',' + (c.is_hidden ? 'false' : 'true') + ')">' + (c.is_hidden ? 'Pokaż' : 'Ukryj') + '</button> ' +
+                        '<button class="btn-sm danger" onclick="deleteComment(' + c.id + ')">Usuń</button>' +
+                    '</td></tr>';
+            }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px">Brak komentarzy</td></tr>';
+        } catch (e) { }
+    }
+
+    async function toggleComment(id, hide) {
+        try { await api('/api/admin/comments/' + id + '/hide', {method:'POST', body: JSON.stringify({hide:hide})}); loadComments(); } catch (e) { alert('Błąd: ' + (e.message||e)); }
+    }
+
+    async function deleteComment(id) {
+        if (!confirm('Usunąć komentarz #' + id + '?')) return;
+        try { await api('/api/admin/comments/' + id, {method:'DELETE'}); loadComments(); } catch (e) { alert('Błąd: ' + (e.message||e)); }
     }
 
     async function toggleAdSlot(id) {

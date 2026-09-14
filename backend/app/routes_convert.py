@@ -493,12 +493,13 @@ def create_share(
         raise HTTPException(403)
 
     token = uuid.uuid4().hex[:16]
+    final_show_author = show_author and not anon
     share = models.ShareLink(
         token=token,
         job_id=job.id,
         user_id=user.id if user else None,
         format=fmt,
-        show_author=show_author,
+        show_author=final_show_author,
         expires_at=datetime.utcnow() + timedelta(days=expires_days) if expires_days > 0 else None,
     )
     db.add(share)
