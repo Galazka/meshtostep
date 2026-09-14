@@ -57,6 +57,16 @@ async function createShareLink() {
             }
             document.getElementById('shareResult').style.display = 'block';
             btn.style.display = 'none';
+            const infoEl=document.getElementById('shareExpiryInfo');
+            const days=document.getElementById('shareExpiry').value;
+            if(infoEl){
+                if(days>0){
+                    infoEl.innerHTML='⏳ Link ważny <b>'+days+' dni</b> — auto-usuwany po wygaśnięciu.';
+                } else {
+                    infoEl.innerHTML='⏒ Link bez limitu czasowego.';
+                }
+            }
+            startExpiryCountdown(d.token||d.share_id||'');
         }
     } catch(e) {}
     btn.disabled = false; btn.textContent = t('shareCreate');
@@ -388,13 +398,10 @@ function openShareModalFor(jobId){
     document.getElementById('shareResult').style.display='none';
     document.getElementById('shareCreateBtn').style.display='';
     document.getElementById('shareUrl').value='';
-    fetch('/api/jobs/'+jobId+'/share',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({anon:_shareAnon,show_author:document.getElementById('shareShowAuthor')?document.getElementById('shareShowAuthor').checked:true})}).then(function(r){return r.json()}).then(function(d){
-        _shareVanityUrl=d.vanity||'';
-        _shareToken=d.token||'';
-        document.getElementById('shareUrl').value=d.url||d.vanity||'';
-        document.getElementById('shareResult').style.display='block';
-        document.getElementById('shareCreateBtn').style.display='none';
-    }).catch(function(){});
+    const showCk=document.getElementById('shareShowAuthor');
+    if(showCk) showCk.checked=true;
+    const anonBtn=document.getElementById('shareAnonBtn');
+    if(anonBtn){ _shareAnon=false; anonBtn.textContent='🔒 Link bez nicka: OFF'; }
 }
 function updatePublishToggleUI(){
     const tog=document.getElementById('sharePublishToggle');
@@ -1057,3 +1064,24 @@ window.showEmbedDialog = doEmbed;
 window.copyEmbedCode = copyEmbedCode;
 window.showShareEmailModal = showShareEmailModal;
 window.shareEmailSend = shareEmailSend;
+
+let _expiryTimer=null;
+function startExpiryCountdown(token){
+    const el=document.getElementById('shareExpiryInfo');
+    if(!el||!token) return;
+    if(_expiryTimer) clearInterval(_expiryTimer);
+    async function tick(){
+        try{
+            const r=await fetch('/api/share/'+token+'/status');
+            if(!r.ok) return;
+            const d=await r.json();
+            if(!d.expires_at){ return; }
+            const ms=new Date(d.expires_at).getTime()-Date.now();
+            if(ms<=0){ el.innerHTML='⛔ Link wygasł.'; clearInterval(_expiryTimer); return; }
+            const h=Math.floor(ms/36e5), m=Math.floor(ms%36e5/6e4);
+            el.innerHTML='⏳ Link ważny jeszcze: <b>'+(ms>864e5?(Math.floor(ms/864e5)+'d '+h%24+'h'):(h+'h '+m+'m'))+'</b>';
+        }catch(e){}
+    }
+    tick(); _expiryTimer=setInterval(tick,60000);
+}
+window.startExpiryCountdown=startExpiryCountdown;

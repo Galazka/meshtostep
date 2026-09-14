@@ -538,6 +538,15 @@ def get_share(token: str, db: Session = Depends(get_db)):
     }
 
 
+@router.get("/share/{token}/status")
+def share_status(token: str, db: Session = Depends(get_db)):
+    share = db.query(models.ShareLink).filter(
+        models.ShareLink.token == token
+    ).first()
+    if not share:
+        raise HTTPException(404)
+    return {"expires_at": str(share.expires_at) if share.expires_at else None}
+
 @router.get("/share/{token}/download")
 def share_download(token: str, db: Session = Depends(get_db)):
     share = db.query(models.ShareLink).filter(
@@ -869,7 +878,7 @@ def share_job(job_id: int, payload: dict = None, user: models.User = Depends(req
     token = uuid.uuid4().hex[:16]
     anon = (payload or {}).get("anon", False)
     show_author = (payload or {}).get("show_author", True)
-    share = models.ShareLink(token=token, job_id=job.id, user_id=user.id, format="step", show_author=show_author)
+    share = models.ShareLink(token=token, job_id=job.id, user_id=user.id, format="step", show_author=(False if anon else show_author))
     db.add(share); db.commit()
     vanity = None
     if job.slug and user.username and not anon:
