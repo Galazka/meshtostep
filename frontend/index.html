@@ -67,7 +67,7 @@
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { width: 100%; min-width: 100%; }
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh; overflow-x: hidden; display: flex; flex-direction: column; -webkit-font-smoothing: antialiased; }
         a { color: var(--primary); text-decoration: none; }
         a:hover { text-decoration: underline; }
 
@@ -103,7 +103,7 @@
         }
 
         /* ═══ PAGES ═══ */
-        .page { display: none; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+        .page { display: none; max-width: 1200px; margin: 0 auto; padding: 0 24px; flex: 1 0 auto; }
         .page.active { display: block; }
         @media (max-width: 640px) { .page { padding: 0 16px; } }
 
@@ -253,7 +253,8 @@
         .account-card h3 { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 12px; }
 
         /* ═══ FOOTER ═══ */
-        .footer { border-top: 1px solid var(--border); padding: 40px 24px; max-width: 1200px; margin: 0 auto; }
+        .footer { border-top: 1px solid var(--border); padding: 40px 24px; width: 100%; margin-top: auto; flex-shrink: 0; }
+        .footer-inner-wrap { max-width: 1200px; margin: 0 auto; }
         .footer-inner { display: flex; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
         .footer-brand { flex-shrink: 0; }
         .footer-brand img { height: 44px; object-fit: contain; }
@@ -628,6 +629,7 @@
 
 <!-- ═══ FOOTER ═══ -->
 <footer class="footer">
+    <div class="footer-inner-wrap">
     <div class="footer-inner">
         <div class="footer-brand">
             <img src="/logo.png?v=2" alt="3DFILE" onerror="this.style.display='none'">
@@ -653,6 +655,7 @@
     </div>
     <div class="footer-bottom">
         © 2026 3dfile.link · <a href="regulamin.html" style="color:inherit">Regulamin</a> · <a href="prywatnosc.html" style="color:inherit">Polityka prywatności</a> · <a href="mailto:hallo@3dfile.link" style="color:inherit">hallo@3dfile.link</a>
+    </div>
     </div>
 </footer>
 
