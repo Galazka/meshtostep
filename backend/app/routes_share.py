@@ -421,9 +421,10 @@ animate();
 })();
 
 window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
+  const w = Math.min(el.clientWidth || 640, 1200);
+  camera.aspect = w / el.clientHeight;
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(w, el.clientHeight);
 });
 
 </script>
@@ -763,9 +764,10 @@ new STLLoader().load('/api/stl-preview/{uuid}', g => {{
 function animate() {{ requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }}
 animate();
 window.addEventListener('resize', () => {{
-  camera.aspect = el.clientWidth / el.clientHeight;
+  const w = Math.min(el.clientWidth || 640, 1200);
+  camera.aspect = w / el.clientHeight;
   camera.updateProjectionMatrix();
-  renderer.setSize(el.clientWidth, el.clientHeight);
+  renderer.setSize(w, el.clientHeight);
 }});
 </script>
 </body></html>"""

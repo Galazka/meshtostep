@@ -83,7 +83,11 @@ function init3DViewer(container) {
     _threeRenderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(_threeRenderer.domElement);
     // Force resize after DOM layout settles
-    setTimeout(function(){ _threeRenderer.setSize(W, H); }, 100);
+    setTimeout(function(){
+        _threeRenderer.setSize(W, H);
+        var c = _threeRenderer.domElement;
+        if(c){ c.width = W; c.style.width = W+'px'; }
+    }, 100);
     _threeControls = new window._OrbitControls(_threeCamera, _threeRenderer.domElement);
     _threeControls.enableDamping = true;
     _threeScene.add(new THREE.AmbientLight(0xffffff, 0.8));
