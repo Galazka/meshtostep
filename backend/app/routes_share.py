@@ -727,12 +727,14 @@ import * as THREE from 'three';
 import {{ OrbitControls }} from 'three/addons/controls/OrbitControls.js';
 import {{ STLLoader }} from 'three/addons/loaders/STLLoader.js';
 const el = document.getElementById('viewer3d');
+// cap canvas to prevent horizontal scroll blowout (mobile 1920px issue)
+const _cw = Math.min(el.clientWidth || 640, 1200), _ch = el.clientHeight || 420;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf0f2f5);
-const camera = new THREE.PerspectiveCamera(50, el.clientWidth / el.clientHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(50, _cw / _ch, 0.1, 1000);
 camera.position.set(0, 40, 60);
-const renderer = new THREE.WebGLRenderer({{ antialias: true }});
-renderer.setSize(el.clientWidth, el.clientHeight);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(_cw, _ch);
 renderer.setPixelRatio(window.devicePixelRatio);
 el.appendChild(renderer.domElement);
 const controls = new OrbitControls(camera, renderer.domElement);

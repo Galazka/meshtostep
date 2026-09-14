@@ -733,7 +733,6 @@
         </div>
         <div style="padding:24px">
             <div style="margin-bottom:16px">
-                <label class="auth-checkbox" style="margin-bottom:12px"><input type="checkbox" id="shareShowAuthor" checked><label for="shareShowAuthor" data-i18n="shareShowAuthor">Pokaż mój email jako autora</label></label>
                 <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
                     <label style="font-size:13px;color:var(--text-secondary)" data-i18n="shareExpiry">Ważność:</label>
                     <select id="shareExpiry" style="flex:1;padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit">
@@ -747,7 +746,6 @@
                 <input type="text" id="shareUrl" readonly style="width:100%;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:12px;font-family:inherit;font-size:13px" onclick="this.select()">
                 <div id="shareExpiryInfo" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
                 <button class="nav-btn nav-btn-primary" style="width:100%" onclick="copyShareUrl()" data-i18n="shareCopy">Kopiuj link</button>
-                <button class="nav-btn" style="width:100%;margin-top:8px" onclick="showShareEmailModal()">✉️ Wyślij mailem</button>
                 <div style="display:flex;gap:8px;margin-top:10px">
                     <button class="nav-btn" style="flex:1;font-size:12px" id="shareAnonBtn" onclick="toggleShareAnon()">🔒 Link bez nicka: OFF</button>
                 </div>

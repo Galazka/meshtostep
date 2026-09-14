@@ -434,10 +434,17 @@
                                     <th align="left">ID</th><th align="left">Użytkownik</th><th align="left">Model</th><th align="left">Treść</th><th align="left">Stan</th><th align="left">Czas</th><th align="left">Akcje</th>
                                 </tr></thead>
                                 <tbody id="commentsBody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+                                    </table>
+                                </div>
+                                </div>
+                                </div>
+                                <style>
+                                #tab-comments table { font-size: 13px; }
+                                #tab-comments tbody tr td { padding: 8px 8px; vertical-align: top; word-break: break-word; max-width: 320px; }
+                                #tab-comments tbody tr:hover td { background: var(--bg-alt, #f8fafc); }
+                                #tab-comments tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
+                                #tab-comments .btn-sm { padding: 4px 10px; font-size: 12px; }
+                                </style>
 
                 <!-- EXPORT TAB -->
                 <div class="tab-content" id="tab-export">

@@ -40,8 +40,7 @@ async function createShareLink() {
     const fd = new FormData();
     fd.append('job_id', _shareJobId);
     fd.append('fmt', 'step');
-    fd.append('show_author', document.getElementById('shareShowAuthor').checked);
-    fd.append('anon', _shareAnon);
+    fd.append('show_author', false);  // email never shown as author
     fd.append('expires_days', document.getElementById('shareExpiry').value);
     try {
         const r = await fetch('/api/share', {method:'POST', body:fd, headers: token?{'Authorization':'Bearer '+token}:{}});
@@ -1082,6 +1081,7 @@ function startExpiryCountdown(token){
             const d=await r.json();
             if(!d.expires_at){ return; }
             const ms=new Date(d.expires_at).getTime()-Date.now();
+            if(isNaN(ms)) return;
             if(ms<=0){ el.innerHTML='⛔ Link wygasł.'; clearInterval(_expiryTimer); return; }
             const h=Math.floor(ms/36e5), m=Math.floor(ms%36e5/6e4);
             el.innerHTML='⏳ Link ważny jeszcze: <b>'+(ms>864e5?(Math.floor(ms/864e5)+'d '+h%24+'h'):(h+'h '+m+'m'))+'</b>';

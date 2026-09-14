@@ -19,15 +19,14 @@ def _delete_job(db: Session, job_id: int):
     job = db.query(models.Job).filter(models.Job.id == job_id).first()
     if not job:
         return
-    # Delete shares
     db.query(models.ShareLink).filter(models.ShareLink.job_id == job.id).delete()
-    # Delete comments
     db.query(models.Comment).filter(models.Comment.job_id == job.id).delete()
-    # Delete file directory
-    job_dir = os.path.join(settings.DATA_DIR, "files", job.uuid)
-    if os.path.isdir(job_dir):
-        shutil.rmtree(job_dir, ignore_errors=True)
+    if job.uuid:
+        job_dir = os.path.join(settings.DATA_DIR, "files", job.uuid)
+        if os.path.isdir(job_dir):
+            shutil.rmtree(job_dir, ignore_errors=True)
     db.delete(job)
+    db.commit()
 
 
 def _delete_user(db: Session, user_id: int):
@@ -42,6 +41,7 @@ def _delete_user(db: Session, user_id: int):
     db.query(models.GeoLog).filter(models.GeoLog.user_id == user_id).delete()
     # Delete the user
     db.delete(user)
+    db.commit()
 
 
 # ── Comments moderation ────────────────────────────────────────────
