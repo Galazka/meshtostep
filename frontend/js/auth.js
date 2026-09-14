@@ -108,7 +108,7 @@ async function doAuth() {
         const r = await fetch(ep, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
         const d = await r.json();
         if (!r.ok) { showAuthError(d.detail || 'Error'); return; }
-        setToken(d.token); localStorage.setItem('mt_token', token);
+        setToken(d.token); localStorage.setItem('mt_token', d.token);
         closeModal(); fetchUser();
     } catch(e) { showAuthError('Network error'); }
 }
