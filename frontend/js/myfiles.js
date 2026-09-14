@@ -67,7 +67,11 @@ async function createShareLink() {
             }
             startExpiryCountdown(d.token||d.share_id||'');
         }
-    } catch(e) {}
+    } catch(e) {
+        btn.disabled = false; btn.textContent = t('shareCreate');
+        document.getElementById('shareResult').style.display = 'block';
+        document.getElementById('shareUrl').value = 'Błąd: ' + (e.message || e);
+    }
     btn.disabled = false; btn.textContent = t('shareCreate');
 }
 function copyShareUrl() {
