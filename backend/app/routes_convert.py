@@ -152,7 +152,7 @@ async def convert_file(
         status="processing",
         slug=slug,
         title=stem[:200],
-        visibility="public",
+        visibility="hosted",  # default: not in discover until explicitly published
         folder_id=fid,
     )
     db.add(job)
@@ -261,12 +261,15 @@ def download(job_uuid: str, format: str = "step", db: Session = Depends(get_db))
                 if f.suffix.lower() == "." + fmt:
                     mt = "application/octet-stream"
                     return FileResponse(str(f), filename=Path(job.original_filename).stem + f".{fmt}", media_type=mt)
-        # fallback: convert STL source to requested format on-demand
-        if job.status == "done" and job.result_stl_path and os.path.exists(job.result_stl_path):
-            # obj from STL requires runtime conversion — not supported, return stl
-            if j := db.query(models.Job).filter(models.Job.uuid == job_uuid).first():
-                if j.result_stl_path and os.path.exists(j.result_stl_path):
-                    return FileResponse(j.result_stl_path, filename=Path(j.original_filename).stem + ".stl", media_type="model/stl")
+        # fallback: return STL instead of 404 (OBJ/3MF conversion not supported server-side)
+        stl = job.result_stl_path
+        if stl and os.path.exists(stl):
+            return FileResponse(stl, filename=Path(job.original_filename).stem + ".stl", media_type="model/stl")
+        # try job dir for any STL
+        if src_dir.exists():
+            for f in src_dir.iterdir():
+                if f.suffix.lower() == ".stl":
+                    return FileResponse(str(f), filename=Path(job.original_filename).stem + ".stl", media_type="model/stl")
         raise HTTPException(404, f"Plik {fmt.upper()} niedostępny")
     if fmt == "stl":
         src_dir = JOBS_DIR / job_uuid

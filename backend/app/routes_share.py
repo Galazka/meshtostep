@@ -229,7 +229,7 @@ __JSON_LD__
       <option value="off">__Q_OFF__</option>
     </select>
     <a class="btn btn-primary" href="#" id="dlBtn" onclick="convertAndDownload('__UUID__');return false">⬇ __DOWNLOAD_BTN__</a>
-    <button class="btn btn-secondary" onclick="showEmbed()">⧉ __EMBED_BTN__</button>
+    <button class="btn btn-secondary" onclick="showEmbed('__TOKEN__')">⧉ __EMBED_BTN__</button>
   </div>
 </header>
 <div id="viewer3d"></div>
@@ -429,8 +429,13 @@ window.addEventListener('resize', () => {
 </script>
 <script>
 (function(){
-  window.showEmbed = function() {
-    prompt('Embed code:', '<iframe src=\"/e/__JOB_ID__\" width=\"800\" height=\"500\" frameborder=\"0\"></iframe>');
+  window.showEmbed = function(tok) {
+    var code = '<iframe src="https://3dfile.link/e/__JOB_ID__" width="800" height="500" frameborder="0" allowfullscreen></iframe>';
+    if(tok) code = '<iframe src="https://3dfile.link/s/' + tok + '" width="800" height="500" frameborder="0" allowfullscreen></iframe>';
+    navigator.clipboard.writeText(code).then(function(){
+      var el = document.getElementById('dlBtn');
+      if(el){ var orig = el.textContent; el.textContent = 'Kod skopiowany!'; setTimeout(function(){ el.textContent = orig; }, 2000); }
+    }).catch(function(){ prompt('Kod osadzania:', code); });
   };
   window.convertAndDownload = function(uuid){
     var fmtSel = document.getElementById('dlFormat');

@@ -344,7 +344,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
       </div>
     </div>
     <h1 style="margin:12px 0 4px;font-size:20px">__TITLE__</h1>
-    <div style="color:#64748b;font-size:13px">by <a href="/u/__USERNAME__">__USERNAME__</a> · __DATE__ · __VIS_LABEL__</div>
+    __AUTHOR_LINE__
     <div class="tags">__TAG_HTML__</div>
     __YOUTUBE__
   </div>
@@ -600,9 +600,19 @@ def vanity_page(username: str, slug: str, request: Request, db: Session = Depend
     size_kb = f"{(job.result_size_bytes or 0)//1024} KB" if job.result_size_bytes else "?"
     # find a share token if exists
     token_share = job.shares[0].token if job.shares else ""
+    # determine author visibility from active share link
+    show_author = True
+    for sh in job.shares:
+        if sh.is_active and sh.show_author is not None:
+            show_author = sh.show_author
+            break
+    author_line = ""
+    if show_author and username and getattr(user, 'username', None):
+        u = html.escape(username)
+        author_line = f'<div style="color:#64748b;font-size:13px">by <a href="/u/{u}">{u}</a> · {str(job.created_at)[:10] if job.created_at else ""} · {vis_label}</div>'
     paid_box = ""  # payments removed — free hosting, ads only
     likes = job.likes or 0
-    html_page = _VANITY_HTML.replace("__LANG__","pl").replace("__TITLE__",title).replace("__META_DESC__", (desc[:150] or title)).replace("__ROBOTS__", robots).replace("__CANONICAL__", f"https://3dfile.link/u/{html.escape(username)}/{html.escape(slug)}").replace("__PILLS__", f'<span class="pill">{faces} ścian</span><span class="pill">{html.escape(job.mode or "auto")}</span><span class="pill">{vis_label}</span>').replace("__UUID__", job.uuid).replace("__JOBID__", str(job.id)).replace("__USERNAME__", html.escape(username)).replace("__DATE__", str(job.created_at)[:10] if job.created_at else "").replace("__VIS_LABEL__", vis_label).replace("__TAG_HTML__", tag_html).replace("__YOUTUBE__", yt_html).replace("__FILENAME__", html.escape(job.original_filename or "")).replace("__FACES__", str(faces)).replace("__SIZE__", size_kb).replace("__TOKEN__", token_share).replace("__VIEWS__", str(job.views or 0)).replace("__LIKES__", str(likes)).replace("__PAID_BOX__", paid_box).replace("__DESCTITLE__", json.dumps(html.escape(job.title or job.original_filename or ""))).replace("__DESCBODY__", json.dumps(_md_to_html(job.description or ""))).replace("__DESCTAGS__", json.dumps(tags)).replace("__DESCYOUTUBE__", json.dumps(str(job.youtube_url or ""))).replace("__OG_IMAGE__", f"https://3dfile.link/api/og/{job.uuid}")
+    html_page = _VANITY_HTML.replace("__LANG__","pl").replace("__TITLE__",title).replace("__META_DESC__", (desc[:150] or title)).replace("__ROBOTS__", robots).replace("__CANONICAL__", f"https://3dfile.link/u/{html.escape(username)}/{html.escape(slug)}").replace("__PILLS__", f'<span class="pill">{faces} ścian</span><span class="pill">{html.escape(job.mode or "auto")}</span><span class="pill">{vis_label}</span>').replace("__UUID__", job.uuid).replace("__JOBID__", str(job.id)).replace("__USERNAME__", html.escape(username)).replace("__DATE__", str(job.created_at)[:10] if job.created_at else "").replace("__VIS_LABEL__", vis_label).replace("__TAG_HTML__", tag_html).replace("__YOUTUBE__", yt_html).replace("__FILENAME__", html.escape(job.original_filename or "")).replace("__FACES__", str(faces)).replace("__SIZE__", size_kb).replace("__TOKEN__", token_share).replace("__VIEWS__", str(job.views or 0)).replace("__LIKES__", str(likes)).replace("__PAID_BOX__", paid_box).replace("__AUTHOR_LINE__", author_line).replace("__DESCTITLE__", json.dumps(html.escape(job.title or job.original_filename or ""))).replace("__DESCBODY__", json.dumps(_md_to_html(job.description or ""))).replace("__DESCTAGS__", json.dumps(tags)).replace("__DESCYOUTUBE__", json.dumps(str(job.youtube_url or ""))).replace("__OG_IMAGE__", f"https://3dfile.link/api/og/{job.uuid}")
     return HTMLResponse(html_page)
 
 @router.get("/u/{username}", response_class=HTMLResponse)

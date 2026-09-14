@@ -86,11 +86,13 @@ function quickUpload(){
     input.type='file';input.accept='.stl,.3mf,.obj';
     input.onchange=function(){
         if(!input.files.length) return;
-        window.go('home');
-        const dz=document.getElementById('dropZone');
-        if(dz){const dt=new DataTransfer();dt.items.add(input.files[0]);dz.files=dt.files;dz.dispatchEvent(new Event('drop',{bubbles:true,dataTransfer:dt}));}
         document.getElementById('fileInput').files=input.files;
+        document.getElementById('fileName').textContent=input.files[0].name;
+        document.getElementById('fileSize').textContent=(input.files[0].size/1048576).toFixed(1)+' MB';
+        document.getElementById('fileInfo').style.display='flex';
         document.getElementById('convertBtn').style.display='inline-block';
+        window.go('home');
+        setTimeout(function(){document.getElementById('dropZone').classList.add('has-file');},200);
         toast('Plik gotowy: ' + input.files[0].name);
     };
     input.click();

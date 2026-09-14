@@ -482,6 +482,19 @@ def list_jobs(admin: models.User = Depends(require_admin), db: Session = Depends
 
 
 # ── Delete job ────────────────────────────────────────────────────────
+@router.get("/jobs/{job_id}")
+def get_job(job_id: int, admin: models.User = Depends(require_admin), db: Session = Depends(get_db)):
+    j = db.query(models.Job).filter(models.Job.id == job_id).first()
+    if not j:
+        raise HTTPException(404, "Job nie znaleziony")
+    return {
+        "id": j.id, "uuid": j.uuid, "user_id": j.user_id,
+        "user_email": j.user.email if j.user else None,
+        "filename": j.original_filename, "status": j.status, "mode": j.mode,
+        "faces": j.result_faces, "processing_time_s": j.processing_time_s,
+        "created_at": str(j.created_at),
+    }
+
 @router.delete("/jobs/{job_id}")
 def delete_job(
     job_id: int,
@@ -548,7 +561,7 @@ def list_orphans(
     from pathlib import Path
     jobs_dir = Path(settings.DATA_DIR) / "files"
     orphans = []
-    jobs = db.query(models.Job).filter(models.Job.status != "deleted").all()
+    jobs = db.query(models.Job).all()
     for job in jobs:
         ok = False
         # check known path
