@@ -1,4 +1,4 @@
-const CACHE = '3dfile-v6';
+const CACHE = '3dfile-v7';
 const ASSETS = ['/manifest.json', '/logo.png?v=2'];
 
 self.addEventListener('install', e => {
@@ -11,7 +11,6 @@ self.addEventListener('activate', e => e.waitUntil(
 ));
 self.addEventListener('fetch', e => {
   const u = e.request.url;
-  // Skip non-GET, cross-origin, API, chrome-extension, share/profile/embed pages
   if (e.request.method !== 'GET') return;
   if (u.includes('chrome-extension://')) return;
   if (u.includes('/api/')) return;
@@ -29,6 +28,6 @@ self.addEventListener('fetch', e => {
         }
       }
       return resp;
-    }).catch(() => cached);
+    }).catch(() => new Response('', {status: 504, statusText: 'Offline'}));
   }));
 });

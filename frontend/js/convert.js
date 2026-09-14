@@ -86,14 +86,20 @@ function quickUpload(){
     input.type='file';input.accept='.stl,.3mf,.obj';
     input.onchange=function(){
         if(!input.files.length) return;
-        document.getElementById('fileInput').files=input.files;
-        document.getElementById('fileName').textContent=input.files[0].name;
-        document.getElementById('fileSize').textContent=(input.files[0].size/1048576).toFixed(1)+' MB';
-        document.getElementById('fileInfo').style.display='flex';
-        document.getElementById('convertBtn').style.display='inline-block';
-        window.go('home');
-        setTimeout(function(){document.getElementById('dropZone').classList.add('has-file');},200);
-        toast('Plik gotowy: ' + input.files[0].name);
+        // reuse the main dropzone flow — do NOT navigate away (preserves logged-in session & file)
+        const file = input.files[0];
+        selectedFile = file;
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileSize').textContent = (file.size/1048576).toFixed(1) + ' MB';
+        document.getElementById('fileInfo').classList.add('show');
+        document.getElementById('convertBtn').classList.add('show');
+        const res = document.getElementById('result');
+        if (res) { res.classList.remove('show'); res.style.display = ''; }
+        const vw = document.getElementById('viewer3d');
+        if (vw) { vw.classList.remove('show'); vw.style.display = ''; }
+        setTimeout(function(){ document.getElementById('dropZone').classList.add('has-file'); }, 10);
+        toast('Plik gotowy: ' + file.name);
+        doConvert();
     };
     input.click();
 }

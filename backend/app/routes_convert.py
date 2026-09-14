@@ -261,6 +261,24 @@ def download(job_uuid: str, format: str = "step", db: Session = Depends(get_db))
                 if f.suffix.lower() == "." + fmt:
                     mt = "application/octet-stream"
                     return FileResponse(str(f), filename=Path(job.original_filename).stem + f".{fmt}", media_type=mt)
+        # convert on the fly: STL <-> OBJ/3MF via trimesh (stdlib of 3D)
+        try:
+            import trimesh
+            stl_path = None
+            if job.result_stl_path and os.path.exists(job.result_stl_path):
+                stl_path = job.result_stl_path
+            elif src_dir.exists():
+                for f in src_dir.iterdir():
+                    if f.suffix.lower() == ".stl":
+                        stl_path = str(f)
+                        break
+            if stl_path:
+                mesh = trimesh.load(stl_path, force="mesh")
+                out_path = str(src_dir / (Path(job.original_filename).stem + f".{fmt}"))
+                mesh.export(out_path)
+                return FileResponse(out_path, filename=Path(job.original_filename).stem + f".{fmt}", media_type="application/octet-stream")
+        except Exception:
+            pass
         # fallback: return STL instead of 404 (OBJ/3MF conversion not supported server-side)
         stl = job.result_stl_path
         if stl and os.path.exists(stl):

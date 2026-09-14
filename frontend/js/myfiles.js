@@ -459,7 +459,12 @@ async function loadMyJobs() {
         _myJobsData = d;
         if (!d.length) {
             document.getElementById('myFilesEmpty').style.display = 'block';
-            const pe=document.getElementById('myFilesEmpty').querySelector('p'); if(pe) pe.textContent = t('myFilesEmpty');
+            const h3=document.getElementById('myFilesEmpty').querySelector('h3');
+            if(h3) h3.textContent = t('myFilesNoFiles') || 'Brak plików';
+            const pe=document.getElementById('myFilesEmpty').querySelector('p');
+            if(pe) pe.textContent = 'Wgraj plik STL / 3MF / OBJ, aby rozpocząć.';
+            const cta=document.getElementById('myFilesEmpty').querySelector('button');
+            if(cta) cta.style.display='none';
             document.getElementById('mfGrid').style.display = 'none';
             document.getElementById('myFilesToolbar').style.display = 'flex';
             const qb2=document.getElementById('quotaBar'); if(qb2) qb2.style.display='block';
