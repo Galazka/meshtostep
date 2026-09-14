@@ -754,7 +754,7 @@ function loadJobModalSTL(url) {
             container.appendChild(renderer.domElement);
             // Force resize after DOM layout settles (modal just opened, clientWidth was 0)
             console.log('[3D] loadJobModalSTL: renderer mounted w=', w, 'h=', h);
-            setTimeout(function(){ renderer.setSize(container.clientWidth || w, h); }, 100);
+            setTimeout(function(){ renderer.setSize(Math.min(container.clientWidth || w, 1200), h); }, 100);
             scene.add(new T.AmbientLight(0xffffff, 0.7));
             const dl = new T.DirectionalLight(0xffffff, 0.9);
             dl.position.set(1, 1, 1);
