@@ -441,6 +441,19 @@ def stl_thumbnail(job_uuid: str, db: Session = Depends(get_db)):
         raise HTTPException(500, f"Thumbnail error: {e}")
 
 
+@router.get("/gallery/{job_uuid}/{filename}")
+def serve_gallery_image(job_uuid: str, filename: str, db: Session = Depends(get_db)):
+    """Serve gallery image from JOBS_DIR/uuid/gallery_*.jpg."""
+    import os
+    safe_name = filename.replace("..", "").replace("/", "").replace("\\", "")
+    if not safe_name.startswith("gallery_"):
+        raise HTTPException(404, "Invalid file")
+    path = JOBS_DIR / job_uuid / safe_name
+    if path.exists() and path.is_file():
+        return FileResponse(str(path), media_type="image/jpeg")
+    raise HTTPException(404, "Image not found")
+
+
 @router.post("/jobs/{job_uuid}/preview")
 async def upload_preview(
     job_uuid: str,
@@ -488,7 +501,48 @@ async def upload_preview(
         out.write_bytes(data)
     job.preview_image = str(out)
     db.commit()
-    return {"ok": True, "preview": f"/api/preview/{job_uuid}"}
+    return {"ok": True, "url": f"/api/preview/{job_uuid}"}
+
+
+@router.post("/jobs/{job_uuid}/images")
+async def upload_gallery_image(
+    job_uuid: str,
+    image: UploadFile = File(...),
+    user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Gallery image upload: saves to JOBS_DIR/uuid/gallery_<n>.jpg, returns public URL."""
+    job = db.query(models.Job).filter(models.Job.uuid == job_uuid).first()
+    if not job:
+        raise HTTPException(404, "Job nie znaleziony")
+    if job.user_id is not None:
+        if not user or (job.user_id != user.id and not getattr(user, "is_admin", False)):
+            raise HTTPException(403, "Brak uprawnien")
+    data = await image.read()
+    if not data or len(data) < 100:
+        raise HTTPException(400, "Pusty plik")
+    if len(data) > 5 * 1024 * 1024:
+        raise HTTPException(400, "Obraz > 5 MB")
+    job_dir = JOBS_DIR / job_uuid
+    job_dir.mkdir(parents=True, exist_ok=True)
+    existing = sorted(job_dir.glob("gallery_*.jpg"))
+    out = job_dir / f"gallery_{len(existing):02d}.jpg"
+    try:
+        from PIL import Image
+        import io
+        img = Image.open(io.BytesIO(data))
+        if img.mode in ("RGBA", "LA", "P"):
+            bg = Image.new("RGB", img.size, (255, 255, 255))
+            if img.mode == "P":
+                img = img.convert("RGBA")
+            bg.paste(img, mask=img.split()[-1] if img.mode == "RGBA" else None)
+            img = bg
+        elif img.mode != "RGB":
+            img = img.convert("RGB")
+        img.save(str(out), "JPEG", quality=85)
+    except Exception:
+        out.write_bytes(data)
+    return {"ok": True, "url": f"/api/gallery/{job_uuid}/{out.name}"}
 
 
 
@@ -949,5 +1003,38 @@ def delete_my_job(
     if job_dir.is_dir():
         shutil.rmtree(job_dir, ignore_errors=True)
     db.delete(job)
+    db.commit()
+    return {"ok": True}
+
+
+@router.delete("/account/files")
+def delete_all_my_files(user: models.User = Depends(require_user), db: Session = Depends(get_db)):
+    jobs = db.query(models.Job).filter(models.Job.user_id == user.id).all()
+    for job in jobs:
+        db.query(models.ShareLink).filter(models.ShareLink.job_id == job.id).delete()
+        db.query(models.Comment).filter(models.Comment.job_id == job.id).delete()
+        db.query(models.JobRating).filter(models.JobRating.job_id == job.id).delete()
+        db.query(models.UserLike).filter(models.UserLike.job_id == job.id).delete()
+        job_dir = Path(settings.DATA_DIR) / "files" / job.uuid
+        if job_dir.is_dir():
+            shutil.rmtree(job_dir, ignore_errors=True)
+        db.delete(job)
+    db.commit()
+    return {"ok": True, "deleted": len(jobs)}
+
+
+@router.delete("/account")
+def delete_account(user: models.User = Depends(require_user), db: Session = Depends(get_db)):
+    jobs = db.query(models.Job).filter(models.Job.user_id == user.id).all()
+    for job in jobs:
+        db.query(models.ShareLink).filter(models.ShareLink.job_id == job.id).delete()
+        db.query(models.Comment).filter(models.Comment.job_id == job.id).delete()
+        db.query(models.JobRating).filter(models.JobRating.job_id == job.id).delete()
+        db.query(models.UserLike).filter(models.UserLike.job_id == job.id).delete()
+        job_dir = Path(settings.DATA_DIR) / "files" / job.uuid
+        if job_dir.is_dir():
+            shutil.rmtree(job_dir, ignore_errors=True)
+        db.delete(job)
+    db.delete(user)
     db.commit()
     return {"ok": True}

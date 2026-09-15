@@ -1011,14 +1011,14 @@ async function deleteMyJob(jobId) {
             try {
                 const fd = new FormData();
                 fd.append('image', files[i]);
-                const r = await fetch('/api/jobs/' + _edJobId + '/preview', {
+                const r = await fetch('/api/jobs/' + _edJobId + '/images', {
                     method: 'POST',
                     headers: token ? {'Authorization': 'Bearer ' + token} : {},
                     body: fd
                 });
                 if (!r.ok) continue;
                 const d = await r.json();
-                const url = d.url || d.preview_url || d.image_url || '';
+                const url = d.url || d.image_url || '';
                 if (!url) continue;
                 // insert markdown image into edDesc
                 const descEl = document.getElementById('edDesc');
@@ -1084,6 +1084,36 @@ window.edInsert = edInsert;
 window.openEditor = openEditor;
 window.closeEditorModal = closeEditorModal;
 window.edSave = edSave;
+async function edFormat(cmd) {
+    const ta = document.getElementById('edDesc');
+    const sel = ta.selectionStart;
+    const val = ta.value;
+    let ins = '';
+    if (cmd === 'bold') ins = '**' + (val.slice(sel-1, sel) || '') + '**';
+    else if (cmd === 'italic') ins = '*' + (val.slice(sel-1, sel) || '') + '*';
+    else if (cmd === 'heading') ins = '\n# ';
+    else if (cmd === 'link') {
+        const url = prompt('Adres URL'); if (!url) return;
+        const txt = prompt('Tekst linku'); ins = '[' + (txt || '') + '](' + url + ')';
+    } else if (cmd === 'bullet') ins = '\n- ';
+    else if (cmd === 'image') {
+        const url = prompt('Adres obrazka'); if (!url) return;
+        ins = '![](' + url + ')';
+    }
+    if (ins) {
+        ta.value = val.slice(0, sel) + ins + val.slice(sel);
+        ta.dispatchEvent(new Event('input'));
+    }
+}
+async function edImageBtn() {
+    const url = prompt('Adres obrazka'); if (!url) return;
+    const ins = '![](' + url + ')\n';
+    const ta = document.getElementById('edDesc');
+    ta.value = ta.value.slice(0, ta.selectionStart) + ins + ta.value.slice(ta.selectionStart);
+    ta.dispatchEvent(new Event('input'));
+}
+window.edFormat = edFormat;
+window.edImageBtn = edImageBtn;
 window.edUploadImages = edUploadImages;
 
 window.showDownloadDialog = showDownloadDialog;
@@ -1113,3 +1143,20 @@ function startExpiryCountdown(token){
     tick(); _expiryTimer=setInterval(tick,60000);
 }
 window.startExpiryCountdown=startExpiryCountdown;
+async function deleteAllMyFiles(){
+    try{
+        const r=await fetch('/api/account/files',{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+        const d=await r.json().catch(()=>({}));
+        if(r.ok){ alert('Usunięto '+(d.deleted||0)+' plików.'); loadMyJobs(); loadQuota && loadQuota(); }
+        else alert('Błąd: '+(d.detail||r.status));
+    }catch(e){ alert('Błąd: '+e.message); }
+}
+async function deleteMyAccount(){
+    try{
+        const r=await fetch('/api/account',{method:'DELETE',headers:{'Authorization':'Bearer '+token}});
+        if(r.ok){ logout(); }
+        else { const d=await r.json().catch(()=>({})); alert('Błąd: '+(d.detail||r.status)); }
+    }catch(e){ alert('Błąd: '+e.message); }
+}
+window.deleteAllMyFiles=deleteAllMyFiles;
+window.deleteMyAccount=deleteMyAccount;

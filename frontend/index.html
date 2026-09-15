@@ -406,12 +406,15 @@
 <!-- ═══ HOME ═══ -->
 <div class="page active" id="page-home">
     <div class="hero">
-        <div class="hero-badge">✦ Darmowe · Bez limitu · Bez instalacji</div>
+        <div class="hero-badge">✦ Bez limitu · 24h darmowy · RODO</div>
         <h1>Hosting modeli <span>3D</span><br>STL → STEP</h1>
-        <p>Wgraj <strong>STL / 3MF / OBJ</strong>, zobacz w 3D na telefonie, udostępnij jednym linkiem na Printables i MakerWorld.</p>
+        <p>Wgraj <strong>STL / 3MF / OBJ</strong>, zobacz w 3D, przekonwertuj do STEP i udostępnij jednym linkiem.</p>
+        <div class="hero-retention" style="margin-top:16px;padding:12px 16px;background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;line-height:1.5;color:var(--text-secondary)">
+            <strong style="color:var(--text-primary)">Bez logowania:</strong> pliki dostępne 24h, potem usuwane. <strong style="color:var(--primary)">Załóż darmowe konto</strong> — foldery, 100 MB, linki na stałe i dostęp w dowolnym momencie.
+        </div>
         <div class="hero-actions">
             <a href="#upload" class="btn-hero btn-hero-primary" onclick="scrollToUpload();return false">Wgraj model</a>
-            <button class="btn-hero btn-hero-outline" onclick="go('discover')">Odkrywaj modele</button>
+            <button class="btn-hero btn-hero-outline" onclick="showModal('register')">Załóż konto — 100 MB zawsze</button>
         </div>
     </div>
 
@@ -626,6 +629,13 @@
                 <span id="kontoQuotaLimit"></span>
             </div>
         </div>
+        <div class="account-card" style="border:1px solid #fca5a5">
+            <h3 style="color:var(--error);font-size:14px">⚠️ Strefa niebezpieczna</h3>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+                <button onclick="if(confirm('Usunąć WSZYSTKIE moje modele?')) deleteAllMyFiles()" style="padding:8px 14px;background:#fff;color:var(--error);border:1px solid #fca5a5;border-radius:var(--radius-sm);cursor:pointer;font-size:13px">Usuń wszystkie moje modele</button>
+                <button onclick="if(confirm('Na pewno usunąć konto? Ta operacja jest nieodwracalna.')) deleteMyAccount()" style="padding:8px 14px;background:var(--error);color:#fff;border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:600">Usuń konto</button>
+            </div>
+        </div>
         <button onclick="logout()" style="padding:10px 20px;background:var(--error-light);color:var(--error);border:1px solid #fca5a5;border-radius:var(--radius-sm);cursor:pointer;font-weight:600;font-size:14px" data-i18n="navLogout">Wyloguj</button>
     </div>
 </div>
@@ -634,9 +644,9 @@
 <footer class="footer">
     <div class="footer-inner-wrap">
     <div class="footer-inner">
-        <div class="footer-brand">
-            <img src="/logo.png?v=2" alt="3DFILE" onerror="this.style.display='none'">
-            <p data-i18n="footerAbout">Trzy proste kroki od mesh do STEP. Wgraj STL / 3MF / OBJ (do 200 MB), zobacz model w 3D na telefonie, przekonwertuj do STEP do CAD i udostępnij jednym linkiem. Hosting, konwersja i podglad 3D za darmo, bez instalacji i bez limitu czasu dla plikow publicznych. Prywatne i unlisted: 100 MB darmowo, foldery, tagi, komentarze, osadzanie na stronach. Polski projekt, wlasna infrastruktura.</p>
+        <div class="footer-brand" style="max-width:420px">
+            <img src="/logo.png?v=2" alt="3DFILE" style="max-height:44px" onerror="this.style.display='none'">
+            <p data-i18n="footerAbout" style="font-size:13px;line-height:1.6;color:var(--text-secondary)">Trzy proste kroki od mesh do STEP. Wgraj STL / 3MF / OBJ (do 200 MB), zobacz model w 3D na telefonie, przekonwertuj do STEP do CAD i udostępnij jednym linkiem. Hosting, konwersja i podglad 3D za darmo, bez instalacji i bez limitu czasu dla plikow publicznych. Prywatne i unlisted: 100 MB darmowo, foldery, tagi, komentarze, osadzanie na stronach. Polski projekt, wlasna infrastruktura.</p>
         </div>
         <div class="footer-cols">
             <div class="footer-col">
@@ -815,6 +825,16 @@
             <div class="ed-field"><label data-i18n="editorFolder">Folder</label><select id="edFolder" class="ed-input"><option value="" data-i18n="mfFolderNone">Bez folderu</option></select></div>
             <div class="ed-field">
                 <label data-i18n="editorDescLab">Opis (markdown)</label>
+                <div class="ed-toolbar" style="display:flex;gap:4px;align-items:center;margin-bottom:6px;padding:6px 8px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm)">
+                  <button type="button" onclick="edFormat('bold')" title="Pogrub" style="border:none;background:none;cursor:pointer;padding:4px 8px;font-weight:700" data-i18n-title="fmtBold">B</button>
+                  <button type="button" onclick="edFormat('italic')" title="Kursywa" style="border:none;background:none;cursor:pointer;padding:4px 8px;font-style:italic" data-i18n-title="fmtItalic">I</button>
+                  <button type="button" onclick="edFormat('heading')" title="Nagłówek" style="border:none;background:none;cursor:pointer;padding:4px 8px;font-weight:700" data-i18n-title="fmtHeading">H</button>
+                  <button type="button" onclick="edFormat('link')" title="Link" style="border:none;background:none;cursor:pointer;padding:4px 8px" data-i18n-title="fmtLink">🔗</button>
+                  <button type="button" onclick="edFormat('bullet')" title="Lista" style="border:none;background:none;cursor:pointer;padding:4px 8px" data-i18n-title="fmtList">•</button>
+                  <button type="button" onclick="edImageBtn()" title="Obraz" style="border:none;background:none;cursor:pointer;padding:4px 8px" data-i18n-title="fmtImage">🖼</button>
+                  <div style="height:18px;width:1px;background:var(--border);margin:0 4px"></div>
+                  <label style="font-size:11px;color:var(--text-muted);white-space:nowrap">Markdown + podgląd</label>
+                </div>
                 <textarea id="edDesc" class="ed-input ed-textarea" data-i18n-placeholder="editorDescPh" placeholder="Opis (markdown) — jak blog: wstęp, zdjęcia, parametry, linki"></textarea>
             </div>
             <div class="ed-field"><label data-i18n="editorPreview">Podgląd</label><div id="edPreview" class="ed-preview"></div></div>

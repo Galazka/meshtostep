@@ -128,12 +128,13 @@ __JSON_LD__
   .topbar {
     position: fixed;
     top: 0; left: 0; right: 0;
-    z-index: 10;
+    z-index: 15;
     display: flex;
     align-items: center;
     gap: 16px;
     padding: 10px 16px;
-    background: #fff;
+    background: rgba(255,255,255,.85);
+    backdrop-filter: blur(8px);
     border-bottom: 1px solid #e2e8f0;
   }
   .file-block { min-width: 0; max-width: 30vw; }
@@ -209,7 +210,7 @@ __JSON_LD__
 <body>
 <header class="topbar">
   <div class="file-block">
-    <a href="/" style="text-decoration:none;margin-right:8px;flex-shrink:0"><img src="/logo.png?v=2" alt="3DFILE" style="height:24px" onerror="this.style.display='none'"></a>
+    <a href="/" style="text-decoration:none;margin-right:8px;flex-shrink:0"><img src="/logo.png?v=2" alt="3DFILE" style="height:48px" onerror="this.style.display='none'"></a>
     <div class="file" title="__FILENAME__">__FILENAME__</div>
     <div class="shared-by">__AUTHOR_INFO__</div>
   </div>
@@ -233,8 +234,11 @@ __JSON_LD__
     <button class="btn btn-secondary" onclick="showEmbed('__TOKEN__')">⧉ __EMBED_BTN__</button>
   </div>
 </header>
-<div id="viewer3d"></div>
-<div id="shareColorBar" style="position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:20;display:none;gap:6px;background:rgba(255,255,255,.92);padding:6px 12px;border-radius:999px;border:1px solid #e2e8f0;align-items:center">
+<div id="viewer3d" style="position:fixed;inset:0;top:0;left:0;right:0;bottom:0"></div>
+<button id="panelToggle" onclick="document.getElementById('sharePanel').classList.toggle('open')" style="position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:30;background:rgba(255,255,255,.95);border:1px solid #e2e8f0;border-radius:50%;width:44px;height:44px;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.15)">⚙️</button>
+<div id="sharePanel" style="position:fixed;right:-320px;top:0;bottom:0;width:300px;z-index:25;background:rgba(255,255,255,.97);border-left:1px solid #e2e8f0;transition:right .3s ease;overflow-y:auto;padding:16px;box-shadow:-4px 0 16px rgba(0,0,0,.1)">
+<style>#sharePanel.open{right:0!important}</style>
+<div id="shareColorBar" style="display:flex;gap:6px;background:#fff;padding:8px 10px;border-radius:10px;border:1px solid #e2e8f0;align-items:center;flex-wrap:wrap;margin-bottom:12px">
   <span style="font-size:10px;color:#94a3b8;margin-right:2px">Tło:</span>
   <div id="bgSwatches"></div>
   <div style="width:1px;height:20px;background:#e2e8f0;margin:0 4px"></div>

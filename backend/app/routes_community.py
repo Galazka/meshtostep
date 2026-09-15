@@ -315,7 +315,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
 </head>
 <body>
 <header class="top">
-  <a class="logo" href="/"><img src="/logo.png?v=2" alt="3DFILE" style="height:28px" onerror="this.style.display='none'"></a>
+  <a class="logo" href="/"><img src="/logo.png?v=2" alt="3DFILE" style="height:56px" onerror="this.style.display='none'"></a>
   <div class="pills">__PILLS__</div>
   <div style="display:flex;gap:6px;align-items:center">
     <select id="dlFormat" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px">
