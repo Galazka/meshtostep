@@ -825,13 +825,13 @@
             <div class="ed-field"><label data-i18n="editorFolder">Folder</label><select id="edFolder" class="ed-input"><option value="" data-i18n="mfFolderNone">Bez folderu</option></select></div>
             <div class="ed-field">
                 <label data-i18n="editorDescLab">Opis (markdown)</label>
-                <div class="ed-toolbar" style="display:flex;gap:4px;align-items:center;margin-bottom:6px;padding:6px 8px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm)">
-                  <button type="button" onclick="edFormat('bold')" title="Pogrub" style="border:none;background:none;cursor:pointer;padding:4px 8px;font-weight:700" data-i18n-title="fmtBold">B</button>
-                  <button type="button" onclick="edFormat('italic')" title="Kursywa" style="border:none;background:none;cursor:pointer;padding:4px 8px;font-style:italic" data-i18n-title="fmtItalic">I</button>
-                  <button type="button" onclick="edFormat('heading')" title="Nagłówek" style="border:none;background:none;cursor:pointer;padding:4px 8px;font-weight:700" data-i18n-title="fmtHeading">H</button>
-                  <button type="button" onclick="edFormat('link')" title="Link" style="border:none;background:none;cursor:pointer;padding:4px 8px" data-i18n-title="fmtLink">🔗</button>
-                  <button type="button" onclick="edFormat('bullet')" title="Lista" style="border:none;background:none;cursor:pointer;padding:4px 8px" data-i18n-title="fmtList">•</button>
-                  <button type="button" onclick="edImageBtn()" title="Obraz" style="border:none;background:none;cursor:pointer;padding:4px 8px" data-i18n-title="fmtImage">🖼</button>
+                <div class="ed-toolbar" style="display:flex;gap:4px;align-items:center;margin-bottom:6px;padding:6px 8px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:var(--radius-sm">
+                  <button type="button" onclick="window.edFormat&&edFormat('bold')" title="Pogrub" style="border:none;background:none;cursor:pointer;padding:4px 8px;font-weight:700" data-i18n-title="fmtBold">B</button>
+                  <button type="button" onclick="window.edFormat&&edFormat('italic')" title="Kursywa" style="border:none;background:none;cursor:pointer;padding:4px 8px;font-style:italic" data-i18n-title="fmtItalic">I</button>
+                  <button type="button" onclick="window.edFormat&&edFormat('heading')" title="Nagłówek" style="border:none;background:none;cursor:pointer;padding:4px 8px;font-weight:700" data-i18n-title="fmtHeading">H</button>
+                  <button type="button" onclick="window.edFormat&&edFormat('link')" title="Link" style="border:none;background:none;cursor:pointer;padding:4px 8px" data-i18n-title="fmtLink">🔗</button>
+                  <button type="button" onclick="window.edFormat&&edFormat('bullet')" title="Lista" style="border:none;background:none;cursor:pointer;padding:4px 8px" data-i18n-title="fmtList">•</button>
+                  <button type="button" onclick="window.edImageBtn&&edImageBtn()" title="Obraz" style="border:none;background:none;cursor:pointer;padding:4px 8px" data-i18n-title="fmtImage">🖼</button>
                   <div style="height:18px;width:1px;background:var(--border);margin:0 4px"></div>
                   <label style="font-size:11px;color:var(--text-muted);white-space:nowrap">Markdown + podgląd</label>
                 </div>
