@@ -439,6 +439,9 @@
             <div class="progress-text" id="progressText">Przesyłanie...</div>
         </div>
         <button class="upload-btn" id="convertBtn" onclick="doConvert()">Wgraj plik</button>
+        <div id="anonRetention" style="text-align:center;font-size:12px;color:var(--text-muted);margin-top:12px;padding:8px 12px;background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-sm);line-height:1.5">
+            ⚠️ Pliki niezalogowanych są usuwane <strong>automatycznie po 24h</strong>. Zaloguj się, aby przechowywać pliki <strong>30 dni</strong> (lub dłużej).
+        </div>
         <div class="result" id="result"></div>
         <div class="viewer-wrap" id="viewer3d">
             <div class="viewer-toolbar">
@@ -749,7 +752,7 @@
                         <option value="90">90 dni</option>
                         <option value="0">Bez limitu</option>
                     </select>
-                    <div style="font-size:11px;color:var(--muted);margin-top:4px">Plik zostanie automatycznie usunięty po tym czasie</div>
+                    <div style="font-size:11px;color:var(--muted);margin-top:4px">Plik zostanie automatycznie usunięty po wygaśnięciu linku. <strong>Anonimowy link = 24h twardy limit</strong>.</div>
                 </div>
                 <!-- Odkrywaj toggle -->
                 <div style="margin-bottom:16px;padding:12px;background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:space-between;gap:8px">

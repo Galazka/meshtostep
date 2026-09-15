@@ -512,6 +512,9 @@ def create_share(
 
     token = uuid.uuid4().hex[:16]
     final_show_author = show_author and not anon
+    # Anon files: hard cap 24 hours regardless of what frontend sends
+    if not user:
+        expires_days = min(expires_days, 1)
     share = models.ShareLink(
         token=token,
         job_id=job.id,

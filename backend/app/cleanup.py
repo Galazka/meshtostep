@@ -29,7 +29,7 @@ def cleanup_old_files(days: int = 30):
                     continue
                 retention = getattr(owner, "retention_days", 30) or 30
             else:
-                retention = 7  # anon files: 7 days
+                retention = 1  # anon files: 24 hours
             cutoff = datetime.utcnow() - timedelta(days=retention)
             if job.created_at > cutoff:
                 continue
