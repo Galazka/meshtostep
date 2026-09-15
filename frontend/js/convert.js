@@ -79,6 +79,8 @@ async function doConvert() {
     }
     btn.disabled = false; btn.textContent = t('convertBtn');
     document.getElementById('progress').classList.remove('show');
+    // Refresh My Files list if on that tab
+    if (typeof loadMyJobs === 'function') { try { loadMyJobs(); } catch(_){} }
 }
 
 function quickUpload(){

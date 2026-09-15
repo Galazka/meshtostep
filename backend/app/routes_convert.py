@@ -526,8 +526,9 @@ def create_share(
     vanity = None
     # anon forces token-only URL (no /u/{username}/{slug})
     final_show_author = show_author and not anon
-    if job.slug and getattr(user, "username", None) and final_show_author:
-        vanity = f"{settings.APP_URL}/u/{user.username}/{job.slug}"
+    username = getattr(user, "username", None) or user.email.split("@")[0]
+    if job.slug and not anon:
+        vanity = f"{settings.APP_URL}/u/{username}/{job.slug}"
     if vanity:
         share.slug = job.slug
         db.commit()
