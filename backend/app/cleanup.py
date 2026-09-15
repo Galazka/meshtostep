@@ -50,9 +50,10 @@ def cleanup_old_files(days: int = 30):
 
 
 def cleanup_expired_shares():
-    """Deactivate expired share links."""
+    """Deactivate expired share links + delete orphaned files."""
     db = SessionLocal()
     deactivated = 0
+    deleted_files = 0
 
     try:
         expired = db.query(models.ShareLink).filter(
@@ -63,6 +64,28 @@ def cleanup_expired_shares():
         for share in expired:
             share.is_active = False
             deactivated += 1
+            # If no other active shares for this job, delete the file
+            job = share.job
+            if not job:
+                continue
+            other_active = db.query(models.ShareLink).filter(
+                models.ShareLink.job_id == job.id,
+                models.ShareLink.is_active == True,  # noqa
+                models.ShareLink.id != share.id
+            ).count()
+            if other_active > 0:
+                continue
+            # Check owner retention
+            if job.user_id:
+                owner = db.query(models.User).filter(models.User.id == job.user_id).first()
+                if owner and getattr(owner, "keep_files_forever", False):
+                    continue
+            # Delete files from disk
+            job_dir = Path(settings.DATA_DIR) / "files" / job.uuid
+            if job_dir.exists():
+                shutil.rmtree(job_dir, ignore_errors=True)
+            db.delete(job)
+            deleted_files += 1
 
         db.commit()
     finally:

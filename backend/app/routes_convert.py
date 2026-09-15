@@ -758,11 +758,13 @@ def list_jobs(user: models.User = Depends(require_user), db: Session = Depends(g
     ).order_by(models.Job.created_at.desc()).limit(500).all()
     out=[]
     for j in jobs:
+        shares_info = [{"token": s.token, "expires_at": str(s.expires_at) if s.expires_at else None, "is_active": s.is_active} for s in (db.query(models.ShareLink).filter(models.ShareLink.job_id == j.id).all() if j.id else [])]
         out.append({"id": j.id, "uuid": j.uuid, "filename": j.original_filename, "title": j.title, "status": j.status,
              "mode": j.mode, "faces": j.result_faces, "processing_time_s": j.processing_time_s,
              "created_at": str(j.created_at), "folder_id": j.folder_id, "preview_image": f"/api/preview/{j.uuid}",
              "visibility": j.visibility, "slug": j.slug, "file_size_bytes": j.file_size_bytes, "result_size_bytes": j.result_size_bytes, "dims_mm": j.dims_mm,
-             "views": j.views or 0, "likes": j.likes or 0, "description": (j.description or "")[:5000], "tags": j.tags or [], "youtube_url": j.youtube_url or ""})
+             "views": j.views or 0, "likes": j.likes or 0, "description": (j.description or "")[:5000], "tags": j.tags or [], "youtube_url": j.youtube_url or "",
+             "shares": shares_info})
     return out
 
 

@@ -214,6 +214,7 @@ __JSON_LD__
     <div class="shared-by">__AUTHOR_INFO__</div>
   </div>
   <div class="pills">__CONV_INFO__</div>
+  <div id="expiryInfo" style="font-size:12px;color:#64748b;padding:4px 0">__EXPIRY_INFO__</div>
   <div class="actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
     <select id="dlFormat" style="padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;background:#fff">
       <option value="step">Solid — STEP (CAD/CAM)</option>
@@ -486,12 +487,35 @@ function renderComments(comments) {
     return '<div class="comment-item"><span class="comment-user">'+(c.username||'anon')+'</span><span class="comment-date">'+d+'</span><div class="comment-body">'+(c.body||'').replace(/</g,'&lt;')+'</div></div>';
   }).join('');
 }
+// Expiry countdown (share page)
+(function(){
+  var expIso = '__EXPIRE_ISO__';
+  if (!expIso) return;
+  var el = document.getElementById('expiryCountdown');
+  if (!el) return;
+  function tick() {
+    var target = new Date(expIso);
+    var now = new Date();
+    var ms = target.getTime() - now.getTime();
+    if (isNaN(ms) || ms <= 0) {
+      el.textContent = '⛔ wygasł';
+      return;
+    }
+    var d = Math.floor(ms / 86400000);
+    var h = Math.floor((ms % 86400000) / 3600000);
+    var m = Math.floor((ms % 3600000) / 60000);
+    var s = Math.floor((ms % 60000) / 1000);
+    el.textContent = (d > 0 ? d + 'd ' : '') + h + 'h ' + m + 'm ' + s + 's';
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
 async function loadComments() {
   try {
     const r = await fetch('/api/jobs/' + _jobId + '/comments');
     if (r.ok) { const d = await r.json(); renderComments(d); }
   } catch(e) {}
-}
+};
 
 // Material / filament calculator
 (function(){
@@ -614,6 +638,19 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
     else:
         author_info = ""
 
+    # Expiry info
+    expires_at = getattr(share, "expires_at", None)
+    if expires_at:
+        from datetime import datetime as _dt
+        _exp_str = str(expires_at)
+        _exp_iso = _exp_str.replace(" ", "T") if "T" not in _exp_str else _exp_str
+        expiry_word = "Ważny do" if is_pl else "Expires"
+        expire_label = "wygasł" if is_pl else "expired"
+        expiry_info = f'<span class="pill">{html.escape(expiry_word)}: <b id="expiryCountdown">{html.escape(_exp_str[:16])}</b></span>'
+    else:
+        _exp_iso = ""
+        expiry_info = f'<span class="pill">{"Bez limitu" if is_pl else "No expiry"}</span>'
+
     # robots for unlisted shares
     robots_tag = '<meta name="robots" content="noindex, nofollow">' if getattr(share, "visibility", "public") == "unlisted" else ""
     # description / blog panel data
@@ -655,6 +692,8 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
         job_id=job.id,
         conv_info=conv_info,
         author_info=author_info,
+        expiry_info=expiry_info,
+        expire_iso=_exp_iso,
         time_word=time_word,
         processing_time=proc_time,
         file_size_orig=file_size_orig,

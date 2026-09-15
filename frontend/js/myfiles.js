@@ -4,7 +4,6 @@ import { token } from './shared.js';
 import { toast } from './viewer3d.js';
 
 let _shareJobId = null;
-let _shareAnon = false;
 let _shareVanityUrl = '';
 let _shareToken = '';
 
@@ -14,61 +13,95 @@ function doShare(jobId) {
     _shareVanityUrl = '';
     document.getElementById('shareUrl').value = '';
     document.getElementById('shareResult').style.display = 'none';
-    document.getElementById('shareCreateBtn').style.display = '';
-    document.getElementById('shareModal').classList.add('show');
-}
-
-function toggleShareAnon(){
-    _shareAnon=!_shareAnon;
-    const btn=document.getElementById('shareAnonBtn');
-    const inp=document.getElementById('shareUrl');
-    if(btn) btn.textContent='🔒 Link bez nicka: '+(_shareAnon?'ON':'OFF');
-    if(inp && _shareVanityUrl){
-        if(_shareAnon){
-            inp.value=_shareToken?window.location.origin+'/s/'+_shareToken:'';
-        } else inp.value=_shareVanityUrl;
+    document.getElementById('shareSettings').style.display = '';
+    document.getElementById('shareCreateBtn').disabled = false;
+    document.getElementById('shareCreateBtn').textContent = t('shareCreate');
+    document.getElementById('shareEmbedCode').style.display = 'none';
+    // Anon radios: hide for non-logged-in users
+    const choice = document.getElementById('shareAnonChoice');
+    const info = document.getElementById('shareAnonInfo');
+    if (token) {
+        if (choice) { choice.style.display = ''; }
+        if (info) info.style.display = 'none';
+    } else {
+        if (choice) choice.style.display = 'none';
+        if (info) info.style.display = '';
     }
+    // Preset radio to "named" if logged in
+    const namedRadio = document.querySelector('input[name="shareAnonMode"][value="named"]');
+    const anonRadio = document.querySelector('input[name="shareAnonMode"][value="anon"]');
+    if (namedRadio) namedRadio.checked = !!token;
+    if (anonRadio) anonRadio.checked = !token;
+    // Reset publish toggle from job data
+    const j = _myJobsData ? _myJobsData.find(function(x) { return x.id === jobId; }) : null;
+    const tog = document.getElementById('sharePublishToggle');
+    if (tog && j) tog.checked = (j.visibility === 'public');
+    updatePublishToggleUI();
+    document.getElementById('shareModal').classList.add('show');
 }
 function closeShareModal() {
     document.getElementById('shareModal').classList.remove('show');
     _shareJobId = null;
 }
-async function createShareLink() {
+async function createShareLink(embedMode) {
     if (!_shareJobId) return;
     const btn = document.getElementById('shareCreateBtn');
     btn.disabled = true; btn.textContent = t('shareCreate') + '...';
+    // Read settings
+    const isAnon = token ? !document.querySelector('input[name="shareAnonMode"][value="named"]').checked : true;
+    const expiresDays = document.getElementById('shareExpiry').value;
     const fd = new FormData();
     fd.append('job_id', _shareJobId);
     fd.append('fmt', 'step');
-    fd.append('show_author', false);  // email never shown as author
-    fd.append('expires_days', document.getElementById('shareExpiry').value);
+    fd.append('show_author', !isAnon);
+    fd.append('anon', isAnon);
+    fd.append('expires_days', expiresDays);
     try {
         const r = await fetch('/api/share', {method:'POST', body:fd, headers: token?{'Authorization':'Bearer '+token}:{}});
-        if (r.ok) {
-            const d = await r.json();
-            _shareVanityUrl = d.vanity || '';
-            _shareToken = d.token || '';
-            // anon → token URL, inaczej vanity
-            if (_shareAnon || !d.vanity) {
-                document.getElementById('shareUrl').value = window.location.origin + '/s/' + d.token;
+        if (!r.ok) { const e = await r.json().catch(()=>({})); throw new Error(e.detail || 'Error ' + r.status); }
+        const d = await r.json();
+        _shareVanityUrl = d.vanity || '';
+        _shareToken = d.token || '';
+        // Show URL
+        const urlInput = document.getElementById('shareUrl');
+        if (isAnon || !d.vanity) {
+            urlInput.value = window.location.origin + '/s/' + d.token;
+        } else {
+            urlInput.value = d.vanity;
+        }
+        document.getElementById('shareResult').style.display = 'block';
+        // Embed code
+        const embedSection = document.getElementById('shareEmbedCode');
+        const embedInput = document.getElementById('shareEmbedInput');
+        if (embedMode && embedSection && embedInput) {
+            const job = _myJobsData ? _myJobsData.find(function(x) { return x.id === _shareJobId; }) : null;
+            const slug = job && job.slug ? job.slug : '';
+            const embedUrl = isAnon
+                ? window.location.origin + '/s/' + d.token
+                : (d.vanity || window.location.origin + '/s/' + d.token);
+            embedInput.value = '<iframe src="' + embedUrl + '" width="800" height="500" frameborder="0" allowfullscreen></iframe>';
+            embedSection.style.display = 'block';
+        }
+        // Expiry info
+        const infoEl = document.getElementById('shareExpiryInfo');
+        if (infoEl) {
+            if (expiresDays > 0) {
+                infoEl.innerHTML = '⏳ Link ważny <b>' + expiresDays + ' dni</b> — auto-usuwany po wygaśnięciu.';
             } else {
-                document.getElementById('shareUrl').value = d.vanity;
+                infoEl.innerHTML = '⏒ Link bez limitu czasowego.';
             }
-            document.getElementById('shareResult').style.display = 'block';
-            btn.style.display = 'none';
-            const infoEl=document.getElementById('shareExpiryInfo');
-            const days=document.getElementById('shareExpiry').value;
-            if(infoEl){
-                if(days>0){
-                    infoEl.innerHTML='⏳ Link ważny <b>'+days+' dni</b> — auto-usuwany po wygaśnięciu.';
-                } else {
-                    infoEl.innerHTML='⏒ Link bez limitu czasowego.';
-                }
-            }
-            startExpiryCountdown(d.token||d.share_id||'');
+        }
+        startExpiryCountdown(d.token || '');
+        // Publish to Odkrywaj if toggle on
+        const tog = document.getElementById('sharePublishToggle');
+        if (tog && tog.checked) {
+            fetch('/api/jobs/' + _shareJobId + '/publish', {
+                method: 'PATCH',
+                headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
+                body: JSON.stringify({visibility: 'public'})
+            }).then(function(r2) { if (r2.ok) { var j2 = _myJobsData ? _myJobsData.find(function(x) { return x.id === _shareJobId; }) : null; if (j2) j2.visibility = 'public'; mfRender(); } });
         }
     } catch(e) {
-        btn.disabled = false; btn.textContent = t('shareCreate');
         document.getElementById('shareResult').style.display = 'block';
         document.getElementById('shareUrl').value = 'Błąd: ' + (e.message || e);
     }
@@ -391,20 +424,7 @@ function mfRender(){
     }).join('');
 }
 function openShareModalFor(jobId){
-    const j=_myJobsData.find(function(x){return x.id===jobId});
-    if(!j) return;
-    _shareJobId=jobId;
-    document.getElementById('shareModal').classList.add('show');
-    const tog=document.getElementById('sharePublishToggle');
-    if(tog) tog.checked=(j.visibility==='public');
-    updatePublishToggleUI();
-    document.getElementById('shareResult').style.display='none';
-    document.getElementById('shareCreateBtn').style.display='';
-    document.getElementById('shareUrl').value='';
-    const showCk=document.getElementById('shareShowAuthor');
-    if(showCk) showCk.checked=true;
-    const anonBtn=document.getElementById('shareAnonBtn');
-    if(anonBtn){ _shareAnon=false; anonBtn.textContent='🔒 Link bez nicka: OFF'; }
+    doShare(jobId);
 }
 function updatePublishToggleUI(){
     const tog=document.getElementById('sharePublishToggle');
@@ -1027,7 +1047,6 @@ async function deleteMyJob(jobId) {
 export { loadMyJobs, mfRender };
 window._mfSelected = _mfSelected;
 window.doShare = doShare;
-window.toggleShareAnon = toggleShareAnon;
 window.closeShareModal = closeShareModal;
 window.createShareLink = createShareLink;
 window.copyShareUrl = copyShareUrl;

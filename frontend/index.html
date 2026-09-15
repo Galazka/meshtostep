@@ -736,29 +736,63 @@
             <button class="modal-close" onclick="closeShareModal()">×</button>
         </div>
         <div style="padding:24px">
-            <div style="margin-bottom:16px">
-                <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
-                    <label style="font-size:13px;color:var(--text-secondary)" data-i18n="shareExpiry">Ważność:</label>
-                    <select id="shareExpiry" style="flex:1;padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit">
-                        <option value="7" data-i18n="shareExp7">7 dni</option>
-                        <option value="30" data-i18n="shareExp30">30 dni</option>
-                        <option value="0" data-i18n="shareExpNever">Bez limitu</option>
+            <!-- SETTINGS (before generation) -->
+            <div id="shareSettings">
+                <!-- Expiry -->
+                <div style="margin-bottom:16px">
+                    <label style="font-size:13px;font-weight:600;color:var(--text-primary);display:block;margin-bottom:6px">⏱ Jak długo przechowywać plik?</label>
+                    <select id="shareExpiry" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit">
+                        <option value="1">1 dzień</option>
+                        <option value="3">3 dni</option>
+                        <option value="7" selected>7 dni</option>
+                        <option value="30">30 dni</option>
+                        <option value="90">90 dni</option>
+                        <option value="0">Bez limitu</option>
                     </select>
+                    <div style="font-size:11px;color:var(--muted);margin-top:4px">Plik zostanie automatycznie usunięty po tym czasie</div>
+                </div>
+                <!-- Odkrywaj toggle -->
+                <div style="margin-bottom:16px;padding:12px;background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:space-between;gap:8px">
+                    <div>
+                        <span style="font-size:13px;font-weight:600" data-i18n="sharePublishTitle">Opublikuj w Odkrywaj</span>
+                        <div style="font-size:11px;color:var(--muted)">Plik będzie widoczny dla wszystkich w zakładce Odkrywaj</div>
+                    </div>
+                    <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer;flex-shrink:0">
+                        <input type="checkbox" id="sharePublishToggle" style="opacity:0;width:0;height:0">
+                        <span style="position:absolute;inset:0;background:#cbd5e1;border-radius:999px;transition:.2s" id="sharePublishTrack"></span>
+                        <span id="sharePublishKnob" style="position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span>
+                    </label>
+                </div>
+                <!-- Anonymity -->
+                <div style="margin-bottom:16px">
+                    <label style="font-size:13px;font-weight:600;color:var(--text-primary);display:block;margin-bottom:8px">👤 Tryb udostępniania</label>
+                    <div id="shareAnonChoice">
+                        <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer;font-size:13px">
+                            <input type="radio" name="shareAnonMode" value="named" checked>
+                            <span><b>Z nickiem</b> — Twój nick i nazwa pliku będą widoczne na stronie</span>
+                        </label>
+                        <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:13px">
+                            <input type="radio" name="shareAnonMode" value="anon">
+                            <span><b>Anonimowo</b> — bez nicka, bez emaila</span>
+                        </label>
+                    </div>
+                    <div id="shareAnonInfo" style="font-size:11px;color:var(--muted);margin-top:4px;display:none">Zaloguj się, aby udostępnić ze swoim nickiem</div>
+                </div>
+                <!-- Generate buttons -->
+                <div style="display:flex;gap:8px;margin-top:16px">
+                    <button class="nav-btn nav-btn-primary" style="flex:2" id="shareCreateBtn" onclick="createShareLink()" data-i18n="shareCreate">Generuj link</button>
+                    <button class="nav-btn" style="flex:1" id="shareEmbedBtn" onclick="createShareLink(true)" data-i18n="shareEmbed">Kod embed</button>
                 </div>
             </div>
-            <div id="shareResult" style="display:none">
-                <input type="text" id="shareUrl" readonly style="width:100%;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:12px;font-family:inherit;font-size:13px" onclick="this.select()">
+            <!-- RESULT (after generation) -->
+            <div id="shareResult" style="display:none;margin-top:16px">
+                <input type="text" id="shareUrl" readonly style="width:100%;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;font-family:inherit;font-size:13px" onclick="this.select()">
                 <div id="shareExpiryInfo" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
+                <div id="shareEmbedCode" style="display:none;margin-bottom:10px">
+                    <textarea readonly id="shareEmbedInput" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:monospace;font-size:11px;height:48px" onclick="this.select()"></textarea>
+                </div>
                 <button class="nav-btn nav-btn-primary" style="width:100%" onclick="copyShareUrl()" data-i18n="shareCopy">Kopiuj link</button>
-                <div style="display:flex;gap:8px;margin-top:10px">
-                    <button class="nav-btn" style="flex:1;font-size:12px" id="shareAnonBtn" onclick="toggleShareAnon()">🔒 Link bez nicka: OFF</button>
-                </div>
-                <div style="margin-top:12px;padding:12px;background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:space-between;gap:8px">
-                    <span style="font-size:13px;font-weight:600" data-i18n="sharePublishTitle">Opublikuj w Odkrywaj</span>
-                    <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer"><input type="checkbox" id="sharePublishToggle" onchange="togglePublishFromShare()" style="opacity:0;width:0;height:0"><span style="position:absolute;inset:0;background:#cbd5e1;border-radius:999px;transition:.2s" id="sharePublishTrack"></span><span id="sharePublishKnob" style="position:absolute;top:2px;left:2px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)"></span></label>
-                </div>
             </div>
-            <button class="nav-btn nav-btn-primary" style="width:100%;margin-top:16px" id="shareCreateBtn" onclick="createShareLink()" data-i18n="shareCreate">Utwórz link</button>
         </div>
     </div>
 </div>
