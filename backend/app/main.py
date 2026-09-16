@@ -92,9 +92,9 @@ async def geo_log_middleware(request: Request, call_next):
                     except Exception:
                         pass
                 if not user:
-                    user = models.User(uuid=str(uuid.uuid4()), is_anonymous=True, quota_limit_bytes=100*1024*1024)
-                    db.add(user); db.commit()
-                geo = models.GeoLog(ip_address=request.client.host if request.client else "unknown", user_id=user.id if user else None)
+                    geo = models.GeoLog(ip_address=request.client.host if request.client else "unknown", user_id=None)
+                else:
+                    geo = models.GeoLog(ip_address=request.client.host if request.client else "unknown", user_id=user.id)
                 db.add(geo); db.commit()
             finally:
                 db.close()

@@ -131,7 +131,7 @@ def init_db():
         try:
             from .models import AdSlot
             junk = db.query(AdSlot).filter(
-                AdSlot.ad_code.like("%><%")
+                (AdSlot.ad_code.is_(None)) | (AdSlot.ad_code == "") | (AdSlot.ad_code == "<!-- AdSense: wstaw kod -->")
             ).all()
             for j in junk:
                 db.delete(j)

@@ -563,6 +563,8 @@ def create_share(
         raise HTTPException(404)
     if user and job.user_id != user.id and not user.is_admin:
         raise HTTPException(403)
+    if not user and job.user_id is not None:
+        raise HTTPException(403)
 
     token = uuid.uuid4().hex[:16]
     final_show_author = show_author and not anon
@@ -839,7 +841,7 @@ def list_jobs(user: models.User = Depends(require_user), db: Session = Depends(g
 
 # --- Email share link ---
 @router.post("/share/{token}/email")
-def email_share(token: str, payload: dict, request: Request, user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+def email_share(token: str, payload: dict, request: Request, user: models.User = Depends(require_user), db: Session = Depends(get_db)):
     from .mail import send_share_link
     recipient = (payload.get("recipient_email") or "").strip()
     if not recipient or "@" not in recipient:

@@ -182,8 +182,8 @@ function mfCountInFolder(fid){
 // ═══ SHARE EMAIL ═══
 let _shareEmailJobId = null;
 
-function showShareEmailModal(jobId) {
-    _shareEmailJobId = jobId;
+function showShareEmailModal(shareToken) {
+    _shareEmailJobId = shareToken;
     const modal = document.createElement('div');
     modal.id = 'shareEmailModal';
     modal.style = 'display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:3000;align-items:center;justify-content:center;';
@@ -195,6 +195,7 @@ function showShareEmailModal(jobId) {
     const p = document.createElement('p');
     p.textContent = 'Wpisz adres email odbiorcy';
     const inp = document.createElement('input');
+    inp.id = 'shareEmailInput';
     inp.type = 'email';
     inp.style = 'width:100%;padding:12px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:16px;font-size:14px;';
     inp.placeholder = 'example@email.com';
@@ -228,6 +229,11 @@ function showShareEmailModal(jobId) {
     modal.classList.add('show');
 }
 
+function sendShareByEmail() {
+    if (!_shareToken) return;
+    showShareEmailModal(_shareToken);
+}
+window.sendShareByEmail = sendShareByEmail;
 function shareEmailSend() {
     const inp = document.getElementById('shareEmailInput');
     const result = document.getElementById('shareEmailResult');
