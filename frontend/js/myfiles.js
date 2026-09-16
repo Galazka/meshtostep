@@ -179,79 +179,6 @@ function mfCountInFolder(fid){
     return _myJobsData.filter(function(j){return String(j.folder_id||'')===String(fid)}).length;
 }
 
-// ═══ SHARE EMAIL ═══
-let _shareEmailJobId = null;
-
-function showShareEmailModal(shareToken) {
-    _shareEmailJobId = shareToken;
-    const modal = document.createElement('div');
-    modal.id = 'shareEmailModal';
-    modal.style = 'display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:3000;align-items:center;justify-content:center;';
-    const content = document.createElement('div');
-    content.style = 'background:#fff;padding:32px;border-radius:12px;width:90%;max-width:400px;box-shadow:0 10px 30px rgba(0,0,0,.5);position:relative;max-height:90vh;overflow:auto;';
-    const h3 = document.createElement('h3');
-    h3.style = 'margin-top:0;color:#1a56db;';
-    h3.textContent = 'Wyślij link mailem';
-    const p = document.createElement('p');
-    p.textContent = 'Wpisz adres email odbiorcy';
-    const inp = document.createElement('input');
-    inp.id = 'shareEmailInput';
-    inp.type = 'email';
-    inp.style = 'width:100%;padding:12px;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:16px;font-size:14px;';
-    inp.placeholder = 'example@email.com';
-    const buttonsDiv = document.createElement('div');
-    buttonsDiv.style = 'display:flex;gap:8px;';
-    const btnSend = document.createElement('button');
-    btnSend.style = 'flex:1;background:#1a56db;color:#fff;border:none;border-radius:8px;padding:10px;font-weight:600;cursor:pointer;';
-    btnSend.textContent = 'Wyślij';
-    btnSend.onclick = shareEmailSend;
-    const btnCancel = document.createElement('button');
-    btnCancel.style = 'flex:1;background:#e2e8f0;border:none;border-radius:8px;padding:10px;font-size:14px;cursor:pointer;';
-    btnCancel.textContent = 'Anuluj';
-    btnCancel.onclick = () => { modal.classList.remove('show'); };
-    buttonsDiv.appendChild(btnSend);
-    buttonsDiv.appendChild(btnCancel);
-    const resultDiv = document.createElement('div');
-    resultDiv.id = 'shareEmailResult';
-    resultDiv.style = 'margin-top:16px;font-size:12px;';
-    const closeBtn = document.createElement('button');
-    closeBtn.style = 'position:absolute;top:8px;right:16px;border:none;background:none;font-size:24px;color:#64748b;cursor:pointer;';
-    closeBtn.textContent = '×';
-    closeBtn.onclick = () => { modal.classList.remove('show'); };
-    content.appendChild(h3);
-    content.appendChild(p);
-    content.appendChild(inp);
-    content.appendChild(buttonsDiv);
-    content.appendChild(resultDiv);
-    content.appendChild(closeBtn);
-    modal.appendChild(content);
-    document.body.appendChild(modal);
-    modal.classList.add('show');
-}
-
-function sendShareByEmail() {
-    if (!_shareToken) return;
-    showShareEmailModal(_shareToken);
-}
-window.sendShareByEmail = sendShareByEmail;
-function shareEmailSend() {
-    const inp = document.getElementById('shareEmailInput');
-    const result = document.getElementById('shareEmailResult');
-    if (!inp) { result.textContent = 'Błąd: modal nie znaleziony'; return; }
-    const email = inp.value.trim();
-    if (!email || !email.includes('@')) { result.textContent = 'Podaj poprawny adres email'; return; }
-    result.textContent = 'Wysyłanie...';
-    fetch('/api/share/' + _shareEmailJobId + '/email', {
-        method: 'POST',
-        headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
-        body: JSON.stringify({ recipient_email: email })
-    }).then(r => r.json()).then(d => {
-        if (d.ok) { result.textContent = 'Wysłano!'; setTimeout(()=>{ document.getElementById('shareEmailModal').classList.remove('show'); }, 2000); }
-        else { result.textContent = d.detail||'Błąd'; }
-    }).catch(()=>{ result.textContent = 'Błąd połączenia'; });
-}
-
-
 // ═══ DOWNLOAD DIALOG ═══
 let _dlJobId = null;
 function showDownloadDialog(jobId, fileName) {
@@ -1125,8 +1052,6 @@ window.edUploadImages = edUploadImages;
 window.showDownloadDialog = showDownloadDialog;
 window.showEmbedDialog = doEmbed;
 window.copyEmbedCode = copyEmbedCode;
-window.showShareEmailModal = showShareEmailModal;
-window.shareEmailSend = shareEmailSend;
 
 let _expiryTimer=null;
 function startExpiryCountdown(token){
