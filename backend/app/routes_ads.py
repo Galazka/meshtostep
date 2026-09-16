@@ -1,5 +1,7 @@
 """Ad slots routes — public slots + admin CRUD + retention extend."""
-from fastapi import APIRouter, Depends, HTTPException
+import time
+from collections import defaultdict
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from typing import Optional
 from sqlalchemy.orm import Session
@@ -9,6 +11,8 @@ from .auth import get_current_user, require_admin
 from .database import get_db
 
 router = APIRouter(prefix="/api/ads", tags=["ads"])
+
+_imp_hits: dict = defaultdict(list)
 
 
 # ── Public: get active slots ────────────────────────────────────────
@@ -57,8 +61,21 @@ def ad_click(
 
 
 @router.post("/impression/{slot_id}")
-def track_impression(slot_id: int, db: Session = Depends(get_db)):
-    """Track ad impression (no auth required)."""
+def track_impression(slot_id: int, request: Request, db: Session = Depends(get_db)):
+    """Track ad impression (no auth required). Light per-IP throttle."""
+    ip = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip() or (request.client.host if request.client else "unknown")
+    now = time.time()
+    _imp_recent = [t for t in _imp_hits[ip] if now - t < 60]
+    if _imp_recent:
+        _imp_hits[ip] = _imp_recent
+    else:
+        _imp_hits.pop(ip, None)
+    if len(_imp_recent) >= 60:
+        return {"ok": True}
+    _imp_hits.setdefault(ip, []).append(now)
+    if len(_imp_hits) > 5000:
+        for k in list(_imp_hits)[:1000]:
+            del _imp_hits[k]
     slot = db.query(models.AdSlot).filter(models.AdSlot.id == slot_id).first()
     if slot:
         slot.impressions = (slot.impressions or 0) + 1

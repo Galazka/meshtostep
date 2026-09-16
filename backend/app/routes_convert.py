@@ -210,10 +210,17 @@ def convert_on_demand(job_uuid: str, request: Request, mode: str = "auto", db: S
     # rate limit: 3 conversions/min per IP
     ip = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip() or (request.client.host if request.client else "unknown")
     now = time.time()
-    _od_hits[ip] = [t for t in _od_hits[ip] if now - t < 60]
-    if len(_od_hits[ip]) >= 3:
+    _od_recent = [t for t in _od_hits[ip] if now - t < 60]
+    if _od_recent:
+        _od_hits[ip] = _od_recent
+    else:
+        _od_hits.pop(ip, None)
+    if len(_od_recent) >= 3:
         raise HTTPException(429, "Za dużo konwersji — poczekaj chwilę")
-    _od_hits[ip].append(now)
+    _od_hits.setdefault(ip, []).append(now)
+    if len(_od_hits) > 5000:
+        for k in list(_od_hits)[:1000]:
+            del _od_hits[k]
     job = db.query(models.Job).filter(models.Job.uuid == job_uuid).first()
     if not job:
         raise HTTPException(404, "Job nie znaleziony")

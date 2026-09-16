@@ -25,10 +25,18 @@ _login_hits: dict[str, list[float]] = defaultdict(list)
 def _rate_limit(ip: str):
     now = datetime.utcnow().timestamp()
     window = 60
-    _login_hits[ip] = [t for t in _login_hits[ip] if now - t < window]
-    if len(_login_hits[ip]) >= settings.RATE_LIMIT_PER_MIN:
+    recent = [t for t in _login_hits[ip] if now - t < window]
+    if recent:
+        _login_hits[ip] = recent
+    else:
+        _login_hits.pop(ip, None)
+    if len(recent) >= settings.RATE_LIMIT_PER_MIN:
         raise HTTPException(429, "Za duzo prob. Poczekaj minute.")
-    _login_hits[ip].append(now)
+    _login_hits.setdefault(ip, []).append(now)
+    # cap dict size (unique IPs accumulate) — drop oldest keys
+    if len(_login_hits) > 5000:
+        for k in list(_login_hits)[:1000]:
+            del _login_hits[k]
 
 
 def _get_ip(request: Request) -> str:

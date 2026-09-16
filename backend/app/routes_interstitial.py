@@ -96,10 +96,8 @@ def interstitial_download(job_uuid: str, db: Session = Depends(get_db)):
     size_kb = (job.result_size_bytes or 0) // 1024
     size_str = f"{size_kb} KB" if size_kb < 1024 else f"{round(size_kb/1024, 1)} MB"
     src_ext = Path(job.original_filename).suffix.upper().lstrip(".")
-    download_url = f"{settings.APP_URL}/api/download/{job_uuid}?format=step"
     html = INTERSTITIAL_HTML.replace("__FILENAME__", html_mod.escape(filename))
     html = html.replace("__SIZE__", size_str)
     html = html.replace("__FORMAT_SRC__", src_ext or "STL")
-    html = html.replace("__DOWNLOAD_URL__", download_url)
     html = html.replace("__UUID__", job_uuid)
     return HTMLResponse(html)
