@@ -59,8 +59,10 @@ async def csp_middleware(request: Request, call_next):
             "worker-src 'self' blob:; "
         )
     response.headers["Content-Security-Policy"] = csp
-    # HTML and SW never cached — fresh UI + immediate SW updates
-    if request.url.path == "/" or request.url.path.endswith(".html") or request.url.path == "/sw.js":
+    # HTML, SW and app JS never cached — fresh UI + immediate updates (Cloudflare respects no-store).
+    # /vendor (three.js) stays cached — stable, heavy.
+    _p = request.url.path
+    if _p == "/" or _p.endswith(".html") or _p == "/sw.js" or (_p.endswith(".js") and "/vendor/" not in _p):
         response.headers["Cache-Control"] = "no-store"
     # HTTPS redirect (Railway terminates TLS, X-Forwarded-Proto = https)
     if request.headers.get("x-forwarded-proto") == "http":
