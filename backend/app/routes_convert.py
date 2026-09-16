@@ -117,17 +117,32 @@ async def convert_file(
     job_dir = JOBS_DIR / job_uuid
     job_dir.mkdir(exist_ok=True)
     src = job_dir / Path(file.filename).name  # path traversal guard: strip dirs
-    data = await file.read()
-    if len(data) > settings.MAX_FILE_MB * 1024 * 1024:
+    # Stream to disk in chunks — never hold the whole file in RAM
+    max_bytes = settings.MAX_FILE_MB * 1024 * 1024
+    size = 0
+    try:
+        with open(src, "wb") as f:
+            while True:
+                chunk = await file.read(1024 * 1024)
+                if not chunk:
+                    break
+                size += len(chunk)
+                if size > max_bytes:
+                    raise HTTPException(400, f"Plik > {settings.MAX_FILE_MB} MB")
+                f.write(chunk)
+    except HTTPException:
         shutil.rmtree(job_dir, ignore_errors=True)
-        raise HTTPException(400, f"Plik > {settings.MAX_FILE_MB} MB")
+        raise
+    except Exception:
+        shutil.rmtree(job_dir, ignore_errors=True)
+        raise HTTPException(400, "Błąd odczytu pliku")
+    data_len = size
     if user:
         limit = getattr(user, "quota_limit_bytes", None) or QUOTA_DEFAULT
         used = _quota_used(db, user.id)
-        if used + len(data) > limit:
+        if used + data_len > limit:
             shutil.rmtree(job_dir, ignore_errors=True)
             raise HTTPException(413, f"Przekroczono limit {round(limit/1024/1024)} MB. Zwolnij miejsce usuwając pliki.")
-    src.write_bytes(data)
 
     if user and not getattr(user,'username',None):
         base = re.sub(r'[^a-z0-9]+','', (user.email.split('@')[0].lower()))[:20] or 'user'
@@ -155,7 +170,7 @@ async def convert_file(
         user_id=user.id if user else None,
         uuid=job_uuid,
         original_filename=file.filename,
-        file_size_bytes=len(data),
+        file_size_bytes=data_len,
         mode=mode,
         status="processing",
         slug=slug,
