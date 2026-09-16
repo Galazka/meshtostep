@@ -82,6 +82,14 @@ def _migrate_columns():
                 print("[3dfile] Created folders")
         except Exception as e:
             print(f"[3dfile] folders create: {e}")
+        # dead payments column: NOT NULL without default breaks INSERTs (model has no credits attr)
+        try:
+            existing_u = {c["name"] for c in insp.get_columns("users")}
+            if "credits" in existing_u and is_pg:
+                conn.execute(text("ALTER TABLE users ALTER COLUMN credits DROP NOT NULL"))
+                print("[3dfile] Relaxed users.credits NOT NULL")
+        except Exception as e:
+            print(f"[3dfile] credits relax: {e}")
         try:
             existing = {c["name"] for c in insp.get_columns("users")}
             add_col(conn, "users", "quota_limit_bytes", "INTEGER DEFAULT 104857600", existing)

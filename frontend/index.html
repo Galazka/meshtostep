@@ -374,7 +374,7 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
                 Moje pliki
             </button>
-            <button class="nav-link" onclick="go('hiw')">
+            <button class="nav-link" data-page="hiw" onclick="go('hiw')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
                 Jak to działa
             </button>
@@ -598,14 +598,32 @@
     </div>
 </div>
 
+<!-- ═══ JAK TO DZIAŁA ═══ -->
+<div class="page" id="page-hiw">
+    <div class="section-title"><h2 data-i18n="hiwTitle">Jak to działa</h2><p data-i18n="hiwSub">Trzy kroki od pliku do linku. Bez instalacji, bez karty.</p></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;max-width:900px;margin:0 auto 20px">
+        <div class="account-card"><h3 data-i18n="hiwS1t">1. Wgraj</h3><p data-i18n="hiwS1d">Przeciągnij STL / 3MF / OBJ (do 200 MB). Bez konta też działa.</p></div>
+        <div class="account-card"><h3 data-i18n="hiwS2t">2. Zobacz i konwertuj</h3><p data-i18n="hiwS2d">Podgląd 3D w przeglądarce, konwersja do STEP pod CAD/CAM.</p></div>
+        <div class="account-card"><h3 data-i18n="hiwS3t">3. Udostępnij</h3><p data-i18n="hiwS3d">Link /s/token anonimowo albo /u/nick/slug z kontem. Embed na własną stronę.</p></div>
+    </div>
+    <div class="hero-retention" style="max-width:900px;margin:0 auto 20px;padding:12px 16px;background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;line-height:1.6;color:var(--text-secondary)">
+        <strong style="color:var(--text-primary)" data-i18n="hiwRetT">Ważność plików:</strong>
+        <span data-i18n="hiwRetD">bez konta pliki żyją 24h i znikają automatycznie. Z darmowym kontem: 100 MB, foldery i linki na stałe.</span>
+    </div>
+    <div style="text-align:center;margin-bottom:24px">
+        <button class="nav-btn nav-btn-primary" onclick="showModal('register')" data-i18n="hiwCta">Załóż darmowe konto</button>
+        <button class="nav-btn" onclick="go('faq')" data-i18n="hiwFaq">Masz pytania? FAQ</button>
+    </div>
+</div>
+
 <!-- ═══ FAQ ═══ -->
 <div class="page" id="page-faq">
     <div class="section-title"><h2 data-i18n="faqTitle">Najczęściej zadawane pytania</h2></div>
     <div class="faq">
         <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ1">Jakie formaty mesh są obsługiwane?</span><span class="arrow">▼</span></button><div class="faq-a" data-i18n="faqA1">Obsługujemy pliki STL, 3MF i OBJ. Maksymalny rozmiar pliku to 200 MB.</div></div>
         <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ2">Czy konwersja jest naprawdę darmowa?</span><span class="arrow">▼</span></button><div class="faq-a" data-i18n="faqA2">Tak, konwersje są w 100% darmowe i nielimitowane. Konto jest opcjonalne — daje 100 MB, foldery i linki /u/nick/slug.</div></div>
-        <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ3">Czy mogę używać bez konta?</span><span class="arrow">▼</span></button><div class="faq-a" data-i18n="faqA3">Tak. Konto daje foldery, 100 MB i własne linki.</div></div>
-        <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ4">Jak długo przechowujecie moje pliki?</span><span class="arrow">▼</span></button><div class="faq-a" data-i18n="faqA4">Pliki źródłowe (mesh) i STEP są usuwane po 30 dniach. Linki do udostępniania wygasają po 7 dniach.</div></div>
+        <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ8">Czy mogę używać bez konta?</span><span class="arrow">▼</span></button><div class="faq-a" data-i18n="faqA8">Tak. Konto daje foldery, 100 MB i własne linki.</div></div>
+        <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span data-i18n="faqQ7">Jak długo przechowujecie moje pliki?</span><span class="arrow">▼</span></button><div class="faq-a" data-i18n="faqA7">Bez konta pliki znikają po 24 godzinach. Z darmowym kontem przechowujemy je wg Twojego planu (standardowo 30 dni, kliknięcia w reklamy wydłużają do 180). Linki do plików żyją tak długo, jak ustawisz przy generowaniu.</div></div>
         <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span>Czy oferujecie API?</span><span class="arrow">▼</span></button><div class="faq-a">Tak, REST API. Dokumentacja pod /docs na serwerze.</div></div>
         <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)"><span>Jak się skontaktować ze wsparciem?</span><span class="arrow">▼</span></button><div class="faq-a">Napisz na <a href="mailto:hallo@3dfile.link">hallo@3dfile.link</a>. Odpowiadamy w ciągu 24h po polsku i angielsku.</div></div>
     </div>
@@ -902,15 +920,15 @@
     window.dispatchEvent(new Event('three-ready'));
 </script>
 <script type="module">
-    import './js/shared.js?v=9';
-    import './js/i18n.js?v=9';
-    import './js/viewer3d.js?v=9';
-    import './js/auth.js?v=9';
-    import './js/convert.js?v=9';
-    import './js/discover.js?v=9';
-    import './js/myfiles.js?v=9';
-    import './js/account.js?v=9';
-    import './js/main.js?v=9';
+    import './js/shared.js?v=10';
+    import './js/i18n.js?v=10';
+    import './js/viewer3d.js?v=10';
+    import './js/auth.js?v=10';
+    import './js/convert.js?v=10';
+    import './js/discover.js?v=10';
+    import './js/myfiles.js?v=10';
+    import './js/account.js?v=10';
+    import './js/main.js?v=10';
 </script>
 
 <script>
@@ -954,7 +972,7 @@ window.toggleFaq = toggleFaq;
 
 <!-- ═══ PWA SW ═══ -->
 <script>
-if('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js?v=9').catch(()=>{}); }
+if('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js?v=10').catch(()=>{}); }
 var _deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); _deferredPrompt = e; document.getElementById('pwaBanner').style.display = 'flex'; });
 document.getElementById('pwaInstallBtn').addEventListener('click', async function() { if (!_deferredPrompt) return; _deferredPrompt.prompt(); await _deferredPrompt.userChoice; _deferredPrompt = null; document.getElementById('pwaBanner').style.display = 'none'; });
