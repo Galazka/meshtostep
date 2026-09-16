@@ -37,10 +37,10 @@ def verify_password(plain: str, hashed: str) -> bool:
         return False
 
 
-def create_token(user_id: int, email: str) -> str:
+def create_token(user_id: int, email: str, token_version: int = 0) -> str:
     exp = datetime.utcnow() + timedelta(hours=ACCESS_TOKEN_HOURS)
     return jwt.encode(
-        {"sub": str(user_id), "email": email, "exp": exp},
+        {"sub": str(user_id), "email": email, "v": token_version, "exp": exp},
         settings.SECRET_KEY,
         algorithm=ALGORITHM,
     )
@@ -58,7 +58,13 @@ def get_current_user(
         uid = int(payload.get("sub"))
     except (JWTError, ValueError, TypeError):
         return None
-    return db.query(models.User).filter(models.User.id == uid).first()
+    user = db.query(models.User).filter(models.User.id == uid).first()
+    if not user:
+        return None
+    # token version check — bump kills all sessions (reset, logout-all)
+    if payload.get("v", 0) != (getattr(user, "token_version", 0) or 0):
+        return None
+    return user
 
 
 def require_user(

@@ -45,6 +45,7 @@ def _migrate_columns():
             add_col(conn, "users", "register_user_agent", "TEXT", existing)
             add_col(conn, "users", "keep_files_forever", "BOOLEAN DEFAULT FALSE", existing)
             add_col(conn, "users", "retention_days", "INTEGER DEFAULT 30", existing)
+            add_col(conn, "users", "token_version", "INTEGER DEFAULT 0", existing)
         except Exception as e:
             print(f"[3dfile] users migrate: {e}")
         # jobs

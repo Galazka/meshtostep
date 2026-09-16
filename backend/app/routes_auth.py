@@ -142,7 +142,7 @@ def register(body: RegisterReq, request: Request, db: Session = Depends(get_db))
     if settings.EMAIL_VERIFICATION_REQUIRED:
         from .mail import send_verification
         send_verification(email_lower, token)
-    jwt_token = create_token(user.id, user.email)
+    jwt_token = create_token(user.id, user.email, getattr(user, "token_version", 0) or 0)
     return {
         "token": jwt_token,
         "user": {
@@ -190,7 +190,7 @@ def login(body: LoginReq, request: Request, db: Session = Depends(get_db)):
     user.last_login = datetime.utcnow()
     db.commit()
 
-    jwt_token = create_token(user.id, user.email)
+    jwt_token = create_token(user.id, user.email, getattr(user, "token_version", 0) or 0)
     return {
         "token": jwt_token,
         "user": {
@@ -233,6 +233,13 @@ def verify_email(token: str, db: Session = Depends(get_db)):
 
 
 # ── Password reset ───────────────────────────────────────────────────
+@router.post("/logout-all")
+def logout_all(user: models.User = Depends(require_user), db: Session = Depends(get_db)):
+    user.token_version = (getattr(user, "token_version", 0) or 0) + 1
+    db.commit()
+    return {"ok": True, "message": "Wylogowano wszystkie sesje"}
+
+
 @router.post("/forgot-password")
 def forgot_password(body: ResetReq, request: Request, db: Session = Depends(get_db)):
     _rate_limit(_get_ip(request))
@@ -271,6 +278,7 @@ def reset_password(body: ResetConfirmReq, db: Session = Depends(get_db)):
     user.reset_expires = None
     user.failed_logins = 0
     user.locked_until = None
+    user.token_version = (getattr(user, "token_version", 0) or 0) + 1
     db.commit()
     return {"message": "Haslo zmienione. Zaloguj sie nowym haslem."}
 

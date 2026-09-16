@@ -1,7 +1,7 @@
 // myfiles.js  -  jobs grid, folders, bulk, share modal, job modal, fullscreen, editor (verbatim).
-import { t } from './i18n.js?v=10';
-import { token } from './shared.js?v=10';
-import { toast } from './viewer3d.js?v=10';
+import { t } from './i18n.js?v=11';
+import { token } from './shared.js?v=11';
+import { toast } from './viewer3d.js?v=11';
 
 let _shareJobId = null;
 let _shareVanityUrl = '';
@@ -1091,3 +1091,11 @@ async function deleteMyAccount(){
 }
 window.deleteAllMyFiles=deleteAllMyFiles;
 window.deleteMyAccount=deleteMyAccount;
+async function logoutEverywhere(){
+    try{
+        const r=await fetch('/api/auth/logout-all',{method:'POST',headers:{'Authorization':'Bearer '+token}});
+        if(r.ok){ logout(); }
+        else { const d=await r.json().catch(()=>({})); alert('Błąd: '+(d.detail||r.status)); }
+    }catch(e){ alert('Błąd: '+e.message); }
+}
+window.logoutEverywhere=logoutEverywhere;

@@ -27,6 +27,7 @@ class User(Base):
     terms_accepted_at = Column(DateTime, nullable=True)
     privacy_accepted_at = Column(DateTime, nullable=True)
     marketing_consent = Column(Boolean, default=False)
+    token_version = Column(Integer, default=0)  # bump = kill all sessions
     registered_ip = Column(String(64), nullable=True)
     register_user_agent = Column(String(512), nullable=True)
     bio = Column(Text, nullable=True)
