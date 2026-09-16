@@ -309,7 +309,7 @@
         .share-box { width: 480px; max-width: 95vw; }
 
         /* ═══ EDITOR MODAL ═══ */
-        .ed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px 24px; }
+        .ed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px 24px; overflow-y: auto; min-height: 0; }
         .ed-field { display: flex; flex-direction: column; gap: 6px; }
         .ed-field label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
         .ed-input { padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 14px; width: 100%; background: var(--bg); color: var(--text); }
@@ -921,15 +921,15 @@
     window.dispatchEvent(new Event('three-ready'));
 </script>
 <script type="module">
-    import './js/shared.js?v=11';
-    import './js/i18n.js?v=11';
-    import './js/viewer3d.js?v=11';
-    import './js/auth.js?v=11';
-    import './js/convert.js?v=11';
-    import './js/discover.js?v=11';
-    import './js/myfiles.js?v=11';
-    import './js/account.js?v=11';
-    import './js/main.js?v=11';
+    import './js/shared.js?v=12';
+    import './js/i18n.js?v=12';
+    import './js/viewer3d.js?v=12';
+    import './js/auth.js?v=12';
+    import './js/convert.js?v=12';
+    import './js/discover.js?v=12';
+    import './js/myfiles.js?v=12';
+    import './js/account.js?v=12';
+    import './js/main.js?v=12';
 </script>
 
 <script>
@@ -973,7 +973,7 @@ window.toggleFaq = toggleFaq;
 
 <!-- ═══ PWA SW ═══ -->
 <script>
-if('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js?v=11').catch(()=>{}); }
+if('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js?v=12').catch(()=>{}); }
 var _deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); _deferredPrompt = e; document.getElementById('pwaBanner').style.display = 'flex'; });
 document.getElementById('pwaInstallBtn').addEventListener('click', async function() { if (!_deferredPrompt) return; _deferredPrompt.prompt(); await _deferredPrompt.userChoice; _deferredPrompt = null; document.getElementById('pwaBanner').style.display = 'none'; });

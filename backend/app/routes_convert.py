@@ -900,8 +900,12 @@ def bulk_delete(payload: dict, user: models.User = Depends(require_user), db: Se
 
 # --- Rename ---
 @router.patch("/jobs/{job_id}/rename")
-def rename_job(job_id: int, payload: dict, user: models.User = Depends(require_user), db: Session = Depends(get_db)):
-    job = db.query(models.Job).filter(models.Job.id == job_id).first()
+def rename_job(job_id: str, payload: dict, user: models.User = Depends(require_user), db: Session = Depends(get_db)):
+    job = None
+    if str(job_id).isdigit():
+        job = db.query(models.Job).filter(models.Job.id == int(job_id)).first()
+    if not job:
+        job = db.query(models.Job).filter(models.Job.uuid == str(job_id)).first()
     if not job or (job.user_id != user.id and not user.is_admin):
         raise HTTPException(404, "Job nie znaleziony")
     # extended: accept title + description/tags/youtube_url/visibility/folder_id/slug
@@ -971,7 +975,7 @@ def rename_job(job_id: int, payload: dict, user: models.User = Depends(require_u
 
 
 @router.patch("/jobs/{job_id}/meta")
-def update_job_meta(job_id: int, payload: dict, user: models.User = Depends(require_user), db: Session = Depends(get_db)):
+def update_job_meta(job_id: str, payload: dict, user: models.User = Depends(require_user), db: Session = Depends(get_db)):
     """Alias for rename with full meta fields — keeps frontend compat."""
     return rename_job(job_id, payload, user, db)
 

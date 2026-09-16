@@ -1,7 +1,7 @@
 // myfiles.js  -  jobs grid, folders, bulk, share modal, job modal, fullscreen, editor (verbatim).
-import { t } from './i18n.js?v=11';
-import { token } from './shared.js?v=11';
-import { toast } from './viewer3d.js?v=11';
+import { t } from './i18n.js?v=12';
+import { token } from './shared.js?v=12';
+import { toast } from './viewer3d.js?v=12';
 
 let _shareJobId = null;
 let _shareVanityUrl = '';
@@ -894,6 +894,7 @@ async function deleteMyJob(jobId) {
         }
     }
 
+    function fmtErr(d){ if(!d) return ''; if(typeof d==='string') return d; if(Array.isArray(d)) return d.map(function(x){ return x.msg || x.message || JSON.stringify(x); }).join('; '); try{ return JSON.stringify(d); }catch(e){ return 'Error'; } }
     async function edSave() {
         if (!_edJobId) return;
         const statusEl = document.getElementById('edSaveStatus');
@@ -913,7 +914,7 @@ async function deleteMyJob(jobId) {
                 headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
                 body: JSON.stringify(body)
             });
-            if (!r.ok) { const e = await r.json().catch(function(){return{}}); throw new Error(e.detail || 'Error'); }
+            if (!r.ok) { const e = await r.json().catch(function(){return{}}); throw new Error(fmtErr(e.detail) || 'Error'); }
             // update local data
             const j = _myJobsData.find(function(x) { return x.uuid === _edJobId; });
             if (j) {
