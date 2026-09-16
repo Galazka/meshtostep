@@ -44,6 +44,7 @@ def _send_resend(to: str, subject: str, html_body: str) -> bool:
         headers={
             "Authorization": f"Bearer {settings.SMTP_PASSWORD}",
             "Content-Type": "application/json",
+            "User-Agent": "3dfile.link/1.1",  # required by Resend (else 403 error 1010)
         },
         method="POST",
     )
