@@ -312,8 +312,16 @@ const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerH
 camera.position.set(0, 40, 60);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });  /* 3dfile share viewer */;
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+function fitViewer() {
+  const w = el.clientWidth || 640, h = el.clientHeight || 420;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+  renderer.domElement.style.width = '100%';
+  renderer.domElement.style.height = '100%';
+}
+fitViewer();
 el.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -401,7 +409,7 @@ animate();
   bar.style.display='none';
   bgColors.forEach(function(hex){
     var d=document.createElement('div');
-    d.style.cssText='width:20px;height:20px;border-radius:50%;cursor:pointer;border:2px solid transparent;background:'+hex;
+    d.style.cssText='width:32px;height:32px;border-radius:50%;cursor:pointer;border:2px solid transparent;background:'+hex+';flex-shrink:0';
     d.className='bg-swatch';
     d.onclick=function(){
       scene.background=new THREE.Color(hex);
@@ -413,7 +421,7 @@ animate();
   });
   meshColors.forEach(function(hex){
     var d=document.createElement('div');
-    d.style.cssText='width:20px;height:20px;border-radius:50%;cursor:pointer;border:2px solid transparent;background:'+hex;
+    d.style.cssText='width:32px;height:32px;border-radius:50%;cursor:pointer;border:2px solid transparent;background:'+hex+';flex-shrink:0';
     d.className='m-swatch';
     d.onclick=function(){
       if(window._shareMesh) window._shareMesh.material.color.set(hex);
@@ -425,12 +433,9 @@ animate();
   });
 })();
 
-window.addEventListener('resize', () => {
-  const w = Math.min(el.clientWidth || 640, 1200);
-  camera.aspect = w / el.clientHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(w, el.clientHeight);
-});
+window.addEventListener('resize', fitViewer);
+window.addEventListener('orientationchange', function(){ setTimeout(fitViewer, 300); });
+document.addEventListener('fullscreenchange', function(){ setTimeout(fitViewer, 300); });
 
 </script>
 <script>
