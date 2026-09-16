@@ -3,6 +3,7 @@ FROM python:3.11-slim
 # FreeCAD + system deps from Debian repos (reliable, no big AppImage download)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     freecad \
+    postgresql-client \
     libgl1 \
     libglu1-mesa \
     libxrender1 \

@@ -836,3 +836,32 @@ def queue_stats(
             for j in jobs
         ],
     }
+
+
+# ── Backups ───────────────────────────────────────────────────────
+@router.get("/backups")
+def list_backups(admin: models.User = Depends(require_admin)):
+    from .backup import list_backups as _list
+    return _list()
+
+
+@router.post("/backups/run")
+def run_backup_now(admin: models.User = Depends(require_admin)):
+    from .backup import backup_db
+    name = backup_db()
+    if not name:
+        raise HTTPException(500, "Backup nieudany")
+    return {"ok": True, "name": name}
+
+
+@router.get("/backups/{name}")
+def download_backup(name: str, admin: models.User = Depends(require_admin)):
+    from fastapi.responses import FileResponse
+    from .backup import backup_dir
+    safe = name.replace("..", "").replace("/", "").replace("\\", "")
+    if not safe or safe != name:
+        raise HTTPException(400, "Zła nazwa")
+    path = backup_dir() / safe
+    if not path.is_file():
+        raise HTTPException(404, "Brak backupu")
+    return FileResponse(str(path), filename=safe)

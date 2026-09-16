@@ -172,6 +172,24 @@ if FRONTEND_DIR.exists():
 
 # ── Startup ─────────────────────────────────────────────────────────
 _cleanup_running = False
+_backup_running = False
+
+def _backup_loop():
+    global _backup_running
+    time.sleep(600)  # let boot finish
+    while True:
+        if _backup_running:
+            time.sleep(600)
+            continue
+        _backup_running = True
+        try:
+            from .backup import backup_db
+            backup_db()
+        except Exception as e:
+            print(f"[3dfile] backup error: {e}")
+        finally:
+            _backup_running = False
+        time.sleep(24 * 3600)
 
 def _cleanup_loop():
     global _cleanup_running
@@ -200,4 +218,6 @@ def startup():
     import threading
     t = threading.Thread(target=_cleanup_loop, daemon=True)
     t.start()
-    print("[3dfile] DB ready, cleanup scheduler on, app started")
+    b = threading.Thread(target=_backup_loop, daemon=True)
+    b.start()
+    print("[3dfile] DB ready, cleanup+backup schedulers on, app started")
