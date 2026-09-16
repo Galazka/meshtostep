@@ -1,7 +1,7 @@
 // convert.js — dropzone, pickFile, doConvert, quickUpload (verbatim).
-import { t } from './i18n.js';
-import { token } from './shared.js';
-import { toast, loadSTLIntoViewer } from './viewer3d.js';
+import { t } from './i18n.js?v=9';
+import { token } from './shared.js?v=9';
+import { toast, loadSTLIntoViewer } from './viewer3d.js?v=9';
 
 let selectedFile = null;
 
