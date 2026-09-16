@@ -1,7 +1,7 @@
 // convert.js — dropzone, pickFile, doConvert, quickUpload (verbatim).
-import { t } from './i18n.js?v=12';
-import { token } from './shared.js?v=12';
-import { toast, loadSTLIntoViewer } from './viewer3d.js?v=12';
+import { t } from './i18n.js?v=13';
+import { token } from './shared.js?v=13';
+import { toast, loadSTLIntoViewer } from './viewer3d.js?v=13';
 
 let selectedFile = null;
 
@@ -68,6 +68,7 @@ async function doConvert() {
             '<a class="btn-dl" href="/api/download/' + d.uuid + '?format=stl">' + t('downloadText') + ' oryginał</a>' +
             '<button class="btn-step" onclick="doConvertOnDemand(\'' + d.uuid + '\', ' + d.job_id + ')">Pobierz STEP</button>' +
             '<button class="btn-share" onclick="doShare(' + d.job_id + ')">' + t('shareText') + '</button>' +
+            (token ? '<button class="btn-publish" onclick="publishToDiscover(' + d.job_id + ',this)">🌍 ' + t('publishDiscover') + '</button>' : '') +
             '</div></div>';
         document.getElementById('result').style.display = 'block';
         try { loadSTLIntoViewer('/api/stl-preview/' + d.uuid, d.uuid); } catch(e) { console.error('[3D] loadSTLIntoViewer threw:', e); }

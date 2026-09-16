@@ -162,6 +162,8 @@
         .result-actions .btn-step { background: var(--success); color: #fff; border: none; }
         .result-actions .btn-step:hover { background: #15803d; }
         .result-actions .btn-share { background: var(--card); color: var(--primary); border: 1px solid var(--border); }
+        .result-actions .btn-publish { background: var(--card); color: var(--success); border: 1px solid var(--success); }
+        .result-actions .btn-publish:disabled { opacity: .7; cursor: default; }
         .result-actions .btn-share:hover { border-color: var(--primary); }
 
         /* ═══ 3D VIEWER ═══ */
@@ -921,15 +923,15 @@
     window.dispatchEvent(new Event('three-ready'));
 </script>
 <script type="module">
-    import './js/shared.js?v=12';
-    import './js/i18n.js?v=12';
-    import './js/viewer3d.js?v=12';
-    import './js/auth.js?v=12';
-    import './js/convert.js?v=12';
-    import './js/discover.js?v=12';
-    import './js/myfiles.js?v=12';
-    import './js/account.js?v=12';
-    import './js/main.js?v=12';
+    import './js/shared.js?v=13';
+    import './js/i18n.js?v=13';
+    import './js/viewer3d.js?v=13';
+    import './js/auth.js?v=13';
+    import './js/convert.js?v=13';
+    import './js/discover.js?v=13';
+    import './js/myfiles.js?v=13';
+    import './js/account.js?v=13';
+    import './js/main.js?v=13';
 </script>
 
 <script>
@@ -973,7 +975,7 @@ window.toggleFaq = toggleFaq;
 
 <!-- ═══ PWA SW ═══ -->
 <script>
-if('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js?v=12').catch(()=>{}); }
+if('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js?v=13').catch(()=>{}); }
 var _deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); _deferredPrompt = e; document.getElementById('pwaBanner').style.display = 'flex'; });
 document.getElementById('pwaInstallBtn').addEventListener('click', async function() { if (!_deferredPrompt) return; _deferredPrompt.prompt(); await _deferredPrompt.userChoice; _deferredPrompt = null; document.getElementById('pwaBanner').style.display = 'none'; });

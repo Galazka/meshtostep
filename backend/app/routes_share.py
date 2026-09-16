@@ -780,6 +780,10 @@ def embed_page(job_id: str, db: Session = Depends(get_db)) -> HTMLResponse:
   .top a {{ display: inline-block; padding: 6px 16px; background: #3b82f6; flex-shrink: 0;
     color: #fff; font-weight: 600; border-radius: 6px; text-decoration: none; font-size: 12px; }}
   #viewer3d {{ width: 100%; flex: 1; min-height: 300px; background: #f0f2f5; }}
+  .brandbar {{ display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 5px 10px; background: #0f172a; color: #cbd5e1; font-size: 11px; }}
+  .brandbar a {{ color: #fff; font-weight: 700; text-decoration: none; }}
+  .brandbar a:hover {{ text-decoration: underline; }}
 </style>
 </head>
 <body>
@@ -789,6 +793,7 @@ def embed_page(job_id: str, db: Session = Depends(get_db)) -> HTMLResponse:
   <a href="{('/s/' + _tok) if _tok else 'https://3dfile.link'}" style="background:#6366f1;font-size:11px;padding:5px 12px" target="_blank">Pełna strona ↗</a>
 </div>
 <div id="viewer3d"></div>
+<div class="brandbar">Model 3D hostowany za darmo przez <a href="{('https://3dfile.link/s/' + _tok) if _tok else 'https://3dfile.link'}" target="_blank">3dfile.link</a> · <a href="https://3dfile.link" target="_blank">wgraj własny</a></div>
 <script type="importmap">
 {{"imports":{{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js"}}}}
 </script>
