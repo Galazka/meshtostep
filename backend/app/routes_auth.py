@@ -236,6 +236,8 @@ def verify_email(token: str, db: Session = Depends(get_db)):
 @router.post("/forgot-password")
 def forgot_password(body: ResetReq, request: Request, db: Session = Depends(get_db)):
     _rate_limit(_get_ip(request))
+    if not settings.SMTP_HOST or not settings.SMTP_USER:
+        return {"message": "Reset przez email jest chwilowo niedostępny — napisz na hallo@3dfile.link"}
     email_lower = body.email.lower().strip()
     user = db.query(models.User).filter(models.User.email == email_lower).first()
 
