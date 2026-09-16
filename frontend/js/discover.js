@@ -56,7 +56,8 @@ async function loadPopularTags(){
         var html = '<button class="tag-chip" data-tag="" onclick="clearTag()" style="padding:6px 14px;border:1px solid var(--border);border-radius:999px;background:var(--primary);color:#fff;font-size:12px;cursor:pointer;font-weight:600">Wszystkie</button>';
         tags.forEach(function(tg){
             var name = typeof tg==='string' ? tg : (tg.name||tg.tag);
-            html += '<button class="tag-chip" data-tag="'+String(name).replace(/"/g,'&quot;')+'" onclick="setTag(\''+String(name).replace(/'/g,"\'")+'\')" style="padding:6px 14px;border:1px solid var(--border);border-radius:999px;background:#fff;font-size:12px;cursor:pointer;color:var(--text-secondary);transition:all .15s">'+String(name).replace(/</g,'&lt;')+'</button>';
+            var safe = String(name).replace(/</g,'&lt;');
+            html += '<a class="tag-chip" data-tag="'+String(name).replace(/"/g,'&quot;')+'" href="/tag/'+encodeURIComponent(String(name).toLowerCase())+'" onclick="setTag(\''+String(name).replace(/'/g,"\'")+'\');return false" style="padding:6px 14px;border:1px solid var(--border);border-radius:999px;background:#fff;font-size:12px;cursor:pointer;color:var(--text-secondary);transition:all .15s;text-decoration:none">'+safe+'</a>';
         });
         box.innerHTML = html;
     }catch(e){}

@@ -38,6 +38,7 @@ const I18N = {
         faqQ7: 'Jak długo przechowujecie moje pliki?', faqA7: 'Bez konta pliki znikają po 24 godzinach. Z darmowym kontem wg Twojego planu (standardowo 30 dni, reklamy wydłużają do 180). Linki żyją tak długo, jak ustawisz.',
         faqQ8: 'Czy mogę używać bez konta?', faqA8: 'Tak. Bez konta pliki żyją 24h. Konto daje foldery, 100 MB i własne linki.',
         publishDiscover: 'Opublikuj w Odkrywaj', published: 'Opublikowano w Odkrywaj',
+        metaTitle: '3DFILE — Hosting modeli 3D + STL → STEP', metaDesc: '3DFILE — hosting i podgląd modeli 3D w przeglądarce. Wgraj STL/3MF/OBJ, przekonwertuj do STEP, udostępnij linkiem. Darmowe, szybkie, bez instalacji.',
         faqQ6: 'Jak sie skontaktowac z wsparciem?', faqA6: 'Napisz do nas na hallo@3dfile.link. Odpowiadamy w ciagu 24 godzin w jezyku polskim lub angielskim.',
         footerProduct: 'Produkt', footerLegal: 'Prawne', footerContact: 'Kontakt',
         footerAbout: 'Trzy proste kroki od mesh do STEP. Wgraj STL / 3MF / OBJ (do 200 MB), zobacz model w 3D, przekonwertuj do STEP i udostępnij jednym linkiem. Hosting, konwersja i podglad 3D za darmo, bez instalacji. Prywatne i unlisted: 100 MB, foldery, tagi, komentarze. Polski projekt, wlasna infrastruktura.',
@@ -179,6 +180,7 @@ const I18N = {
         faqQ7: 'How long do you keep my files?', faqA7: 'Without an account files vanish after 24 hours. With a free account per your plan (30 days default, ads extend to 180). Links live as long as you set.',
         faqQ8: 'Can I use it without an account?', faqA8: 'Yes. Without an account files live 24h. An account gives folders, 100 MB and own links.',
         publishDiscover: 'Publish in Discover', published: 'Published in Discover',
+        metaTitle: '3DFILE — 3D Model Hosting + STL → STEP', metaDesc: '3DFILE — host and preview 3D models in browser. Upload STL/3MF/OBJ, convert to STEP, share with a link. Free, fast, no install.',
         faqQ6: 'How can I contact support?', faqA6: 'Write to us at hallo@3dfile.link. We respond within 24 hours in Polish or English.',
         footerProduct: 'Product', footerLegal: 'Legal', footerContact: 'Contact',
         footerRegulamin: 'Terms of Service', footerPrivacy: 'Privacy Policy',
@@ -296,6 +298,16 @@ function applyI18n() {
         const key = el.getAttribute('data-i18n-placeholder'); const val = t(key); if (val) el.placeholder = val;
     });
     document.getElementById('langToggle').textContent = t('langLabel');
+    // SEO head per language
+    try {
+        document.title = t('metaTitle');
+        const md = document.querySelector('meta[name="description"]');
+        if (md) md.setAttribute('content', t('metaDesc'));
+        const ogt = document.querySelector('meta[property="og:title"]');
+        if (ogt) ogt.setAttribute('content', t('metaTitle'));
+        const ogd = document.querySelector('meta[property="og:description"]');
+        if (ogd) ogd.setAttribute('content', t('metaDesc'));
+    } catch(e) {}
 }
 
 function toggleLang() {

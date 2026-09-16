@@ -711,3 +711,74 @@ body{{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;li
 </body>
 </html>"""
     return HTMLResponse(page)
+
+
+@router.get("/tag/{tag}", response_class=HTMLResponse)
+def tag_page(tag: str, db: Session = Depends(get_db)):
+    """SEO landing for a tag — public models only."""
+    t = (tag or "").strip().lower()[:40]
+    if not t:
+        return HTMLResponse("<h1>Brak tagu</h1>", status_code=404)
+    jobs = (
+        db.query(models.Job)
+        .filter(models.Job.status.in_(["done", "hosted"]),
+                models.Job.visibility == "public",
+                models.Job.tags.ilike(f"%{t}%"))
+        .order_by(models.Job.views.desc(), models.Job.created_at.desc())
+        .limit(60)
+        .all()
+    )
+    cards = ""
+    for j in jobs:
+        if not j.slug:
+            continue
+        uname = (j.user.username if j.user and getattr(j.user, "username", None)
+                 else (j.user.email.split("@")[0] if j.user and j.user.email else "anon"))
+        title = html.escape(j.title or j.original_filename or "model")
+        faces = j.result_faces or "?"
+        views = j.views or 0
+        cards += (
+            f'<a href="/u/{html.escape(uname)}/{html.escape(j.slug)}" class="card">'
+            f'<img src="/api/preview/{j.uuid}" alt="{title}" loading="lazy">'
+            f'<div class="card-body">'
+            f'<div class="card-title">{title}</div>'
+            f'<div class="card-meta">{faces} faces · {views} views · {html.escape(uname)}</div>'
+            f'</div></a>'
+        )
+    if not cards:
+        return HTMLResponse("<h1>Brak modeli z tym tagiem</h1>", status_code=404)
+    desc = f"Darmowe modele 3D z tagiem {t}: podgląd, STL i konwersja do STEP bez konta."
+    page = f"""<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Modele 3D: {html.escape(t)} — 3dfile.link</title>
+<meta name="description" content="{html.escape(desc)}">
+<link rel="canonical" href="https://3dfile.link/tag/{html.escape(t)}">
+<style>
+*,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
+body{{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;line-height:1.6}}
+.top{{background:#fff;border-bottom:1px solid #e2e8f0;padding:12px 20px;display:flex;align-items:center}}
+.top a{{font-weight:800;color:#1a56db;text-decoration:none;font-size:18px}}
+.wrap{{max-width:1000px;margin:0 auto;padding:24px 20px}}
+.wrap h1{{font-size:22px;font-weight:800;margin-bottom:4px}}
+.wrap .sub{{font-size:14px;color:#64748b;margin-bottom:20px}}
+.grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}}
+.card{{display:flex;flex-direction:column;background:#fff;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;text-decoration:none;color:#1e293b}}
+.card img{{width:100%;aspect-ratio:4/3;object-fit:cover;background:#f0f2f5}}
+.card-body{{padding:12px}}
+.card-title{{font-weight:600;font-size:14px;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+.card-meta{{font-size:12px;color:#64748b}}
+</style>
+</head>
+<body>
+<header class="top"><a href="/">3dfile.link</a></header>
+<div class="wrap">
+  <h1>Modele 3D: {html.escape(t)}</h1>
+  <div class="sub">{html.escape(desc)}</div>
+  <div class="grid">{cards}</div>
+</div>
+</body>
+</html>"""
+    return HTMLResponse(page)

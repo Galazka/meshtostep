@@ -55,6 +55,29 @@ def sitemap(request: Request, db: Session = Depends(get_db)):
             f"<changefreq>weekly</changefreq><priority>{prio}</priority></url>"
         )
 
+    # Tag landing pages: /tag/{tag} (top 50 by usage)
+    try:
+        tag_rows = db.query(models.Job.tags).filter(
+            models.Job.status.in_(["done", "hosted"]),
+            models.Job.visibility == "public",
+        ).all()
+        _counter = {}
+        for (tags,) in tag_rows:
+            if not tags:
+                continue
+            for _t in tags.split(","):
+                _t = _t.strip().lower()
+                if _t:
+                    _counter[_t] = _counter.get(_t, 0) + 1
+        for _t, _c in sorted(_counter.items(), key=lambda x: -x[1])[:50]:
+            import urllib.parse as _up
+            urls.append(
+                f"  <url><loc>{DOMAIN}/tag/{_up.quote(_t)}</loc>"
+                f"<changefreq>weekly</changefreq><priority>0.6</priority></url>"
+            )
+    except Exception:
+        pass
+
     xml = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
