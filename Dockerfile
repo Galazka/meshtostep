@@ -1,9 +1,14 @@
 FROM python:3.11-slim
 
 # FreeCAD + system deps from Debian repos (reliable, no big AppImage download)
+# PGDG repo for postgresql-client-18 (Railway Postgres is v18; Debian ships v17)
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl ca-certificates gnupg \
+    && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/postgresql.gpg] https://apt.postgresql.org/pub/repos/apt trixie-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    postgresql-client-18 \
     freecad \
-    postgresql-client \
     libgl1 \
     libglu1-mesa \
     libxrender1 \
