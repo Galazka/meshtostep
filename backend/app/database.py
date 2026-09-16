@@ -120,7 +120,17 @@ def _migrate_columns():
 
 def init_db():
     from . import models
-    models.Base.metadata.create_all(bind=engine)
+    # Alembic is source of truth; legacy create_all+migrate stays as fallback
+    try:
+        from alembic.config import Config as _ACfg
+        from alembic import command as _acmd
+        _cfg = _ACfg("/app/alembic.ini")
+        _cfg.set_main_option("script_location", "/app/alembic")
+        _acmd.upgrade(_cfg, "head")
+        print("[3dfile] alembic upgrade head OK")
+    except Exception as e:
+        print(f"[3dfile] alembic upgrade failed, legacy fallback: {e}")
+        models.Base.metadata.create_all(bind=engine)
     try:
         _migrate_columns()
     except Exception as e:
