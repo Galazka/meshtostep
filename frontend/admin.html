@@ -482,6 +482,20 @@
                             </div>
                         </div>
                     </div>
+                    <div class="panel" style="margin-top:16px">
+                        <div class="panel-header">
+                            <h2>Backup bazy</h2>
+                            <p class="subtitle">Codzienny pg_dump na volume (7 ostatnich)</p>
+                        </div>
+                        <div class="panel-body padded">
+                            <div class="filter-bar">
+                                <button class="btn primary" onclick="runBackupNow()">Utwórz backup teraz</button>
+                                <button class="btn" onclick="loadBackups()">Odśwież</button>
+                                <span class="filter-count" id="backupStatus"></span>
+                            </div>
+                            <div id="backupList" style="font-size:13px"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- QUEUE TAB -->
@@ -861,7 +875,7 @@ const I18N = {
         if (name === 'ads' && !_adsLoaded) { loadAdSlots(); _adsLoaded = true; }
         if (name === 'stats' && !_statsLoaded) { loadStats(); _statsLoaded = true; }
         if (name === 'queue' && !_queueLoaded) { loadQueue(); _queueLoaded = true; }
-        if (name === 'export' && !_exportLoaded) { loadExport(); _exportLoaded = true; }
+        if (name === 'export' && !_exportLoaded) { loadExport(); loadBackups(); _exportLoaded = true; }
         if (name === 'comments' && !_commentsLoaded) { loadComments(); _commentsLoaded = true; }
     }
     let _commentsLoaded = false;
@@ -1030,6 +1044,36 @@ const I18N = {
             ).join('');
         }
 
+        async function loadBackups(){
+            const el = document.getElementById('backupList');
+            const st = document.getElementById('backupStatus');
+            try{
+                const items = await api('/api/admin/backups');
+                if(!items.length){ el.innerHTML = '<span style="color:var(--text-muted)">Brak backupów</span>'; return; }
+                el.innerHTML = items.map(function(b){
+                    return '<div style="display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border-light)"><span style="flex:1">' + b.name + ' <span style="color:var(--text-muted">(' + b.size_kb + ' KB)</span></span><button class="btn" onclick="dlBackup(this)" data-name="' + b.name.replace(/"/g, "&quot;") + '">Pobierz</button></div>';
+                }).join('');
+                if(st) st.textContent = items.length + ' backupów';
+            }catch(e){ el.innerHTML = '<span style="color:var(--error)">Błąd: ' + (e.message||e) + '</span>'; }
+        }
+        async function dlBackup(btn){
+            var name = btn.getAttribute('data-name');
+            try{
+                var token = localStorage.getItem('mt_token');
+                var r = await fetch('/api/admin/backups/' + encodeURIComponent(name), {headers:{'Authorization':'Bearer '+token}});
+                if(!r.ok) throw new Error('Error ' + r.status);
+                var blob = await r.blob();
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(blob); a.download = name;
+                document.body.appendChild(a); a.click(); a.remove();
+            }catch(e){ alert('Błąd: ' + (e.message||e)); }
+        }
+        async function runBackupNow(){
+            const st = document.getElementById('backupStatus');
+            if(st) st.textContent = 'Tworzenie...';
+            try{ await api('/api/admin/backups/run', {method:'POST', body:{}}); loadBackups(); }
+            catch(e){ if(st) st.textContent = 'Błąd: ' + (e.message||e); }
+        }
         async function exportUsers() {
             try {
                 const format = document.getElementById('exportFormat')?.value || 'json';
