@@ -264,8 +264,15 @@ __JSON_LD__
     </select>
   </div>
   <div id="matResult" style="color:#475569">
-    <span id="matWeight">--</span> g &middot; <span id="matCost">--</span> z&#322;
+    <span id="matWeight">--</span> g
   </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
+    <label style="font-size:10px;color:#94a3b8">Filament zł/kg<input id="matPriceKg" type="number" min="0" step="1" value="89" style="width:100%;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;font-size:11px"></label>
+    <label style="font-size:10px;color:#94a3b8">Prąd zł/kWh<input id="matKwhPrice" type="number" min="0" step="0.01" value="1.15" style="width:100%;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;font-size:11px"></label>
+    <label style="font-size:10px;color:#94a3b8">Drukarka W<input id="matWatts" type="number" min="0" step="10" value="150" style="width:100%;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;font-size:11px"></label>
+    <label style="font-size:10px;color:#94a3b8">Czas druku h<input id="matHours" type="number" min="0" step="0.5" value="2" style="width:100%;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;font-size:11px"></label>
+  </div>
+  <div id="matTotal" style="margin-top:8px;font-size:13px;color:#1e293b"></div>
   <div id="matVolume" style="color:#94a3b8;font-size:10px;margin-top:4px"></div>
   <div id="matAffiliates" style="margin-top:6px;font-size:10px;color:#94a3b8"></div>
 </div>
@@ -555,9 +562,15 @@ async function loadComments() {
       var infill = infillEl.value;
       var key = mat + '_' + infill;
       var e = d.estimates[key];
+      var num = function(id, def){ var el = document.getElementById(id); var v = el ? parseFloat(el.value) : NaN; return isNaN(v) ? def : v; };
       if(e){
         document.getElementById('matWeight').textContent = e.weight_g;
-        document.getElementById('matCost').textContent = e.cost_pln;
+        var filCost = e.weight_g / 1000 * num('matPriceKg', 89);
+        var powCost = num('matWatts', 150) / 1000 * num('matHours', 2) * num('matKwhPrice', 1.15);
+        var total = filCost + powCost;
+        document.getElementById('matTotal').innerHTML =
+          'Filament: <b>' + filCost.toFixed(2) + ' zł</b> + prąd: <b>' + powCost.toFixed(2) + ' zł</b><br>' +
+          '<span style="font-size:15px">Razem: <b>' + total.toFixed(2) + ' zł</b></span>';
       }
       var aff = document.getElementById('matAffiliates');
       if(aff){
@@ -566,6 +579,10 @@ async function loadComments() {
     }
     document.getElementById('matSelect').onchange = updateCalc;
     document.getElementById('infillSelect').onchange = updateCalc;
+    ['matPriceKg','matKwhPrice','matWatts','matHours'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.oninput = updateCalc;
+    });
     updateCalc();
   }).catch(function(){});
 })();
