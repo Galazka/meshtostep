@@ -54,12 +54,23 @@ async function loadAdSlots() {
                 el.parentNode.insertBefore(clone, el.nextSibling);
                 el = clone;
             }
-            // Sanitize ad_code: strip dangerous tags, keep safe ones
+            // Sanitize ad_code: strip dangerous tags, keep safe ones.
+            // Exception: adsense type needs its <script> tags — re-inject them as live nodes.
+            if ((s.ad_type || '') === 'adsense') {
+                el.innerHTML = s.ad_code;
+                el.querySelectorAll('script').forEach(function(old) {
+                    var n = document.createElement('script');
+                    Array.prototype.forEach.call(old.attributes, function(a) { n.setAttribute(a.name, a.value); });
+                    n.textContent = old.textContent;
+                    old.parentNode.replaceChild(n, old);
+                });
+            } else {
             var _safe = s.ad_code.replace(/<script[\s\S]*?<\/script>/gi, '')
                 .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
                 .replace(/javascript\s*:/gi, '');
             el.innerHTML = _safe;
             if (!el.innerHTML.trim()) el.textContent = s.ad_code;
+            }
             console.log('[ADS] injected', key, '→', el.children.length, 'elements');
             try { fetch('/api/ads/impression/' + s.id, {method:'POST'}).catch(function(){}); } catch(e) {}
         });

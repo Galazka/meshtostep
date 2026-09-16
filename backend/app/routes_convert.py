@@ -581,15 +581,26 @@ def create_share(
     db.commit()
 
     vanity = None
-    # anon forces token-only URL (no /u/{username}/{slug})
-    final_show_author = show_author and not anon
-    username = getattr(user, "username", None) or user.email.split("@")[0]
-    if job.slug and not anon:
+    username = None
+    if user:
+        username = getattr(user, "username", None) or user.email.split("@")[0]
+    if job.slug and username and not anon:
         vanity = f"{settings.APP_URL}/u/{username}/{job.slug}"
     if vanity:
         share.slug = job.slug
         db.commit()
     return {"url": vanity or f"{settings.APP_URL}/s/{token}", "token": token, "vanity": vanity, "anon": anon}
+
+
+@router.get("/me")
+def get_me(user: models.User = Depends(require_user)):
+    return {
+        "id": user.id,
+        "email": user.email,
+        "is_admin": user.is_admin,
+        "email_verified": user.email_verified,
+        "created_at": str(user.created_at),
+    }
 
 
 @router.get("/share/{token}")

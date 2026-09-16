@@ -994,6 +994,11 @@ const I18N = {
                             <div class="stat-item"><span>Storage used:</span> <strong>${fmtBytes(d.total_storage_bytes ?? 0)}</strong></div>
                         `;
                 }
+                try {
+                    _allExportData = await api('/api/admin/users');
+                    _exportData = [..._allExportData];
+                    renderExport();
+                } catch(e) { console.error('Export users load error:', e); }
             } catch (e) {
                 console.error('Export stats load error:', e);
                 const exportStatsEl = document.getElementById('exportStats');
@@ -1001,6 +1006,27 @@ const I18N = {
                     exportStatsEl.innerHTML = '<div style="color:var(--error)">Błąd ładowania statystyk</div>';
                 }
             }
+        }
+
+        let _exportData = [];
+        let _allExportData = [];
+
+        function renderExport() {
+            const body = document.getElementById('exportBody');
+            if (!body) return;
+            const countEl = document.getElementById('exportCount');
+            if (countEl) countEl.textContent = (_exportData.length || 0) + ' / ' + (_allExportData.length || 0);
+            if (!_exportData.length) {
+                body.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-muted)">Brak wyników</td></tr>';
+                return;
+            }
+            body.innerHTML = _exportData.map(u =>
+                '<tr><td>' + u.id + '</td>' +
+                '<td class="cell-ellipsis">' + esc(u.email || '—') + '</td>' +
+                '<td>' + (u.job_count ?? '—') + '</td>' +
+                '<td>' + fmtBytes(u.total_size_bytes || 0) + '</td>' +
+                '<td>' + esc(u.created_at ? String(u.created_at).slice(0, 10) : '—') + '</td></tr>'
+            ).join('');
         }
 
         async function exportUsers() {
@@ -1062,6 +1088,16 @@ const I18N = {
             String(u.id).includes(q)
         ) : [..._allUsersData];
         renderUsers();
+    }
+
+    function filterExport() {
+        const q = (document.getElementById('exportSearch')?.value || '').toLowerCase().trim();
+        _exportData = q ? _allExportData.filter(u =>
+            (u.email || '').toLowerCase().includes(q) ||
+            (u.username || '').toLowerCase().includes(q) ||
+            String(u.id).includes(q)
+        ) : [..._allExportData];
+        renderExport();
     }
 
     function renderUsers() {

@@ -720,12 +720,14 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
 
 
 @router.get("/e/{job_id}", response_class=HTMLResponse)
-def embed_page(job_id: int, db: Session = Depends(get_db)) -> HTMLResponse:
+def embed_page(job_id: str, db: Session = Depends(get_db)) -> HTMLResponse:
     """Minimal embed page — Three.js viewer + download for iframe use."""
-    job = db.query(models.Job).filter(
-        models.Job.id == job_id, models.Job.status.in_(["done", "hosted"])
-    ).first()
+    job = None
+    if job_id.isdigit():
+        job = db.query(models.Job).filter(models.Job.id == int(job_id)).first()
     if not job:
+        job = db.query(models.Job).filter(models.Job.uuid == job_id).first()
+    if not job or job.status not in ["done", "hosted"]:
         return HTMLResponse("<h1>Job not found</h1>", status_code=404)
 
     faces = job.result_faces or "?"
