@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     SMTP_FROM: str = "noreply@meshtostep.pl"
     RATE_LIMIT_PER_MIN: int = 30  # auth attempts per IP per minute
     PASSWORD_RESET_HOURS: int = 2
+    DEBUG: bool = False  # True only for local dev — enables reset-link stdout fallback
 
     class Config:
         env_file = ".env"

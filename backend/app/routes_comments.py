@@ -99,7 +99,7 @@ def delete_comment(
 
 
 # ── Admin: hide comment ───────────────────────────────────────────
-@router.delete("/api/admin/comments/{comment_id}")
+@router.post("/api/admin/comments/{comment_id}/toggle-hide")
 def hide_comment(
     comment_id: int,
     admin: models.User = Depends(require_admin),

@@ -240,8 +240,9 @@ def forgot_password(body: ResetReq, request: Request, db: Session = Depends(get_
         from .mail import send_reset
         sent = send_reset(user.email, token)
         if not sent:
-            # dev fallback: log link when SMTP not configured
-            print(f"[PASSWORD RESET] {user.email} -> {settings.APP_URL}/api/auth/reset?token={token}")
+            # dev fallback: log link when SMTP not configured (DEBUG only — never in prod logs)
+            if settings.DEBUG:
+                print(f"[PASSWORD RESET] {user.email} -> {settings.APP_URL}/api/auth/reset?token={token}")
 
     return {"message": "Jesli email istnieje, otrzymasz link do resetu hasla"}
 

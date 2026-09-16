@@ -45,7 +45,7 @@ def ad_click(
 
     # Extend: +7 days per click, cap at 180 days
     user.retention_days = min((user.retention_days or 30) + 7, 180)
-    slot.clicks += 1
+    slot.clicks = (slot.clicks or 0) + 1
     db.commit()
 
     return {
@@ -61,7 +61,7 @@ def track_impression(slot_id: int, db: Session = Depends(get_db)):
     """Track ad impression (no auth required)."""
     slot = db.query(models.AdSlot).filter(models.AdSlot.id == slot_id).first()
     if slot:
-        slot.impressions += 1
+        slot.impressions = (slot.impressions or 0) + 1
         db.commit()
     return {"ok": True}
 
@@ -88,7 +88,6 @@ def admin_list_slots(
         "ad_code": s.ad_code, "ad_type": s.ad_type,
         "position": getattr(s, "position", None) or s.slot_key,
         "sort_order": s.sort_order, "is_active": s.is_active,
-        "position": getattr(s, "position", None) or s.slot_key,
         "impressions": s.impressions, "clicks": s.clicks,
         "created_at": str(s.created_at),
     } for s in slots]

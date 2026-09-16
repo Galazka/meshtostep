@@ -42,9 +42,9 @@ def sitemap(request: Request, db: Session = Depends(get_db)):
     for j in jobs:
         username = "anon"
         if j.user:
-            username = j.user.username or (
-                j.user.email.split("@")[0] if j.user.email else "anon"
-            )
+            username = j.user.username or "anon"
+        if username == "anon":
+            continue  # no PII prefixes in sitemap
         slug = j.slug or f"model-{j.id}"
         loc = f"{DOMAIN}/u/{_html.escape(username)}/{_html.escape(slug)}"
         lastmod = _fmt_date(j.completed_at or j.created_at)
