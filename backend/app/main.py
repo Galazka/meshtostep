@@ -50,14 +50,17 @@ async def csp_middleware(request: Request, call_next):
     response = await call_next(request)
     csp = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; "
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' data: https:; "
-            "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; "
+            "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.youtube.com https://www.youtube-nocookie.com; "
             "frame-ancestors 'self'; "
             "worker-src 'self' blob:; "
         )
+    # Embed pages are meant for third-party iframes — lift frame-ancestors there
+    if request.url.path.startswith("/e/"):
+        csp = csp.replace("frame-ancestors 'self';", "frame-ancestors *;")
     response.headers["Content-Security-Policy"] = csp
     # HTML, SW and app JS never cached — fresh UI + immediate updates (Cloudflare respects no-store).
     # /vendor (three.js) stays cached — stable, heavy.
@@ -135,7 +138,7 @@ def health():
     except Exception:
         db_ok = False
     return {
-        "ok": True,
+        "ok": fc_ok and db_ok,
         "freecad": fc_ok,
         "freecad_path": freecad,
         "database": db_ok,
@@ -168,8 +171,33 @@ if FRONTEND_DIR.exists():
     app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
 
 # ── Startup ─────────────────────────────────────────────────────────
+_cleanup_running = False
+
+def _cleanup_loop():
+    global _cleanup_running
+    import threading
+    time.sleep(300)  # let boot finish, then catch up once
+    while True:
+        if _cleanup_running:
+            time.sleep(600)
+            continue
+        _cleanup_running = True
+        try:
+            from .cleanup import cleanup_old_files, cleanup_expired_shares
+            old = cleanup_old_files()
+            exp = cleanup_expired_shares()
+            print(f"[3dfile] cleanup: {old} old files, {exp} expired shares")
+        except Exception as e:
+            print(f"[3dfile] cleanup error: {e}")
+        finally:
+            _cleanup_running = False
+        time.sleep(6 * 3600)
+
 @app.on_event("startup")
 def startup():
     os.makedirs(settings.DATA_DIR, exist_ok=True)
     init_db()
-    print("[3dfile] DB ready, app started")
+    import threading
+    t = threading.Thread(target=_cleanup_loop, daemon=True)
+    t.start()
+    print("[3dfile] DB ready, cleanup scheduler on, app started")

@@ -87,6 +87,7 @@ def get_quota(user: models.User = Depends(require_user), db: Session = Depends(g
 
 @router.post("/convert")
 async def convert_file(
+    request: Request,
     file: UploadFile = File(...),
     mode: str = Form("auto"),
     folder_id: str = Form(None),
@@ -94,7 +95,14 @@ async def convert_file(
     db: Session = Depends(get_db),
 ):
     t0 = time.time()
-    ext = Path(file.filename).suffix.lower()
+    # Early reject: don't buffer huge bodies into RAM
+    try:
+        _cl = int(request.headers.get("content-length") or 0)
+    except ValueError:
+        _cl = 0
+    if _cl and _cl > (settings.MAX_FILE_MB + 10) * 1024 * 1024:
+        raise HTTPException(413, f"Plik > {settings.MAX_FILE_MB} MB")
+    ext = Path(file.filename).suffix.lower() if file.filename else ""
     if ext not in (".stl", ".3mf", ".obj"):
         raise HTTPException(400, "Obsługiwane: .stl, .3mf, .obj")
 
@@ -118,7 +126,7 @@ async def convert_file(
         used = _quota_used(db, user.id)
         if used + len(data) > limit:
             shutil.rmtree(job_dir, ignore_errors=True)
-            raise HTTPException(413, f"Przekroczono limit 100 MB. Zwolnij miejsce usuwając pliki.")
+            raise HTTPException(413, f"Przekroczono limit {round(limit/1024/1024)} MB. Zwolnij miejsce usuwając pliki.")
     src.write_bytes(data)
 
     if user and not getattr(user,'username',None):

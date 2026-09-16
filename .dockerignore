@@ -1,0 +1,8 @@
+.git/
+__pycache__/
+*.pyc
+.env
+data/
+*.log
+.hermes/
+node_modules/

@@ -17,7 +17,9 @@ def cleanup_old_files(days: int = 30):
     deleted = 0
 
     try:
-        all_jobs = db.query(models.Job).all()
+        all_jobs = db.query(models.Job).filter(
+            models.Job.status.notin_(["pending", "processing", "converting"])
+        ).all()
 
         for job in all_jobs:
             # Check owner's retention
@@ -38,7 +40,11 @@ def cleanup_old_files(days: int = 30):
             if job_dir.exists():
                 shutil.rmtree(job_dir, ignore_errors=True)
 
-            # Delete from DB (cascade handles ShareLink etc)
+            # Delete from DB (no ON DELETE CASCADE — clear children first)
+            db.query(models.ShareLink).filter(models.ShareLink.job_id == job.id).delete()
+            db.query(models.Comment).filter(models.Comment.job_id == job.id).delete()
+            db.query(models.JobRating).filter(models.JobRating.job_id == job.id).delete()
+            db.query(models.UserLike).filter(models.UserLike.job_id == job.id).delete()
             db.delete(job)
             deleted += 1
 
@@ -84,6 +90,10 @@ def cleanup_expired_shares():
             job_dir = Path(settings.DATA_DIR) / "files" / job.uuid
             if job_dir.exists():
                 shutil.rmtree(job_dir, ignore_errors=True)
+            db.query(models.ShareLink).filter(models.ShareLink.job_id == job.id).delete()
+            db.query(models.Comment).filter(models.Comment.job_id == job.id).delete()
+            db.query(models.JobRating).filter(models.JobRating.job_id == job.id).delete()
+            db.query(models.UserLike).filter(models.UserLike.job_id == job.id).delete()
             db.delete(job)
             deleted_files += 1
 
