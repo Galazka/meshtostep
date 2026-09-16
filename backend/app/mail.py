@@ -9,6 +9,9 @@ def send_mail(to: str, subject: str, html_body: str) -> bool:
     if not settings.SMTP_HOST or not settings.SMTP_USER:
         print(f"[MAIL disabled] to={to} subject={subject}")
         return False
+    # Resend via HTTP API (port 443) — Railway blocks outbound SMTP ports
+    if "resend" in (settings.SMTP_HOST or ""):
+        return _send_resend(to, subject, html_body)
     msg = MIMEText(html_body, "html", "utf-8")
     msg["Subject"] = subject
     msg["From"] = settings.SMTP_FROM
@@ -20,6 +23,34 @@ def send_mail(to: str, subject: str, html_body: str) -> bool:
             s.send_message(msg)
         print(f"[MAIL sent] to={to} subject={subject}")
         return True
+    except Exception as e:
+        print(f"[MAIL failed] to={to}: {e}")
+        return False
+
+
+def _send_resend(to: str, subject: str, html_body: str) -> bool:
+    """Resend HTTP API via stdlib urllib (no extra deps). API key = SMTP_PASSWORD."""
+    import json
+    import urllib.request
+    payload = json.dumps({
+        "from": settings.SMTP_FROM,
+        "to": [to],
+        "subject": subject,
+        "html": html_body,
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        "https://api.resend.com/emails",
+        data=payload,
+        headers={
+            "Authorization": f"Bearer {settings.SMTP_PASSWORD}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as r:
+            print(f"[MAIL sent] to={to} subject={subject} status={r.status}")
+            return True
     except Exception as e:
         print(f"[MAIL failed] to={to}: {e}")
         return False
