@@ -923,15 +923,15 @@
     window.dispatchEvent(new Event('three-ready'));
 </script>
 <script type="module">
-    import './js/shared.js?v=15';
-    import './js/i18n.js?v=15';
-    import './js/viewer3d.js?v=15';
-    import './js/auth.js?v=15';
-    import './js/convert.js?v=15';
-    import './js/discover.js?v=15';
-    import './js/myfiles.js?v=15';
-    import './js/account.js?v=15';
-    import './js/main.js?v=15';
+    import './js/shared.js?v=16';
+    import './js/i18n.js?v=16';
+    import './js/viewer3d.js?v=16';
+    import './js/auth.js?v=16';
+    import './js/convert.js?v=16';
+    import './js/discover.js?v=16';
+    import './js/myfiles.js?v=16';
+    import './js/account.js?v=16';
+    import './js/main.js?v=16';
 </script>
 
 <script>
@@ -975,7 +975,7 @@ window.toggleFaq = toggleFaq;
 
 <!-- ═══ PWA SW ═══ -->
 <script>
-if('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js?v=15').catch(()=>{}); }
+if('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js?v=16').catch(()=>{}); }
 var _deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); _deferredPrompt = e; document.getElementById('pwaBanner').style.display = 'flex'; });
 document.getElementById('pwaInstallBtn').addEventListener('click', async function() { if (!_deferredPrompt) return; _deferredPrompt.prompt(); await _deferredPrompt.userChoice; _deferredPrompt = null; document.getElementById('pwaBanner').style.display = 'none'; });

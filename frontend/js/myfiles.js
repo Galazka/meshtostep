@@ -1,7 +1,7 @@
 // myfiles.js  -  jobs grid, folders, bulk, share modal, job modal, fullscreen, editor (verbatim).
-import { t } from './i18n.js?v=15';
-import { token } from './shared.js?v=15';
-import { toast } from './viewer3d.js?v=15';
+import { t } from './i18n.js?v=16';
+import { token } from './shared.js?v=16';
+import { toast } from './viewer3d.js?v=16';
 
 let _shareJobId = null;
 let _shareVanityUrl = '';

@@ -1,11 +1,11 @@
 // main.js — entry: tabs/routing, theme, FAQ, ads, home-recent, modal glue, init.
-import { applyI18n } from './i18n.js?v=15';
-import { token } from './shared.js?v=15';
-import { refreshThreeTheme } from './viewer3d.js?v=15';
-import { fetchUser, showModal } from './auth.js?v=15';
-import { setupDropZone } from './convert.js?v=15';
-import { loadMyJobs } from './myfiles.js?v=15';
-import { loadAccount } from './account.js?v=15';
+import { applyI18n } from './i18n.js?v=16';
+import { token } from './shared.js?v=16';
+import { refreshThreeTheme } from './viewer3d.js?v=16';
+import { fetchUser, showModal } from './auth.js?v=16';
+import { setupDropZone } from './convert.js?v=16';
+import { loadMyJobs } from './myfiles.js?v=16';
+import { loadAccount } from './account.js?v=16';
 
 // Expose window globals for onclick handlers in index.html
 window.showModal = showModal;
