@@ -608,6 +608,16 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
     if not share:
         title = "Link nie istnieje" if is_pl else "Link not found"
         return HTMLResponse(f"<h1>{title}</h1>", status_code=404)
+    # Expiry: dead links stay dead
+    if getattr(share, "expires_at", None):
+        from datetime import datetime as _dt
+        if share.expires_at < _dt.utcnow():
+            title = "Link wygasł" if is_pl else "Link expired"
+            return HTMLResponse(f"<h1>{title}</h1>", status_code=410)
+    job = share.job
+    if not job or getattr(job, "status", None) == "deleted":
+        title = "Link nie istnieje" if is_pl else "Link not found"
+        return HTMLResponse(f"<h1>{title}</h1>", status_code=404)
 
     # Increment view counter (atomic)
     db.query(models.ShareLink).filter(models.ShareLink.id == share.id).update(
@@ -615,7 +625,6 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
     )
     db.commit()
 
-    job = share.job
     faces_n = job.result_faces or "?"
     faces_word = "ścianek STEP" if is_pl else "STEP faces"
     mode = job.mode or "auto"
@@ -728,6 +737,8 @@ def embed_page(job_id: str, db: Session = Depends(get_db)) -> HTMLResponse:
     if not job:
         job = db.query(models.Job).filter(models.Job.uuid == job_id).first()
     if not job or job.status not in ["done", "hosted"]:
+        return HTMLResponse("<h1>Job not found</h1>", status_code=404)
+    if getattr(job, "visibility", "public") == "private":
         return HTMLResponse("<h1>Job not found</h1>", status_code=404)
 
     faces = job.result_faces or "?"
