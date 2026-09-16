@@ -131,6 +131,19 @@ def init_db():
     except Exception as e:
         print(f"[3dfile] alembic upgrade failed, legacy fallback: {e}")
         models.Base.metadata.create_all(bind=engine)
+        # self-heal: if schema exists but was never stamped, stamp head
+        try:
+            import os as _os
+            from sqlalchemy import inspect as _insp
+            from alembic.config import Config as _ACfg2
+            from alembic import command as _acmd2
+            if "alembic_version" not in _insp(engine).get_table_names():
+                _cfg2 = _ACfg2("/app/alembic.ini") if _os.path.exists("/app/alembic.ini") else _ACfg("alembic.ini")
+                _cfg2.set_main_option("script_location", "/app/alembic" if _os.path.exists("/app/alembic") else "alembic")
+                _acmd2.stamp(_cfg2, "head")
+                print("[3dfile] stamped baseline head")
+        except Exception as e2:
+            print(f"[3dfile] stamp skipped: {e2}")
     try:
         _migrate_columns()
     except Exception as e:
