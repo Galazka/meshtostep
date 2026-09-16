@@ -742,6 +742,14 @@ def embed_page(job_id: str, db: Session = Depends(get_db)) -> HTMLResponse:
         return HTMLResponse("<h1>Job not found</h1>", status_code=404)
 
     faces = job.result_faces or "?"
+    _tok = ""
+    try:
+        for sh in (getattr(job, "shares", None) or []):
+            if getattr(sh, "is_active", False) and getattr(sh, "token", None):
+                _tok = sh.token
+                break
+    except Exception:
+        _tok = ""
     size_kb = job.result_size_bytes // 1024 if job.result_size_bytes else "?"
     filename = html.escape(job.original_filename or "model")
     uuid = job.uuid
@@ -773,7 +781,7 @@ def embed_page(job_id: str, db: Session = Depends(get_db)) -> HTMLResponse:
 <div class="top">
   <h1>{filename}</h1>
   <a href="/api/download/{uuid}">Download STEP ({faces} faces, {size_kb} KB)</a>
-  <a href="/s/{uuid}" style="background:#6366f1;font-size:11px;padding:5px 12px" target="_blank">Pełna strona ↗</a>
+  <a href="{('/s/' + _tok) if _tok else 'https://3dfile.link'}" style="background:#6366f1;font-size:11px;padding:5px 12px" target="_blank">Pełna strona ↗</a>
 </div>
 <div id="viewer3d"></div>
 <script type="importmap">
@@ -790,7 +798,7 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf0f2f5);
 const camera = new THREE.PerspectiveCamera(50, _cw / _ch, 0.1, 1000);
 camera.position.set(0, 40, 60);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+const renderer = new THREE.WebGLRenderer({{ antialias: true }});
 renderer.setSize(_cw, _ch);
 renderer.setPixelRatio(window.devicePixelRatio);
 el.appendChild(renderer.domElement);
