@@ -459,7 +459,19 @@ document.addEventListener('fullscreenchange', function(){ setTimeout(fitViewer, 
       if(btn) btn.textContent='Konwertowanie...';
       fetch('/api/convert-on-demand/'+uuid+'?mode='+mode,{method:'POST'})
         .then(function(r){return r.json();})
-        .then(function(d){if(d&&d.ok)window.location.href='/api/download/'+uuid+'?format=step';else alert('Błąd konwersji');})
+        .then(function(d){
+          if(!(d&&d.ok)){ alert('Błąd konwersji'); return; }
+          if(d.cached){ window.location.href='/api/download/'+uuid+'?format=step'; return; }
+          var t0 = Date.now();
+          var iv = setInterval(function(){
+            if(Date.now()-t0 > 10*60*1000){ clearInterval(iv); alert('Konwersja trwa długo — link do pobrania przyjdzie mailem (zalogowani) lub odśwież stronę.'); return; }
+            fetch('/api/jobs/'+uuid+'/conv-status').then(function(rs){return rs.json();}).then(function(st){
+              if(btn) btn.textContent = st.status==='converting' ? 'Konwertowanie…' : ('W kolejce'+(st.queue_position?' #'+st.queue_position:'')+'…');
+              if(st.status==='done'){ clearInterval(iv); window.location.href='/api/download/'+uuid+'?format=step'; }
+              if(st.status==='error'){ clearInterval(iv); alert('Błąd konwersji'); }
+            });
+          }, 3000);
+        })
         .catch(function(){alert('Błąd sieci');});
     } else {
       window.location.href='/api/download/'+uuid+'?format='+fmt;

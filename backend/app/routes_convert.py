@@ -243,36 +243,126 @@ def convert_on_demand(job_uuid: str, request: Request, mode: str = "auto", db: S
     if job.status == "done" and job.result_step_path and os.path.exists(job.result_step_path):
         sz = os.path.getsize(job.result_step_path)
         return {"ok": True, "cached": True, "uuid": job_uuid, "step_size_kb": sz // 1024}
-    t0 = time.time()
-    job_dir = JOBS_DIR / job_uuid
-    src = None
-    if job_dir.exists():
-        for ext in (".stl", ".3mf", ".obj", ".step"):
-            for f in job_dir.iterdir():
-                if f.suffix.lower() == ext and f.suffix.lower() != ".step":
-                    src = str(f); break
-            if src: break
-    if not src:
-        raise HTTPException(404, "Plik źródłowy niedostępny")
-    job.status = "converting"
-    db.commit()
-    out_step = str(job_dir / (Path(job.original_filename).stem + ".step"))
-    result = convert(src, out_step, mode=mode)
-    if result["ok"]:
-        job.status = "done"
-        job.result_step_path = out_step
-        job.result_faces = result["faces"]
-        job.result_size_bytes = result["result_size"]
-        job.processing_time_s = round(time.time() - t0, 1)
-        job.completed_at = datetime.utcnow()
+    # kolejka FIFO — nie blokuj workera HTTP (FreeCAD ciężki)
+    _ensure_conv_worker()
+    if mode and mode != (job.mode or "auto"):
+        job.mode = mode
+    if job.status not in ("queued", "converting"):
+        job.status = "queued"
         db.commit()
-        return {"ok": True, "cached": False, "uuid": job_uuid,
-                "step_size_kb": result["result_size"] // 1024,
-                "time_s": job.processing_time_s}
-    job.status = "error"
-    job.error_msg = result["error"][:2000]
-    db.commit()
-    raise HTTPException(500, result["error"][:500])
+        _conv_queue.put(job_uuid)
+    try:
+        pos = list(_conv_queue.queue).index(job_uuid) + 1
+    except ValueError:
+        pos = 0
+    return {"ok": True, "queued": True, "uuid": job_uuid, "queue_position": pos,
+            "notify": bool(job.user_id)}
+
+
+# ── Background conversion queue (FIFO, 1 worker — FreeCAD is heavy) ──
+import queue as _queue_mod
+import threading as _threading
+_conv_queue: "_queue_mod.Queue[str]" = _queue_mod.Queue()
+_conv_worker_started = False
+
+
+def _conv_worker():
+    from .database import SessionLocal
+    from .engine import convert as _convert
+    while True:
+        job_uuid = _conv_queue.get()
+        db = SessionLocal()
+        try:
+            job = db.query(models.Job).filter(models.Job.uuid == job_uuid).first()
+            if not job or job.status == "done":
+                continue
+            job.status = "converting"
+            db.commit()
+            t0 = time.time()
+            job_dir = JOBS_DIR / job_uuid
+            src = None
+            if job_dir.exists():
+                for ext in (".stl", ".3mf", ".obj"):
+                    for f in job_dir.iterdir():
+                        if f.suffix.lower() == ext:
+                            src = str(f)
+                            break
+                    if src:
+                        break
+            if not src:
+                job.status = "error"
+                job.error_msg = "Plik źródłowy niedostępny"
+                db.commit()
+                continue
+            out_step = str(job_dir / (Path(job.original_filename).stem + ".step"))
+            result = _convert(src, out_step, mode=job.mode or "auto")
+            if result["ok"]:
+                job.status = "done"
+                job.result_step_path = out_step
+                job.result_faces = result["faces"]
+                job.result_size_bytes = result["result_size"]
+                job.processing_time_s = round(time.time() - t0, 1)
+                job.completed_at = datetime.utcnow()
+                db.commit()
+                # notify owner
+                try:
+                    if job.user_id:
+                        owner = db.query(models.User).filter(models.User.id == job.user_id).first()
+                        if owner and owner.email:
+                            from .mail import send_ready
+                            send_ready(owner.email, job)
+                except Exception as e:
+                    print(f"[queue] notify failed: {e}")
+            else:
+                job.status = "error"
+                job.error_msg = result["error"][:2000]
+                db.commit()
+        except Exception as e:
+            print(f"[queue] worker error: {e}")
+        finally:
+            try:
+                db.close()
+            except Exception:
+                pass
+            _conv_queue.task_done()
+
+
+def _ensure_conv_worker():
+    global _conv_worker_started
+    if _conv_worker_started:
+        return
+    _conv_worker_started = True
+    # stale jobs from before restart go back to hosted
+    try:
+        from .database import SessionLocal
+        db = SessionLocal()
+        try:
+            db.query(models.Job).filter(
+                models.Job.status.in_(["queued", "converting"])
+            ).update({"status": "hosted"}, synchronize_session=False)
+            db.commit()
+        finally:
+            db.close()
+    except Exception as e:
+        print(f"[queue] reset stale: {e}")
+    t = _threading.Thread(target=_conv_worker, daemon=True)
+    t.start()
+
+
+@router.get("/jobs/{job_uuid}/conv-status")
+def conv_status(job_uuid: str, db: Session = Depends(get_db)):
+    job = db.query(models.Job).filter(models.Job.uuid == job_uuid).first()
+    if not job:
+        raise HTTPException(404, "Job nie znaleziony")
+    pos = 0
+    try:
+        pos = list(_conv_queue.queue).index(job_uuid) + 1
+    except ValueError:
+        pos = 0
+    return {"status": job.status,
+            "queue_position": pos,
+            "step_size_kb": (job.result_size_bytes or 0) // 1024,
+            "time_s": job.processing_time_s}
 
 
 @router.get("/download/{job_uuid}")

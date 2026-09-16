@@ -81,3 +81,14 @@ def send_share_link(to: str, token: str, sender_email: str = "", job_title: str 
 <p style="color:#94a3b8;font-size:12px">Powered by <a href="{settings.APP_URL}">3dfile.link</a></p>
 </div>""")
 
+
+
+def send_ready(to: str, job) -> bool:
+    """Notify owner that STEP conversion finished."""
+    from .config import settings as _s
+    title = getattr(job, "title", None) or getattr(job, "original_filename", "Model 3D")
+    kb = (getattr(job, "result_size_bytes", 0) or 0) // 1024
+    url = f"{_s.APP_URL}/api/download/{job.uuid}?format=step"
+    return send_mail(to, f"3dfile.link — STEP gotowy: {title}",
+        f"<p>Twój plik <strong>{title}</strong> został przekonwertowany do STEP ({kb} KB).</p>"
+        f"<p><a href='{url}'>Pobierz STEP</a></p>")

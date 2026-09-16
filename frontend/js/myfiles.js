@@ -494,10 +494,33 @@ async function doConvertOnDemand(uuid, jobId) {
         const r = await fetch('/api/convert-on-demand/' + uuid, {method:'POST', headers: token?{'Authorization':'Bearer '+token}:{'Content-Type':'application/json'}});
         const d = await r.json();
         if (!r.ok) throw new Error(d.detail || 'Conversion failed');
-        dlStep.textContent = 'Gotowe! Pobieranie...';
-        setTimeout(() => { window.open('/api/download/' + uuid + '?format=step', '_blank'); }, 300);
-        dlStep.textContent = 'Pobierz STEP';
-        toast('STEP gotowy (' + d.step_size_kb + ' KB, ' + d.time_s + 's)');
+        if (d.cached) {
+            window.open('/api/download/' + uuid + '?format=step', '_blank');
+            toast('STEP gotowy (' + d.step_size_kb + ' KB)');
+        } else if (d.queued) {
+            dlStep.textContent = 'W kolejce' + (d.queue_position ? ' #' + d.queue_position : '') + '…';
+            if (d.notify) toast('Dam znać mailem jak STEP będzie gotowy');
+            const t0 = Date.now();
+            while (Date.now() - t0 < 10 * 60 * 1000) {
+                await new Promise(function(res){ setTimeout(res, 3000); });
+                const rs = await fetch('/api/jobs/' + uuid + '/conv-status');
+                if (!rs.ok) break;
+                const st = await rs.json();
+                if (st.status === 'done') {
+                    dlStep.textContent = 'Gotowe! Pobieranie...';
+                    setTimeout(() => { window.open('/api/download/' + uuid + '?format=step', '_blank'); }, 300);
+                    toast('STEP gotowy (' + st.step_size_kb + ' KB)');
+                    break;
+                }
+                if (st.status === 'error') throw new Error('Konwersja nieudana');
+                dlStep.textContent = st.status === 'converting' ? 'Konwertowanie…' : ('W kolejce' + (st.queue_position ? ' #' + st.queue_position : '') + '…');
+            }
+        } else {
+            dlStep.textContent = 'Gotowe! Pobieranie...';
+            setTimeout(() => { window.open('/api/download/' + uuid + '?format=step', '_blank'); }, 300);
+            dlStep.textContent = 'Pobierz STEP';
+            toast('STEP gotowy (' + d.step_size_kb + ' KB, ' + d.time_s + 's)');
+        }
     } catch(e) {
         toast('Błąd konwersji: ' + e.message, 'error');
         dlStep.textContent = prev;
