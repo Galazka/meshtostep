@@ -839,10 +839,10 @@ async function deleteMyJob(jobId) {
     function openEditor(jobId) {
         const j = _myJobsData.find(function(x) { return x.id === jobId; });
         if (!j) return;
-        _edJobId = jobId;
+        _edJobId = j.uuid;
 
         document.getElementById('edTitle').value = j.title || j.filename || '';
-        document.getElementById('edTags').value = (j.tags || []).join(', ');
+        document.getElementById('edTags').value = (Array.isArray(j.tags) ? j.tags : String(j.tags || '').split(',').map(function(s){return s.trim();}).filter(Boolean)).join(', ');
         document.getElementById('edYoutube').value = j.youtube_url || '';
         document.getElementById('edVisibility').value = j.visibility || 'private';
         document.getElementById('edDesc').value = j.description || '';
@@ -915,7 +915,7 @@ async function deleteMyJob(jobId) {
             });
             if (!r.ok) { const e = await r.json().catch(function(){return{}}); throw new Error(e.detail || 'Error'); }
             // update local data
-            const j = _myJobsData.find(function(x) { return x.id === _edJobId; });
+            const j = _myJobsData.find(function(x) { return x.uuid === _edJobId; });
             if (j) {
                 j.title = body.title;
                 j.description = body.description;

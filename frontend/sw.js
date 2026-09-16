@@ -1,4 +1,4 @@
-const CACHE = '3dfile-v8';
+const CACHE = '3dfile-v9';
 const ASSETS = ['/manifest.json', '/logo.png?v=2'];
 
 self.addEventListener('install', e => {
@@ -17,6 +17,20 @@ self.addEventListener('fetch', e => {
   if (u.includes('/s/') || u.includes('/u/') || u.includes('/e/')) return;
   if (u.includes('/admin')) return;
   if (!u.startsWith(self.location.origin)) return;
+  // JS/vendor: network-first (fresh code after deploy), cache fallback offline
+  if (u.includes('/js/') || u.includes('/vendor/')) {
+    e.respondWith(fetch(e.request).then(resp => {
+      if (resp.ok) {
+        const cl = resp.clone();
+        caches.open(CACHE).then(c => c.put(e.request, cl));
+      }
+      return resp;
+    }).catch(() => caches.match(e.request).then(cached => {
+      if (cached) return cached;
+      return new Response('', {status: 504, statusText: 'Offline'});
+    })));
+    return;
+  }
   e.respondWith(caches.match(e.request).then(cached => {
     if (cached) return cached;
     return fetch(e.request).then(resp => {

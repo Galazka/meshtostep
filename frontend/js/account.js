@@ -2,6 +2,7 @@
 
 function loadAccount() {
     fetch('/api/auth/me', {headers:{'Authorization':'Bearer '+localStorage.getItem('mt_token')}}).then(function(r){return r.json()}).then(function(u){
+        if(!u || !u.email) return;
         document.getElementById('kontoEmail').textContent = u.email || '';
         document.getElementById('kontoAdmin').style.display = u.is_admin ? 'block' : 'none';
         document.getElementById('kontoCreated').textContent = 'Konto od: ' + (u.created_at||'').slice(0,10);
