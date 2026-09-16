@@ -568,9 +568,11 @@ def create_share(
 
     token = uuid.uuid4().hex[:16]
     final_show_author = show_author and not anon
+    # Clamp validity window: 0 = no limit, max 365 days
+    expires_days = max(0, min(int(expires_days or 0), 365))
     # Anon files: hard cap 24 hours regardless of what frontend sends
     if not user:
-        expires_days = min(expires_days, 1)
+        expires_days = min(expires_days, 1) if expires_days > 0 else 1
     share = models.ShareLink(
         token=token,
         job_id=job.id,
@@ -852,6 +854,9 @@ def bulk_delete(payload: dict, user: models.User = Depends(require_user), db: Se
     jobs = db.query(models.Job).filter(models.Job.user_id == user.id, models.Job.id.in_(ids)).all()
     for job in jobs:
         db.query(models.ShareLink).filter(models.ShareLink.job_id == job.id).delete()
+        db.query(models.Comment).filter(models.Comment.job_id == job.id).delete()
+        db.query(models.JobRating).filter(models.JobRating.job_id == job.id).delete()
+        db.query(models.UserLike).filter(models.UserLike.job_id == job.id).delete()
         job_dir = JOBS_DIR / job.uuid
         if job_dir.is_dir():
             shutil.rmtree(job_dir, ignore_errors=True)
@@ -1020,6 +1025,12 @@ def delete_account(user: models.User = Depends(require_user), db: Session = Depe
         if job_dir.is_dir():
             shutil.rmtree(job_dir, ignore_errors=True)
         db.delete(job)
+    # leftover rows pointing at the user (not at their jobs)
+    db.query(models.ShareLink).filter(models.ShareLink.user_id == user.id).delete()
+    db.query(models.Comment).filter(models.Comment.user_id == user.id).delete()
+    db.query(models.JobRating).filter(models.JobRating.user_id == user.id).delete()
+    db.query(models.UserLike).filter(models.UserLike.user_id == user.id).delete()
+    db.query(models.GeoLog).filter(models.GeoLog.user_id == user.id).delete()
     db.delete(user)
     db.commit()
     return {"ok": True}

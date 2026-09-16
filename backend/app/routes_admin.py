@@ -565,6 +565,9 @@ def admin_bulk_delete(
     jobs_dir = os.path.join(settings.DATA_DIR, "files")
     for job in jobs:
         db.query(models.ShareLink).filter(models.ShareLink.job_id == job.id).delete()
+        db.query(models.Comment).filter(models.Comment.job_id == job.id).delete()
+        db.query(models.JobRating).filter(models.JobRating.job_id == job.id).delete()
+        db.query(models.UserLike).filter(models.UserLike.job_id == job.id).delete()
         job_dir = os.path.join(jobs_dir, job.uuid)
         if os.path.isdir(job_dir):
             shutil.rmtree(job_dir, ignore_errors=True)
