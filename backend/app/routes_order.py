@@ -273,9 +273,10 @@ def calculate_price(
     cur = currency.upper() if currency else "PLN"
     rate = {"USD": settings.currency_rate_usd, "EUR": settings.currency_rate_eur}.get(cur, 1.0)
     # For PLN, rate is 1.0 (no conversion); for USD/EUR divide PLN→currency.
-    total = round(pln_total / rate, 2) if rate else pln_total
-    subtotal_cur = round(product_total / rate, 2) if rate else product_total
-    shipping_cur = round(shipping_cost / rate, 2) if rate else shipping_cost
+    # Round up to nearest 0.5 in the customer's currency too.
+    total = _math.ceil((pln_total / rate if rate else pln_total) * 2) / 2
+    subtotal_cur = _math.ceil((product_total / rate if rate else product_total) * 2) / 2
+    shipping_cur = _math.ceil((shipping_cost / rate if rate else shipping_cost) * 2) / 2
     discount_cur = round(discount_pln / rate, 2) if rate else discount_pln
 
     return {
