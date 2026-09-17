@@ -142,7 +142,7 @@ def estimate_print_time_hours(volume_cm3: float, material: str = "PLA", parts: i
         return 2.0
     mm3 = volume_cm3 * 1000  # całkowita objętość modelu (parts drukowane równolegle)
     throughput = {"PLA": 280, "PETG": 240, "PCTG": 200, "ASA": 220, "ABS": 250}.get(material, 200)
-    base = max(0.5, mm3 / (throughput * 3600))
+    base = max(0.25, mm3 / (throughput * 3600))
     # fixed per-model setup overhead (not per-part) — Bamboo P1S auto-leveling ~2min
     return base + 0.1
 
@@ -401,6 +401,13 @@ def create_order(
     db.add(order)
     db.commit()
     db.refresh(order)
+
+    # —— bonus: +100 MB storage for paid orders >= 50 zł (K1.5 bonus quota) ——
+    if order.total and order.total >= 50 and order.user_id:
+        u = db.get(models.User, order.user_id)
+        if u:
+            u.bonus_mb = (u.bonus_mb or 0) + 100
+            db.commit()
 
     # log discount usage
     if discount_code and db:

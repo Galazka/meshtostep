@@ -94,6 +94,7 @@ def _migrate_columns():
         try:
             existing = {c["name"] for c in insp.get_columns("users")}
             add_col(conn, "users", "quota_limit_bytes", "INTEGER DEFAULT 104857600", existing)
+            add_col(conn, "users", "bonus_mb", "INTEGER DEFAULT 0", existing)
         except Exception as e:
             print(f"[3dfile] quota migrate: {e}")
         try:
