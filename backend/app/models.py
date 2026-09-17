@@ -28,6 +28,10 @@ class User(Base):
     privacy_accepted_at = Column(DateTime, nullable=True)
     marketing_consent = Column(Boolean, default=False)
     token_version = Column(Integer, default=0)  # bump = kill all sessions
+    role = Column(String(20), default="buyer")  # buyer | printer | both
+    has_printer = Column(Boolean, default=False)
+    rating_count = Column(Integer, default=0)
+    rating_avg = Column(Float, default=0.0)
     registered_ip = Column(String(64), nullable=True)
     register_user_agent = Column(String(512), nullable=True)
     bio = Column(Text, nullable=True)
@@ -39,6 +43,7 @@ class User(Base):
     shares = relationship("ShareLink", back_populates="user")
     geo_logs = relationship("GeoLog", back_populates="user")
     comments = relationship("Comment", back_populates="user")
+    print_requests = relationship("PrintRequest", back_populates="user")
 
 
 class Job(Base):
@@ -173,3 +178,55 @@ class Folder(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     user = relationship("User", back_populates="folders")
     jobs = relationship("Job", back_populates="folder")
+
+
+class PrintRequest(Base):
+    """Print job posting: buyer wants something printed. No money handled (lead board)."""
+    __tablename__ = "print_requests"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    job_id = Column(Integer, ForeignKey("jobs.id"), nullable=True)  # optional attached model
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    material = Column(String(30), default="PLA")
+    quantity = Column(Integer, default=1)
+    city = Column(String(100), nullable=True)
+    budget_pln = Column(Float, nullable=True)
+    deadline = Column(DateTime, nullable=True)
+    auction_end = Column(DateTime, nullable=True)
+    status = Column(String(20), default="open")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    user = relationship("User", back_populates="print_requests")
+    offers = relationship("PrintOffer", back_populates="request", cascade="all, delete-orphan")
+
+
+class PrintOffer(Base):
+    """Printer's offer on a request. Contact revealed on accept."""
+    __tablename__ = "print_offers"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    request_id = Column(Integer, ForeignKey("print_requests.id"), nullable=False, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    price_pln = Column(Float, nullable=False)
+    days = Column(Integer, nullable=True)
+    message = Column(Text, nullable=True)
+    shipping_method = Column(String(20), default="pickup")
+    rating = Column(Float, nullable=True)
+    rating_count = Column(Integer, default=0)
+    status = Column(String(20), default="pending")  # pending / accepted / rejected
+    created_at = Column(DateTime, default=datetime.utcnow)
+    request = relationship("PrintRequest", back_populates="offers")
+    printer = relationship("User", foreign_keys=[user_id])
+
+
+class JobReview(Base):
+    """Review left by request owner for a printer after job completion."""
+    __tablename__ = "job_reviews"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    offer_id = Column(Integer, ForeignKey("print_offers.id"), nullable=False, index=True)
+    reviewer_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    rating = Column(Integer, nullable=False)  # 1-5
+    text = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
