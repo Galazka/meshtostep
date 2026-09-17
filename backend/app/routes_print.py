@@ -387,7 +387,7 @@ async def estimate_model(
         "estimate_pln": {
             "product_subtotal": calc["product_subtotal_pln"],
             "shipping_cost": calc["shipping_cost_pln"],
-            "total": round(calc["product_subtotal_pln"] + calc["shipping_cost_pln"], 2),
+            "total": calc["product_subtotal_pln"] + calc["shipping_cost_pln"],
         },
         "mode": m,
         "elapsed_s": elapsed,
