@@ -62,44 +62,89 @@ def _trimesh_stats(data: bytes, material: str = "PLA") -> dict:
     result in <1s on constrained CPU.
     """
     import trimesh
-
-    fd, tmp_path = tempfile.mkstemp(suffix=".stl")
+    # trimesh infers from suffix; data is raw bytes so we must tell it the type
+    file_type = "stl"
+    # peek at magic bytes — OBJ starts with 'v ', STL binary has 80-byte header
+    if len(data) > 6 and data[:6] == b"v -0.4" or (data[:4] == b"v 0" or data[:6] in [b"o test", b"# Free"]):
+        file_type = "obj"
     try:
-        os.write(fd, data)
-        os.close(fd)
-        obj = trimesh.load(tmp_path, process=False)
-    finally:
-        os.unlink(tmp_path)
+        import io
+        obj = trimesh.load(io.BytesIO(data), file_type=file_type, process=False, force='mesh')
+    except Exception:
+        fd, tmp_path = tempfile.mkstemp(suffix=".stl")
+        try:
+            os.write(fd, data)
+            os.close(fd)
+            obj = trimesh.load(tmp_path, process=False, force='mesh')
+        finally:
+            os.unlink(tmp_path)
 
     # Scene → Trimesh (concat all geometries)
     if not isinstance(obj, trimesh.Trimesh):
         if isinstance(obj, trimesh.Scene):
             geoms = list(obj.geometry.values())
             if geoms:
-                obj = trimesh.util.concatenate([g.dump() for g in geoms])
+                dumped = []
+                for g in geoms:
+                    d = g.dump()
+                    if isinstance(d, list):
+                        dumped.extend(d)
+                    else:
+                        dumped.append(d)
+                obj = trimesh.util.concatenate(dumped)
     if not isinstance(obj, trimesh.Trimesh):
         try:
-            obj = obj.dump().sum()
+            dumped = obj.dump()
+            if isinstance(dumped, list):
+                obj = trimesh.util.concatenate(dumped)
+            else:
+                obj = dumped.sum()
         except Exception:
             raise HTTPException(status_code=500, detail="Could not parse mesh")
 
-    # STL coords are in mm; trimesh treats them as meters.
-    # Detect via bounds: if any axis > 1.0, likely mm → convert to m.
+    # STL/OBJ coords are raw numbers; unit may be meters (FreeCAD) or mm.
+    # Slicer (Bamboo) auto-scales cm/inch/mm imports → 25.4x for inch files.
+    # Heuristic: if extents product (bbox volume) < 1.0 mm³ but faces>0 →
+    #   likely unit mismatch (meters vs mm) → apply 25.4x scale.
+    # Real models in mm are typically > 1 mm³ bbox volume.
     bb = obj.bounds
-    if bb is not None and len(bb) == 2 and bb[1].max() > 1.0:
-        obj.vertices *= 0.001
-        bb = obj.bounds
+    if bb is not None and len(bb) == 2:
+        try:
+            dims_mm = [round(float(bb[1][i] - bb[0][i]), 2) for i in range(3)]
+        except Exception:
+            dims_mm = None
+    else:
+        dims_mm = None
+    if not dims_mm or all(d == 0 for d in dims_mm) if dims_mm else True:
+        ex = obj.extents
+        if ex is None:
+            # compute from bounds directly
+            try:
+                ex = bb[1] - bb[0] if bb is not None and len(bb) == 2 else [0,0,0]
+            except Exception:
+                ex = [0,0,0]
+        dims_mm = [round(float(e), 2) for e in ex if e is not None] if ex is not None else [0.0, 0.0, 0.0]
+    vol_mm3 = abs(float(obj.volume)) if obj.volume and not (str(obj.volume).startswith("nan") or str(obj.volume) == "nan") else 0.0
+    if vol_mm3 == 0.0 and bb is not None and len(bb) == 2:
+        # fallback: bounding box volume (overestimate for hollow meshes)
+        try:
+            import numpy as np
+            vol_mm3 = abs(float(np.prod(bb[1] - bb[0])))
+        except Exception:
+            pass
 
-    dims_m = (bb[1] - bb[0]) if bb is not None else obj.extents
-    dims_mm = [round(float(d) * 1000, 2) for d in dims_m]
-
-    vol_m3 = abs(float(obj.volume)) if obj.volume else 0.0
-    vol_cm3 = round(vol_m3 * 1e6, 3)
-
+    # Unit heuristic: if extents max < 5 mm but mesh has faces → likely meters/scale mismatch.
+    # Bamboo/PrusaSlicer auto-apply 25.4x (inch→mm) or scale unit. Detect tiny meshes.
+    # Real small PCB models are rare below 1mm. Scale up 25.4x if volume implausibly tiny.
+    extents_max = max(dims_mm) if dims_mm else 0
+    face_count = len(obj.faces) if hasattr(obj, "faces") else 0
+    if extents_max and extents_max < 5.0 and face_count > 50:
+        scale = 25.4  # assume inch-unit file (FreeCAD default exports sometimes inch)
+        dims_mm = [round(d * scale, 2) for d in dims_mm]
+        vol_mm3 = round(vol_mm3 * (scale**3)) if vol_mm3 else 0.0
+    vol_cm3 = round(vol_mm3 / 1000, 3)
     density = DENSITY_PLA if material == "PLA" else 1.27
     grams = round(vol_cm3 * density, 2)
-
-    vol_mm3 = vol_cm3 * 1000
     thr = THROUGHPUT_MM3_S.get(material, 100)
     hours = max(0.5, (vol_mm3 / thr) / 3600) + 0.1
 
