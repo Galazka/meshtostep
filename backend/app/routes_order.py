@@ -69,7 +69,7 @@ DEFAULT_SHIPPING = {
 DEFAULT_WATTS = 150
 DEFAULT_KWH = getattr(settings, "kwh_price", 1.50)  # Bamboo P1S ~1.5 zł/kWh
 MARGIN_PERCENT = getattr(settings, "print_margin_percent", 68)
-MAX_PART_AREA_MM2 = 625  # 25×25 mm bed — larger models split into parts
+MAX_PART_AREA_MM2 = 65536  # 256×256 mm build (Bamboo P1S)
 DENSITIES = {
     "PLA": 1.24, "PLA HT": 1.24, "PLA CF": 1.24,
     "PLA Matte": 1.24, "PLA Silk": 1.24, "PLA Glow": 1.24,
@@ -261,6 +261,10 @@ def calculate_price(
         discount_pln, discount_info = _apply_discount(db, discount_code, product_total)
 
     pln_total = round(product_total + shipping_cost - discount_pln, 2)
+
+    # minimum order: product must be >= 5 zł to justify printing + shipping
+    if product_total < 5.0:
+        pln_total = round(shipping_cost + 5.0, 2)  # min 5 zł product + shipping
 
     # —— multi-currency (K3) —— convert PLN base to requested currency
     cur = currency.upper() if currency else "PLN"
