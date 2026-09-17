@@ -108,8 +108,8 @@ def _migrate_columns():
             print(f"[3dfile] folder_id migrate: {e}")
         conn.commit()
     # ensure tables exist
-    _tbl_map = {"comments": "Comment", "ad_slots": "AdSlot", "folders": "Folder", "job_ratings": "JobRating", "user_likes": "UserLike"}
-    for tbl in ["comments","ad_slots","folders","job_ratings","user_likes"]:
+    _tbl_map = {"comments": "Comment", "ad_slots": "AdSlot", "folders": "Folder", "job_ratings": "JobRating", "user_likes": "UserLike", "orders": "Order", "print_requests": "PrintRequest"}
+    for tbl in ["comments","ad_slots","folders","job_ratings","user_likes","orders","print_requests"]:
         try:
             if not inspect(engine).has_table(tbl):
                 from . import models as m
