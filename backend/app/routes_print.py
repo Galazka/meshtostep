@@ -54,24 +54,40 @@ def _validate_upload(file: UploadFile) -> bytes:
 
 
 def _trimesh_stats(data: bytes, material: str = "PLA") -> dict:
-    """Fast volume + dims via trimesh — process=False for speed.
-
-    Root cause: trimesh.load on bytes+file_type='stl' creates empty Scene
-    (0 verts). process=True is very slow on constrained CPU (>60s for 9k
-    faces). process=False + manual bounds→mm detection gives correct
-    result in <1s on constrained CPU.
-    """
+    """Fast volume + dims via trimesh — process=False for speed."""
     import trimesh
-    # trimesh infers from suffix; data is raw bytes so we must tell it the type
-    file_type = "stl"
-    # peek at magic bytes — OBJ starts with 'v ', STL binary has 80-byte header
-    if len(data) > 6 and data[:6] == b"v -0.4" or (data[:4] == b"v 0" or data[:6] in [b"o test", b"# Free"]):
+    import io
+
+    # Detect file type from magic bytes; fall back across loaders for robustness.
+    file_type = None
+    if data[:6] == b"v -0.4" or data[:4] == b"v 0." or data[:6] in (b"o test", b"# Free", b"v  0"):
         file_type = "obj"
-    try:
-        import io
-        obj = trimesh.load(io.BytesIO(data), file_type=file_type, process=False, force='mesh')
-    except Exception:
-        fd, tmp_path = tempfile.mkstemp(suffix=".stl")
+    elif data[:4] in (b"PK\x03\x04",) and b"_3D" in data[:4096] or data[:2] == b"PK":
+        # ZIP (3MF) — magic PK\x03\x04
+        file_type = "3mf"
+    elif len(data) > 132 and data[84:87] != b"\x00\x00\x00":
+        file_type = "stl"  # binary STL guess
+    else:
+        file_type = "stl"
+
+    obj = None
+    # Try primary type, then fallbacks
+    attempts = [file_type]
+    for t in ("3mf", "obj", "stl", "ply"):
+        if t not in attempts:
+            attempts.append(t)
+
+    for t in attempts:
+        try:
+            obj = trimesh.load(io.BytesIO(data), file_type=t, process=False, force='mesh')
+            if obj is not None:
+                break
+        except Exception:
+            continue
+
+    if obj is None:
+        # last resort: write temp file and let trimesh auto-detect suffix
+        fd, tmp_path = tempfile.mkstemp(suffix=".3mf" if file_type == "3mf" else ".stl")
         try:
             os.write(fd, data)
             os.close(fd)
