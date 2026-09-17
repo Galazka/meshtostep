@@ -7,7 +7,7 @@ K1: auto-volume from uploaded STL → feeds pricing engine.
 No secrets / tokens stored on disk.
 """
 from __future__ import annotations
-import os, subprocess, json, tempfile, shutil, time as _time
+import os, subprocess, json, tempfile, shutil, time as _time, zipfile
 from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, File, Form, UploadFile, status
@@ -35,6 +35,73 @@ THROUGHPUT_MM3_S = {
     "TPU": 120, "TPU 75D": 100, "PA12": 200, "PA12 CF": 180, "PCTG": 200,
     "Iglidur I150PF": 120, "Iglidur I180PF": 100, "Iglidur I190PF": 80,
 }
+
+
+def _parse_3mf_to_stl(data: bytes) -> bytes:
+    """3MF (ZIP) → binary STL bytes via stdlib zipfile + manual XML parse.
+
+    Avoids trimesh's lxml-dependent 3MF loader which crashes in prod.
+    """
+    import io
+    import struct
+    from xml.etree import ElementTree as ET
+
+    zf = zipfile.ZipFile(io.BytesIO(data))
+    # find 3dmodel XML
+    model_name = next(n for n in zf.namelist() if n.endswith("3dmodel.model") or n.endswith(".model"))
+    xml = zf.read(model_name)
+
+    root = ET.fromstring(xml)
+    # namespace
+    ns = ""
+    if root.tag.startswith("{"):
+        ns = root.tag.split("}")[0] + "}"
+
+    vertices = []
+    # collect <vertex> items
+    for v in root.iter(f"{ns}vertex"):
+        x = float(v.get("x")); y = float(v.get("y")); z = float(v.get("z"))
+        vertices.append((x, y, z))
+
+    tris = []
+    for t in root.iter(f"{ns}triangle"):
+        tris.append((int(t.get("v0")), int(t.get("v1")), int(t.get("v2"))))
+
+    # read units from <model unit="...">
+    unit_scale = 1.0
+    model_el = root if root.tag.endswith("model") else root.find(f".//{ns}model")
+    if model_el is not None:
+        unit = model_el.get("unit", "millimeter")
+        unit_scale = {"millimeter": 1.0, "meter": 1000.0, "inch": 25.4, "centimeter": 10.0, "micrometer": 0.001, "microMeter": 0.001}.get(unit, 1.0)
+
+    if not tris or not vertices:
+        raise ValueError(f"3MF: no triangles/vertices (tris={len(tris)} verts={len(vertices)})")
+
+    # build binary STL (little-endian)
+    out = io.BytesIO()
+    out.write(b"\0" * 80)  # header
+    out.write(struct.pack("<I", len(tris)))
+    for t in tris:
+        # normal (compute from cross)
+        v0 = vertices[t[0]]; v1 = vertices[t[1]]; v2 = vertices[t[2]]
+        ax, ay, az = (v1[0]-v0[0]*unit_scale, v1[1]-v0[1]*unit_scale, v1[2]-v0[2]*unit_scale)
+        bx, by, bz = (v2[0]-v0[0]*unit_scale, v2[1]-v0[1]*unit_scale, v2[2]-v0[2]*unit_scale)
+        # scale coords by unit
+        va = (v0[0]*unit_scale, v0[1]*unit_scale, v0[2]*unit_scale)
+        vb = (v1[0]*unit_scale, v1[1]*unit_scale, v1[2]*unit_scale)
+        vc = (v2[0]*unit_scale, v2[1]*unit_scale, v2[2]*unit_scale)
+        nx = ay*bz - az*by
+        ny = az*bx - ax*by
+        nz = ax*by - ay*bx
+        ln = (nx*nx + ny*ny + nz*nz) ** 0.5
+        if ln:
+            nx /= ln; ny /= ln; nz /= ln
+        out.write(struct.pack("<3f", nx, ny, nz))
+        out.write(struct.pack("<3f", *va))
+        out.write(struct.pack("<3f", *vb))
+        out.write(struct.pack("<3f", *vc))
+        out.write(struct.pack("<H", 0))
+    return out.getvalue()
 
 
 def _validate_upload(file: UploadFile) -> bytes:
@@ -72,21 +139,10 @@ def _trimesh_stats(data: bytes, mode: str = "auto", material: str = "PLA") -> di
 
     obj = None
     if file_type == "3mf":
-        # 3MF = ZIP containing 3D/3dmodel.model (XML with <mesh>/<vertices>/<triangles>)
-        # trimesh.load(3mf) needs lxml; fall back to manual ZIP extraction → trimesh STL
         try:
             obj = trimesh.load(io.BytesIO(data), file_type="3mf", process=True, force='mesh')
         except Exception:
             obj = None
-        if obj is None:
-            # manual fallback: extract 3D/3dmodel.model, pass to trimesh via temp 3mf file
-            try:
-                fd, tmp_path = tempfile.mkstemp(suffix=".3mf")
-                os.write(fd, data); os.close(fd)
-                obj = trimesh.load(tmp_path, process=True, force='mesh')
-                os.unlink(tmp_path)
-            except Exception:
-                obj = None
     # non-3MF loaders
     if obj is None and file_type != "3mf":
         attempts = [file_type]
