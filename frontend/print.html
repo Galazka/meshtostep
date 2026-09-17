@@ -6,9 +6,9 @@
   <meta http-equiv="Cache-Control" content="no-store, max-age=0">
   <title>3DFILE.link — 3D Printing Service</title>
   <meta name="description" content="Poland's single-source 3D print hub. Automated real-time pricing. Ships worldwide. Upload model or enter volume — get instant price and order.">
-  <link rel="icon" href="/asset/logo_3d.svg?v=54" type="image/svg+xml">
+  <link rel="icon" href="/asset/logo_3d.svg?v=55" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/asset/print.css?v=54">
+  <link rel="stylesheet" href="/asset/print.css?v=55">
 </head>
 <body>
   <div class="toast-container" id="toastContainer"></div>
@@ -17,7 +17,7 @@
     <div class="container-print">
       <div class="header-inner">
         <a href="/" class="logo-link" style="display:flex;align-items:center;text-decoration:none;color:inherit;font-weight:700;font-size:20px">
-          <img src="/asset/logo_3d.svg?v=54" alt="3DFILE.link" height="32" style="margin-right:8px">
+          <img src="/asset/logo_3d.svg?v=55" alt="3DFILE.link" height="32" style="margin-right:8px">
           3DFILE.link
         </a>
         <nav class="nav-print" style="display:flex;gap:16px;align-items:center">
@@ -44,7 +44,7 @@
         </button>
       </div>
       <div class="hero-image">
-        <img src="/asset/hero_print.svg?v=54" alt="3D prints" loading="lazy" style="max-width:100%;border-radius:16px;border:1px solid #e5e7eb">
+        <img src="/asset/hero_print.svg?v=55" alt="3D prints" loading="lazy" style="max-width:100%;border-radius:16px;border:1px solid #e5e7eb">
       </div>
     </section>
 
@@ -276,6 +276,10 @@
           </div>
         </div>
 
+          <div id="printWarnings" style="display:none"></div>
+          <input type="hidden" name="estimated_hours" id="printHours" value="2.0">
+        </div>
+
         <!-- Price summary (customer sees only these) -->
         <div class="price-summary" id="printPriceSummary" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin:20px 0">
           <div class="price-row" style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #e5e7eb">
@@ -307,6 +311,6 @@
   </div>
 </main>
 
-<script src="/asset/print.js?v=54"></script>
+<script src="/asset/print.js?v=55"></script>
 </body>
 </html>

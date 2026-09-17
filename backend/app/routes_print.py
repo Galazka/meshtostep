@@ -202,6 +202,18 @@ async def estimate_model(
     )
 
     elapsed = round(_time.monotonic() - t0, 2)
+
+    # —— warnings for customer (K1.5) ——
+    warnings = []
+    if calc["parts"] > 1:
+        warnings.append(f"Model doesn't fit 25×25 mm bed → split into {calc['parts']} parts (+0.5h per split, higher cost). Consider scaling down.")
+    if stats["grams"] > 500:
+        warnings.append(f"Model is heavy ({round(stats['grams'])}g). Large prints have higher failure risk — verify in Bamboo first.")
+    if stats["print_hours"] > 8:
+        warnings.append(f"Print time {stats['print_hours']}h is long (>8h). Consider 3-model scale or hollow + 10% infill to reduce cost.")
+    if stats["print_hours"] > 24:
+        warnings.append("Print exceeds 24h — Bamboo studio may fail. Split into sub-20cm parts.")
+
     return JSONResponse({
         "ok": True,
         "volume_cm3": stats["volume_cm3"],
@@ -211,6 +223,7 @@ async def estimate_model(
         "faces": stats["faces"],
         "print_hours": stats["print_hours"],
         "parts": calc["parts"],
+        "warnings": warnings,
         "estimate": {
             "product_subtotal": calc["product_subtotal"],
             "shipping_cost": calc["shipping_cost"],

@@ -138,6 +138,12 @@
       document.getElementById('printVolume').value = model.volume_cm3;
       document.getElementById('printVolumeHidden').value = model.volume_cm3;
     }
+    if (model.estimated_hours) document.getElementById('printHours').value = model.estimated_hours;
+    var warnBox = document.getElementById('printWarnings');
+    if (warnBox && model.warnings) {
+      warnBox.innerHTML = model.warnings.map(function(w) { return '<div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;padding:8px 12px;margin:8px 0;font-size:12px;color:#92400e">⚠ ' + w + '</div>'; }).join('');
+      warnBox.style.display = model.warnings.length ? 'block' : 'none';
+    }
     if (model.dims_mm) document.getElementById('printDims').value = model.dims_mm;
 
     // pre-fill notes with model metadata

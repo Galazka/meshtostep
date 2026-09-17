@@ -105,7 +105,7 @@ window.sendToPrinter = async function(e, jobId, uuid, title) {
         var estRes = await fetch('/api/estimate?v=' + Date.now(), { method: 'POST', body: fd });
         if (estRes.ok) {
           var est = await estRes.json();
-          openPrintOrderModal({ job_id: jobId, uuid: uuid, title: title, volume_cm3: est.volume_cm3, dims_mm: est.dimensions });
+          openPrintOrderModal({ job_id: jobId, uuid: uuid, title: title, volume_cm3: est.volume_cm3, dims_mm: est.dimensions, estimated_hours: est.print_hours, warnings: est.warnings });
         } else {
           openPrintOrderModal({ job_id: jobId, uuid: uuid, title: title });
         }
