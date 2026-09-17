@@ -1,346 +1,185 @@
-/* ===== print.js — marketplace logic ===== */
+/* ===== print.js — 3D Printing service logic (EN) ===== */
 
 (function() {
-  /* ==== Toast ==== */
-  const toastContainer = document.getElementById('toastContainer');
+  "use strict";
 
-  function showToast(message, type = 'info') {
-    const t = document.createElement('div');
+  var toastContainer = document.getElementById('toastContainer');
+
+  function showToast(message, type) {
+    type = type || 'info';
+    var t = document.createElement('div');
     t.className = 'toast ' + type;
     t.textContent = message;
-    toastContainer.appendChild(t);
-    setTimeout(() => {
-      t.style.opacity = '0';
-      t.remove();
-    }, 3500);
+    if (toastContainer) toastContainer.appendChild(t);
+    setTimeout(function() { t.style.opacity = '0'; t.remove(); }, 3500);
   }
 
   /* ==== Auth ==== */
-  let currentUser = null;
-  const authArea = document.getElementById('authArea');
-  const loginBtn = document.getElementById('loginBtn');
-  const registerBtn = document.getElementById('registerBtn');
+  var currentUser = null;
 
-  async function checkAuth() {
-    try {
-      const res = await fetch('/api/me', { headers: { 'Accept': 'application/json' } });
-      if (res.ok) {
-        currentUser = await res.json();
-        authArea.innerHTML = '<span class="nav-link">' + (currentUser.username || 'Profil') + '</span>';
-      } else {
-        loginBtn.onclick = () => window.location.href = '/';
-        registerBtn.onclick = () => window.location.href = '/';
-      }
-    } catch (e) {
-      loginBtn.onclick = () => window.location.href = '/';
-      registerBtn.onclick = () => window.location.href = '/';
-    }
-  }
-
-  /* ==== Load requests ==== */
-  async function loadRequests() {
-    const list = document.getElementById('requestsList');
-    list.innerHTML = '<div class="loading">Szukam zleceń w Twojej okolicy…</div>';
-    try {
-      const res = await fetch('/api/print/requests?test=1', { headers: { 'Accept': 'application/json' } });
-      const data = await res.json();
-      if (!data.ok || !data.requests || data.requests.length === 0) {
-        list.innerHTML = '<div class="empty-state">Brak otwartych zleceń. <button class="btn btn-primary btn-small" onclick="openNewRequestModal()">Zamieść pierwsze zapytanie</button></div>';
-        return;
-      }
-      list.innerHTML = data.requests.map(renderRequestCard).join('');
-    } catch (e) {
-      list.innerHTML = '<p class="text-error">Błąd połączenia — odśwież stronę.</p>';
-    }
-  }
-
-  function formatAuctionEnd(auctionEnd) {
-    const d = new Date(auctionEnd);
-    const diffMs = d.getTime() - Date.now();
-    const diffH = Math.floor(diffMs / 3600000);
-    const diffM = Math.floor((diffMs % 3600000) / 60000);
-    if (diffH > 0) return 'Licytacja: ' + diffH + 'h ' + diffM + 'm';
-    return 'Licytacja: ' + diffM + 'm';
-  }
-
-  function renderRequestCard(req) {
-    const materials = (req.material || 'PLA').split(',');
-    const budget = req.budget_pln ? parseFloat(req.budget_pln).toFixed(2) + ' zł' : 'Brak budżetu';
-    return `
-<div class="request-card" onclick="openRequestDetail(${req.id})">
-  <h3 class="request-title">${escapeHtml(req.title)}</h3>
-  <div class="request-meta">
-    ${materials.map(m => `<span class="badge badge-material">${escapeHtml(m)}</span>`).join('')}
-    ${req.city ? `<span class="badge badge-city">${escapeHtml(req.city)}</span>` : ''}
-    <span class="badge badge-auction">${formatAuctionEnd(req.auction_end)}</span>
-  </div>
-  <div class="request-budget">${budget}</div>
-  <div class="offer-count">${req.offer_count || 0} ofert • kliknij by zobaczyć szczegóły</div>
-</div>`;
-  }
-
-  /* ==== Modal: new request ==== */
-  function openNewRequestModal() {
-    if (!currentUser) { showToast('Zaloguj się najpierw', 'error'); return window.location.href = '/'; }
-
-    document.body.style.overflow = 'hidden';
-    const modal = document.getElementById('newRequestModal');
-    if (modal) { modal.classList.add('active'); }
-  }
-
-  window.openNewRequestModal = openNewRequestModal;
-
-  function closeNewRequestModal() {
-    const m = document.getElementById('newRequestModal');
-    if (m) m.classList.remove('active');
-    document.body.style.overflow = '';
-  }
-
-  window.closeNewRequestModal = closeNewRequestModal;
-
-  async function submitNewRequest(e) {
-    e.preventDefault();
-    const form = e.target;
-    const fd = new FormData(form);
-    try {
-      const res = await fetch('/api/print/requests?' + Date.now(), {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + getStoredToken() },
-        body: fd
-      });
-      const data = await res.json();
-      if (data.ok) {
-        showToast('Zamieszczono! Oczekuj oferty.', 'success');
-        closeNewRequestModal();
-        loadRequests();
-      } else {
-        showToast(data.detail || 'Błąd', 'error');
-      }
-    } catch (e) {
-      showToast('Błąd sieci', 'error');
-    }
-  }
-
-  window.submitNewRequest = submitNewRequest;
-
-  /* ==== Request detail ==== */
-  async function openRequestDetail(id) {
-    const res = await fetch('/api/print/requests/' + id, { headers: { 'Accept': 'application/json' } });
-    const data = await res.json();
-    if (!data.ok) { showToast(data.detail || 'Nie znaleziono', 'error'); return; }
-    renderRequestDetail(data.request);
-    const detailModal = document.getElementById('requestDetailModal');
-    if (detailModal) detailModal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-  }
-
-  window.openRequestDetail = openRequestDetail;
-
-  function closeRequestDetailModal() {
-    const m = document.getElementById('requestDetailModal');
-    if (m) m.classList.remove('active');
-    document.body.style.overflow = '';
-  }
-
-  window.closeRequestDetailModal = closeRequestDetailModal;
-
-  function renderRequestDetail(req) {
-    const container = document.getElementById('detailContent');
-    if (!container) return;
-
-    const isOwner = req.owner_username === (currentUser && currentUser.username);
-    const auctionEnd = req.auction_end ? new Date(req.auction_end) : null;
-    const canOffer = auctionEnd && auctionEnd.getTime() > Date.now();
-
-    let offersHtml = '';
-    if (req.offers && req.offers.length > 0) {
-      offersHtml = req.offers.map(o => `
-<div class="offer-item">
-  <div class="offer-header">
-    <strong class="offer-price">${parseFloat(o.price_pln).toFixed(2)} zł</strong>
-    <span class="offer-days">${o.days ? o.days + ' dni' : 'Do ustalenia'} • ${o.shipping_method || 'Odbiór'}</span>
-  </div>
-  ${o.rating !== undefined ? `<div class="offer-rating">⭐ ${o.rating.toFixed(1)} (${o.rating_count || 0})</div>` : ''}
-  ${o.message ? `<p class="offer-message">${escapeHtml(o.message)}</p>` : ''}
-  ${isOwner && o.is_owner ? '' : (isOwner ? `<button class="btn btn-small btn-ghost" onclick="acceptOffer(${o.id})">Akceptuj</button>` : '')}
-</div>`).join('');
-    } else {
-      offersHtml = '<p class="text-muted">Brak ofert jeszcze. Zaproś lokalnego drukarza!</p>';
-    }
-
-    const canPlaceOffer = canOffer && !isOwner;
-    const offerForm = canPlaceOffer ? `
-<form class="offer-form" onsubmit="submitOffer(event, ${req.id})">
-  <h3>Dodaj swoją ofertę</h3>
-  <div class="form-group">
-    <label class="form-label">Cena (zł)</label>
-    <input type="number" name="price_pln" min="0" step="0.01" required class="form-input">
-  </div>
-  <div class="form-group">
-    <label class="form-label">Czas realizacji (dni)</label>
-    <input type="number" name="days" min="1" class="form-input">
-  </div>
-  <div class="form-group">
-    <label class="form-label">Odbiór / Wysyłka</label>
-    <select name="shipping_method" class="form-select">
-      <option value="pickup">Odbiór osobisty</option>
-      <option value="ship">Wysyłka</option>
-      <option value="both">Odbiór lub wysyłka</option>
-    </select>
-  </div>
-  <div class="form-group">
-    <label class="form-label">Wiadomość (opcjonalne)</label>
-    <textarea name="message" rows="3" class="form-textarea" maxlength="500" placeholder="Dodatkowe info dla zamawiającego..."></textarea>
-  </div>
-  <button type="submit" class="btn btn-primary btn-block">Wyślij ofertę</button>
-</form>` : '';
-
-    container.innerHTML = `
-<div class="request-detail-header">
-  <h2>${escapeHtml(req.title)}</h2>
-  <div class="request-meta">
-    <span class="badge badge-material">${escapeHtml(req.material || 'PLA')}</span>
-    <span class="badge badge-city">${escapeHtml(req.city || 'Polska')}</span>
-    <span class="badge badge-auction">${formatAuctionEnd(req.auction_end)}</span>
-  </div>
-  <div class="request-budget">${req.budget_pln ? parseFloat(req.budget_pln).toFixed(2) + ' zł' : 'Brak budżetu'}</div>
-  ${req.description ? `<div class="request-description">${escapeHtml(req.description).replace(/\n/g, '<br>')}</div>` : ''}
-</div>
-<div class="offers-section">
-  <h3>Oferty (${req.offers ? req.offers.length : 0})</h3>
-  ${offersHtml}
-</div>
-${offerForm}`;
-  }
-
-  window.renderRequestDetail = renderRequestDetail;
-
-  async function submitOffer(e, requestId) {
-    e.preventDefault();
-    const form = e.target;
-    const fd = new FormData(form);
-    try {
-      const res = await fetch(`/api/print/requests/${requestId}/offers?${Date.now()}`, {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + getStoredToken() },
-        body: fd
-      });
-      const data = await res.json();
-      if (data.ok) {
-        showToast('Oferta wysłana!', 'success');
-        closeRequestDetailModal();
-        loadRequests();
-      } else {
-        showToast(data.detail || 'Błąd', 'error');
-      }
-    } catch (e) {
-      showToast('Błąd sieci', 'error');
-    }
-  }
-
-  window.submitOffer = submitOffer;
-
-  async function acceptOffer(offerId) {
-    if (!confirm('Akceptować tę ofertę?')) return;
-    try {
-      const res = await fetch(`/api/print/offers/${offerId}/accept?${Date.now()}`, {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + getStoredToken() }
-      });
-      const data = await res.json();
-      if (data.ok) {
-        showToast('Oferta zaakceptowana. Kontakt wiadomością prywatna.', 'success');
-        closeRequestDetailModal();
-        loadRequests();
-      } else {
-        showToast(data.detail || 'Błąd', 'error');
-      }
-    } catch (e) {
-      showToast('Błąd sieci', 'error');
-    }
-  }
-
-  window.acceptOffer = acceptOffer;
-
-  /* ==== Helpers ==== */
   function getStoredToken() {
-    // Check cookie or localStorage
-    const m = document.cookie.match(/token=([^;]+)/);
+    var m = document.cookie.match(/token=([^;]+)/);
     if (m) return m[1];
     return localStorage.getItem('token') || '';
   }
 
-  function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>"']/g, function(c) {
-      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
-    });
+  async function checkAuth() {
+    try {
+      var res = await fetch('/api/me', { headers: { 'Accept': 'application/json' } });
+      if (res.ok) {
+        currentUser = await res.json();
+        if (currentUser.is_admin) {
+          var adminLink = document.getElementById('adminLink');
+          if (adminLink) adminLink.style.display = 'block';
+        }
+      }
+    } catch (e) { /* anon user OK */ }
   }
 
-  /* ==== Init ==== */
-  document.addEventListener('DOMContentLoaded', function() {
-    checkAuth();
-    loadRequests();
-
-    // Close modals on Escape
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        closeNewRequestModal();
-        closeRequestDetailModal();
+  /* ==== Materials + shipping load ==== */
+  async function loadMaterials() {
+    var box = document.getElementById('materialList');
+    if (!box) return;
+    try {
+      var res = await fetch('/api/admin/materials?' + Date.now(), {
+        headers: { 'Authorization': 'Bearer ' + getStoredToken(), 'Accept': 'application/json' }
+      });
+      var data;
+      if (res.ok) {
+        data = await res.json();
+      } else {
+        data = {
+          materials: { "PLA": 89, "PETG": 110, "ABS": 95, "ASA": 120, "PA12 CF": 220, "TPU": 130 },
+          colors: {}
+        };
       }
-    });
-
-    // Close modal on backdrop click
-    window.addEventListener('click', function(e) {
-      if (e.target.classList.contains('modal-backdrop')) {
-        closeNewRequestModal();
-        closeRequestDetailModal();
-      }
-    });
-  });
-
-  window.showToast = showToast;
-
-  /* ==== Print order modal (from any model) ==== */
-  window.openPrintOrderModal = function(model) {
-    var modal = document.getElementById('printOrderModal');
-    var backdrop = modal ? modal.closest('.modal-backdrop') : null;
-    if (!modal || !backdrop) {
-      showToast('Formularz zamówienia niedostępny', 'error');
-      return;
+      var html = Object.keys(data.materials || {}).map(function(m) {
+        return '<div style="padding:12px;border:1px solid #e5e7eb;border-radius:8px"><strong>' + m +
+               '</strong><br><span style="color:#6b7280">' + data.materials[m] + ' zł/kg</span></div>';
+      }).join('');
+      box.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px">' + html + '</div>';
+    } catch (e) {
+      box.innerHTML = '<p style="color:#6b7280">Materials list unavailable</p>';
     }
-    // fill hidden fields
-    var jobIdField = document.getElementById('printOrderId');
-    var uuidField = document.getElementById('printOrderUuid');
-    if (jobIdField) jobIdField.value = model.job_id || '';
-    if (uuidField) uuidField.value = model.uuid || '';
-    // prefill title into description
+  }
+
+  function loadShipping() {
+    var tbody = document.getElementById('shippingTable');
+    if (!tbody) return;
+    var rows = [
+      ["Standard (5 business days)", 15, 35, 55],
+      ["Express (2 days)", 25, 55, 85],
+      ["Priority (next day)", 40, 80, 130],
+      ["Pickup (local)", 0, 0, 0]
+    ];
+    tbody.innerHTML = rows.map(function(r) {
+      return '<tr><td style="padding:8px">'+r[0]+'</td><td style="padding:8px">'+r[1]+' zł</td><td style="padding:8px">'+r[2]+' zł</td><td style="padding:8px">'+r[3]+' zł</td></tr>';
+    }).join('');
+  }
+
+  /* ==== Print order modal ==== */
+  window.openPrintOrderModal = function(model) {
+    model = model || {};
+    var modal = document.getElementById('printOrderModal');
+    if (!modal) { showToast('Order form unavailable', 'error'); return; }
+    document.getElementById('printOrderId').value = model.job_id || '';
+    document.getElementById('printOrderUuid').value = model.uuid || 'calculator';
+
     var descField = document.querySelector('textarea[name="description"]');
     if (descField) descField.value = model.title || '';
 
-    // trigger initial price calc
-    setTimeout(function() {
-      window.calculatePrintPrice && window.calculatePrintPrice();
-    }, 100);
+    if (model.volume_cm3) {
+      document.getElementById('printVolume').value = model.volume_cm3;
+      document.getElementById('printVolumeHidden').value = model.volume_cm3;
+    }
+    if (model.dims_mm) document.getElementById('printDims').value = model.dims_mm;
 
+    setTimeout(function() { window.calculatePrintPrice && window.calculatePrintPrice(); }, 100);
     document.body.style.overflow = 'hidden';
-    backdrop.classList.add('active');
+    modal.style.display = 'flex';
   };
 
-  window.closePrintOrderModal = function() {
+  window.closePrintModal = function() {
     var modal = document.getElementById('printOrderModal');
-    var backdrop = modal ? modal.closest('.modal-backdrop') : null;
-    if (backdrop) backdrop.classList.remove('active');
+    if (modal) modal.style.display = 'none';
     document.body.style.overflow = '';
   };
 
   window.calculatePrintPrice = function() {
-    var vol = parseFloat(document.getElementById('printVolume').value) || 0;
-    var qty = parseInt(document.getElementById('printQuantity').value) || 1;
+    var volInput = document.getElementById('printVolume');
+    var dimsInput = document.getElementById('printDims');
+    var vol = parseFloat(volInput && volInput.value) || 0;
+
+    if (!vol && dimsInput && dimsInput.value) {
+      var nums = dimsInput.value.match(/[\d.]+/g);
+      if (nums && nums.length >= 3) {
+        vol = (parseFloat(nums[0]) * parseFloat(nums[1]) * parseFloat(nums[2])) / 1000;
+        volInput.value = vol.toFixed(1);
+      }
+    }
+
+    var qty = parseInt(document.getElementById('printOrderQty').value) || 1;
     var material = document.getElementById('printMaterial').value || 'PLA';
     var color = document.getElementById('printColor').value || 'natural';
     var shipping = document.getElementById('printShipping').value || 'standard';
-    var region = document.getElementById('printRegion').value || 'PL';
+    var region = document.getElementById('printOrderRegion').value || 'PL';
+
+    if (volInput) document.getElementById('printVolumeHidden').value = vol.toFixed(1);
+    if (dimsInput) document.getElementById('printDimsHidden').value = dimsInput.value;
+
+    var summaryEl = document.getElementById('printPriceSummary');
+    var totalEl = document.getElementById('priceTotal');
+    var shippingEl = document.getElementById('priceShipping');
+    var productEl = document.getElementById('priceProduct');
+    var discountLine = document.getElementById('discountLine');
+    var discountEl = document.getElementById('priceDiscount');
+    var hint = document.getElementById('priceHint');
+
+    if (vol > 0) {
+      fetch('/api/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'material=' + encodeURIComponent(material) +
+              '&color=' + encodeURIComponent(color) +
+              '&quantity=' + qty +
+              '&shipping=' + encodeURIComponent(shipping) +
+              '&shipping_region=' + encodeURIComponent(region) +
+              '&volume_cm3=' + vol
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.ok) {
+          productEl.textContent = data.product_subtotal.toFixed(2) + ' zł';
+          shippingEl.textContent = data.shipping_cost.toFixed(2) + ' zł';
+          if (data.discount_pln > 0) {
+            discountLine.style.display = 'block';
+            discountEl.textContent = '-' + data.discount_pln.toFixed(2) + ' zł';
+          } else {
+            discountLine.style.display = 'none';
+          }
+          totalEl.textContent = data.total.toFixed(2) + ' zł';
+          hint.textContent = data.parts > 1 ? 'Model split into ' + data.parts + ' parts (max 25×25 mm per part)' : '';
+          summaryEl.style.background = '#fff';
+        }
+      })
+      .catch(function() { showToast('Calculation error', 'error'); });
+    } else {
+      productEl.textContent = '—';
+      shippingEl.textContent = '—';
+      totalEl.textContent = '—';
+      hint.textContent = 'Enter volume or dimensions to calculate price';
+    }
+  };
+
+  window.applyDiscountCode = function() {
+    var code = document.getElementById('printOrderCode').value.trim();
+    if (!code) { showToast('Enter a discount code first', 'error'); return; }
+    var vol = parseFloat(document.getElementById('printVolumeHidden').value) || 0;
+    var qty = parseInt(document.getElementById('printOrderQty').value) || 1;
+    var material = document.getElementById('printMaterial').value || 'PLA';
+    var color = document.getElementById('printColor').value || 'natural';
+    var shipping = document.getElementById('printShipping').value || 'standard';
+    var region = document.getElementById('printOrderRegion').value || 'PL';
 
     fetch('/api/calculate', {
       method: 'POST',
@@ -350,61 +189,288 @@ ${offerForm}`;
             '&quantity=' + qty +
             '&shipping=' + encodeURIComponent(shipping) +
             '&shipping_region=' + encodeURIComponent(region) +
-            '&volume_cm3=' + vol
+            '&volume_cm3=' + vol +
+            '&discount_code=' + encodeURIComponent(code)
     })
     .then(function(r) { return r.json(); })
     .then(function(data) {
-      if (data.ok && data.pricing) {
-        document.getElementById('printPriceBreakdown').innerHTML =
-          'Filament: <b>' + data.breakdown.filament_g.toFixed(1) + 'g</b> · ' + data.breakdown.filament_cost.toFixed(2) + ' zł<br>' +
-          'Druk: <b>' + data.breakdown.printing_hours.toFixed(1) + 'h</b> · ' + data.breakdown.power_cost.toFixed(2) + ' zł<br>' +
-          'Margin: <b>' + data.pricing.margin_pln.toFixed(2) + ' zł</b><br>' +
-          'Wysyłka: <b>' + data.pricing.shipping.toFixed(2) + ' zł</b><br>' +
-          '<span style="font-size:16px;font-weight:700">Razem: ' + data.pricing.total.toFixed(2) + ' zł</span>';
-
-        // set hidden volume field for form submit
-        var volHidden = document.getElementById('printVolumeHidden');
-        if (volHidden) volHidden.value = vol;
+      if (data.ok) {
+        document.getElementById('priceTotal').textContent = data.total.toFixed(2) + ' zł';
+        document.getElementById('printPriceSummary').style.background = '#fff';
+        showToast('Discount code ' + code + ' applied: -' + data.discount_pln.toFixed(2) + ' zł', 'success');
+      } else {
+        showToast(data.detail || 'Invalid code', 'error');
       }
     })
-    .catch(function() {
-      showToast('Błąd kalkulacji', 'error');
-    });
+    .catch(function() { showToast('Network error', 'error'); });
   };
 
   window.submitPrintOrder = function(e) {
     e.preventDefault();
     var form = e.target;
     var fd = new FormData(form);
-    fd.append('payment_method', 'blik'); // default
+    fd.append('payment_method', 'blik');
 
-    fetch('/api/orders', {
+    var name = fd.get('name');
+    var email = fd.get('email');
+    if (!name || !email) {
+      showToast('Name and email are required', 'error');
+      return;
+    }
+
+    var vol = parseFloat(document.getElementById('printVolumeHidden').value) || 0;
+    if (vol <= 0 && document.getElementById('printDims').value) {
+      var nums = document.getElementById('printDims').value.match(/[\d.]+/g);
+      if (nums && nums.length >= 3) {
+        vol = (parseFloat(nums[0]) * parseFloat(nums[1]) * parseFloat(nums[2])) / 1000;
+        document.getElementById('printVolumeHidden').value = vol.toFixed(1);
+      }
+    }
+
+    fetch('/api/orders?' + Date.now(), {
       method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + (function(){
-          var m = document.cookie.match(/token=([^;]+)/);
-          return m ? m[1] : '';
-        })()
-      },
+      headers: { 'Authorization': 'Bearer ' + getStoredToken() },
       body: fd
     })
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data.ok) {
-        showToast('Zamówienie złożone! Cena: ' + data.total.toFixed(2) + ' zł. Kliknij poniżej by zapłacić.', 'success');
-        window.closePrintOrderModal();
-        // show payment button
-        var payBtn = document.getElementById('printPayNow');
-        if (payBtn) {
-          payBtn.href = '/api/orders/' + data.order_id + '/pay';
-          payBtn.style.display = 'inline-block';
-        }
+        showToast('Order placed! Price: ' + data.total.toFixed(2) + ' zł. We will contact you to confirm payment.', 'success');
+        window.closePrintModal();
       } else {
-        showToast(data.detail || 'Błąd zamawiania', 'error');
+        showToast(data.detail || 'Order error', 'error');
       }
     })
-    .catch(function() {
-      showToast('Błąd sieci', 'error');
+    .catch(function() { showToast('Network error', 'error'); });
+  };
+
+  /* ==== Admin panel ==== */
+  window.openAdminPanel = function() {
+    var panel = document.getElementById('adminPanel');
+    if (!panel) return;
+    panel.style.display = 'block';
+    panel.scrollIntoView({behavior: 'smooth'});
+  };
+
+  window.authenticateAdmin = function() {
+    var code = document.getElementById('adminTokenInput').value.trim();
+    if (!code) { showToast('Enter token', 'error'); return; }
+    // store as token, then re-check
+    localStorage.setItem('token', code);
+    checkAdminAuth();
+    showToast('Admin unlocked', 'success');
+  };
+
+  async function checkAdminAuth() {
+    var token = getStoredToken();
+    if (!token) return;
+    var headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' };
+    try {
+      var res = await fetch('/api/orders/stats?' + Date.now(), { headers: headers });
+      if (res.ok) {
+        var authDiv = document.getElementById('adminAuth');
+        var contentDiv = document.getElementById('adminContent');
+        if (authDiv) authDiv.style.display = 'none';
+        if (contentDiv) contentDiv.style.display = 'block';
+        await loadAdminOrders();
+      }
+    } catch (e) { /* not admin */ }
+  }
+
+  async function loadAdminOrders() {
+    var token = getStoredToken();
+    var headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' };
+    try {
+      var res = await fetch('/api/orders?' + Date.now(), { headers: headers });
+      var data = await res.json();
+      if (data.ok && data.orders) {
+        var tbody = '';
+        data.orders.forEach(function(o) {
+          var statusColor = '#6b7280';
+          if (o.status === 'drukowane') statusColor = '#f59e0b';
+          if (o.status === 'wysłane') statusColor = '#3b82f6';
+          if (o.status === 'dostarczone') statusColor = '#10b981';
+          if (o.status === 'anulowane') statusColor = '#ef4444';
+          tbody += '<tr style="border-bottom:1px solid #e5e7eb">' +
+            '<td style="padding:8px">' + o.id + '</td>' +
+            '<td style="padding:8px">' + new Date(o.created_at).toLocaleString('en-GB') + '</td>' +
+            '<td style="padding:8px">' + (o.customer_name || '') + '</td>' +
+            '<td style="padding:8px">' + (o.customer_email || '') + '</td>' +
+            '<td style="padding:8px">' + (o.customer_phone || o.phone || '') + '</td>' +
+            '<td style="padding:8px">' + (o.material || '') + '</td>' +
+            '<td style="padding:8px">' + (o.quantity || 1) + '</td>' +
+            '<td style="padding:8px">' + (o.shipping_method || '') + '</td>' +
+            '<td style="padding:8px">' + (o.total || 0).toFixed(2) + ' zł</td>' +
+            '<td style="padding:8px"><span style="color:' + statusColor + ';font-weight:600">' + (o.status || 'nowy') + '</span></td>' +
+            '<td style="padding:8px">' + (o.is_paid ? '✓' : '') + '</td>' +
+            '<td style="padding:8px"><button onclick="exportOrder(' + o.id + ')" style="padding:4px 8px;border:1px solid #d1d5db;border-radius:4px;background:#f9fafb">CSV</button></td>' +
+            '</tr>';
+        });
+        document.getElementById('adminOrders').innerHTML =
+          '<button onclick="exportAllOrders()" style="padding:8px 16px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:6px;background:#f9fafb">Export all (Excel)</button>' +
+          '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">' +
+          '<thead><tr style="border-bottom:2px solid #e5e7eb"><th style="padding:8px;text-align:left">ID</th><th style="padding:8px;text-align:left">Date</th><th style="padding:8px;text-align:left">Client</th><th style="padding:8px;text-align:left">Email</th><th style="padding:8px;text-align:left">Phone</th><th style="padding:8px;text-align:left">Material</th><th style="padding:8px;text-align:left">Qty</th><th style="padding:8px;text-align:left">Shipping</th><th style="padding:8px;text-align:left">Total</th><th style="padding:8px;text-align:left">Status</th><th style="padding:8px;text-align:left">Paid</th><th style="padding:8px;text-align:left">CSV</th></tr></thead>' +
+          '<tbody>' + tbody + '</tbody></table></div>';
+      }
+    } catch (e) {
+      document.getElementById('adminOrders').innerHTML = '<p style="color:#ef4444">Load failed</p>';
+    }
+  }
+
+  window.exportOrder = function(orderId) {
+    window.open('/api/orders/' + orderId + '/export?' + Date.now(), '_blank');
+  };
+
+  window.exportAllOrders = function() {
+    window.open('/api/orders/export?' + Date.now(), '_blank');
+  };
+
+  async function loadAdminStats() {
+    var token = getStoredToken();
+    var headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' };
+    try {
+      var res = await fetch('/api/orders/stats?' + Date.now(), { headers: headers });
+      var data = await res.json();
+      if (data.stats) {
+        var s = data.stats;
+        var html = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px">' +
+          '<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:16px"><div style="font-size:12px;color:#6b7280">Total orders</div><div style="font-size:24px;font-weight:700">' + s.total_orders + '</div></div>' +
+          '<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:16px"><div style="font-size:12px;color:#6b7280">Revenue (PLN)</div><div style="font-size:24px;font-weight:700">' + s.total_revenue_pln + '</div></div>' +
+          '<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:16px"><div style="font-size:12px;color:#6b7280">Pending</div><div style="font-size:24px;font-weight:700;color:#f59e0b">' + (s.pending || 0) + '</div></div>' +
+          '<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:16px"><div style="font-size:12px;color:#6b7280">Shipped</div><div style="font-size:24px;font-weight:700;color:#3b82f6">' + (s.shipped || 0) + '</div></div>' +
+          '</div>';
+        document.getElementById('adminStats').innerHTML = html + '<pre style="background:#1f2937;color:#e5e7eb;padding:12px;border-radius:8px;margin-top:16px;font-size:12px;overflow-x:auto">' + JSON.stringify(s, null, 2) + '</pre>';
+      }
+    } catch (e) {
+      document.getElementById('adminStats').innerHTML = '<p style="color:#ef4444">Load failed</p>';
+    }
+  }
+
+  async function loadAdminPricing() {
+    var token = getStoredToken();
+    var headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' };
+    try {
+      var res = await fetch('/api/admin/pricing?' + Date.now(), { headers: headers });
+      var data = await res.json();
+      var html = '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="border-bottom:2px solid #e5e7eb"><th style="padding:6px;text-align:left">Key</th><th style="padding:6px;text-align:left">Value</th><th style="padding:6px;text-align:left">Type</th><th style="padding:6px">Action</th></tr></thead><tbody>';
+      (data || []).forEach(function(r) {
+        html += '<tr style="border-bottom:1px solid #e5e7eb"><td style="padding:6px">' + r.key + '</td>' +
+                '<td style="padding:6px"><input type="text" value="' + r.value + '" onchange="updatePricing(\'' + r.key + '\', this.value)" style="width:120px;padding:4px;font-size:12px"></td>' +
+                '<td style="padding:6px">' + r.kind + '</td>' +
+                '<td style="padding:6px"><button onclick="deletePricing(\'' + r.key + '\')" style="padding:2px 6px;font-size:11px">del</button></td></tr>';
+      });
+      html += '</tbody></table><div style="margin-top:12px"><input type="text" id="newPricingKey" placeholder="key" style="padding:4px;font-size:12px;width:120px"><input type="text" id="newPricingVal" placeholder="value" style="padding:4px;font-size:12px;width:100px"><button onclick="addPricing()" style="padding:4px 8px;font-size:12px">Add</button></div>';
+      document.getElementById('adminPricing').innerHTML = html;
+    } catch (e) {
+      document.getElementById('adminPricing').innerHTML = '<p style="color:#ef4444">Load failed</p>';
+    }
+  }
+
+  window.updatePricing = function(key, value) {
+    var token = getStoredToken();
+    fetch('/api/admin/pricing?' + Date.now(), {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'key=' + encodeURIComponent(key) + '&value=' + encodeURIComponent(value)
+    }).then(function() { showToast('Updated', 'success'); });
+  };
+
+  window.addPricing = function() {
+    var k = document.getElementById('newPricingKey').value.trim();
+    var v = document.getElementById('newPricingVal').value.trim();
+    if (!k || !v) return;
+    window.updatePricing(k, v);
+    setTimeout(function() { loadAdminPricing(); }, 500);
+  };
+
+  window.deletePricing = function(key) {
+    if (!confirm('Delete pricing key ' + key + '?')) return;
+    var token = getStoredToken();
+    fetch('/api/admin/pricing/' + encodeURIComponent(key) + '?' + Date.now(), {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    }).then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.ok) { showToast('Deleted', 'success'); setTimeout(loadAdminPricing, 500); }
+      else showToast(data.detail || 'Error', 'error');
     });
   };
+
+  window.switchAdminTab = function(tab) {
+    document.querySelectorAll('.admin-tab').forEach(function(e) { e.style.display = 'none'; });
+    document.querySelectorAll('.admin-tab-btn').forEach(function(e) {
+      e.classList.remove('active');
+      e.style.borderBottom = 'none';
+    });
+    document.getElementById('admin' + tab.charAt(0).toUpperCase() + tab.slice(1)).style.display = 'block';
+    var activeBtn = document.querySelector('.admin-tab-btn[onclick="switchAdminTab(\'' + tab + '\')"]');
+    if (activeBtn) activeBtn.style.borderBottom = '2px solid #2563eb';
+    if (tab === 'orders') setTimeout(loadAdminOrders, 50);
+    if (tab === 'stats') setTimeout(loadAdminStats, 50);
+    if (tab === 'pricing') setTimeout(loadAdminPricing, 50);
+    if (tab === 'codes') setTimeout(loadAdminCodes, 50);
+  };
+
+  async function loadAdminCodes() {
+    var token = getStoredToken();
+    var headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' };
+    try {
+      var res = await fetch('/api/admin/discount_codes?' + Date.now(), { headers: headers });
+      var data = await res.json();
+      var html = '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:12px"><thead><tr style="border-bottom:2px solid #e5e7eb"><th style="padding:6px;text-align:left">Code</th><th style="padding:6px;text-align:left">PLN off</th><th style="padding:6px;text-align:left">% off</th><th style="padding:6px;text-align:left">Uses</th><th style="padding:6px">Active</th></tr></thead><tbody>';
+      (data.codes || []).forEach(function(c) {
+        html += '<tr style="border-bottom:1px solid #e5e7eb"><td style="padding:6px">' + c.code + '</td><td style="padding:6px">' + (c.discount_pln || 0) + '</td><td style="padding:6px">' + (c.discount_pct || 0) + '</td><td style="padding:6px">' + (c.uses || 0) + '</td><td style="padding:6px">' + (c.is_active ? 'y' : 'n') + '</td></tr>';
+      });
+      html += '</tbody></table>';
+      html += '<form onsubmit="addDiscountCode(event)" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><input name="code" placeholder="Code e.g. WELCOME10" required style="padding:6px;font-size:12px"><input name="discount_pln" type="number" step="0.01" placeholder="PLN off" style="padding:6px;font-size:12px"><input name="discount_pct" type="number" step="0.1" placeholder="pct off" style="padding:6px;font-size:12px"><input name="max_uses" type="number" placeholder="Max uses (blank=∞)" style="padding:6px;font-size:12px"><button type="submit" class="submit-btn">Add code</button></form>';
+      document.getElementById('adminCodes').innerHTML = html;
+    } catch (e) {
+      document.getElementById('adminCodes').innerHTML = '<p style="color:#ef4444">Load failed</p>';
+    }
+  }
+
+  window.addDiscountCode = function(e) {
+    e.preventDefault();
+    var form = e.target;
+    var token = getStoredToken();
+    var fd = new FormData(form);
+    fetch('/api/admin/discount_codes?' + Date.now(), {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: fd
+    }).then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.ok) { showToast('Code added', 'success'); form.reset(); setTimeout(loadAdminCodes, 500); }
+      else showToast(data.detail || 'Error', 'error');
+    });
+  };
+
+  /* ==== Export ==== */
+  window.exportOrder = window.exportOrder || function(orderId) {
+    window.open('/api/orders/' + orderId + '/export?' + Date.now(), '_blank');
+  };
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"]/g, function(c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] || c;
+    });
+  }
+
+  /* ==== Init ==== */
+  document.addEventListener('DOMContentLoaded', function() {
+    checkAuth();
+    loadMaterials();
+    loadShipping();
+    checkAdminAuth();
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') window.closePrintModal();
+    });
+    window.addEventListener('click', function(e) {
+      if (e.target.classList.contains('modal-backdrop')) window.closePrintModal();
+    });
+  });
+
+  window.showToast = showToast;
 })();

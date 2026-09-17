@@ -1,203 +1,296 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#2563eb">
-<link rel="icon" href="/favicon.ico">
-<link rel="apple-touch-icon" href="/logo.png?v=2">
-<link rel="manifest" href="/manifest.json">
-<title>Zlecenia druku 3D — 3DFILE.link</title>
-<meta name="description" content="Znajdź drukarnię 3D w Polsce. Złóż zapytanie ofertowe, otrzymaj oferty od local printerów. Peer-to-peer marketplace druku 3D.">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/asset/print.css?v=1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-store, max-age=0">
+  <title>3DFILE.link — 3D Printing Service</title>
+  <meta name="description" content="Poland's single-source 3D print hub. Automated real-time pricing. Ships worldwide. Upload model or enter volume — get instant price and order.">
+  <link rel="icon" href="/asset/logo_3d.svg?v=42" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/asset/print.css?v=42">
 </head>
 <body>
-<div class="toast-container" id="toastContainer"></div>
+  <div class="toast-container" id="toastContainer"></div>
 
-<header class="app-header">
-  <div class="container">
-    <div class="header-inner">
-      <a href="/" class="logo-link">
-        <img src="/logo.png?v=2" alt="3DFILE" class="logo">
-        <span class="logo-text">3DFILE</span>
-      </a>
-      <nav class="nav">
-        <a href="/">Strona</a>
-        <a href="/print.html" class="nav-active">Zlecenia</a>
-        <a href="/discover.html">Modele</a>
-        <a href="/myfiles.html">Moje pliki</a>
-      </nav>
-      <div class="auth-area" id="authArea">
-        <button id="loginBtn" class="btn btn-ghost btn-small">Zaloguj</button>
-        <button id="registerBtn" class="btn btn-primary btn-small">Zarejestruj</button>
+  <header class="header-print">
+    <div class="container-print">
+      <div class="header-inner">
+        <a href="/" class="logo-link" style="display:flex;align-items:center;text-decoration:none;color:inherit;font-weight:700;font-size:20px">
+          <img src="/asset/logo_3d.svg?v=42" alt="3DFILE.link" height="32" style="margin-right:8px">
+          3DFILE.link
+        </a>
+        <nav class="nav-print" style="display:flex;gap:16px;align-items:center">
+          <a href="/print.html" class="nav-link active">3D Printing</a>
+          <a href="/printing/pricing" class="nav-link">Pricing</a>
+          <a href="/printing/how" class="nav-link">How it works</a>
+          <a href="/printing/contact" class="nav-link">Contact</a>
+          <span id="adminLink" style="display:none">
+            <a href="#" onclick="openAdminPanel();return false" class="nav-link">Admin</a>
+          </span>
+        </nav>
       </div>
     </div>
-  </div>
-</header>
+  </header>
 
-<main class="container" id="mainContent">
-  <div class="print-hero">
-    <h1>Marketplace druku 3D</h1>
-    <p class="hero-desc">Jedyny drukarz 3D w Polsce — wycena w czasie rzeczywistym, wysyłka do Polski, UE i świata. Wyślij model — my wydrukujemy.</p>
-  </div>
+  <main class="container-print" id="mainContent">
+    <!-- Hero -->
+    <section class="hero-print" style="display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center;padding:48px 0">
+      <div class="hero-text">
+        <h1 style="font-size:36px;margin:0 0 16px">3D Printing On Demand</h1>
+        <p class="hero-desc" style="font-size:16px;margin:0 0 24px">Poland's single authorized 3D print hub. Automated real-time pricing. Ships globally.</p>
+        <button class="hero-cta" onclick="openPrintOrderModal({job_uuid:'calculator',title:'Print calculator'})" style="padding:12px 28px;border-radius:8px;background:#2563eb;color:#fff;border:none;font-weight:600;cursor:pointer">
+          Calculate a price
+        </button>
+      </div>
+      <div class="hero-image">
+        <img src="/asset/hero_print.svg?v=42" alt="3D prints" loading="lazy" style="max-width:100%;border-radius:16px;border:1px solid #e5e7eb">
+      </div>
+    </section>
 
-  <div id="requestsList" class="requests-grid">
-    <!-- filled by print.js -->
+    <!-- How it works -->
+    <section class="how-print" style="padding:40px 0">
+      <h2 style="font-size:24px;margin:0 0 24px">How it works</h2>
+      <div class="steps-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px">
+        <div class="step-card" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px">
+          <div class="step-num" style="width:32px;height:32px;border-radius:50%;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;margin-bottom:12px">1</div>
+          <h3 style="margin:0 0 8px;font-size:16px">Upload your model</h3>
+          <p style="margin:0;font-size:14;color:#6b7280">Or enter dimensions/volume manually in the calculator.</p>
+        </div>
+        <div class="step-card" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px">
+          <div class="step-num" style="width:32px;height:32px;border-radius:50%;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;margin-bottom:12px">2</div>
+          <h3 style="margin:0 0 8px;font-size:16px">Get instant price</h3>
+          <p style="margin:0;font-size:14;color:#6b7280">We auto-calculate filament + electricity + printing time + margin + shipping. No signup needed.</p>
+        </div>
+        <div class="step-card" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px">
+          <div class="step-num" style="width:32px;height:32px;border-radius:50%;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;margin-bottom:12px">3</div>
+          <h3 style="margin:0 0 8px;font-size:16px">Place order</h3>
+          <p style="margin:0;font-size:14;color:#6b7280">Enter shipping address, pay via BLIK / card / transfer. We print and ship worldwide.</p>
+        </div>
+        <div class="step-card" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px">
+          <div class="step-num" style="width:32px;height:32px;border-radius:50%;background:#2563eb;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;margin-bottom:12px">4</div>
+          <h3 style="margin:0 0 8px;font-size:16px">Track status</h3>
+          <p style="margin:0;font-size:14;color:#6b7280">Get email updates. Track production → shipped → delivered.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Materials -->
+    <section class="materials-print" style="padding:40px 0;border-top:1px solid #e5e7eb">
+      <h2 style="font-size:24px;margin:0 0 24px">Materials &amp; Colors</h2>
+      <div class="material-grid" id="materialList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px"></div>
+    </section>
+
+    <!-- Shipping -->
+    <section class="shipping-print" style="padding:40px 0;border-top:1px solid #e5e7eb">
+      <h2 style="font-size:24px;margin:0 0 16px">Shipping methods</h2>
+      <table class="shipping-table" style="width:100%;border-collapse:collapse">
+        <thead><tr style="border-bottom:1px solid #e5e7eb"><th style="text-align:left;padding:8px">Option</th><th style="text-align:left;padding:8px">Poland</th><th style="text-align:left;padding:8px">EU</th><th style="text-align:left;padding:8px">Rest of world</th></tr></thead>
+        <tbody id="shippingTable"></tbody>
+      </table>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq-print" style="padding:40px 0;border-top:1px solid #e5e7eb">
+      <h2 style="font-size:24px;margin:0 0 24px">Frequently asked questions</h2>
+      <div class="faq-grid" style="display:grid;gap:20px">
+        <div class="faq-item" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px">
+          <h3 style="margin:0 0 8px">Is the price really automatic?</h3>
+          <p style="margin:0;color:#6b7280">Yes. We calculate based on model volume → filament weight → print time → material cost. Margin and shipping are added. No negotiation needed.</p>
+        </div>
+        <div class="faq-item" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px">
+          <h3 style="margin:0 0 8px">Why are large models split into parts?</h3>
+          <p style="margin:0;color:#6b7280">Standard FDM print beds are 250×250 mm (≈25×25 cm usable). Models larger than that are auto-split into parts, each priced independently.</p>
+        </div>
+        <div class="faq-item" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px">
+          <h3 style="margin:0 0 8px">Do you ship outside Poland?</h3>
+          <p style="margin:0;color:#6b7280">Yes — EU (2–5 days) and worldwide via DHL/GLS/Poczta Polska. Shipping cost is calculated automatically by destination.</p>
+        </div>
+        <div class="faq-item" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px">
+          <h3 style="margin:0 0 8px">Can I pick up the print?</h3>
+          <p style="margin:0;color:#6b7280">Yes, select "Pickup" in shipping — price becomes 0 zł, local only.</p>
+        </div>
+        <div class="faq-item" style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px">
+          <h3 style="margin:0 0 8px">What filament do you use?</h3>
+          <p style="margin:0;color:#6b7280">PLA, PETG, ASA, PA12-CF, TPU and more from top Polish suppliers (Extrudr, Filamentum, Oetiker). Full material table below.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Admin panel -->
+    <div id="adminPanel" style="display:none;padding:20px;border-top:1px solid #e5e7eb;margin-top:0">
+      <h2 style="margin-top:0">Admin panel</h2>
+      <div id="adminAuth">
+        <p style="margin:0 0 12px">Enter admin token to access pricing, orders, and stats.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input type="password" id="adminTokenInput" class="form-input" placeholder="JWT admin token" style="width:250px">
+          <button class="nav-btn" onclick="authenticateAdmin()">Unlock</button>
+        </div>
+      </div>
+      <div id="adminContent" style="display:none">
+        <div class="admin-tabs" style="display:flex;border-bottom:1px solid #e5e7eb;margin-bottom:16px">
+          <button class="admin-tab-btn active" onclick="switchAdminTab('orders')" style="padding:8px 16px;border:none;background:none;border-bottom:2px solid #2563eb">Orders</button>
+          <button class="admin-tab-btn" onclick="switchAdminTab('stats')" style="padding:8px 16px;border:none;background:none">Stats</button>
+          <button class="admin-tab-btn" onclick="switchAdminTab('pricing')" style="padding:8px 16px;border:none;background:none">Pricing</button>
+          <button class="admin-tab-btn" onclick="switchAdminTab('codes')" style="padding:8px 16px;border:none;background:none">Discount codes</button>
+        </div>
+        <div id="adminOrders" class="admin-tab"></div>
+        <div id="adminStats" class="admin-tab" style="display:none"></div>
+        <div id="adminPricing" class="admin-tab" style="display:none"></div>
+        <div id="adminCodes" class="admin-tab" style="display:none"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Toast -->
+  <div id="toastEl" class="toast-print" style="visibility:hidden"></div>
+
+  <!-- Print Order Modal -->
+  <div class="modal-backdrop" id="printOrderModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:1000">
+    <div class="modal" style="max-width:560px;max-height:90vh;overflow-y:auto;background:#fff;border-radius:16px;margin:20px;padding:24px;position:relative">
+      <button class="close-btn" onclick="closePrintModal()" style="position:absolute;top:12px;right:12px;font-size:20px;background:none;border:none;cursor:pointer">×</button>
+      <h2 id="printModalTitle" style="margin:0 0 16px;font-size:20px">Order a print</h2>
+      <form id="printOrderForm" onsubmit="submitPrintOrder(event)">
+        <input type="hidden" name="job_id" id="printOrderId">
+        <input type="hidden" name="job_uuid" id="printOrderUuid">
+        <input type="hidden" name="volume_cm3" id="printVolumeHidden">
+        <input type="hidden" name="dims" id="printDimsHidden">
+
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="form-group">
+            <label class="form-label">Your name *</label>
+            <input type="text" name="name" id="printOrderName" required maxlength="100" class="form-input" placeholder="John Doe" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email *</label>
+            <input type="email" name="email" id="printOrderEmail" required maxlength="255" class="form-input" placeholder="john@example.com" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Phone (for courier)</label>
+          <input type="tel" name="phone" id="printOrderPhone" class="form-input" placeholder="+48 123 456 789" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Full address</label>
+          <textarea name="address" id="printOrderAddress" class="form-input" rows="2" placeholder="Street, apartment, building" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;resize:vertical"></textarea>
+        </div>
+
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="form-group">
+            <label class="form-label">City</label>
+            <input type="text" name="city" id="printOrderCity" class="form-input" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Postal code</label>
+            <input type="text" name="postal_code" id="printOrderPostal" class="form-input" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px">
+          </div>
+        </div>
+
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="form-group">
+            <label class="form-label">Country</label>
+            <input type="text" name="country" id="printOrderCountry" class="form-input" value="PL" required style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Region for shipping</label>
+            <select name="shipping_region" id="printOrderRegion" class="form-select" onchange="updateShippingCost()" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px">
+              <option value="PL">Poland</option>
+              <option value="EU">EU</option>
+              <option value="GLOBAL">Rest of world</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="form-group">
+            <label class="form-label">Shipping method</label>
+            <select name="shipping" id="printOrderShipping" class="form-select" onchange="calculatePrintPrice()" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px">
+              <option value="standard">Standard (5 business days)</option>
+              <option value="express">Express (2 days)</option>
+              <option value="priority">Priority (next day)</option>
+              <option value="pickup">Pickup (free, local)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Quantity</label>
+            <input type="number" name="quantity" id="printOrderQty" min="1" value="1" class="form-input" onchange="calculatePrintPrice()" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px">
+          </div>
+        </div>
+
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="form-group">
+            <label class="form-label">Material</label>
+            <select name="material" id="printMaterial" class="form-select" onchange="calculatePrintPrice()" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px">
+              <option value="PLA">PLA</option>
+              <option value="PETG">PETG</option>
+              <option value="ABS">ABS</option>
+              <option value="ASA">ASA</option>
+              <option value="PA12 CF">PA12-CF</option>
+              <option value="TPU">TPU</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Color</label>
+            <select name="color" id="printColor" class="form-select" onchange="calculatePrintPrice()" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px">
+              <option value="natural">Natural / white</option>
+              <option value="black">Black</option>
+              <option value="blue">Blue (+5 zł)</option>
+              <option value="red">Red (+5 zł)</option>
+              <option value="silver">Silver (+10 zł)</option>
+              <option value="brass">Brass (+25 zł)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Dimensions (mm) — X × Y × Z</label>
+          <input type="text" name="dims" id="printDims" class="form-input" placeholder="e.g. 30 x 20 x 15" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px" onchange="calculatePrintPrice()">
+          <p style="font-size:12px;color:#6b7280;margin:4px 0 0">Used to auto-split models larger than 25×25 mm into parts.</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Volume (cm³) — optional</label>
+          <input type="number" id="printVolume" min="0" step="0.1" value="100" class="form-input" onchange="calculatePrintPrice()" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px">
+          <p style="font-size:12px;color:#6b7280;margin:4px 0 0">If dimensions filled, volume auto-calculated. Or enter manually.</p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Discount code (optional)</label>
+          <div style="display:flex;gap:8px">
+            <input type="text" name="discount_code" id="printOrderCode" class="form-input" placeholder="CODE123" style="flex:1;padding:8px;border:1px solid #d1d5db;border-radius:6px">
+            <button type="button" class="icon-btn" onclick="applyDiscountCode()" style="padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;background:#f9fafb">✓</button>
+          </div>
+        </div>
+
+        <!-- Price summary (customer sees only these) -->
+        <div class="price-summary" id="printPriceSummary" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin:20px 0">
+          <div class="price-row" style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #e5e7eb">
+            <span>Printing</span><span id="priceProduct">—</span>
+          </div>
+          <div class="price-row" style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #e5e7eb">
+            <span>Shipping</span><span id="priceShipping">—</span>
+          </div>
+          <div class="price-row discount-line" id="discountLine" style="display:none">
+            <span>Discount</span><span id="priceDiscount">—</span>
+          </div>
+          <div class="price-total" style="display:flex;justify-content:space-between;padding:8px 0;border-top:2px solid #2563eb;font-weight:700;font-size:18px">
+            <span>Total</span><span id="priceTotal">—</span>
+          </div>
+          <div class="price-hint" id="priceHint"></div>
+        </div>
+
+        <div style="margin-top:16px">
+          <button type="submit" class="submit-btn" id="printSubmitBtn" style="width:100%;padding:12px;border:none;border-radius:8px;background:#2563eb;color:#fff;font-weight:600;cursor:pointer">
+            Place order — pay on confirmation
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </main>
 
-<footer class="footer-print">
-  <div class="container">
-    <span>© 2026 3DFILE.link — peer-to-peer marketplace druku 3D</span>
-  </div>
-</footer>
-
-<script src="/asset/print.js?v=1"></script>
-
-<!-- Modal: print order -->
-<div class="modal-backdrop" id="printOrderModal">
-  <div class="modal" style="max-width:520px">
-    <button class="close-btn" onclick="closePrintOrderModal()">×</button>
-    <h2>Wyślij do drukarni</h2>
-    <form onsubmit="submitPrintOrder(event)">
-      <input type="hidden" name="job_id" id="printOrderId">
-      <input type="hidden" name="job_uuid" id="printOrderUuid">
-      <input type="hidden" name="volume_cm3" id="printVolumeHidden">
-      <div class="form-group">
-        <label class="form-label">Imię i nazwisko</label>
-        <input type="text" name="name" id="printOrderName" required maxlength="100" class="form-input" placeholder="Jan Kowalski">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Email (dla potwierdzenia)</label>
-        <input type="email" name="email" id="printOrderEmail" required maxlength="255" class="form-input" placeholder="jan@przyklad.pl">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Opis techniczny (warstwa, wypełnienie, wykończenie)</label>
-        <textarea name="description" rows="2" class="form-textarea" maxlength="1000" placeholder="np. 0.2mm warstwa, 20% wypełnienie, gładkie wykończenie"></textarea>
-      </div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-        <div class="form-group">
-          <label class="form-label">Materiał</label>
-          <select name="material" id="printMaterial" class="form-select" onchange="calculatePrintPrice()">
-            <option value="PLA">PLA</option>
-            <option value="PETG">PETG</option>
-            <option value="ABS">ABS</option>
-            <option value="ASA">ASA</option>
-            <option value="TPU">TPU</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Ilość szt.</label>
-          <input type="number" name="quantity" id="printQuantity" min="1" value="1" class="form-input" onchange="calculatePrintPrice()">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Kolor</label>
-          <select name="color" id="printColor" class="form-select" onchange="calculatePrintPrice()">
-            <option value="natural">Natural</option>
-            <option value="black">Czarny</option>
-            <option value="white">Biały</option>
-            <option value="blue">Niebieski</option>
-            <option value="red">Czerwony</option>
-            <option value="green">Zielony</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Objętość (cm³)</label>
-          <input type="number" id="printVolume" min="0" step="0.1" value="100" class="form-input" onchange="calculatePrintPrice()" placeholder="zostanie przeliczon">
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Wysyłka</label>
-        <select name="shipping" id="printShipping" class="form-select" onchange="calculatePrintPrice()">
-          <option value="standard">Standard (2-5 dni)</option>
-          <option value="express">Express (24h)</option>
-          <option value="pickup">Odbiór osobisty (Gdańsk)</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Region</label>
-        <select name="shipping_region" id="printRegion" class="form-select" onchange="calculatePrintPrice()">
-          <option value="PL">Polska (+15 zł)</option>
-          <option value="EU">UE (+35 zł)</option>
-          <option value="GLOBAL">Świat (+55 zł)</option>
-        </select>
-      </div>
-      <div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px;margin:16px 0">
-        <div id="printPriceBreakdown" style="font-size:13px">Wprowadź objętość by zobaczyć cenę</div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Telefon (dla kuriera)</label>
-        <input type="tel" name="phone" maxlength="30" class="form-input" placeholder="+48 123 456 789">
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-ghost" onclick="closePrintOrderModal()">Anuluj</button>
-        <button type="submit" class="btn btn-primary">Zamów — płatność BLIKIEM</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Modal: new request -->
-<div class="modal-backdrop" id="newRequestModal">
-  <div class="modal">
-    <button class="close-btn" onclick="closeNewRequestModal()">×</button>
-    <h2>Nowe zapytanie ofertowe</h2>
-    <form class="request-form" onsubmit="submitNewRequest(event)">
-      <div class="form-group">
-        <label class="form-label">Tytuł (np. "Obudowa na Raspberry")</label>
-        <input type="text" name="title" required maxlength="200" class="form-input" placeholder="Co potrzebujesz wydrukować?">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Opis (opcjonalnie)</label>
-        <textarea name="description" rows="3" class="form-textarea" maxlength="2000" placeholder="Dodatkowe informacje: wymiary, wykończenie, kolory..."></textarea>
-      </div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-        <div class="form-group">
-          <label class="form-label">Materiał</label>
-          <select name="material" class="form-select">
-            <option value="PLA">PLA</option>
-            <option value="PETG">PETG</option>
-            <option value="ABS">ABS</option>
-            <option value="TPU">TPU</option>
-            <option value="ASA">ASA</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Ilość sztuk</label>
-          <input type="number" name="quantity" min="1" value="1" class="form-input">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Miasto</label>
-          <input type="text" name="city" maxlength="100" class="form-input" placeholder="Gdańsk">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Budżet (zł)</label>
-          <input type="number" name="budget_pln" min="0" step="1" class="form-input" placeholder="opcjonalnie">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Trwanie licytacji (h)</label>
-          <input type="number" name="auction_hours" min="1" max="168" value="48" class="form-input">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Model (UUID, opcjonalnie)</label>
-          <input type="text" name="job_uuid" maxlength="32" class="form-input" placeholder="np. bc41a95ecf0c">
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-ghost" onclick="closeNewRequestModal()">Anuluj</button>
-        <button type="submit" class="btn btn-primary">Zamieść zapytanie</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Modal: request detail -->
-<div class="modal-backdrop" id="requestDetailModal">
-  <div class="modal" style="max-width:700px">
-    <button class="close-btn" onclick="closeRequestDetailModal()">×</button>
-    <div id="detailContent"><!-- populated by print.js --></div>
-  </div>
-</div>
+<script src="/asset/print.js?v=42"></script>
 </body>
 </html>
