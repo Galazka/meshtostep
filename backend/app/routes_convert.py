@@ -81,9 +81,11 @@ QUOTA_DEFAULT = 100 * 1024 * 1024
 @router.get("/quota")
 def get_quota(user: models.User = Depends(require_user), db: Session = Depends(get_db)):
     limit = getattr(user, "quota_limit_bytes", None) or QUOTA_DEFAULT
+    bonus = (getattr(user, "bonus_mb", 0) or 0) * 1024 * 1024
+    limit += bonus
     used = _quota_used(db, user.id)
     pct = round(used / limit * 100, 1) if limit else 0
-    return {"used_bytes": used, "limit_bytes": limit, "percent": pct, "used_mb": round(used/1024/1024,2), "limit_mb": round(limit/1024/1024,2)}
+    return {"used_bytes": used, "limit_bytes": limit, "percent": pct, "used_mb": round(used/1024/1024,2), "limit_mb": round(limit/1024/1024,2), "bonus_mb": getattr(user, "bonus_mb", 0)}
 
 @router.post("/convert")
 async def convert_file(
@@ -137,12 +139,14 @@ async def convert_file(
         shutil.rmtree(job_dir, ignore_errors=True)
         raise HTTPException(400, "Błąd odczytu pliku")
     data_len = size
-    if user:
-        limit = getattr(user, "quota_limit_bytes", None) or QUOTA_DEFAULT
-        used = _quota_used(db, user.id)
-        if used + data_len > limit:
-            shutil.rmtree(job_dir, ignore_errors=True)
-            raise HTTPException(413, f"Przekroczono limit {round(limit/1024/1024)} MB. Zwolnij miejsce usuwając pliki.")
+    limit = getattr(user, "quota_limit_bytes", None) or QUOTA_DEFAULT
+    # bonus: +100 MB per completed print order (>=50 zł)
+    bonus = (getattr(user, "bonus_mb", 0) or 0) * 1024 * 1024
+    limit += bonus
+    used = _quota_used(db, user.id)
+    if used + data_len > limit:
+        shutil.rmtree(job_dir, ignore_errors=True)
+        raise HTTPException(413, f"Przekroczono limit {round(limit/1024/1024)} MB. Zwolnij miejsce usuwając pliki, albo zamów druk — +100 MB gratis.")
 
     if user and not getattr(user,'username',None):
         base = re.sub(r'[^a-z0-9]+','', (user.email.split('@')[0].lower()))[:20] or 'user'
