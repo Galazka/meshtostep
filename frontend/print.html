@@ -6,9 +6,9 @@
   <meta http-equiv="Cache-Control" content="no-store, max-age=0">
   <title>3DFILE.link — 3D Printing Service</title>
   <meta name="description" content="Poland's single-source 3D print hub. Automated real-time pricing. Ships worldwide. Upload model or enter volume — get instant price and order.">
-  <link rel="icon" href="/asset/logo_3d.svg?v=42" type="image/svg+xml">
+  <link rel="icon" href="/asset/logo_3d.svg?v=53" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/asset/print.css?v=42">
+  <link rel="stylesheet" href="/asset/print.css?v=53">
 </head>
 <body>
   <div class="toast-container" id="toastContainer"></div>
@@ -17,7 +17,7 @@
     <div class="container-print">
       <div class="header-inner">
         <a href="/" class="logo-link" style="display:flex;align-items:center;text-decoration:none;color:inherit;font-weight:700;font-size:20px">
-          <img src="/asset/logo_3d.svg?v=42" alt="3DFILE.link" height="32" style="margin-right:8px">
+          <img src="/asset/logo_3d.svg?v=53" alt="3DFILE.link" height="32" style="margin-right:8px">
           3DFILE.link
         </a>
         <nav class="nav-print" style="display:flex;gap:16px;align-items:center">
@@ -44,7 +44,7 @@
         </button>
       </div>
       <div class="hero-image">
-        <img src="/asset/hero_print.svg?v=42" alt="3D prints" loading="lazy" style="max-width:100%;border-radius:16px;border:1px solid #e5e7eb">
+        <img src="/asset/hero_print.svg?v=53" alt="3D prints" loading="lazy" style="max-width:100%;border-radius:16px;border:1px solid #e5e7eb">
       </div>
     </section>
 
@@ -257,6 +257,16 @@
         </div>
 
         <div class="form-group">
+          <label class="form-label">Currency</label>
+          <div id="currencyToggle" style="display:flex;gap:8px">
+            <button type="button" class="currency-btn active" data-cur="PLN" onclick="setCurrency('PLN')">PLN</button>
+            <button type="button" class="currency-btn" data-cur="USD" onclick="setCurrency('USD')">USD</button>
+            <button type="button" class="currency-btn" data-cur="EUR" onclick="setCurrency('EUR')">EUR</button>
+          </div>
+          <input type="hidden" name="currency" id="printCurrency" value="PLN">
+        </div>
+
+        <div class="form-group">
           <label class="form-label">Discount code (optional)</label>
           <div style="display:flex;gap:8px">
             <input type="text" name="discount_code" id="printOrderCode" class="form-input" placeholder="CODE123" style="flex:1;padding:8px;border:1px solid #d1d5db;border-radius:6px">
@@ -291,6 +301,6 @@
   </div>
 </main>
 
-<script src="/asset/print.js?v=42"></script>
+<script src="/asset/print.js?v=53"></script>
 </body>
 </html>

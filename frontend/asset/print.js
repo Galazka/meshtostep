@@ -4,6 +4,24 @@
   "use strict";
 
   var toastContainer = document.getElementById('toastContainer');
+  var currencyRates = { PLN: { symbol: 'zł', rate: 1.0 }, USD: { symbol: '$', rate: 4.2 }, EUR: { symbol: '€', rate: 4.55 } };
+  var currentCurrency = 'PLN';
+
+  async function loadCurrencies() {
+    try {
+      var r = await fetch('/api/config/currencies?' + Date.now());
+      if (r.ok) {
+        var d = await r.json();
+        currencyRates = {};
+        Object.keys(d.rates || {}).forEach(function(k) { currencyRates[k] = { symbol: d.rates[k].symbol, rate: d.rates[k].rate }; });
+        // try restore saved pref
+        var saved = localStorage.getItem('print_currency');
+        if (saved && currencyRates[saved]) currentCurrency = saved;
+        else currentCurrency = 'PLN';
+        renderCurrencyToggle();
+      }
+    } catch (e) {}
+  }
 
   function showToast(message, type) {
     type = type || 'info';
@@ -77,7 +95,42 @@
     }).join('');
   }
 
+/* ==== Currency ==== */
+  function setCurrency(cur) {
+    currentCurrency = cur;
+    document.getElementById('printCurrency').value = cur;
+    var btns = document.querySelectorAll('#currencyToggle .currency-btn');
+    btns.forEach(function(b) { b.classList.toggle('active', b.getAttribute('data-cur') === cur); });
+    if (window.calculatePrintPrice) window.calculatePrintPrice();
+  }
+  function loadCurrencies() {
+    fetch('/api/config/currencies')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        currencyRates = data.rates || currencyRates;
+        currentCurrency = currencyRates[Object.keys(currencyRates)[0]] ? Object.keys(currencyRates)[0] : 'PLN';
+        document.getElementById('printCurrency').value = currentCurrency;
+      })
+      .catch(function() {});
+  }
+
   /* ==== Print order modal ==== */
+  function currencySymbol() { return (currencyRates[currentCurrency] && currencyRates[currentCurrency].symbol) || 'zł'; }
+  function renderCurrencyToggle() {
+    var el = document.getElementById('currencyToggle');
+    if (!el) return;
+    el.innerHTML = Object.keys(currencyRates).map(function(c) {
+      return '<button type="button" onclick="switchCurrency(\'' + c + '\')" style="padding:4px 10px;border-radius:6px;border:1px solid ' + (c === currentCurrency ? '#2563eb' : '#d1d5db') + ';background:' + (c === currentCurrency ? '#2563eb' : '#fff') + ';color:' + (c === currentCurrency ? '#fff' : '#374151') + ';font-size:12px;cursor:pointer">' + c + '</button>';
+    }).join('');
+  }
+  window.switchCurrency = function(cur) {
+    if (!currencyRates[cur]) return;
+    currentCurrency = cur;
+    localStorage.setItem('print_currency', cur);
+    renderCurrencyToggle();
+    calculatePrintPrice();
+  };
+
   window.openPrintOrderModal = function(model) {
     model = model || {};
     var modal = document.getElementById('printOrderModal');
@@ -93,7 +146,7 @@
       document.getElementById('printVolumeHidden').value = model.volume_cm3;
     }
     if (model.dims_mm) document.getElementById('printDims').value = model.dims_mm;
-
+    loadCurrencies();
     setTimeout(function() { window.calculatePrintPrice && window.calculatePrintPrice(); }, 100);
     document.body.style.overflow = 'hidden';
     modal.style.display = 'flex';
@@ -134,6 +187,7 @@
     var discountLine = document.getElementById('discountLine');
     var discountEl = document.getElementById('priceDiscount');
     var hint = document.getElementById('priceHint');
+    var sym = currencySymbol();
 
     if (vol > 0) {
       fetch('/api/calculate', {
@@ -144,20 +198,21 @@
               '&quantity=' + qty +
               '&shipping=' + encodeURIComponent(shipping) +
               '&shipping_region=' + encodeURIComponent(region) +
-              '&volume_cm3=' + vol
+              '&volume_cm3=' + vol +
+              '&currency=' + encodeURIComponent(currentCurrency)
       })
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (data.ok) {
-          productEl.textContent = data.product_subtotal.toFixed(2) + ' zł';
-          shippingEl.textContent = data.shipping_cost.toFixed(2) + ' zł';
+          productEl.textContent = data.product_subtotal.toFixed(2) + ' ' + sym;
+          shippingEl.textContent = data.shipping_cost.toFixed(2) + ' ' + sym;
           if (data.discount_pln > 0) {
             discountLine.style.display = 'block';
-            discountEl.textContent = '-' + data.discount_pln.toFixed(2) + ' zł';
+            discountEl.textContent = '-' + data.discount_pln.toFixed(2) + ' ' + sym;
           } else {
             discountLine.style.display = 'none';
           }
-          totalEl.textContent = data.total.toFixed(2) + ' zł';
+          totalEl.textContent = data.total.toFixed(2) + ' ' + sym;
           hint.textContent = data.parts > 1 ? 'Model split into ' + data.parts + ' parts (max 25×25 mm per part)' : '';
           summaryEl.style.background = '#fff';
         }
@@ -190,7 +245,8 @@
             '&shipping=' + encodeURIComponent(shipping) +
             '&shipping_region=' + encodeURIComponent(region) +
             '&volume_cm3=' + vol +
-            '&discount_code=' + encodeURIComponent(code)
+            '&discount_code=' + encodeURIComponent(code) +
+            '&currency=' + encodeURIComponent(currentCurrency)
     })
     .then(function(r) { return r.json(); })
     .then(function(data) {
@@ -210,6 +266,7 @@
     var form = e.target;
     var fd = new FormData(form);
     fd.append('payment_method', 'blik');
+    fd.append('currency', currentCurrency);
 
     var name = fd.get('name');
     var email = fd.get('email');
@@ -234,8 +291,9 @@
     })
     .then(function(r) { return r.json(); })
     .then(function(data) {
-      if (data.ok) {
-        showToast('Order placed! Price: ' + data.total.toFixed(2) + ' zł. We will contact you to confirm payment.', 'success');
+    if (data.ok) {
+    var sym = currencySymbol();
+    showToast('Order placed! Price: ' + data.total.toFixed(2) + ' ' + sym + '. We will contact you to confirm payment.', 'success');
         window.closePrintModal();
       } else {
         showToast(data.detail || 'Order error', 'error');
@@ -462,6 +520,7 @@
     checkAuth();
     loadMaterials();
     loadShipping();
+    loadCurrencies();
     checkAdminAuth();
 
     document.addEventListener('keydown', function(e) {

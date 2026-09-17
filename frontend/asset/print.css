@@ -245,6 +245,12 @@ body {
 
 .form-textarea { min-height: 100px; resize: vertical; }
 
+.currency-btn {
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 12px; font-size: 13px; cursor: pointer;
+}
+.currency-btn.active { background: var(--accent); color: #fff; }
+
 .modal-footer {
   display: flex;
   gap: 8px;
