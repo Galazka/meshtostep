@@ -160,13 +160,15 @@ def _apply_discount(db, code, product_total):
     if not code:
         return 0.0, None
     row = db.execute(text(
-        "SELECT code, discount_pln, discount_pct, expires_at FROM discount_codes WHERE code = :c AND is_active = TRUE"
+        "SELECT code, discount_pln, discount_pct, expires_at, min_order_pln FROM discount_codes WHERE code = :c AND is_active = TRUE"
     ), {"c": code.upper()}).fetchone() if db.bind else None
     if not row:
         return 0.0, None
-    code_val, dpln, dpct, exp = row[0], row[1], row[2], row[3]
+    code_val, dpln, dpct, exp, min_order = row[0], row[1], row[2], row[3], (row[4] or 0)
     import datetime as _dt
     if exp and exp < _dt.datetime.utcnow():
+        return 0.0, None
+    if product_total < min_order:
         return 0.0, None
     amount = dpln or 0.0
     if dpct and dpct > 0:
@@ -469,7 +471,7 @@ def update_order(
 
 
 @router.get("/api/orders/{order_id}/pay")
-def get_payment_info(order_id: int, db: Session = Depends(get_db)):
+def get_payment_info(order_id: int, request: Request, db: Session = Depends(get_db)):
     """Return BLIK payment info (static — real BLIK dynamic via API)."""
     o = db.get(models.Order, order_id)
     if not o:
@@ -483,20 +485,6 @@ def get_payment_info(order_id: int, db: Session = Depends(get_db)):
         "bank_name": "mBank",
         "titled": f"3dfile.link #{o.id}",
     }
-
-
-@router.get("/api/orders/{order_id}/costs")
-def get_order_costs(order_id: int, admin=Depends(require_admin), db: Session = Depends(get_db)):
-    """Full internal cost sheet — admin only."""
-    if not admin or not getattr(admin, "is_admin", False):
-        raise HTTPException(403, detail="Admin only")
-    o = db.get(models.Order, order_id)
-    if not o:
-        raise HTTPException(status_code=404, detail="Order not found")
-    calc = calculate_price(o.material, o.color, o.quantity, o.shipping_method,
-                           o.shipping_region, o.volume_cm3 or 0, o.estimated_hours or 0,
-                           None, None, db)
-    return {"order_id": o.id, **calc}
 
 
 @router.get("/api/orders/{order_id}/export")
@@ -610,10 +598,8 @@ def set_pricing(
 
 
 @router.get("/api/admin/materials")
-def get_materials(db: Session = Depends(get_db), admin=Depends(require_admin)):
-    """List all material + color prices from config (or defaults)."""
-    if not admin or not getattr(admin, "is_admin", False):
-        raise HTTPException(403, detail="Admin only")
+def get_materials(db: Session = Depends(get_db)):
+    """List all material + color prices — public (for print.html pricing table)."""
     materials = {m: float(_cfg(db, f"material:{m}", DEFAULT_MATERIAL_PRICES.get(m, 110.0))) for m in DEFAULT_MATERIAL_PRICES}
     colors = {c: float(_cfg(db, f"color:{c}", DEFAULT_COLOR_PREMIUM.get(c, 0.0))) for c in DEFAULT_COLOR_PREMIUM}
     return {
@@ -624,7 +610,65 @@ def get_materials(db: Session = Depends(get_db), admin=Depends(require_admin)):
             for tier in DEFAULT_SHIPPING
         },
         "margin_percent": float(_cfg(db, "margin_percent", MARGIN_PERCENT)),
-        "watts": float(_cfg(db, "watts", DEFAULT_WATTS)),
-        "kwh_pln": float(_cfg(db, "kwh_pln", DEFAULT_KWH)),
         "max_part_area_mm2": float(_cfg(db, "max_part_area_mm2", MAX_PART_AREA_MM2)),
     }
+
+
+# ── Admin discount codes CRUD ──
+
+@router.get("/api/admin/discount_codes")
+def list_discount_codes(db: Session = Depends(get_db), admin=Depends(require_admin)):
+    if not admin or not getattr(admin, "is_admin", False):
+        raise HTTPException(403, detail="Admin only")
+    rows = db.execute(text(
+        "SELECT code, discount_pln, discount_pct, expires_at, is_active, uses, max_uses, min_order_pln FROM discount_codes ORDER BY code"
+    )).fetchall()
+    return [{"code": r[0], "discount_pln": r[1], "discount_pct": r[2],
+             "expires_at": r[3].isoformat() if r[3] else None, "is_active": r[4],
+             "uses": r[5], "max_uses": r[6], "min_order_pln": r[7] or 0} for r in rows]
+
+@router.post("/api/admin/discount_codes")
+def add_or_update_discount_code(
+    code: str = Form(...),
+    discount_pln: float = Form(0.0),
+    discount_pct: float = Form(0.0),
+    expires_at: str = Form(None),
+    is_active: str = Form("1"),
+    max_uses: int = Form(0),
+    min_order_pln: float = Form(0.0),
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin),
+):
+    if not admin or not getattr(admin, "is_admin", False):
+        raise HTTPException(403, detail="Admin only")
+    import datetime as _dt
+    exp = None
+    if expires_at:
+        try:
+            exp = _dt.datetime.fromisoformat(expires_at.replace("Z", ""))
+        except ValueError:
+            pass
+    row = db.execute(text(
+        "SELECT code FROM discount_codes WHERE code = :c"
+    ), {"c": code.upper()}).fetchone()
+    if row:
+        db.execute(text("""UPDATE discount_codes SET discount_pln=:pln, discount_pct=:pct,
+            expires_at=:exp, is_active=:act, max_uses=:mu, min_order_pln=:mop WHERE code=:c"""),
+            {"c": code.upper(), "pln": discount_pln, "pct": discount_pct, "exp": exp,
+             "act": is_active.lower() in ("1","true","yes"), "mu": max_uses, "mop": min_order_pln})
+    else:
+        db.execute(text("""INSERT INTO discount_codes
+            (code, discount_pln, discount_pct, expires_at, is_active, uses, max_uses, min_order_pln)
+            VALUES (:c, :pln, :pct, :exp, :act, 0, :mu, :mop)"""),
+            {"c": code.upper(), "pln": discount_pln, "pct": discount_pct, "exp": exp,
+             "act": is_active.lower() in ("1","true","yes"), "mu": max_uses, "mop": min_order_pln})
+    db.commit()
+    return {"ok": True, "code": code.upper()}
+
+@router.delete("/api/admin/discount_codes/{code}")
+def delete_discount_code(code: str, db: Session = Depends(get_db), admin=Depends(require_admin)):
+    if not admin or not getattr(admin, "is_admin", False):
+        raise HTTPException(403, detail="Admin only")
+    db.execute(text("DELETE FROM discount_codes WHERE code = :c"), {"c": code.upper()})
+    db.commit()
+    return {"ok": True}

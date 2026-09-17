@@ -46,6 +46,7 @@ def upgrade() -> None:
             sa.Column("uses", sa.Integer, default=0),
             sa.Column("max_uses", sa.Integer, nullable=True),
             sa.Column("expires_at", sa.DateTime, nullable=True),
+            sa.Column("min_order_pln", sa.Float, nullable=True, server_default="0"),
             sa.Column("created_at", sa.DateTime, default=lambda: text("now()")),
         )
 
