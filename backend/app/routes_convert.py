@@ -7,7 +7,6 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
@@ -96,7 +95,7 @@ async def convert_file(
     folder_id: str = Form(None),
     user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
-) -> Optional[models.User]:
+):
     t0 = time.time()
     # Early reject: don't buffer huge bodies into RAM
     try:
