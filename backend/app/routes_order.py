@@ -223,7 +223,8 @@ def calculate_price(
     watts = float(_cfg(db, "watts", DEFAULT_WATTS))
     kwh = float(_cfg(db, "kwh_pln", DEFAULT_KWH))
 
-    # auto-derive volume from dims if not provided
+    # auto-derive volume from dims if not provided — NOTE: this is BOUNDING BOX volume (overestimate for hollow/non-solid models)
+    # prefer uploading STL for accurate volume; dims-only is a rough upper bound
     import re as _re
     if (not volume_cm3 or volume_cm3 <= 0) and dims:
         nums = _re.findall(r"[\d.]+", dims.split("mm")[0] if "mm" in dims else dims)
