@@ -30,10 +30,10 @@ DENSITY_PLA = 1.24
 
 # empirical throughput mm³/s — speed is per material; used for time estimate
 THROUGHPUT_MM3_S = {
-    "PLA": 100, "PLA HT": 100, "PLA CF": 70, "PLA Silk": 90, "PLA Matte": 80, "PLA Glow": 80,
-    "PETG": 100, "PETG FR": 80, "ABS": 90, "ASA": 90, "ASA CF": 70,
-    "TPU": 60, "TPU 75D": 50, "PA12": 80, "PA12 CF": 70, "PCTG": 85,
-    "Iglidur I150PF": 60, "Iglidur I180PF": 55, "Iglidur I190PF": 50,
+    "PLA": 280, "PLA HT": 250, "PLA CF": 200, "PLA Silk": 260, "PLA Matte": 240, "PLA Glow": 150,
+    "PETG": 240, "PETG FR": 200, "ABS": 250, "ASA": 220, "ASA CF": 180,
+    "TPU": 120, "TPU 75D": 100, "PA12": 200, "PA12 CF": 180, "PCTG": 200,
+    "Iglidur I150PF": 120, "Iglidur I180PF": 100, "Iglidur I190PF": 80,
 }
 
 

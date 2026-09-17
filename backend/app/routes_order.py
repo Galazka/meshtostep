@@ -67,7 +67,7 @@ DEFAULT_SHIPPING = {
 }
 
 DEFAULT_WATTS = 150
-DEFAULT_KWH = 1.15
+DEFAULT_KWH = getattr(settings, "kwh_price", 1.50)  # Bamboo P1S ~1.5 zł/kWh
 MARGIN_PERCENT = getattr(settings, "print_margin_percent", 68)
 MAX_PART_AREA_MM2 = 625  # 25×25 mm bed — larger models split into parts
 DENSITIES = {
@@ -140,8 +140,8 @@ def estimate_print_time_hours(volume_cm3: float, material: str = "PLA", parts: i
     """Very rough: speed ~60 mm/s, layer 0.2 mm, ~100 mm³/s throughput (PLA/PETG)."""
     if not volume_cm3 or volume_cm3 <= 0:
         return 2.0
-    mm3 = (volume_cm3 / parts) * 1000
-    throughput = {"PLA": 300, "PETG": 200, "PCTG": 180, "TPU": 100, "ABS": 250, "ASA": 220}.get(material, 220)
+    mm3 = volume_cm3 * 1000  # całkowita objętość modelu (parts drukowane równolegle)
+    throughput = {"PLA": 280, "PETG": 240, "PCTG": 200, "ASA": 220, "ABS": 250}.get(material, 200)
     base = max(0.5, mm3 / (throughput * 3600))
     # fixed per-model setup overhead (not per-part)
     return base + 0.5

@@ -255,6 +255,9 @@ class Order(Base):
     estimated_hours = Column(Float, default=2.0)
     volume_cm3 = Column(Float, nullable=True)
     filament_grams = Column(Float, nullable=True)
+    filament_cost = Column(Float, default=0.0)  # koszt samego filamentu (PLN)
+    electricity_cost = Column(Float, default=0.0)  # koszt prądu (PLN)
+    color_premium = Column(Float, default=0.0)  # premium za kolor (PLN)
     printing_hours = Column(Float, nullable=True)
     notes = Column(Text, nullable=True)
     payment_method = Column(String(20), default="blik")
@@ -297,12 +300,27 @@ PRICING_SEED = {
     "shipping_express_PL": "25",
     "shipping_express_EU": "55",
     "shipping_express_GLOBAL": "85",
-    "material:PLA": "89",
-    "material:PETG": "110",
-    "material:ABS": "95",
-    "material:ASA": "120",
-    "material:PA12 CF": "220",
+    "material:PLA": "79",
+    "material:PLA HT": "120",
+    "material:PLA CF": "199",
+    "material:PLA Matte": "100",
+    "material:PLA Silk": "110",
+    "material:PLA Glow": "130",
+    "material:BAMBU PLA Basic": "99",
+    "material:BAMBU PLA Matte": "109",
+    "material:PETG": "95",
+    "material:PETG HF": "129",
+    "material:PETG FR": "150",
+    "material:BAMBU PETG HF": "129",
+    "material:ABS": "89",
+    "material:ASA": "159",
+    "material:ASA CF": "299",
+    "material:BAMBU ASA": "159",
+    "material:PA12 CF": "349",
+    "material:BAMBU PA12-CF": "349",
+    "material:PA12": "180",
     "material:TPU": "130",
+    "material:TPU 75D": "150",
     "material:PCTG": "140",
     "color:black": "0",
     "color:white": "0",
