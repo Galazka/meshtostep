@@ -314,9 +314,9 @@ ${offerForm}`;
     var uuidField = document.getElementById('printOrderUuid');
     if (jobIdField) jobIdField.value = model.job_id || '';
     if (uuidField) uuidField.value = model.uuid || '';
-    // prefill title
-    var titleField = document.getElementById('printOrderTitle');
-    if (titleField) titleField.value = model.title || '';
+    // prefill title into description
+    var descField = document.querySelector('textarea[name="description"]');
+    if (descField) descField.value = model.title || '';
 
     // trigger initial price calc
     setTimeout(function() {

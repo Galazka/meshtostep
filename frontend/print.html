@@ -39,7 +39,7 @@
 <main class="container" id="mainContent">
   <div class="print-hero">
     <h1>Marketplace druku 3D</h1>
-    <p class="hero-desc">Zamieść zapytanie ofertowe — drukarnie z Twojego regionu prześlą oferty. Anonimowo lub z kontem.</p>
+    <p class="hero-desc">Jedyny drukarz 3D w Polsce — wycena w czasie rzeczywistym, wysyłka do Polski, UE i świata. Wyślij model — my wydrukujemy.</p>
   </div>
 
   <div id="requestsList" class="requests-grid">
@@ -65,8 +65,12 @@
       <input type="hidden" name="job_uuid" id="printOrderUuid">
       <input type="hidden" name="volume_cm3" id="printVolumeHidden">
       <div class="form-group">
-        <label class="form-label">Nazwa / opis</label>
-        <input type="text" name="title" id="printOrderTitle" required maxlength="200" class="form-input" placeholder="Co ma być wydrukowane?">
+        <label class="form-label">Imię i nazwisko</label>
+        <input type="text" name="name" id="printOrderName" required maxlength="100" class="form-input" placeholder="Jan Kowalski">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email (dla potwierdzenia)</label>
+        <input type="email" name="email" id="printOrderEmail" required maxlength="255" class="form-input" placeholder="jan@przyklad.pl">
       </div>
       <div class="form-group">
         <label class="form-label">Opis techniczny (warstwa, wypełnienie, wykończenie)</label>
