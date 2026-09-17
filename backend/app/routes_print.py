@@ -7,8 +7,8 @@ K1: auto-volume from uploaded STL → feeds pricing engine.
 No secrets / tokens stored on disk.
 """
 from __future__ import annotations
-import os, subprocess, json, tempfile, shutil, math, time as _time
-from typing import Optional, Literal
+import os, subprocess, json, tempfile, shutil, time as _time
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, File, Form, UploadFile, status
 from fastapi.responses import JSONResponse
@@ -26,8 +26,9 @@ router = APIRouter()
 
 FREECAD_CMD = os.environ.get("FREECAD_CMD", "/usr/bin/freecadcmd")
 MAX_STL_MB = 25
-DENSITY_PLA = 1.24  # g/cm³ — default material density
-# empirical throughput mm³/s (PLA/PETG ~100), used for time estimate
+DENSITY_PLA = 1.24
+
+# empirical throughput mm³/s — speed is per material; used for time estimate
 THROUGHPUT_MM3_S = {
     "PLA": 100, "PLA HT": 100, "PLA CF": 70, "PLA Silk": 90, "PLA Matte": 80, "PLA Glow": 80,
     "PETG": 100, "PETG FR": 80, "ABS": 90, "ASA": 90, "ASA CF": 70,
@@ -37,37 +38,36 @@ THROUGHPUT_MM3_S = {
 
 
 def _validate_upload(file: UploadFile) -> bytes:
-    """Read STL bytes, enforce size limit."""
     raw = file.file.read()
     if len(raw) > MAX_STL_MB * 1024 * 1024:
         raise HTTPException(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"File too large (max {MAX_STL_MB} MB)"
+            detail=f"File too large (max {MAX_STL_MB} MB)",
         )
     name = (file.filename or "").lower()
     if not (name.endswith(".stl") or name.endswith(".obj") or name.endswith(".ply")):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only .stl/.obj/.ply supported"
+            detail="Only .stl/.obj/.ply supported",
         )
     return raw
 
 
 def _trimesh_stats(data: bytes, material: str = "PLA") -> dict:
-    """Fast volume + dims from trimesh (no FreeCAD).
+    """Fast volume + dims via trimesh — process=False for speed.
 
-    Root fix: trimesh.load on BytesIO with file_type='stl' mis-detects binary
-    STL as a Scene (0 verts). Writing to temp file + process=False +
-    scene-to-mesh conversion + abs(volume) fixes binary + ASCII STL.
+    Root cause: trimesh.load on bytes+file_type='stl' creates empty Scene
+    (0 verts). process=True is very slow on constrained CPU (>60s for 9k
+    faces). process=False + manual bounds→mm detection gives correct
+    result in <1s on constrained CPU.
     """
     import trimesh
 
-    # Write to temp file — trimesh auto-detects binary/ASCII from path
     fd, tmp_path = tempfile.mkstemp(suffix=".stl")
     try:
         os.write(fd, data)
         os.close(fd)
-        obj = trimesh.load(tmp_path)
+        obj = trimesh.load(tmp_path, process=False)
     finally:
         os.unlink(tmp_path)
 
@@ -78,23 +78,19 @@ def _trimesh_stats(data: bytes, material: str = "PLA") -> dict:
             if geoms:
                 obj = trimesh.util.concatenate([g.dump() for g in geoms])
     if not isinstance(obj, trimesh.Trimesh):
-        # try dump+sum as last resort
         try:
             obj = obj.dump().sum()
         except Exception:
             raise HTTPException(status_code=500, detail="Could not parse mesh")
 
-    obj.merge_vertices()
-    # Skip fix_normals — slow on large meshes. abs(volume) handles winding order.
-
-    # Detect if mesh is in mm (typical STL from CAD) vs meters (trimesh default)
+    # STL coords are in mm; trimesh treats them as meters.
+    # Detect via bounds: if any axis > 1.0, likely mm → convert to m.
     bb = obj.bounds
-    if bb is not None and bb[1].max() > 1.0:
-        # Coordinates likely in mm (typical CAD STL) → convert to meters
+    if bb is not None and len(bb) == 2 and bb[1].max() > 1.0:
         obj.vertices *= 0.001
         bb = obj.bounds
 
-    dims_m = (bb[1] - bb[0])
+    dims_m = (bb[1] - bb[0]) if bb is not None else obj.extents
     dims_mm = [round(float(d) * 1000, 2) for d in dims_m]
 
     vol_m3 = abs(float(obj.volume)) if obj.volume else 0.0
@@ -105,7 +101,7 @@ def _trimesh_stats(data: bytes, material: str = "PLA") -> dict:
 
     vol_mm3 = vol_cm3 * 1000
     thr = THROUGHPUT_MM3_S.get(material, 100)
-    hours = max(0.5, (vol_mm3 / thr) / 3600) + 0.5  # +0.5h overhead
+    hours = max(0.5, (vol_mm3 / thr) / 3600) + 0.5
 
     return {
         "volume_cm3": vol_cm3,
@@ -131,7 +127,6 @@ import FreeCAD, Mesh, Part, sys, json
 doc = FreeCAD.newDocument("calc")
 m = Mesh.Mesh("{stl_path}")
 shape = Part.Shape().makeShapeFromMesh(m, 0.1)
-shape.fix(0.1, 0.1, 0.1)
 vol_mm3 = abs(shape.Volume)
 bb = shape.getBoundingBox()
 dims = [round(bb.XLength, 2), round(bb.YLength, 2), round(bb.ZLength, 2)]
@@ -221,5 +216,5 @@ async def estimate_model(
         },
         "mode": m,
         "elapsed_s": elapsed,
-        "bed_limit_mm2": 625,  # 25×25 mm
+        "bed_limit_mm2": 625,
     })
