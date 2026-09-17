@@ -600,7 +600,8 @@ def export_orders(admin=Depends(require_admin), db: Session = Depends(get_db)):
     ws.title = "Zamówienia"
     ws.append(["ID", "Data", "Imię", "Email", "Telefon", "Adres", "Miasto", "Kraj",
                "Materiał", "Kolor", "Ilość", "Wysyłka", "Objętość cm³", "Filament g",
-               "Godz. druku", "Do zapłaty", "Status", "Zapłacony", "Notatki"])
+               "Czas (h)", "Koszt filamentu", "Koszt prądu", "Premium koloru", "Subtotal", "Marża (PLN)", "Wysyłka (zł)",
+               "Rabat", "Razem", "Currency", "Status", "Zapłacony", "Notatki"])
     for o in db.query(models.Order).order_by(models.Order.id.desc()).all():
         ws.append([
             o.id, o.created_at.strftime("%Y-%m-%d %H:%M"),
@@ -608,7 +609,9 @@ def export_orders(admin=Depends(require_admin), db: Session = Depends(get_db)):
             o.customer_address, o.customer_city, o.customer_country,
             o.material, o.color, o.quantity, o.shipping_method,
             o.volume_cm3, o.filament_grams, o.printing_hours,
-            o.total, o.status, "Tak" if o.is_paid else "Nie", o.notes
+            o.filament_cost or 0, o.electricity_cost or 0, o.color_premium or 0,
+            o.subtotal, o.margin_pln, o.shipping_cost, o.discount_pln,
+            o.total, o.currency, o.status, "Tak" if o.is_paid else "Nie", o.notes
         ])
     ws2 = wb.create_sheet("Statystyki")
     total_orders = db.query(models.Order).count()
