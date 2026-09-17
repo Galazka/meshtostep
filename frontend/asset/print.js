@@ -371,7 +371,11 @@
             '<td style="padding:8px">' + (o.material || '') + '</td>' +
             '<td style="padding:8px">' + (o.quantity || 1) + '</td>' +
             '<td style="padding:8px">' + (o.shipping_method || '') + '</td>' +
-            '<td style="padding:8px">' + (o.total || 0).toFixed(2) + ' ' + orderSym + '</td>' +
+            '<td style="padding:8px">' + (o.filament_grams || 0) + 'g</td>' +
+            '<td style="padding:8px">Fil: ' + (o.filament_cost || 0).toFixed(0) + 'zł</td>' +
+            '<td style="padding:8px">Marża: ' + (o.margin_pln || 0).toFixed(0) + 'zł</td>' +
+            '<td style="padding:8px;font-weight:600">' + (o.total || 0).toFixed(2) + ' ' + orderSym + '</td>' +
+            '<td style="padding:8px;color:#10b981;font-weight:600">Profit: ' + ((o.total || 0) - (o.filament_cost || 0) - (o.electricity_cost || 0) - (o.shipping_cost || 0)).toFixed(0) + 'zł</td>' +
             '<td style="padding:8px"><span style="color:' + statusColor + ';font-weight:600">' + (o.status || 'nowy') + '</span></td>' +
             '<td style="padding:8px">' + (o.is_paid ? '✓' : '') + '</td>' +
             '<td style="padding:8px"><button onclick="exportOrder(' + o.id + ')" style="padding:4px 8px;border:1px solid #d1d5db;border-radius:4px;background:#f9fafb">CSV</button></td>' +
@@ -380,7 +384,7 @@
         document.getElementById('adminOrders').innerHTML =
           '<button onclick="exportAllOrders()" style="padding:8px 16px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:6px;background:#f9fafb">Export all (Excel)</button>' +
           '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">' +
-          '<thead><tr style="border-bottom:2px solid #e5e7eb"><th style="padding:8px;text-align:left">ID</th><th style="padding:8px;text-align:left">Date</th><th style="padding:8px;text-align:left">Client</th><th style="padding:8px;text-align:left">Email</th><th style="padding:8px;text-align:left">Phone</th><th style="padding:8px;text-align:left">Material</th><th style="padding:8px;text-align:left">Qty</th><th style="padding:8px;text-align:left">Shipping</th><th style="padding:8px;text-align:left">Total</th><th style="padding:8px;text-align:left">Status</th><th style="padding:8px;text-align:left">Paid</th><th style="padding:8px;text-align:left">CSV</th></tr></thead>' +
+          '<thead><tr style="border-bottom:2px solid #e5e7eb"><th style="padding:8px;text-align:left">ID</th><th style="padding:8px;text-align:left">Date</th><th style="padding:8px;text-align:left">Client</th><th style="padding:8px;text-align:left">Email</th><th style="padding:8px;text-align:left">Phone</th><th style="padding:8px;text-align:left">Material</th><th style="padding:8px;text-align:left">Qty</th><th style="padding:8px;text-align:left">Fil. g</th><th style="padding:8px;text-align:left">Fil. koszt</th><th style="padding:8px;text-align:left">Marża</th><th style="padding:8px;text-align:left">Total</th><th style="padding:8px;text-align:left">Profit</th><th style="padding:8px;text-align:left">Status</th><th style="padding:8px;text-align:left">Paid</th><th style="padding:8px;text-align:left">CSV</th></tr></thead>' +
           '<tbody>' + tbody + '</tbody></table></div>';
       }
     } catch (e) {

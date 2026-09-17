@@ -453,7 +453,9 @@ def list_orders(
             "shipping_method": o.shipping_method, "shipping_region": o.shipping_region,
             "filament_grams": o.filament_grams, "printing_hours": o.printing_hours,
             "volume_cm3": o.volume_cm3,
-            "subtotal": o.subtotal, "margin_pln": o.margin_pln,
+            "filament_cost": o.filament_cost, "electricity_cost": o.electricity_cost,
+            "color_premium": o.color_premium, "subtotal": o.subtotal,
+            "margin_pln": o.margin_pln,
             "shipping_cost": o.shipping_cost, "total": o.total,
             "currency": o.currency, "exchange_rate": o.exchange_rate,
             "discount_pln": o.discount_pln, "print_parts": o.print_parts,
@@ -570,8 +572,10 @@ def export_order(order_id: int, admin=Depends(require_admin), db: Session = Depe
     w.writerow(["Objętość (cm³)", o.volume_cm3 or 0])
     w.writerow(["Waga filamentu (g)", o.filament_grams or 0])
     w.writerow(["Czas druku (h)", o.printing_hours or 0])
-    w.writerow(["Części (25x25mm)", o.print_parts or 1])
-    w.writerow(["Koszt filamentu", o.subtotal])
+    w.writerow(["Koszt filamentu", o.filament_cost or 0])
+    w.writerow(["Koszt prądu", o.electricity_cost or 0])
+    w.writerow(["Premium koloru", o.color_premium or 0])
+    w.writerow(["Subtotal (fil+prąd+kolor)", o.subtotal or 0])
     w.writerow(["Marża (PLN)", o.margin_pln])
     w.writerow(["Wysyłka", f"{o.shipping_method} {o.shipping_region}: {o.shipping_cost} zł"])
     w.writerow(["Rabat", f"-{o.discount_pln} zł"])
