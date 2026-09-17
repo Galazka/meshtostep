@@ -1,19 +1,30 @@
-"""Order management + automated pricing. — 3dfile.link"""
+"""Order management + automated print-on-demand pricing. — 3dfile.link
+
+Pricing logic:
+  • Models larger than 25×25 mm (workable bed) are split into parts — each part
+    priced independently (filament volume scaled down, but fixed per-part
+    overhead: +0.5 h print time).
+  • calculate_price() returns a public cart breakdown (only shipping + product
+    total is visible; filament/electricity/margin are internal).
+  • /api/orders/{id}/costs returns the full internal cost sheet — admin only.
+  • All rates editable from admin panel via /api/admin/pricing (stored in
+    PricingConfig table).
+"""
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, Request, Form
+from fastapi import APIRouter, Depends, HTTPException, Request, Form, status
 from fastapi.responses import JSONResponse, HTMLResponse, Response
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, text
 
 from . import models
-from .auth import get_current_user, require_user
+from .auth import get_current_user, require_user, require_admin
 from .database import get_db
 from .config import settings
 
 router = APIRouter()
 
-# Material prices PLN/kg (2026, bulk from Polish suppliers)
-MATERIAL_PRICES = {
+# ── Material & cost constants (defaults; overridden by PricingConfig rows) ──
+DEFAULT_MATERIAL_PRICES = {
     "PLA": 89.0, "PLA HT": 120.0, "PLA CF": 140.0,
     "PETG": 110.0, "PETG FR": 150.0,
     "ABS": 95.0, "ASA": 120.0, "ASA CF": 180.0,
@@ -24,8 +35,7 @@ MATERIAL_PRICES = {
     "PLA Matte": 100.0, "PLA Silk": 110.0, "PLA Glow": 130.0,
 }
 
-# Dye/color premium per material
-COLOR_PREMIUM = {
+DEFAULT_COLOR_PREMIUM = {
     "natural": 0.0, "black": 0.0, "white": 0.0,
     "blue": 5.0, "red": 5.0, "green": 5.0, "yellow": 5.0,
     "orange": 7.0, "purple": 7.0, "pink": 7.0,
@@ -33,44 +43,209 @@ COLOR_PREMIUM = {
     "carbon": 20.0, "wood": 15.0, "brass": 25.0,
 }
 
-SHIPPING = {
-    "standard": {"PL": 15.0, "EU": 35.0, "GLOBAL": 55.0},
-    "express": {"PL": 25.0, "EU": 55.0, "GLOBAL": 85.0},
-    "priority": {"PL": 40.0, "EU": 80.0, "GLOBAL": 130.0},
-    "pickup": {"PL": 0.0, "EU": 0.0, "GLOBAL": 0.0},
+DEFAULT_SHIPPING = {
+    "standard":  {"PL": 15.0, "EU": 35.0, "GLOBAL": 55.0},
+    "express":   {"PL": 25.0, "EU": 55.0, "GLOBAL": 85.0},
+    "priority":  {"PL": 40.0, "EU": 80.0, "GLOBAL": 130.0},
+    "pickup":    {"PL": 0.0,  "EU": 0.0, "GLOBAL": 0.0},
 }
 
-# Printer electricity 150W typical; cost per kWh PLN
 DEFAULT_WATTS = 150
 DEFAULT_KWH = 1.15
-
-# Global margin percentage (Tom's markup on print cost)
 MARGIN_PERCENT = getattr(settings, "print_margin_percent", 68)
+MAX_PART_AREA_MM2 = 625  # 25×25 mm bed — larger models split into parts
+DENSITIES = {
+    "PLA": 1.24, "PETG": 1.27, "ABS": 1.04, "ASA": 1.06,
+    "PA12": 1.14, "TPU": 1.20, "PCTG": 1.27,
+    "PA12 CF": 1.25, "Iglidur I150PF": 1.42,
+}
 
 
-def get_material_price(material: str) -> float:
-    return MATERIAL_PRICES.get(material, 110.0)  # fallback PETG
+def _cfg(db, key, default):
+    """Read a PricingConfig row; fall back to hardcoded default."""
+    if db is not None:
+        row = db.query(models.PricingConfig).filter(models.PricingConfig.key == key).first()
+        if row:
+            try:
+                if row.kind == "string":
+                    return row.value
+                return float(row.value)
+            except (ValueError, TypeError):
+                pass
+    # fallback defaults
+    if key.startswith("material:"):
+        m = key.split(":", 1)[1]
+        return DEFAULT_MATERIAL_PRICES.get(m, 110.0)
+    if key.startswith("color:"):
+        c = key.split(":", 1)[1]
+        return DEFAULT_COLOR_PREMIUM.get(c, 0.0)
+    if key.startswith("shipping_"):
+        parts = key.split(":")
+        if len(parts) == 3:
+            tier, region = parts[1], parts[2]
+            return DEFAULT_SHIPPING.get(tier, DEFAULT_SHIPPING["standard"]).get(region, 15.0)
+    if key == "margin_percent":
+        return MARGIN_PERCENT
+    if key == "watts":
+        return DEFAULT_WATTS
+    if key == "kwh_pln":
+        return DEFAULT_KWH
+    if key == "max_part_area_mm2":
+        return MAX_PART_AREA_MM2
+    if key == "density_default_g_cm3":
+        return 1.24
+    return default
 
 
-def estimate_print_time_hours(volume_cm3: float, material: str = "PLA") -> float:
-    """Very rough: speed ~ 60 mm/s, layer 0.2mm, ~100mm³/s throughput."""
+def _cfg_value(db, tier, region):
+    """Shipping cost for tier + region."""
+    if db is not None:
+        row = db.query(models.PricingConfig).filter(models.PricingConfig.key == f"shipping_{tier}:{region}").first()
+        if row:
+            try:
+                return float(row.value)
+            except (ValueError, TypeError):
+                pass
+    return DEFAULT_SHIPPING.get(tier, DEFAULT_SHIPPING["standard"]).get(region, 15.0)
+
+
+def get_material_price(material: str, db=None) -> float:
+    return _cfg(db, f"material:{material}", DEFAULT_MATERIAL_PRICES.get(material, 110.0))
+
+
+def estimate_print_time_hours(volume_cm3: float, material: str = "PLA", parts: int = 1) -> float:
+    """Very rough: speed ~60 mm/s, layer 0.2 mm, ~100 mm³/s throughput (PLA/PETG)."""
     if not volume_cm3 or volume_cm3 <= 0:
         return 2.0
-    mm3 = volume_cm3 * 1000
-    throughput = 100 if material in ("PLA", "PETG") else 80 if material in ("ABS", "ASA", "TPU") else 60
-    return max(0.5, mm3 / (throughput * 3600))
+    mm3 = (volume_cm3 / parts) * 1000
+    throughput = {"PLA": 100, "PETG": 100, "PCTG": 80}.get(material, 80)
+    base = max(0.5, mm3 / (throughput * 3600))
+    # fixed per-part print overhead (0.5 h per element)
+    return base + 0.5 * parts
 
 
 def estimate_filament_grams(volume_cm3: float, material: str = "PLA") -> float:
     """Density in g/cm³: PLA 1.24, PETG 1.27, ABS 1.04, PA12 1.14, TPU 1.2."""
-    densities = {"PLA": 1.24, "PETG": 1.27, "ABS": 1.04, "ASA": 1.06,
-                 "PA12": 1.14, "TPU": 1.20, "PCTG": 1.27, "Iglidur I150PF": 1.42}
-    density = densities.get(material, 1.24)
+    density = DENSITIES.get(material, 1.24)
     return volume_cm3 * density if volume_cm3 else 0
 
 
-@router.post("/api/calculate")
+def _split_into_parts(volume_cm3: float, dims: str = None, db=None) -> int:
+    """Models > 25×25 mm (bed) split into parts.
+
+    If `dims` = "X x Y x Z mm" we use XY area.
+    Otherwise estimate from volume assuming 20 mm height → area ≈ vol×1000/20.
+    """
+    max_area = float(_cfg(db, "max_part_area_mm2", MAX_PART_AREA_MM2))
+    import re, math
+    if dims:
+        nums = re.findall(r"[\d.]+", dims.split("mm")[0] if "mm" in dims else dims)
+        if len(nums) >= 2:
+            try:
+                x, y = float(nums[0]), float(nums[1])
+                area = x * y
+                if area > max_area:
+                    return max(1, math.ceil(area / max_area))
+            except (ValueError, IndexError):
+                pass
+    if volume_cm3 and volume_cm3 > 0:
+        area_mm2 = (volume_cm3 * 1000) / 2.0  # assume 20 mm height
+        if area_mm2 > max_area:
+            return max(1, math.ceil(area_mm2 / max_area))
+    return 1
+
+
+def _apply_discount(db, code, product_total):
+    """Validate coupon code; return (discount_pln, info_dict)."""
+    if not code:
+        return 0.0, None
+    row = db.execute(text(
+        "SELECT code, discount_pln, discount_pct, expires_at FROM discount_codes WHERE code = :c AND is_active = TRUE"
+    ), {"c": code.upper()}).fetchone() if db.engine else None
+    if not row:
+        return 0.0, None
+    code_val, dpln, dpct, exp = row[0], row[1], row[2], row[3]
+    import datetime as _dt
+    if exp and exp < _dt.datetime.utcnow():
+        return 0.0, None
+    amount = dpln or 0.0
+    if dpct and dpct > 0:
+        amount = max(amount, round(product_total * (dpct / 100), 2))
+    return round(amount, 2), {"code": code_val, "discount_pln": round(amount, 2), "discount_pct": dpct or 0.0}
+
+
 def calculate_price(
+    material: str = "PLA",
+    color: str = "natural",
+    quantity: int = 1,
+    shipping: str = "standard",
+    shipping_region: str = "PL",
+    volume_cm3: float = 0,
+    estimated_hours: float = 0,
+    dims: str = None,
+    discount_code: str = None,
+    db=None,
+):
+    """Calculate price. Returns dict with PUBLIC (customer-facing) + INTERNAL cost sheet.
+
+    Public: shipping_cost, total (= product_subtotal + shipping - discount)
+    Internal: filament_cost, electricity_cost, color_premium, margin_percent,
+              margin_pln, discount_pln, parts
+    """
+    mat_price_kg = get_material_price(material, db)
+    margin_pct = float(_cfg(db, "margin_percent", MARGIN_PERCENT))
+    watts = float(_cfg(db, "watts", DEFAULT_WATTS))
+    kwh = float(_cfg(db, "kwh_pln", DEFAULT_KWH))
+
+    parts = _split_into_parts(volume_cm3, dims, db) if volume_cm3 else 1
+
+    # per-part filament (volume / parts, then grams via density)
+    vol_per_part = volume_cm3 / parts if parts > 0 else 0
+    filament_g_per = estimate_filament_grams(vol_per_part, material)
+    total_filament_g = filament_g_per * parts * quantity
+    filament_cost = (total_filament_g / 1000) * mat_price_kg
+
+    hours = max(estimated_hours, estimate_print_time_hours(volume_cm3, material, parts)) if volume_cm3 else max(estimated_hours, 2.0)
+    power_cost = (watts / 1000) * hours * kwh
+    color_premium = float(_cfg(db, f"color:{color}", DEFAULT_COLOR_PREMIUM.get(color, 0.0))) * quantity
+
+    subtotal = filament_cost + power_cost + color_premium
+    margin_pln = round(subtotal * (margin_pct / 100), 2)
+    product_total = round(subtotal + margin_pln, 2)  # what customer pays for printing
+
+    shipping_cost = round(_cfg_value(db, shipping, shipping_region), 2)
+    discount_pln = 0.0
+    discount_info = None
+    if discount_code and db:
+        discount_pln, discount_info = _apply_discount(db, discount_code, product_total)
+
+    total = round(product_total + shipping_cost - discount_pln, 2)
+
+    return {
+        # ── klient widzi ──
+        "product_subtotal": product_total,   # druk + marża (ukryta)
+        "shipping_cost": shipping_cost,
+        "discount_pln": round(discount_pln, 2),
+        "total": total,
+        # ── admin / kosztorys ──
+        "internal": {
+            "filament_g": round(total_filament_g, 2),
+            "filament_cost": round(filament_cost, 2),
+            "electricity_cost": round(power_cost, 2),
+            "color_premium": round(color_premium, 2),
+            "margin_percent": margin_pct,
+            "margin_pln": margin_pln,
+            "print_parts": parts,
+            "print_hours": round(hours, 2),
+            "material_price_kg": mat_price_kg,
+            "discount_info": discount_info,
+        },
+        "parts": parts,
+    }
+
+
+@router.post("/api/calculate")
+def calculate_price_endpoint(
     material: str = Form("PLA"),
     color: str = Form("natural"),
     quantity: int = Form(1, ge=1),
@@ -78,52 +253,24 @@ def calculate_price(
     shipping_region: str = Form("PL"),
     volume_cm3: float = Form(0),
     estimated_hours: float = Form(0),
+    dims: str = Form(None),
+    discount_code: str = Form(None),
+    db: Session = Depends(get_db),
 ):
-    """Automated pricing. Returns cost breakdown + total with margin."""
-    mat_price_kg = get_material_price(material)
-    filament_g = estimate_filament_grams(volume_cm3, material) if volume_cm3 else None
-    filament_cost = 0.0
-    if filament_g:
-        filament_cost = (filament_g / 1000) * mat_price_kg * quantity
-    else:
-        # rough fallback: assume 200g for small objects
-        filament_g = 200
-        filament_cost = (filament_g / 1000) * mat_price_kg * quantity
-
-    hours = max(estimated_hours, estimate_print_time_hours(volume_cm3, material))
-    power_cost = (DEFAULT_WATTS / 1000) * hours * DEFAULT_KWH
-
-    color_premium = COLOR_PREMIUM.get(color, 0.0) * quantity
-
-    shipping_cost = SHIPPING.get(shipping, SHIPPING["standard"]).get(shipping_region, SHIPPING["standard"]["PL"])
-
-    subtotal = filament_cost + power_cost + color_premium
-    margin = subtotal * (MARGIN_PERCENT / 100)
-    total = subtotal + margin + shipping_cost
-
+    """Public price calculator — only shows shipping + total to customer."""
+    calc = calculate_price(material, color, quantity, shipping, shipping_region,
+                           volume_cm3, estimated_hours, dims, discount_code, db)
     return {
         "ok": True,
-        "breakdown": {
-            "filament_g": round(filament_g, 1),
-            "filament_cost": round(filament_cost, 2),
-            "power_cost": round(power_cost, 2),
-            "color_premium": round(color_premium, 2),
-            "printing_hours": round(hours, 2),
-            "material": material,
-            "color": color,
-            "quantity": quantity,
-            "shipping_region": shipping_region,
-            "shipping_method": shipping,
-            "shipping_cost": round(shipping_cost, 2),
-        },
-        "pricing": {
-            "subtotal": round(subtotal, 2),
-            "margin_pln": round(margin, 2),
-            "margin_percent": MARGIN_PERCENT,
-            "shipping": round(shipping_cost, 2),
-            "total": round(total, 2),
-            "total_display": f"{round(total, 2):.2f} PLN",
-        },
+        "product_subtotal": calc["product_subtotal"],
+        "shipping_cost": calc["shipping_cost"],
+        "discount_pln": calc["discount_pln"],
+        "total": calc["total"],
+        "parts": calc["parts"],
+        "material": material,
+        "color": color,
+        "quantity": quantity,
+        "print_hours": calc["internal"]["print_hours"],
     }
 
 
@@ -131,7 +278,6 @@ def calculate_price(
 
 @router.post("/api/orders")
 def create_order(
-    request: Request,
     job_id: int = Form(None, ge=1),
     job_uuid: str = Form(None),
     name: str = Form(..., min_length=2, max_length=100),
@@ -148,23 +294,17 @@ def create_order(
     shipping_region: str = Form("PL"),
     estimated_hours: float = Form(0),
     volume_cm3: float = Form(0),
+    dims: str = Form(None),
+    discount_code: str = Form(None),
     notes: str = Form(None),
     payment_method: str = Form("blik"),
     user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """Create order — user can be logged-in or anonymous (email required)."""
-    # price from calculate
-    mat_price_kg = get_material_price(material)
-    filament_g = estimate_filament_grams(volume_cm3, material) if volume_cm3 else 200
-    filament_cost = (filament_g / 1000) * mat_price_kg * quantity
-    hours = max(estimated_hours, estimate_print_time_hours(volume_cm3, material))
-    power_cost = (DEFAULT_WATTS / 1000) * hours * DEFAULT_KWH
-    color_premium = COLOR_PREMIUM.get(color, 0.0) * quantity
-    shipping_cost = SHIPPING.get(shipping, SHIPPING["standard"]).get(shipping_region, SHIPPING["standard"]["PL"])
-    subtotal = filament_cost + power_cost + color_premium
-    margin = subtotal * (MARGIN_PERCENT / 100)
-    total = subtotal + margin + shipping_cost
+    calc = calculate_price(material, color, quantity, shipping, shipping_region,
+                           volume_cm3, estimated_hours, dims, discount_code, db)
+    internal = calc["internal"]
 
     order = models.Order(
         user_id=user.id if user else None,
@@ -182,22 +322,39 @@ def create_order(
         quantity=quantity,
         shipping_method=shipping[:20],
         shipping_region=shipping_region[:20],
-        estimated_hours=round(hours, 2),
+        estimated_hours=estimated_hours if estimated_hours else round(internal["print_hours"], 2),
         volume_cm3=round(volume_cm3, 2),
-        filament_grams=round(filament_g, 1),
-        printing_hours=round(hours, 2),
+        filament_grams=internal["filament_g"],
+        printing_hours=internal["print_hours"],
         notes=notes[:2000] if notes else None,
         payment_method=payment_method[:20],
-        subtotal=round(subtotal, 2),
-        margin_pln=round(margin, 2),
-        shipping_cost=round(shipping_cost, 2),
-        total=round(total, 2),
+        subtotal=internal["filament_cost"] + internal["electricity_cost"] + internal["color_premium"],
+        margin_pln=internal["margin_pln"],
+        shipping_cost=calc["shipping_cost"],
+        discount_pln=calc["discount_pln"],
+        total=calc["total"],
+        print_parts=calc["parts"],
         status="nowy",
+        is_paid=False,
+        created_at=datetime.utcnow(),
     )
     db.add(order)
     db.commit()
     db.refresh(order)
-    return {"ok": True, "order_id": order.id, "total": order.total, "estimate": round(total, 2)}
+
+    # log discount usage
+    if discount_code and db:
+        db.execute(text("UPDATE discount_codes SET uses = uses + 1 WHERE code = :c"), {"c": discount_code.upper()})
+        db.commit()
+
+    return {
+        "ok": True,
+        "order_id": order.id,
+        "total": calc["total"],
+        "shipping_cost": calc["shipping_cost"],
+        "product_subtotal": calc["product_subtotal"],
+        "discount_pln": calc["discount_pln"],
+    }
 
 
 @router.get("/api/orders")
@@ -208,9 +365,12 @@ def list_orders(
     material: str = None,
     paid: bool = None,
     limit: int = 100,
+    admin=Depends(require_admin),
     db: Session = Depends(get_db),
 ):
     """Admin: list all orders sorted desc by id."""
+    if not admin or not getattr(admin, "is_admin", False):
+        raise HTTPException(403, "Admin only")
     q = db.query(models.Order)
     if status:
         q = q.filter(models.Order.status == status)
@@ -233,16 +393,22 @@ def list_orders(
             "volume_cm3": o.volume_cm3,
             "subtotal": o.subtotal, "margin_pln": o.margin_pln,
             "shipping_cost": o.shipping_cost, "total": o.total,
+            "discount_pln": o.discount_pln, "print_parts": o.print_parts,
             "status": o.status, "is_paid": o.is_paid, "payment_method": o.payment_method,
-            "notes": o.notes,
+            "notes": o.notes, "admin_notes": getattr(o, "admin_notes", None),
             "created_at": o.created_at.isoformat() if o.created_at else None,
         })
     return {"ok": True, "orders": rows, "total": len(rows)}
 
 
 @router.get("/api/orders/stats")
-def order_stats(db: Session = Depends(get_db)):
-    """Dashboard stats."""
+def order_stats(
+    admin=Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """Dashboard stats — admin only."""
+    if not admin or not getattr(admin, "is_admin", False):
+        raise HTTPException(403, "Admin only")
     total = db.query(models.Order).count()
     paid_count = db.query(models.Order).filter(models.Order.is_paid == True).count()
     total_revenue = db.query(models.Order).filter(models.Order.is_paid == True).with_entities(
@@ -251,62 +417,63 @@ def order_stats(db: Session = Depends(get_db)):
     by_status = db.query(models.Order.status, func.count(models.Order.id)).group_by(models.Order.status).all()
     by_country = db.query(models.Order.customer_country, func.count(models.Order.id)).group_by(models.Order.customer_country).all()
     by_material = db.query(models.Order.material, func.count(models.Order.id)).group_by(models.Order.material).all()
-    return {"ok": True, "stats": {
-        "total_orders": total,
-        "paid_orders": paid_count,
-        "unpaid_orders": total - paid_count,
-        "total_revenue_pln": round(revenue, 2),
-        "by_status": [{ "status": s, "count": c } for s, c in by_status],
-        "by_country": [{ "country": c, "count": n } for c, n in by_country],
-        "by_material": [{ "material": m, "count": n } for m, n in by_material],
-    }}
+    return {
+        "ok": True, "stats": {
+            "total_orders": total,
+            "paid_orders": paid_count,
+            "unpaid_orders": total - paid_count,
+            "total_revenue_pln": round(revenue, 2),
+            "by_status": [{"status": s, "count": c} for s, c in by_status],
+            "by_country": [{"country": c, "count": n} for c, n in by_country],
+            "by_material": [{"material": m, "count": n} for m, n in by_material],
+        }
+    }
 
 
 @router.patch("/api/orders/{order_id}")
 def update_order(
     order_id: int,
-    request: Request,
     status: str = Form(None),
-    is_paid: bool = Form(None),
+    is_paid: str = Form(None),
     shipping_method: str = Form(None),
     payment_method: str = Form(None),
     notes: str = Form(None),
-    admin=Depends(get_current_user),
+    admin_notes: str = Form(None),
+    admin=Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    """Patch order fields. Admin only."""
-    if not admin or not getattr(admin, "is_admin", False):
-        raise HTTPException(403, "Admin only")
     o = db.get(models.Order, order_id)
     if not o:
-        raise HTTPException(404, "Order not found")
+        raise HTTPException(status_code=404, detail="Order not found")
+    if not admin or not getattr(admin, "is_admin", False):
+        raise HTTPException(403, detail="Admin only")
     if status:
-        valid = {"nowy", "wycena", "realizacja", "wysłano", "zrealizowano", "anulowano"}
+        valid = {"nowy", "wycena", "realizacja", "drukowane", "gotowe", "wysłane", "dostarczone", "anulowane"}
         if status not in valid:
-            raise HTTPException(400, f"Invalid status: {status}")
+            raise HTTPException(status_code=400, detail=f"Invalid status: {status}")
         o.status = status
     if is_paid is not None:
-        o.is_paid = bool(is_paid)
+        o.is_paid = is_paid.lower() in ("1", "true", "yes")
     if shipping_method:
         o.shipping_method = shipping_method[:20]
     if payment_method:
         o.payment_method = payment_method[:20]
     if notes is not None:
         o.notes = notes[:2000] if notes else None
-    from datetime import datetime as _dt
-    o.updated_at = _dt.utcnow()
+    if admin_notes is not None:
+        o.admin_notes = admin_notes[:2000] if admin_notes else None
+    o.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(o)
     return {"ok": True, "order_id": o.id, "status": o.status, "is_paid": o.is_paid}
 
 
 @router.get("/api/orders/{order_id}/pay")
-def get_payment_info(order_id: int, request: Request, db: Session = Depends(get_db)):
+def get_payment_info(order_id: int, db: Session = Depends(get_db)):
     """Return BLIK payment info (static — real BLIK dynamic via API)."""
     o = db.get(models.Order, order_id)
     if not o:
-        raise HTTPException(404, "Order not found")
-    # Static BLIK — user adds own BLIK number
+        raise HTTPException(status_code=404, detail="Order not found")
     return {
         "ok": True,
         "order_id": o.id,
@@ -318,11 +485,60 @@ def get_payment_info(order_id: int, request: Request, db: Session = Depends(get_
     }
 
 
+@router.get("/api/orders/{order_id}/costs")
+def get_order_costs(order_id: int, admin=Depends(require_admin), db: Session = Depends(get_db)):
+    """Full internal cost sheet — admin only."""
+    if not admin or not getattr(admin, "is_admin", False):
+        raise HTTPException(403, detail="Admin only")
+    o = db.get(models.Order, order_id)
+    if not o:
+        raise HTTPException(status_code=404, detail="Order not found")
+    calc = calculate_price(o.material, o.color, o.quantity, o.shipping_method,
+                           o.shipping_region, o.volume_cm3 or 0, o.estimated_hours or 0,
+                           None, None, db)
+    return {"order_id": o.id, **calc}
+
+
+@router.get("/api/orders/{order_id}/export")
+def export_order(order_id: int, admin=Depends(require_admin), db: Session = Depends(get_db)):
+    if not admin or not getattr(admin, "is_admin", False):
+        raise HTTPException(403, detail="Admin only")
+    o = db.get(models.Order, order_id)
+    if not o:
+        raise HTTPException(status_code=404, detail="Order not found")
+    import io, csv
+    buf = io.StringIO()
+    w = csv.writer(buf)
+    w.writerow(["Pole", "Wartość"])
+    w.writerow(["ID", o.id])
+    w.writerow(["UUID modelu", o.job_uuid])
+    w.writerow(["Data", o.created_at.isoformat()])
+    w.writerow(["Klient", f"{o.customer_name} <{o.customer_email}>"])
+    w.writerow(["Telefon", o.customer_phone or ""])
+    w.writerow(["Adres", f"{o.customer_address or ''} {o.customer_city or ''} {o.customer_postal or ''} {o.customer_country}"])
+    w.writerow(["Model", f"{o.material} / {o.color} / x{o.quantity}"])
+    w.writerow(["Objętość (cm³)", o.volume_cm3 or 0])
+    w.writerow(["Waga filamentu (g)", o.filament_grams or 0])
+    w.writerow(["Czas druku (h)", o.printing_hours or 0])
+    w.writerow(["Części (25x25mm)", o.print_parts or 1])
+    w.writerow(["Koszt filamentu", o.subtotal])
+    w.writerow(["Marża (PLN)", o.margin_pln])
+    w.writerow(["Wysyłka", f"{o.shipping_method} {o.shipping_region}: {o.shipping_cost} zł"])
+    w.writerow(["Rabat", f"-{o.discount_pln} zł"])
+    w.writerow(["Razem", f"{o.total} zł"])
+    w.writerow(["Status", o.status])
+    w.writerow(["Opłacone", "tak" if o.is_paid else "nie"])
+    w.writerow(["Notatki admina", o.admin_notes or ""])
+    resp = Response(buf.getvalue().encode("utf-8-sig"), media_type="text/csv")
+    resp.headers["Content-Disposition"] = f"attachment; filename=zamowienie-{o.id}-{o.created_at.strftime('%Y%m%d')}.csv"
+    return resp
+
+
 @router.get("/api/orders/export")
-def export_orders(request: Request, admin=Depends(get_current_user), db: Session = Depends(get_db)):
+def export_orders(admin=Depends(require_admin), db: Session = Depends(get_db)):
     """Export all orders to Excel (admin only)."""
     if not admin or not getattr(admin, "is_admin", False):
-        raise HTTPException(403, "Admin only")
+        raise HTTPException(403, detail="Admin only")
     from openpyxl import Workbook
     from io import BytesIO
     wb = Workbook()
@@ -333,16 +549,14 @@ def export_orders(request: Request, admin=Depends(get_current_user), db: Session
                "Godz. druku", "Do zapłaty", "Status", "Zapłacony", "Notatki"])
     for o in db.query(models.Order).order_by(models.Order.id.desc()).all():
         ws.append([
-            o.id,
-            o.created_at.strftime("%Y-%m-%d %H:%M"),
+            o.id, o.created_at.strftime("%Y-%m-%d %H:%M"),
             o.customer_name, o.customer_email, o.customer_phone,
             o.customer_address, o.customer_city, o.customer_country,
-            o.material, None, o.quantity, o.shipping_method,
+            o.material, o.color, o.quantity, o.shipping_method,
             o.volume_cm3, o.filament_grams, o.printing_hours,
             o.total, o.status, "Tak" if o.is_paid else "Nie", o.notes
         ])
     ws2 = wb.create_sheet("Statystyki")
-    from sqlalchemy import func as _func
     total_orders = db.query(models.Order).count()
     paid = db.query(models.Order).filter(models.Order.is_paid == True).count()
     revenue = db.query(models.Order).filter(models.Order.is_paid == True).with_entities(models.Order.total).all()
@@ -350,11 +564,9 @@ def export_orders(request: Request, admin=Depends(get_current_user), db: Session
     ws2.append(["Zapłacone", paid])
     ws2.append(["Niezapłacone", total_orders - paid])
     ws2.append(["Przychód (PLN)", round(sum(r[0] or 0 for r in revenue), 2)])
-    # status breakdown
-    stats = db.query(models.Order.status, _func.count(models.Order.id)).group_by(models.Order.status).all()
+    stats = db.query(models.Order.status, func.count(models.Order.id)).group_by(models.Order.status).all()
     for s, c in stats:
         ws2.append([f"Status {s}", c])
-
     buf = BytesIO()
     wb.save(buf)
     buf.seek(0)
@@ -363,3 +575,56 @@ def export_orders(request: Request, admin=Depends(get_current_user), db: Session
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": f"attachment; filename=zamowienia_3dfile_{datetime.utcnow().strftime('%Y%m%d')}.xlsx"}
     )
+
+
+# ── Admin pricing config ──
+
+@router.get("/api/admin/pricing")
+def get_pricing(db: Session = Depends(get_db), admin=Depends(require_admin)):
+    if not admin or not getattr(admin, "is_admin", False):
+        raise HTTPException(403, detail="Admin only")
+    rows = db.query(models.PricingConfig).all()
+    return [{"key": r.key, "value": r.value, "kind": r.kind, "updated_at": r.updated_at.isoformat() if r.updated_at else None} for r in rows]
+
+
+@router.post("/api/admin/pricing")
+def set_pricing(
+    key: str = Form(...),
+    value: str = Form(...),
+    kind: str = Form("float"),
+    db: Session = Depends(get_db),
+    admin=Depends(require_admin),
+):
+    if not admin or not getattr(admin, "is_admin", False):
+        raise HTTPException(403, detail="Admin only")
+    row = db.query(models.PricingConfig).filter(models.PricingConfig.key == key).first()
+    if row:
+        row.value = value
+        row.kind = kind
+        row.updated_at = datetime.utcnow()
+    else:
+        row = models.PricingConfig(key=key, value=value, kind=kind)
+        db.add(row)
+    db.commit()
+    return {"ok": True, "key": key, "value": value}
+
+
+@router.get("/api/admin/materials")
+def get_materials(db: Session = Depends(get_db), admin=Depends(require_admin)):
+    """List all material + color prices from config (or defaults)."""
+    if not admin or not getattr(admin, "is_admin", False):
+        raise HTTPException(403, detail="Admin only")
+    materials = {m: float(_cfg(db, f"material:{m}", DEFAULT_MATERIAL_PRICES.get(m, 110.0))) for m in DEFAULT_MATERIAL_PRICES}
+    colors = {c: float(_cfg(db, f"color:{c}", DEFAULT_COLOR_PREMIUM.get(c, 0.0))) for c in DEFAULT_COLOR_PREMIUM}
+    return {
+        "materials": materials,
+        "colors": colors,
+        "shipping": {
+            tier: {region: float(_cfg(db, f"shipping_{tier}:{region}", DEFAULT_SHIPPING[tier][region])) for region in DEFAULT_SHIPPING[tier]}
+            for tier in DEFAULT_SHIPPING
+        },
+        "margin_percent": float(_cfg(db, "margin_percent", MARGIN_PERCENT)),
+        "watts": float(_cfg(db, "watts", DEFAULT_WATTS)),
+        "kwh_pln": float(_cfg(db, "kwh_pln", DEFAULT_KWH)),
+        "max_part_area_mm2": float(_cfg(db, "max_part_area_mm2", MAX_PART_AREA_MM2)),
+    }

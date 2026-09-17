@@ -258,12 +258,56 @@ class Order(Base):
     printing_hours = Column(Float, nullable=True)
     notes = Column(Text, nullable=True)
     payment_method = Column(String(20), default="blik")
-    subtotal = Column(Float, default=0.0)
-    margin_pln = Column(Float, default=0.0)
-    shipping_cost = Column(Float, default=0.0)
-    total = Column(Float, default=0.0)
+    subtotal = Column(Float, default=0.0)  # filament + electricity + color premium (internal cost)
+    margin_pln = Column(Float, default=0.0)  # Tom's markup (hidden)
+    shipping_cost = Column(Float, default=0.0)  # shown to customer
+    discount_pln = Column(Float, default=0.0)  # coupon / global discount (visible as line)
+    total = Column(Float, default=0.0)  # = subtotal + margin + shipping - discount
+    print_parts = Column(Integer, default=1)  # how many 25x25mm parts model was split into
     status = Column(String(20), default="nowy")
     is_paid = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, onupdate=datetime.utcnow)
     user = relationship("User", foreign_keys=[user_id])
+
+
+class PricingConfig(Base):
+    """Dynamic pricing config — editable from admin panel. One row per key."""
+    __tablename__ = "pricing_config"
+
+    key = Column(String(80), primary_key=True)  # material:PLA, shipping:PL, margin_percent, kwh, watts, max_part_25mm etc.
+    value = Column(String(120), nullable=False)
+    kind = Column(String(20), default="float")  # float / string
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, onupdate=datetime.utcnow)
+
+
+# Default config seed for PricingConfig (used by _migrate_columns fallback)
+PRICING_SEED = {
+    "margin_percent": "68",
+    "kwh_pln": "1.15",
+    "watts": "150",
+    "max_part_area_mm2": "625",      # 25×25 mm bed — larger models split into parts
+    "density_default_g_cm3": "1.24",
+    "shipping_PL": "15",
+    "shipping_EU": "35",
+    "shipping_GLOBAL": "55",
+    "shipping_express_PL": "25",
+    "shipping_express_EU": "55",
+    "shipping_express_GLOBAL": "85",
+    "material:PLA": "89",
+    "material:PETG": "110",
+    "material:ABS": "95",
+    "material:ASA": "120",
+    "material:PA12 CF": "220",
+    "material:TPU": "130",
+    "material:PCTG": "140",
+    "color:black": "0",
+    "color:white": "0",
+    "color:blue": "5",
+    "color:red": "5",
+    "color:green": "5",
+    "color:yellow": "5",
+    "color:silver": "10",
+    "color:brass": "25",
+}
