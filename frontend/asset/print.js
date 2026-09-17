@@ -6,22 +6,52 @@
   var toastContainer = document.getElementById('toastContainer');
   var currencyRates = { PLN: { symbol: 'zł', rate: 1.0 }, USD: { symbol: '$', rate: 4.2 }, EUR: { symbol: '€', rate: 4.55 } };
   var currentCurrency = 'PLN';
+  var currentModel = {};
+
+  function currencySymbol() {
+    return (currencyRates[currentCurrency] && currencyRates[currentCurrency].symbol) || 'zł';
+  }
 
   async function loadCurrencies() {
     try {
       var r = await fetch('/api/config/currencies?' + Date.now());
       if (r.ok) {
         var d = await r.json();
-        currencyRates = {};
-        Object.keys(d.rates || {}).forEach(function(k) { currencyRates[k] = { symbol: d.rates[k].symbol, rate: d.rates[k].rate }; });
-        // try restore saved pref
+        if (d.rates) {
+          currencyRates = {};
+          Object.keys(d.rates).forEach(function(k) {
+            currencyRates[k] = { symbol: d.rates[k].symbol, rate: d.rates[k].rate };
+          });
+        }
         var saved = localStorage.getItem('print_currency');
         if (saved && currencyRates[saved]) currentCurrency = saved;
         else currentCurrency = 'PLN';
         renderCurrencyToggle();
+        // update currency hidden + re-render price if modal open
+        var curHidden = document.getElementById('printCurrency');
+        if (curHidden) curHidden.value = currentCurrency;
       }
     } catch (e) {}
   }
+
+  function renderCurrencyToggle() {
+    var el = document.getElementById('currencyToggle');
+    if (!el) return;
+    el.innerHTML = Object.keys(currencyRates).map(function(c) {
+      var active = c === currentCurrency;
+      return '<button type="button" onclick="switchCurrency(\'' + c + '\')" style="padding:4px 10px;border-radius:6px;border:1px solid ' +
+        (active ? '#2563eb' : '#d1d5db') + ';background:' + (active ? '#2563eb' : '#fff') +
+        ';color:' + (active ? '#fff' : '#374151') + ';font-size:12px;cursor:pointer">' + c + '</button>';
+    }).join('');
+  }
+
+  window.switchCurrency = function(cur) {
+    if (!currencyRates[cur]) return;
+    currentCurrency = cur;
+    localStorage.setItem('print_currency', cur);
+    renderCurrencyToggle();
+    calculatePrintPrice();
+  };
 
   function showToast(message, type) {
     type = type || 'info';
@@ -51,7 +81,7 @@
           if (adminLink) adminLink.style.display = 'block';
         }
       }
-    } catch (e) { /* anon user OK */ }
+    } catch (e) {}
   }
 
   /* ==== Materials + shipping load ==== */
@@ -66,14 +96,14 @@
       if (res.ok) {
         data = await res.json();
       } else {
-        data = {
-          materials: { "PLA": 89, "PETG": 110, "ABS": 95, "ASA": 120, "PA12 CF": 220, "TPU": 130 },
-          colors: {}
-        };
+        data = { materials: { "PLA": 79, "PETG": 95, "ABS": 89, "ASA": 159, "PA12 CF": 349 }, colors: {} };
       }
       var html = Object.keys(data.materials || {}).map(function(m) {
+        var p = data.materials[m];
+        var price = typeof p === 'number' ? p : (p.price_kg || 0);
+        var dens = (typeof p === 'object' && p.density) ? ' ' + p.density + ' g/cm³' : '';
         return '<div style="padding:12px;border:1px solid #e5e7eb;border-radius:8px"><strong>' + m +
-               '</strong><br><span style="color:#6b7280">' + data.materials[m] + ' zł/kg</span></div>';
+               '</strong><br><span style="color:#6b7280">' + price + ' zł/kg' + dens + '</span></div>';
       }).join('');
       box.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px">' + html + '</div>';
     } catch (e) {
@@ -91,63 +121,34 @@
       ["Pickup (local)", 0, 0, 0]
     ];
     tbody.innerHTML = rows.map(function(r) {
-      return '<tr><td style="padding:8px">'+r[0]+'</td><td style="padding:8px">'+r[1]+' zł</td><td style="padding:8px">'+r[2]+' zł</td><td style="padding:8px">'+r[3]+' zł</td></tr>';
+      return '<tr><td style="padding:8px">' + r[0] + '</td><td style="padding:8px">' + r[1] + ' zł</td><td style="padding:8px">' + r[2] + ' zł</td><td style="padding:8px">' + r[3] + ' zł</td></tr>';
     }).join('');
-  }
-
-/* ==== Currency ==== */
-  function setCurrency(cur) {
-    currentCurrency = cur;
-    document.getElementById('printCurrency').value = cur;
-    var btns = document.querySelectorAll('#currencyToggle .currency-btn');
-    btns.forEach(function(b) { b.classList.toggle('active', b.getAttribute('data-cur') === cur); });
-    if (window.calculatePrintPrice) window.calculatePrintPrice();
-  }
-  function loadCurrencies() {
-    fetch('/api/config/currencies')
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        currencyRates = data.rates || currencyRates;
-        currentCurrency = currencyRates[Object.keys(currencyRates)[0]] ? Object.keys(currencyRates)[0] : 'PLN';
-        document.getElementById('printCurrency').value = currentCurrency;
-      })
-      .catch(function() {});
   }
 
   /* ==== Print order modal ==== */
-  function currencySymbol() { return (currencyRates[currentCurrency] && currencyRates[currentCurrency].symbol) || 'zł'; }
-  function renderCurrencyToggle() {
-    var el = document.getElementById('currencyToggle');
-    if (!el) return;
-    el.innerHTML = Object.keys(currencyRates).map(function(c) {
-      return '<button type="button" onclick="switchCurrency(\'' + c + '\')" style="padding:4px 10px;border-radius:6px;border:1px solid ' + (c === currentCurrency ? '#2563eb' : '#d1d5db') + ';background:' + (c === currentCurrency ? '#2563eb' : '#fff') + ';color:' + (c === currentCurrency ? '#fff' : '#374151') + ';font-size:12px;cursor:pointer">' + c + '</button>';
-    }).join('');
-  }
-  window.switchCurrency = function(cur) {
-    if (!currencyRates[cur]) return;
-    currentCurrency = cur;
-    localStorage.setItem('print_currency', cur);
-    renderCurrencyToggle();
-    calculatePrintPrice();
-  };
-
   window.openPrintOrderModal = function(model) {
     model = model || {};
+    currentModel = model;
     var modal = document.getElementById('printOrderModal');
     if (!modal) { showToast('Order form unavailable', 'error'); return; }
     document.getElementById('printOrderId').value = model.job_id || '';
     document.getElementById('printOrderUuid').value = model.uuid || 'calculator';
-
-    var descField = document.querySelector('textarea[name="description"]');
-    if (descField) descField.value = model.title || '';
 
     if (model.volume_cm3) {
       document.getElementById('printVolume').value = model.volume_cm3;
       document.getElementById('printVolumeHidden').value = model.volume_cm3;
     }
     if (model.dims_mm) document.getElementById('printDims').value = model.dims_mm;
+
+    // pre-fill notes with model metadata
+    var notesField = document.getElementById('printOrderNotes');
+    if (notesField) {
+      var desc = model.title || '';
+      notesField.value = desc;
+    }
+
     loadCurrencies();
-    setTimeout(function() { window.calculatePrintPrice && window.calculatePrintPrice(); }, 100);
+    setTimeout(function() { calculatePrintPrice(); }, 100);
     document.body.style.overflow = 'hidden';
     modal.style.display = 'flex';
   };
@@ -158,7 +159,7 @@
     document.body.style.overflow = '';
   };
 
-  window.calculatePrintPrice = function() {
+  function getFormValues() {
     var volInput = document.getElementById('printVolume');
     var dimsInput = document.getElementById('printDims');
     var vol = parseFloat(volInput && volInput.value) || 0;
@@ -171,14 +172,24 @@
       }
     }
 
-    var qty = parseInt(document.getElementById('printOrderQty').value) || 1;
-    var material = document.getElementById('printMaterial').value || 'PLA';
-    var color = document.getElementById('printColor').value || 'natural';
-    var shipping = document.getElementById('printShipping').value || 'standard';
-    var region = document.getElementById('printOrderRegion').value || 'PL';
+    return {
+      vol: vol,
+      qty: parseInt(document.getElementById('printOrderQty').value) || 1,
+      material: document.getElementById('printMaterial').value || 'PLA',
+      color: document.getElementById('printColor').value || 'natural',
+      shipping: document.getElementById('printShipping').value || 'standard',
+      region: document.getElementById('printOrderRegion').value || 'PL',
+      dims: dimsInput ? dimsInput.value : '',
+    };
+  }
 
-    if (volInput) document.getElementById('printVolumeHidden').value = vol.toFixed(1);
-    if (dimsInput) document.getElementById('printDimsHidden').value = dimsInput.value;
+  window.calculatePrintPrice = function() {
+    var v = getFormValues();
+
+    if (document.getElementById('printVolumeHidden'))
+      document.getElementById('printVolumeHidden').value = v.vol.toFixed(1);
+    if (document.getElementById('printDimsHidden'))
+      document.getElementById('printDimsHidden').value = v.dims;
 
     var summaryEl = document.getElementById('printPriceSummary');
     var totalEl = document.getElementById('priceTotal');
@@ -189,16 +200,16 @@
     var hint = document.getElementById('priceHint');
     var sym = currencySymbol();
 
-    if (vol > 0) {
+    if (v.vol > 0) {
       fetch('/api/calculate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'material=' + encodeURIComponent(material) +
-              '&color=' + encodeURIComponent(color) +
-              '&quantity=' + qty +
-              '&shipping=' + encodeURIComponent(shipping) +
-              '&shipping_region=' + encodeURIComponent(region) +
-              '&volume_cm3=' + vol +
+        body: 'material=' + encodeURIComponent(v.material) +
+              '&color=' + encodeURIComponent(v.color) +
+              '&quantity=' + v.qty +
+              '&shipping=' + encodeURIComponent(v.shipping) +
+              '&shipping_region=' + encodeURIComponent(v.region) +
+              '&volume_cm3=' + v.vol +
               '&currency=' + encodeURIComponent(currentCurrency)
       })
       .then(function(r) { return r.json(); })
@@ -229,31 +240,27 @@
   window.applyDiscountCode = function() {
     var code = document.getElementById('printOrderCode').value.trim();
     if (!code) { showToast('Enter a discount code first', 'error'); return; }
-    var vol = parseFloat(document.getElementById('printVolumeHidden').value) || 0;
-    var qty = parseInt(document.getElementById('printOrderQty').value) || 1;
-    var material = document.getElementById('printMaterial').value || 'PLA';
-    var color = document.getElementById('printColor').value || 'natural';
-    var shipping = document.getElementById('printShipping').value || 'standard';
-    var region = document.getElementById('printOrderRegion').value || 'PL';
+    var v = getFormValues();
 
     fetch('/api/calculate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: 'material=' + encodeURIComponent(material) +
-            '&color=' + encodeURIComponent(color) +
-            '&quantity=' + qty +
-            '&shipping=' + encodeURIComponent(shipping) +
-            '&shipping_region=' + encodeURIComponent(region) +
-            '&volume_cm3=' + vol +
+      body: 'material=' + encodeURIComponent(v.material) +
+            '&color=' + encodeURIComponent(v.color) +
+            '&quantity=' + v.qty +
+            '&shipping=' + encodeURIComponent(v.shipping) +
+            '&shipping_region=' + encodeURIComponent(v.region) +
+            '&volume_cm3=' + v.vol +
             '&discount_code=' + encodeURIComponent(code) +
             '&currency=' + encodeURIComponent(currentCurrency)
     })
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data.ok) {
-        document.getElementById('priceTotal').textContent = data.total.toFixed(2) + ' zł';
+        var sym = currencySymbol();
+        document.getElementById('priceTotal').textContent = data.total.toFixed(2) + ' ' + sym;
         document.getElementById('printPriceSummary').style.background = '#fff';
-        showToast('Discount code ' + code + ' applied: -' + data.discount_pln.toFixed(2) + ' zł', 'success');
+        showToast('Discount code ' + code + ' applied: -' + data.discount_pln.toFixed(2) + ' ' + sym, 'success');
       } else {
         showToast(data.detail || 'Invalid code', 'error');
       }
@@ -268,6 +275,13 @@
     fd.append('payment_method', 'blik');
     fd.append('currency', currentCurrency);
 
+    // merge notes manual into notes
+    var notesManual = document.getElementById('printOrderNotesManual') ? document.getElementById('printOrderNotesManual').value.trim() : '';
+    var notesHidden = document.getElementById('printOrderNotes') ? document.getElementById('printOrderNotes').value || '' : '';
+    var combinedNotes = notesHidden;
+    if (notesManual) combinedNotes += (combinedNotes ? '\n' : '') + notesManual;
+    fd.set('notes', combinedNotes);
+
     var name = fd.get('name');
     var email = fd.get('email');
     if (!name || !email) {
@@ -275,13 +289,9 @@
       return;
     }
 
-    var vol = parseFloat(document.getElementById('printVolumeHidden').value) || 0;
-    if (vol <= 0 && document.getElementById('printDims').value) {
-      var nums = document.getElementById('printDims').value.match(/[\d.]+/g);
-      if (nums && nums.length >= 3) {
-        vol = (parseFloat(nums[0]) * parseFloat(nums[1]) * parseFloat(nums[2])) / 1000;
-        document.getElementById('printVolumeHidden').value = vol.toFixed(1);
-      }
+    var v = getFormValues();
+    if (v.vol <= 0 && v.dims) {
+      // recalculate vol silently — backend also derives it
     }
 
     fetch('/api/orders?' + Date.now(), {
@@ -291,10 +301,10 @@
     })
     .then(function(r) { return r.json(); })
     .then(function(data) {
-    if (data.ok) {
-    var sym = currencySymbol();
-    showToast('Order placed! Price: ' + data.total.toFixed(2) + ' ' + sym + '. We will contact you to confirm payment.', 'success');
-        window.closePrintModal();
+      if (data.ok) {
+        var sym = currencySymbol();
+        showToast('Order placed! Price: ' + data.total.toFixed(2) + ' ' + sym + '. We will contact you to confirm payment.', 'success');
+        closePrintModal();
       } else {
         showToast(data.detail || 'Order error', 'error');
       }
@@ -313,7 +323,6 @@
   window.authenticateAdmin = function() {
     var code = document.getElementById('adminTokenInput').value.trim();
     if (!code) { showToast('Enter token', 'error'); return; }
-    // store as token, then re-check
     localStorage.setItem('token', code);
     checkAdminAuth();
     showToast('Admin unlocked', 'success');
@@ -332,7 +341,7 @@
         if (contentDiv) contentDiv.style.display = 'block';
         await loadAdminOrders();
       }
-    } catch (e) { /* not admin */ }
+    } catch (e) {}
   }
 
   async function loadAdminOrders() {
@@ -342,6 +351,7 @@
       var res = await fetch('/api/orders?' + Date.now(), { headers: headers });
       var data = await res.json();
       if (data.ok && data.orders) {
+        var sym = currencySymbol();
         var tbody = '';
         data.orders.forEach(function(o) {
           var statusColor = '#6b7280';
@@ -349,6 +359,8 @@
           if (o.status === 'wysłane') statusColor = '#3b82f6';
           if (o.status === 'dostarczone') statusColor = '#10b981';
           if (o.status === 'anulowane') statusColor = '#ef4444';
+          var cur = o.currency || 'PLN';
+          var orderSym = (currencyRates[cur] && currencyRates[cur].symbol) || 'zł';
           tbody += '<tr style="border-bottom:1px solid #e5e7eb">' +
             '<td style="padding:8px">' + o.id + '</td>' +
             '<td style="padding:8px">' + new Date(o.created_at).toLocaleString('en-GB') + '</td>' +
@@ -358,7 +370,7 @@
             '<td style="padding:8px">' + (o.material || '') + '</td>' +
             '<td style="padding:8px">' + (o.quantity || 1) + '</td>' +
             '<td style="padding:8px">' + (o.shipping_method || '') + '</td>' +
-            '<td style="padding:8px">' + (o.total || 0).toFixed(2) + ' zł</td>' +
+            '<td style="padding:8px">' + (o.total || 0).toFixed(2) + ' ' + orderSym + '</td>' +
             '<td style="padding:8px"><span style="color:' + statusColor + ';font-weight:600">' + (o.status || 'nowy') + '</span></td>' +
             '<td style="padding:8px">' + (o.is_paid ? '✓' : '') + '</td>' +
             '<td style="padding:8px"><button onclick="exportOrder(' + o.id + ')" style="padding:4px 8px;border:1px solid #d1d5db;border-radius:4px;background:#f9fafb">CSV</button></td>' +
@@ -504,13 +516,9 @@
   };
 
   /* ==== Export ==== */
-  window.exportOrder = window.exportOrder || function(orderId) {
-    window.open('/api/orders/' + orderId + '/export?' + Date.now(), '_blank');
-  };
-
   function escapeHtml(str) {
     if (!str) return '';
-    return String(str).replace(/[&<>"]/g, function(c) {
+    return String(str).replace(/[&<>\"]/g, function(c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] || c;
     });
   }
@@ -524,12 +532,13 @@
     checkAdminAuth();
 
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') window.closePrintModal();
+      if (e.key === 'Escape') closePrintModal();
     });
     window.addEventListener('click', function(e) {
-      if (e.target.classList.contains('modal-backdrop')) window.closePrintModal();
+      if (e.target && e.target.classList && e.target.classList.contains('modal-backdrop')) closePrintModal();
     });
   });
 
   window.showToast = showToast;
+  window.currencySymbol = currencySymbol;
 })();

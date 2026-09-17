@@ -39,14 +39,16 @@ def get_currencies():
 
 # ── Material & cost constants (defaults; overridden by PricingConfig rows) ──
 DEFAULT_MATERIAL_PRICES = {
-    "PLA": 89.0, "PLA HT": 120.0, "PLA CF": 140.0,
-    "PETG": 110.0, "PETG FR": 150.0,
-    "ABS": 95.0, "ASA": 120.0, "ASA CF": 180.0,
+    "PLA": 79.0, "PLA HT": 120.0, "PLA CF": 199.0,
+    "PETG": 95.0, "PETG HF": 129.0, "PETG FR": 150.0,
+    "ABS": 89.0, "ASA": 159.0, "ASA CF": 299.0,
     "TPU": 130.0, "TPU 75D": 150.0,
-    "PA12 CF": 220.0, "PA12": 180.0,
+    "PA12 CF": 349.0, "PA12": 180.0,
     "PCTG": 140.0,
     "Iglidur I150PF": 450.0, "Iglidur I180PF": 480.0, "Iglidur I190PF": 520.0,
     "PLA Matte": 100.0, "PLA Silk": 110.0, "PLA Glow": 130.0,
+    "BAMBU PLA Basic": 99.0, "BAMBU PETG HF": 129.0, "BAMBU ASA": 159.0,
+    "BAMBU PA12-CF": 349.0, "BAMBU PLA Matte": 109.0,
 }
 
 DEFAULT_COLOR_PREMIUM = {
@@ -69,9 +71,16 @@ DEFAULT_KWH = 1.15
 MARGIN_PERCENT = getattr(settings, "print_margin_percent", 68)
 MAX_PART_AREA_MM2 = 625  # 25×25 mm bed — larger models split into parts
 DENSITIES = {
-    "PLA": 1.24, "PETG": 1.27, "ABS": 1.04, "ASA": 1.06,
-    "PA12": 1.14, "TPU": 1.20, "PCTG": 1.27,
-    "PA12 CF": 1.25, "Iglidur I150PF": 1.42,
+    "PLA": 1.24, "PLA HT": 1.24, "PLA CF": 1.24,
+    "PLA Matte": 1.24, "PLA Silk": 1.24, "PLA Glow": 1.24,
+    "PETG": 1.27, "PETG HF": 1.27, "PETG FR": 1.28,
+    "BAMBU PLA Basic": 1.24, "BAMBU PETG HF": 1.27, "BAMBU ASA": 1.07,
+    "BAMBU PA12-CF": 1.25, "BAMBU PLA Matte": 1.24,
+    "ABS": 1.04, "ASA": 1.07, "ASA CF": 1.15,
+    "TPU": 1.20, "TPU 75D": 1.20,
+    "PA12": 1.14, "PA12 CF": 1.25,
+    "PCTG": 1.27,
+    "Iglidur I150PF": 1.42,
 }
 
 
@@ -132,10 +141,10 @@ def estimate_print_time_hours(volume_cm3: float, material: str = "PLA", parts: i
     if not volume_cm3 or volume_cm3 <= 0:
         return 2.0
     mm3 = (volume_cm3 / parts) * 1000
-    throughput = {"PLA": 100, "PETG": 100, "PCTG": 80}.get(material, 80)
+    throughput = {"PLA": 300, "PETG": 200, "PCTG": 180, "TPU": 100, "ABS": 250, "ASA": 220}.get(material, 220)
     base = max(0.5, mm3 / (throughput * 3600))
-    # fixed per-part print overhead (0.5 h per element)
-    return base + 0.5 * parts
+    # fixed per-model setup overhead (not per-part)
+    return base + 0.5
 
 
 def estimate_filament_grams(volume_cm3: float, material: str = "PLA") -> float:
@@ -652,11 +661,18 @@ def set_pricing(
 @router.get("/api/admin/materials")
 def get_materials(db: Session = Depends(get_db)):
     """List all material + color prices — public (for print.html pricing table)."""
-    materials = {m: float(_cfg(db, f"material:{m}", DEFAULT_MATERIAL_PRICES.get(m, 110.0))) for m in DEFAULT_MATERIAL_PRICES}
+    materials = {}
+    for m in DEFAULT_MATERIAL_PRICES:
+        materials[m] = {
+            "price_kg": float(_cfg(db, f"material:{m}", DEFAULT_MATERIAL_PRICES.get(m, 110.0))),
+            "density": DENSITIES.get(m, 1.24),
+            "display": m,
+        }
     colors = {c: float(_cfg(db, f"color:{c}", DEFAULT_COLOR_PREMIUM.get(c, 0.0))) for c in DEFAULT_COLOR_PREMIUM}
     return {
         "materials": materials,
         "colors": colors,
+        "density_map": {m: DENSITIES.get(m, 1.24) for m in DEFAULT_MATERIAL_PRICES},
         "shipping": {
             tier: {region: float(_cfg(db, f"shipping_{tier}:{region}", DEFAULT_SHIPPING[tier][region])) for region in DEFAULT_SHIPPING[tier]}
             for tier in DEFAULT_SHIPPING

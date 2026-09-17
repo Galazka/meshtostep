@@ -6,9 +6,9 @@
   <meta http-equiv="Cache-Control" content="no-store, max-age=0">
   <title>3DFILE.link — 3D Printing Service</title>
   <meta name="description" content="Poland's single-source 3D print hub. Automated real-time pricing. Ships worldwide. Upload model or enter volume — get instant price and order.">
-  <link rel="icon" href="/asset/logo_3d.svg?v=53" type="image/svg+xml">
+  <link rel="icon" href="/asset/logo_3d.svg?v=54" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/asset/print.css?v=53">
+  <link rel="stylesheet" href="/asset/print.css?v=54">
 </head>
 <body>
   <div class="toast-container" id="toastContainer"></div>
@@ -17,7 +17,7 @@
     <div class="container-print">
       <div class="header-inner">
         <a href="/" class="logo-link" style="display:flex;align-items:center;text-decoration:none;color:inherit;font-weight:700;font-size:20px">
-          <img src="/asset/logo_3d.svg?v=53" alt="3DFILE.link" height="32" style="margin-right:8px">
+          <img src="/asset/logo_3d.svg?v=54" alt="3DFILE.link" height="32" style="margin-right:8px">
           3DFILE.link
         </a>
         <nav class="nav-print" style="display:flex;gap:16px;align-items:center">
@@ -44,7 +44,7 @@
         </button>
       </div>
       <div class="hero-image">
-        <img src="/asset/hero_print.svg?v=53" alt="3D prints" loading="lazy" style="max-width:100%;border-radius:16px;border:1px solid #e5e7eb">
+        <img src="/asset/hero_print.svg?v=54" alt="3D prints" loading="lazy" style="max-width:100%;border-radius:16px;border:1px solid #e5e7eb">
       </div>
     </section>
 
@@ -155,6 +155,8 @@
         <input type="hidden" name="job_uuid" id="printOrderUuid">
         <input type="hidden" name="volume_cm3" id="printVolumeHidden">
         <input type="hidden" name="dims" id="printDimsHidden">
+        <input type="hidden" name="notes" id="printOrderNotes">
+        <input type="hidden" name="description" id="printOrderDescription">
 
         <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
           <div class="form-group">
@@ -292,6 +294,10 @@
         </div>
 
         <div style="margin-top:16px">
+          <label style="display:block;font-size:13px;margin-bottom:4px">Notes for printer (optional)</label>
+          <textarea name="notes_manual" id="printOrderNotesManual" placeholder="e.g. need specific color, special handling..." style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;resize:vertical;height:80px;"></textarea>
+        </div>
+        <div style="margin-top:16px">
           <button type="submit" class="submit-btn" id="printSubmitBtn" style="width:100%;padding:12px;border:none;border-radius:8px;background:#2563eb;color:#fff;font-weight:600;cursor:pointer">
             Place order — pay on confirmation
           </button>
@@ -301,6 +307,6 @@
   </div>
 </main>
 
-<script src="/asset/print.js?v=53"></script>
+<script src="/asset/print.js?v=54"></script>
 </body>
 </html>
