@@ -214,6 +214,20 @@ def calculate_price(
     watts = float(_cfg(db, "watts", DEFAULT_WATTS))
     kwh = float(_cfg(db, "kwh_pln", DEFAULT_KWH))
 
+    # auto-derive volume from dims if not provided
+    import re as _re
+    if (not volume_cm3 or volume_cm3 <= 0) and dims:
+        nums = _re.findall(r"[\d.]+", dims.split("mm")[0] if "mm" in dims else dims)
+        if len(nums) >= 3:
+            try:
+                x, y, z = float(nums[0]), float(nums[1]), float(nums[2])
+                # mm³ → cm³
+                auto_vol = (x * y * z) / 1000.0
+                if auto_vol > 0:
+                    volume_cm3 = auto_vol
+            except (ValueError, IndexError):
+                pass
+
     parts = _split_into_parts(volume_cm3, dims, db) if volume_cm3 else 1
 
     # per-part filament (volume / parts, then grams via density)
