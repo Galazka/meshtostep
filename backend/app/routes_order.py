@@ -161,7 +161,7 @@ def _apply_discount(db, code, product_total):
         return 0.0, None
     row = db.execute(text(
         "SELECT code, discount_pln, discount_pct, expires_at FROM discount_codes WHERE code = :c AND is_active = TRUE"
-    ), {"c": code.upper()}).fetchone() if db.engine else None
+    ), {"c": code.upper()}).fetchone() if db.bind else None
     if not row:
         return 0.0, None
     code_val, dpln, dpct, exp = row[0], row[1], row[2], row[3]
