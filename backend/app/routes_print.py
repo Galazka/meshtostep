@@ -53,7 +53,7 @@ def _validate_upload(file: UploadFile) -> bytes:
     return raw
 
 
-def _trimesh_stats(data: bytes, material: str = "PLA") -> dict:
+def _trimesh_stats(data: bytes, mode: str = "auto", material: str = "PLA") -> dict:
     """Fast volume + dims via trimesh — process=False for speed."""
     import trimesh
     import io
@@ -71,43 +71,68 @@ def _trimesh_stats(data: bytes, material: str = "PLA") -> dict:
         file_type = "stl"
 
     obj = None
-    # Try primary type, then fallbacks
-    attempts = [file_type]
-    for t in ("3mf", "obj", "stl", "ply"):
-        if t not in attempts:
-            attempts.append(t)
-
-    for t in attempts:
+    if file_type == "3mf":
+        # 3MF = ZIP containing 3D/3dmodel.model (XML with <mesh>/<vertices>/<triangles>)
+        # trimesh.load(3mf) needs lxml; fall back to manual ZIP extraction → trimesh STL
         try:
-            obj = trimesh.load(io.BytesIO(data), file_type=t, process=False, force='mesh')
-            if obj is not None:
-                break
+            obj = trimesh.load(io.BytesIO(data), file_type="3mf", process=True, force='mesh')
         except Exception:
-            continue
+            obj = None
+        if obj is None:
+            # manual fallback: extract 3D/3dmodel.model, pass to trimesh via temp 3mf file
+            try:
+                fd, tmp_path = tempfile.mkstemp(suffix=".3mf")
+                os.write(fd, data); os.close(fd)
+                obj = trimesh.load(tmp_path, process=True, force='mesh')
+                os.unlink(tmp_path)
+            except Exception:
+                obj = None
+    # non-3MF loaders
+    if obj is None and file_type != "3mf":
+        attempts = [file_type]
+        for t in ("3mf", "obj", "stl", "ply"):
+            if t not in attempts:
+                attempts.append(t)
+        for t in attempts:
+            try:
+                obj = trimesh.load(io.BytesIO(data), file_type=t, process=False, force='mesh')
+                if obj is not None:
+                    break
+            except Exception:
+                continue
 
-    if obj is None:
-        # last resort: write temp file and let trimesh auto-detect suffix
+    if obj is None or (not isinstance(obj, trimesh.Trimesh) and not isinstance(obj, trimesh.Scene)):
+        # Could not parse as anything — try temp file with auto-detect
         fd, tmp_path = tempfile.mkstemp(suffix=".3mf" if file_type == "3mf" else ".stl")
         try:
-            os.write(fd, data)
-            os.close(fd)
+            os.write(fd, data); os.close(fd)
             obj = trimesh.load(tmp_path, process=False, force='mesh')
-        finally:
-            os.unlink(tmp_path)
+        except Exception:
+            raise HTTPException(status_code=500, detail="Could not parse mesh")
 
-    # Scene → Trimesh (concat all geometries)
+    # Scene → Trimesh (concat all geometries) — handles 3MF Scene result
     if not isinstance(obj, trimesh.Trimesh):
         if isinstance(obj, trimesh.Scene):
-            geoms = list(obj.geometry.values())
-            if geoms:
-                dumped = []
-                for g in geoms:
-                    d = g.dump()
-                    if isinstance(d, list):
-                        dumped.extend(d)
-                    else:
-                        dumped.append(d)
-                obj = trimesh.util.concatenate(dumped)
+            # Scene has .volume/.extents directly — use them
+            if hasattr(obj, "volume") and obj.volume and not str(obj.volume).startswith("nan"):
+                # keep Scene but ensure we have Trimesh for .faces count
+                geoms = list(obj.geometry.values()) if obj.geometry else []
+                if geoms:
+                    try:
+                        obj = trimesh.util.concatenate([g for g in geoms if hasattr(g, "faces")])
+                    except Exception:
+                        pass  # keep original Scene (volume still works)
+            else:
+                geoms = list(obj.geometry.values()) if obj.geometry else []
+                if geoms:
+                    dumped = []
+                    for g in geoms:
+                        d = g.dump()
+                        if isinstance(d, list):
+                            dumped.extend(d)
+                        else:
+                            dumped.append(d)
+                    obj = trimesh.util.concatenate(dumped)
     if not isinstance(obj, trimesh.Trimesh):
         try:
             dumped = obj.dump()
@@ -182,12 +207,17 @@ def _freecad_volume(data: bytes, material: str = "PLA") -> dict:
         stl_path = os.path.join(tmpdir, "input.stl")
         # 3MF needs conversion via trimesh (FreeCAD can't read 3MF directly)
         if data[:2] == b"PK" or data[:4] == b"PK\x03\x04":
-            m = trimesh.load(_io.BytesIO(data), file_type="3mf", process=False, force="mesh")
+            # process=True so trimesh reconstructs a watertight mesh + applies units
+            m = trimesh.load(_io.BytesIO(data), file_type="3mf", process=True, force="mesh")
             if isinstance(m, trimesh.Scene):
-                geoms = [g for g in m.dump() if hasattr(g, "faces")]
-                if not geoms:
-                    geoms = list(m.geometry.values()) if m.geometry else [m]
-                m = trimesh.util.concatenate(geoms)
+                # Scene → single Trimesh via volume-weighted union
+                g = list(m.geometry.values()) if m.geometry else []
+                if g:
+                    m = trimesh.util.concatenate([gg for gg in g if hasattr(gg, "faces")])
+            if not isinstance(m, trimesh.Trimesh):
+                m = trimesh.load(_io.BytesIO(data), file_type="3mf", process=False, force="mesh")
+                if isinstance(m, trimesh.Scene):
+                    m = trimesh.util.concatenate([g for g in list(m.geometry.values()) if hasattr(g, "faces")])
             with open(stl_path, "wb") as f:
                 m.export(f, file_type="stl")
         else:
@@ -231,25 +261,14 @@ sys.stdout.flush()
 
 
 def estimate_from_stl(data: bytes, material: str = "PLA", mode: Literal["light", "auto", "ultra"] = "auto") -> dict:
+    """Backwards-compatible wrapper — now delegates to _trimesh_stats."""
     if not _HAS_TRIMESH:
         if mode == "ultra":
-            return _freecad_volume(data, material)
+            ft = "3mf" if data[:2] == b"PK" else None
+            return _trimesh_stats(data, mode, material) if ft == "3mf" else _freecad_volume(data, material)
         raise HTTPException(status_code=500, detail="trimesh not installed; use mode=ultra")
 
-    # 3MF parsing is unreliable in trimesh; route to FreeCAD meshToShape (ultra path)
-    if file_type == "3mf":
-        return _freecad_volume(data, material)
-
-    if mode == "light":
-        return _trimesh_stats(data, material)
-    elif mode == "auto":
-        stats = _trimesh_stats(data, material)
-        stats["print_hours"] = round(estimate_print_time_hours(stats["volume_cm3"], material, 1), 2)
-        return stats
-    elif mode == "ultra":
-        return _freecad_volume(data, material)
-    else:
-        raise HTTPException(status_code=400, detail=f"Unknown mode: {mode}")
+    return _trimesh_stats(data, mode, material)
 
 
 @router.post("/api/estimate")
@@ -269,7 +288,7 @@ async def estimate_model(
     m = mode if mode in ("light", "auto", "ultra") else "auto"
 
     t0 = _time.monotonic()
-    stats = estimate_from_stl(raw, material, m)
+    stats = _trimesh_stats(raw, m, material)
     dims_str = stats["dimensions"]
     calc = calculate_price(
         material=material, color=color, quantity=1,
