@@ -65,7 +65,8 @@ def _parse_3mf_to_stl(data: bytes) -> bytes:
 
     tris = []
     for t in root.iter(f"{ns}triangle"):
-        tris.append((int(t.get("v0")), int(t.get("v1")), int(t.get("v2"))))
+        a, b, c = int(t.get("v1")), int(t.get("v2")), int(t.get("v3"))
+        tris.append((a, b, c))
 
     # read units from <model unit="...">
     unit_scale = 1.0
@@ -140,10 +141,10 @@ def _trimesh_stats(data: bytes, mode: str = "auto", material: str = "PLA") -> di
     obj = None
     if file_type == "3mf":
         try:
-            obj = trimesh.load(io.BytesIO(data), file_type="3mf", process=True, force='mesh')
+            stl_bytes = _parse_3mf_to_stl(data)
+            obj = trimesh.load(io.BytesIO(stl_bytes), file_type="stl", process=False, force='mesh')
         except Exception:
             obj = None
-    # non-3MF loaders
     if obj is None and file_type != "3mf":
         attempts = [file_type]
         for t in ("3mf", "obj", "stl", "ply"):
