@@ -113,6 +113,12 @@ def _migrate_columns():
             add_col(conn, "orders", "print_parts", "INTEGER DEFAULT 1", existing_orders)
             add_col(conn, "orders", "admin_notes", "TEXT", existing_orders)
             add_col(conn, "orders", "customer_phone", "VARCHAR(30)", existing_orders)
+            add_col(conn, "orders", "filament_cost", "FLOAT DEFAULT 0", existing_orders)
+            add_col(conn, "orders", "electricity_cost", "FLOAT DEFAULT 0", existing_orders)
+            add_col(conn, "orders", "color_premium", "FLOAT DEFAULT 0", existing_orders)
+            add_col(conn, "orders", "currency", "VARCHAR(10) DEFAULT 'PLN'", existing_orders)
+            add_col(conn, "orders", "exchange_rate", "FLOAT DEFAULT 1.0", existing_orders)
+            add_col(conn, "orders", "updated_at", "TIMESTAMP" if is_pg else "DATETIME", existing_orders)
         except Exception as e:
             print(f"[3dfile] orders migrate: {e}")
         conn.commit()
