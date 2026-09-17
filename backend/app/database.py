@@ -106,6 +106,11 @@ def _migrate_columns():
             add_col(conn, "jobs", "folder_id", "INTEGER", existing)
         except Exception as e:
             print(f"[3dfile] folder_id migrate: {e}")
+        try:
+            existing_orders = {c["name"] for c in insp.get_columns("orders")}
+            add_col(conn, "orders", "job_uuid", "VARCHAR(64)", existing_orders)
+        except Exception as e:
+            print(f"[3dfile] orders job_uuid migrate: {e}")
         conn.commit()
     # ensure tables exist
     _tbl_map = {"comments": "Comment", "ad_slots": "AdSlot", "folders": "Folder", "job_ratings": "JobRating", "user_likes": "UserLike", "orders": "Order", "print_requests": "PrintRequest"}

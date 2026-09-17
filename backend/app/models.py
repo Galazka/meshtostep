@@ -239,7 +239,7 @@ class Order(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
     job_id = Column(Integer, ForeignKey("jobs.id"), nullable=True)
-    job_uuid = Column(String(32), nullable=True)
+    job_uuid = Column(String(64), nullable=True)
     customer_name = Column(String(100), nullable=False)
     customer_email = Column(String(255), nullable=False)
     customer_phone = Column(String(30), nullable=True)
