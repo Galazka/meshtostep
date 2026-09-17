@@ -8,6 +8,7 @@ Create Date: 2026-09-16 19:40:00
 from alembic import op
 import sqlalchemy as sa
 import sqlalchemy as _sa
+from sqlalchemy import inspect
 
 
 # revision identifiers

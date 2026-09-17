@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     RATE_LIMIT_PER_MIN: int = 30  # auth attempts per IP per minute
     PASSWORD_RESET_HOURS: int = 2
     DEBUG: bool = False  # True only for local dev — enables reset-link stdout fallback
+    print_margin_percent: float = 68.0  # Tom's markup on print cost
+    ADMIN_EMAIL_PRINTER: str = ""  # Tom's email for order notifications
 
     class Config:
         env_file = ".env"

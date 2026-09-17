@@ -230,3 +230,40 @@ class JobReview(Base):
     rating = Column(Integer, nullable=False)  # 1-5
     text = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class Order(Base):
+    """Print-on-demand order: customer orders a print from Tom's shop."""
+    __tablename__ = "orders"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    job_id = Column(Integer, ForeignKey("jobs.id"), nullable=True)
+    job_uuid = Column(String(32), nullable=True)
+    customer_name = Column(String(100), nullable=False)
+    customer_email = Column(String(255), nullable=False)
+    customer_phone = Column(String(30), nullable=True)
+    customer_address = Column(String(500), nullable=True)
+    customer_city = Column(String(100), nullable=True)
+    customer_postal = Column(String(20), nullable=True)
+    customer_country = Column(String(30), default="PL")
+    material = Column(String(30), default="PLA")
+    color = Column(String(20), default="natural")
+    quantity = Column(Integer, default=1)
+    shipping_method = Column(String(20), default="standard")
+    shipping_region = Column(String(20), default="PL")
+    estimated_hours = Column(Float, default=2.0)
+    volume_cm3 = Column(Float, nullable=True)
+    filament_grams = Column(Float, nullable=True)
+    printing_hours = Column(Float, nullable=True)
+    notes = Column(Text, nullable=True)
+    payment_method = Column(String(20), default="blik")
+    subtotal = Column(Float, default=0.0)
+    margin_pln = Column(Float, default=0.0)
+    shipping_cost = Column(Float, default=0.0)
+    total = Column(Float, default=0.0)
+    status = Column(String(20), default="nowy")
+    is_paid = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, onupdate=datetime.utcnow)
+    user = relationship("User", foreign_keys=[user_id])
