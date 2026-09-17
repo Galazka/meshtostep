@@ -45,10 +45,10 @@ def _validate_upload(file: UploadFile) -> bytes:
             detail=f"File too large (max {MAX_STL_MB} MB)",
         )
     name = (file.filename or "").lower()
-    if not (name.endswith(".stl") or name.endswith(".obj") or name.endswith(".ply")):
+    if not (name.endswith(".stl") or name.endswith(".obj") or name.endswith(".ply") or name.endswith(".3mf")):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Only .stl/.obj/.ply supported",
+            detail="Only .stl/.obj/.ply/.3mf supported",
         )
     return raw
 
