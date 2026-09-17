@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#2563eb">
+<link rel="icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/logo.png?v=2">
+<link rel="manifest" href="/manifest.json">
+<title>Zlecenia druku 3D — 3DFILE.link</title>
+<meta name="description" content="Znajdź drukarnię 3D w Polsce. Złóż zapytanie ofertowe, otrzymaj oferty od local printerów. Peer-to-peer marketplace druku 3D.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/asset/print.css?v=1">
+</head>
+<body>
+<div class="toast-container" id="toastContainer"></div>
+
+<header class="app-header">
+  <div class="container">
+    <div class="header-inner">
+      <a href="/" class="logo-link">
+        <img src="/logo.png?v=2" alt="3DFILE" class="logo">
+        <span class="logo-text">3DFILE</span>
+      </a>
+      <nav class="nav">
+        <a href="/">Strona</a>
+        <a href="/print.html" class="nav-active">Zlecenia</a>
+        <a href="/discover.html">Modele</a>
+        <a href="/myfiles.html">Moje pliki</a>
+      </nav>
+      <div class="auth-area" id="authArea">
+        <button id="loginBtn" class="btn btn-ghost btn-small">Zaloguj</button>
+        <button id="registerBtn" class="btn btn-primary btn-small">Zarejestruj</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container" id="mainContent">
+  <div class="print-hero">
+    <h1>Marketplace druku 3D</h1>
+    <p class="hero-desc">Zamieść zapytanie ofertowe — drukarnie z Twojego regionu prześlą oferty. Anonimowo lub z kontem.</p>
+  </div>
+
+  <div id="requestsList" class="requests-grid">
+    <!-- filled by print.js -->
+  </div>
+</main>
+
+<footer class="footer-print">
+  <div class="container">
+    <span>© 2026 3DFILE.link — peer-to-peer marketplace druku 3D</span>
+  </div>
+</footer>
+
+<script src="/asset/print.js?v=1"></script>
+
+<!-- Modal: new request -->
+<div class="modal-backdrop" id="newRequestModal">
+  <div class="modal">
+    <button class="close-btn" onclick="closeNewRequestModal()">×</button>
+    <h2>Nowe zapytanie ofertowe</h2>
+    <form class="request-form" onsubmit="submitNewRequest(event)">
+      <div class="form-group">
+        <label class="form-label">Tytuł (np. "Obudowa na Raspberry")</label>
+        <input type="text" name="title" required maxlength="200" class="form-input" placeholder="Co potrzebujesz wydrukować?">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Opis (opcjonalnie)</label>
+        <textarea name="description" rows="3" class="form-textarea" maxlength="2000" placeholder="Dodatkowe informacje: wymiary, wykończenie, kolory..."></textarea>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="form-group">
+          <label class="form-label">Materiał</label>
+          <select name="material" class="form-select">
+            <option value="PLA">PLA</option>
+            <option value="PETG">PETG</option>
+            <option value="ABS">ABS</option>
+            <option value="TPU">TPU</option>
+            <option value="ASA">ASA</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ilość sztuk</label>
+          <input type="number" name="quantity" min="1" value="1" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Miasto</label>
+          <input type="text" name="city" maxlength="100" class="form-input" placeholder="Gdańsk">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Budżet (zł)</label>
+          <input type="number" name="budget_pln" min="0" step="1" class="form-input" placeholder="opcjonalnie">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Trwanie licytacji (h)</label>
+          <input type="number" name="auction_hours" min="1" max="168" value="48" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Model (UUID, opcjonalnie)</label>
+          <input type="text" name="job_uuid" maxlength="32" class="form-input" placeholder="np. bc41a95ecf0c">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeNewRequestModal()">Anuluj</button>
+        <button type="submit" class="btn btn-primary">Zamieść zapytanie</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: request detail -->
+<div class="modal-backdrop" id="requestDetailModal">
+  <div class="modal" style="max-width:700px">
+    <button class="close-btn" onclick="closeRequestDetailModal()">×</button>
+    <div id="detailContent"><!-- populated by print.js --></div>
+  </div>
+</div>
+</body>
+</html>
