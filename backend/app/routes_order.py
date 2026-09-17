@@ -264,9 +264,12 @@ def calculate_price(
 
     # minimum order: product must be >= 5 zł to justify printing + shipping
     if product_total < 5.0:
-        pln_total = round(shipping_cost + 5.0, 2)  # min 5 zł product + shipping
+        product_total = 5.0
+    pln_total = round(product_total + shipping_cost - discount_pln, 2)
 
-    # —— multi-currency (K3) —— convert PLN base to requested currency
+    # round up to nearest 0.5 zł (customer-friendly pricing)
+    import math as _math
+    pln_total = _math.ceil(pln_total * 2) / 2
     cur = currency.upper() if currency else "PLN"
     rate = {"USD": settings.currency_rate_usd, "EUR": settings.currency_rate_eur}.get(cur, 1.0)
     # For PLN, rate is 1.0 (no conversion); for USD/EUR divide PLN→currency.
