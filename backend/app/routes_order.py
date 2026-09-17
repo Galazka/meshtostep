@@ -149,7 +149,7 @@ def _split_into_parts(volume_cm3: float, dims: str = None, db=None) -> int:
             except (ValueError, IndexError):
                 pass
     if volume_cm3 and volume_cm3 > 0:
-        area_mm2 = (volume_cm3 * 1000) / 2.0  # assume 20 mm height
+        area_mm2 = (volume_cm3 * 1000) / 20.0  # assume 20 mm height
         if area_mm2 > max_area:
             return max(1, math.ceil(area_mm2 / max_area))
     return 1
