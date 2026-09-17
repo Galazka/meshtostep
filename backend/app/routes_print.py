@@ -67,7 +67,7 @@ def _trimesh_stats(data: bytes, material: str = "PLA") -> dict:
     try:
         os.write(fd, data)
         os.close(fd)
-        obj = trimesh.load(tmp_path, process=False)
+        obj = trimesh.load(tmp_path)
     finally:
         os.unlink(tmp_path)
 
@@ -85,10 +85,7 @@ def _trimesh_stats(data: bytes, material: str = "PLA") -> dict:
             raise HTTPException(status_code=500, detail="Could not parse mesh")
 
     obj.merge_vertices()
-    try:
-        obj.fix_normals()
-    except Exception:
-        pass
+    # Skip fix_normals — slow on large meshes. abs(volume) handles winding order.
 
     # Detect if mesh is in mm (typical STL from CAD) vs meters (trimesh default)
     bb = obj.bounds
