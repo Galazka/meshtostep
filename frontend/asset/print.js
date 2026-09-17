@@ -204,12 +204,13 @@
       fetch('/api/calculate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'material=' + encodeURIComponent(v.material) +
-              '&color=' + encodeURIComponent(v.color) +
-              '&quantity=' + v.qty +
-              '&shipping=' + encodeURIComponent(v.shipping) +
-              '&shipping_region=' + encodeURIComponent(v.region) +
-              '&volume_cm3=' + v.vol +
+        body: 'material=' + encodeURIComponent(material) +
+              '&color=' + encodeURIComponent(color) +
+              '&quantity=' + qty +
+              '&shipping=' + encodeURIComponent(shipping) +
+              '&shipping_region=' + encodeURIComponent(region) +
+              '&volume_cm3=' + vol +
+              '&dims=' + encodeURIComponent(v.dims) +
               '&currency=' + encodeURIComponent(currentCurrency)
       })
       .then(function(r) { return r.json(); })
