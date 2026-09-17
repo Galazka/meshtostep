@@ -168,23 +168,28 @@
   function getFormValues() {
     var volInput = document.getElementById('printVolume');
     var dimsInput = document.getElementById('printDims');
-    var vol = parseFloat(volInput && volInput.value) || 0;
+    var qtyEl = document.getElementById('printOrderQty');
+    var matEl = document.getElementById('printMaterial');
+    var colEl = document.getElementById('printColor');
+    var shipEl = document.getElementById('printOrderShipping');
+    var regEl = document.getElementById('printOrderRegion');
+    var vol = volInput ? (parseFloat(volInput.value) || 0) : 0;
 
     if (!vol && dimsInput && dimsInput.value) {
       var nums = dimsInput.value.match(/[\d.]+/g);
       if (nums && nums.length >= 3) {
         vol = (parseFloat(nums[0]) * parseFloat(nums[1]) * parseFloat(nums[2])) / 1000;
-        volInput.value = vol.toFixed(1);
+        if (volInput) volInput.value = vol.toFixed(1);
       }
     }
 
     return {
       vol: vol,
-      qty: parseInt(document.getElementById('printOrderQty').value) || 1,
-      material: document.getElementById('printMaterial').value || 'PLA',
-      color: document.getElementById('printColor').value || 'natural',
-      shipping: document.getElementById('printShipping').value || 'standard',
-      region: document.getElementById('printOrderRegion').value || 'PL',
+      qty: qtyEl ? (parseInt(qtyEl.value) || 1) : 1,
+      material: matEl ? (matEl.value || 'PLA') : 'PLA',
+      color: colEl ? (colEl.value || 'natural') : 'natural',
+      shipping: shipEl ? (shipEl.value || 'standard') : 'standard',
+      region: regEl ? (regEl.value || 'PL') : 'PL',
       dims: dimsInput ? dimsInput.value : '',
     };
   }
@@ -210,12 +215,12 @@
       fetch('/api/calculate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'material=' + encodeURIComponent(material) +
-              '&color=' + encodeURIComponent(color) +
-              '&quantity=' + qty +
-              '&shipping=' + encodeURIComponent(shipping) +
-              '&shipping_region=' + encodeURIComponent(region) +
-              '&volume_cm3=' + vol +
+        body: 'material=' + encodeURIComponent(v.material) +
+              '&color=' + encodeURIComponent(v.color) +
+              '&quantity=' + v.qty +
+              '&shipping=' + encodeURIComponent(v.shipping) +
+              '&shipping_region=' + encodeURIComponent(v.region) +
+              '&volume_cm3=' + v.vol +
               '&dims=' + encodeURIComponent(v.dims) +
               '&currency=' + encodeURIComponent(currentCurrency)
       })
