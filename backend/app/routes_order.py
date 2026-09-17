@@ -143,8 +143,8 @@ def estimate_print_time_hours(volume_cm3: float, material: str = "PLA", parts: i
     mm3 = volume_cm3 * 1000  # całkowita objętość modelu (parts drukowane równolegle)
     throughput = {"PLA": 280, "PETG": 240, "PCTG": 200, "ASA": 220, "ABS": 250}.get(material, 200)
     base = max(0.5, mm3 / (throughput * 3600))
-    # fixed per-model setup overhead (not per-part)
-    return base + 0.5
+    # fixed per-model setup overhead (not per-part) — Bamboo P1S auto-leveling ~2min
+    return base + 0.1
 
 
 def estimate_filament_grams(volume_cm3: float, material: str = "PLA") -> float:

@@ -101,7 +101,7 @@ def _trimesh_stats(data: bytes, material: str = "PLA") -> dict:
 
     vol_mm3 = vol_cm3 * 1000
     thr = THROUGHPUT_MM3_S.get(material, 100)
-    hours = max(0.5, (vol_mm3 / thr) / 3600) + 0.5
+    hours = max(0.5, (vol_mm3 / thr) / 3600) + 0.1
 
     return {
         "volume_cm3": vol_cm3,
