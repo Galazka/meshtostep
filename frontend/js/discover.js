@@ -87,8 +87,35 @@ window.discoverMore = discoverMore;
 
 window.escapeAttr = function(s){ return String(s||'').replace(/'/g, "&#39;").replace(/"/g,'&quot;'); };
 
-window.sendToPrinter = function(e, jobId, uuid, title) {
+window.sendToPrinter = async function(e, jobId, uuid, title) {
     e.preventDefault();
     e.stopPropagation();
-    openPrintOrderModal({ job_id: jobId, uuid: uuid, title: title });
+    var btn = e.currentTarget;
+    btn.disabled = true;
+    btn.textContent = '🔄';
+    try {
+      // Fetch source STL for auto-estimate
+      var r = await fetch('/download/' + encodeURIComponent(uuid) + '?format=stl&t=' + Date.now());
+      if (r.ok) {
+        var blob = await r.blob();
+        var fd = new FormData();
+        fd.append('file', blob, 'model.stl');
+        fd.append('material', 'PLA');
+        fd.append('mode', 'auto');
+        var estRes = await fetch('/api/estimate?v=' + Date.now(), { method: 'POST', body: fd });
+        if (estRes.ok) {
+          var est = await estRes.json();
+          openPrintOrderModal({ job_id: jobId, uuid: uuid, title: title, volume_cm3: est.volume_cm3, dims_mm: est.dimensions });
+        } else {
+          openPrintOrderModal({ job_id: jobId, uuid: uuid, title: title });
+        }
+      } else {
+        openPrintOrderModal({ job_id: jobId, uuid: uuid, title: title });
+      }
+    } catch (_) {
+      openPrintOrderModal({ job_id: jobId, uuid: uuid, title: title });
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '🖨';
+    }
 };
