@@ -199,6 +199,12 @@ def _apply_discount(db, code, product_total):
     return round(amount, 2), {"code": code_val, "discount_pln": round(amount, 2), "discount_pct": dpct or 0.0}
 
 
+def _ceil05(n: float) -> float:
+    """Round up to nearest 0.5 (customer-facing pricing)."""
+    import math
+    return math.ceil(n * 2) / 2 if n else 0.0
+
+
 def calculate_price(
     material: str = "PLA",
     color: str = "natural",
@@ -260,23 +266,19 @@ def calculate_price(
     if discount_code and db:
         discount_pln, discount_info = _apply_discount(db, discount_code, product_total)
 
-    pln_total = round(product_total + shipping_cost - discount_pln, 2)
-
-    # minimum order: product must be >= 5 zł to justify printing + shipping
+    # minimum order: product must be >= 5 zł
     if product_total < 5.0:
         product_total = 5.0
     pln_total = round(product_total + shipping_cost - discount_pln, 2)
 
-    # round up to nearest 0.5 zł (customer-friendly pricing)
+    # round up to nearest 0.5 zł (customer pricing)
     import math as _math
-    pln_total = _math.ceil(pln_total * 2) / 2
+    pln_total = _ceil05(pln_total)
     cur = currency.upper() if currency else "PLN"
     rate = {"USD": settings.currency_rate_usd, "EUR": settings.currency_rate_eur}.get(cur, 1.0)
-    # For PLN, rate is 1.0 (no conversion); for USD/EUR divide PLN→currency.
-    # Round up to nearest 0.5 in the customer's currency too.
-    total = _math.ceil((pln_total / rate if rate else pln_total) * 2) / 2
-    subtotal_cur = _math.ceil((product_total / rate if rate else product_total) * 2) / 2
-    shipping_cur = _math.ceil((shipping_cost / rate if rate else shipping_cost) * 2) / 2
+    total = _ceil05(pln_total / rate if rate else pln_total)
+    subtotal_cur = _ceil05(product_total / rate if rate else product_total)
+    shipping_cur = _ceil05(shipping_cost / rate if rate else shipping_cost)
     discount_cur = round(discount_pln / rate, 2) if rate else discount_pln
 
     return {

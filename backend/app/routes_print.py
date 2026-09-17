@@ -385,9 +385,9 @@ async def estimate_model(
         "currency": calc["currency"],
         "exchange_rate": calc["exchange_rate"],
         "estimate_pln": {
-            "product_subtotal": calc["product_subtotal_pln"],
-            "shipping_cost": calc["shipping_cost_pln"],
-            "total": calc["product_subtotal_pln"] + calc["shipping_cost_pln"],
+            "product_subtotal": calc["product_subtotal"],
+            "shipping_cost": calc["shipping_cost"],
+            "total": calc["total"],
         },
         "mode": m,
         "elapsed_s": elapsed,
