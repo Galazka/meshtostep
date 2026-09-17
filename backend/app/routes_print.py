@@ -176,11 +176,23 @@ def _trimesh_stats(data: bytes, material: str = "PLA") -> dict:
 
 def _freecad_volume(data: bytes, material: str = "PLA") -> dict:
     """Precise volume via FreeCAD meshToShape — ultra mode."""
+    import trimesh, io as _io
     tmpdir = tempfile.mkdtemp()
     try:
         stl_path = os.path.join(tmpdir, "input.stl")
-        with open(stl_path, "wb") as f:
-            f.write(data)
+        # 3MF needs conversion via trimesh (FreeCAD can't read 3MF directly)
+        if data[:2] == b"PK" or data[:4] == b"PK\x03\x04":
+            m = trimesh.load(_io.BytesIO(data), file_type="3mf", process=False, force="mesh")
+            if isinstance(m, trimesh.Scene):
+                geoms = [g for g in m.dump() if hasattr(g, "faces")]
+                if not geoms:
+                    geoms = list(m.geometry.values()) if m.geometry else [m]
+                m = trimesh.util.concatenate(geoms)
+            with open(stl_path, "wb") as f:
+                m.export(f, file_type="stl")
+        else:
+            with open(stl_path, "wb") as f:
+                f.write(data)
 
         script = os.path.join(tmpdir, "calc.py")
         script_content = f'''
@@ -223,6 +235,10 @@ def estimate_from_stl(data: bytes, material: str = "PLA", mode: Literal["light",
         if mode == "ultra":
             return _freecad_volume(data, material)
         raise HTTPException(status_code=500, detail="trimesh not installed; use mode=ultra")
+
+    # 3MF parsing is unreliable in trimesh; route to FreeCAD meshToShape (ultra path)
+    if file_type == "3mf":
+        return _freecad_volume(data, material)
 
     if mode == "light":
         return _trimesh_stats(data, material)
