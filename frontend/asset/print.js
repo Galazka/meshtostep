@@ -300,4 +300,111 @@ ${offerForm}`;
   });
 
   window.showToast = showToast;
+
+  /* ==== Print order modal (from any model) ==== */
+  window.openPrintOrderModal = function(model) {
+    var modal = document.getElementById('printOrderModal');
+    var backdrop = modal ? modal.closest('.modal-backdrop') : null;
+    if (!modal || !backdrop) {
+      showToast('Formularz zamówienia niedostępny', 'error');
+      return;
+    }
+    // fill hidden fields
+    var jobIdField = document.getElementById('printOrderId');
+    var uuidField = document.getElementById('printOrderUuid');
+    if (jobIdField) jobIdField.value = model.job_id || '';
+    if (uuidField) uuidField.value = model.uuid || '';
+    // prefill title
+    var titleField = document.getElementById('printOrderTitle');
+    if (titleField) titleField.value = model.title || '';
+
+    // trigger initial price calc
+    setTimeout(function() {
+      window.calculatePrintPrice && window.calculatePrintPrice();
+    }, 100);
+
+    document.body.style.overflow = 'hidden';
+    backdrop.classList.add('active');
+  };
+
+  window.closePrintOrderModal = function() {
+    var modal = document.getElementById('printOrderModal');
+    var backdrop = modal ? modal.closest('.modal-backdrop') : null;
+    if (backdrop) backdrop.classList.remove('active');
+    document.body.style.overflow = '';
+  };
+
+  window.calculatePrintPrice = function() {
+    var vol = parseFloat(document.getElementById('printVolume').value) || 0;
+    var qty = parseInt(document.getElementById('printQuantity').value) || 1;
+    var material = document.getElementById('printMaterial').value || 'PLA';
+    var color = document.getElementById('printColor').value || 'natural';
+    var shipping = document.getElementById('printShipping').value || 'standard';
+    var region = document.getElementById('printRegion').value || 'PL';
+
+    fetch('/api/calculate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'material=' + encodeURIComponent(material) +
+            '&color=' + encodeURIComponent(color) +
+            '&quantity=' + qty +
+            '&shipping=' + encodeURIComponent(shipping) +
+            '&shipping_region=' + encodeURIComponent(region) +
+            '&volume_cm3=' + vol
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.ok && data.pricing) {
+        document.getElementById('printPriceBreakdown').innerHTML =
+          'Filament: <b>' + data.breakdown.filament_g.toFixed(1) + 'g</b> · ' + data.breakdown.filament_cost.toFixed(2) + ' zł<br>' +
+          'Druk: <b>' + data.breakdown.printing_hours.toFixed(1) + 'h</b> · ' + data.breakdown.power_cost.toFixed(2) + ' zł<br>' +
+          'Margin: <b>' + data.pricing.margin_pln.toFixed(2) + ' zł</b><br>' +
+          'Wysyłka: <b>' + data.pricing.shipping.toFixed(2) + ' zł</b><br>' +
+          '<span style="font-size:16px;font-weight:700">Razem: ' + data.pricing.total.toFixed(2) + ' zł</span>';
+
+        // set hidden volume field for form submit
+        var volHidden = document.getElementById('printVolumeHidden');
+        if (volHidden) volHidden.value = vol;
+      }
+    })
+    .catch(function() {
+      showToast('Błąd kalkulacji', 'error');
+    });
+  };
+
+  window.submitPrintOrder = function(e) {
+    e.preventDefault();
+    var form = e.target;
+    var fd = new FormData(form);
+    fd.append('payment_method', 'blik'); // default
+
+    fetch('/api/orders', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + (function(){
+          var m = document.cookie.match(/token=([^;]+)/);
+          return m ? m[1] : '';
+        })()
+      },
+      body: fd
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.ok) {
+        showToast('Zamówienie złożone! Cena: ' + data.total.toFixed(2) + ' zł. Kliknij poniżej by zapłacić.', 'success');
+        window.closePrintOrderModal();
+        // show payment button
+        var payBtn = document.getElementById('printPayNow');
+        if (payBtn) {
+          payBtn.href = '/api/orders/' + data.order_id + '/pay';
+          payBtn.style.display = 'inline-block';
+        }
+      } else {
+        showToast(data.detail || 'Błąd zamawiania', 'error');
+      }
+    })
+    .catch(function() {
+      showToast('Błąd sieci', 'error');
+    });
+  };
 })();

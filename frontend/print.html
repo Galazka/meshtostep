@@ -55,6 +55,85 @@
 
 <script src="/asset/print.js?v=1"></script>
 
+<!-- Modal: print order -->
+<div class="modal-backdrop" id="printOrderModal">
+  <div class="modal" style="max-width:520px">
+    <button class="close-btn" onclick="closePrintOrderModal()">×</button>
+    <h2>Wyślij do drukarni</h2>
+    <form onsubmit="submitPrintOrder(event)">
+      <input type="hidden" name="job_id" id="printOrderId">
+      <input type="hidden" name="job_uuid" id="printOrderUuid">
+      <input type="hidden" name="volume_cm3" id="printVolumeHidden">
+      <div class="form-group">
+        <label class="form-label">Nazwa / opis</label>
+        <input type="text" name="title" id="printOrderTitle" required maxlength="200" class="form-input" placeholder="Co ma być wydrukowane?">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Opis techniczny (warstwa, wypełnienie, wykończenie)</label>
+        <textarea name="description" rows="2" class="form-textarea" maxlength="1000" placeholder="np. 0.2mm warstwa, 20% wypełnienie, gładkie wykończenie"></textarea>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <div class="form-group">
+          <label class="form-label">Materiał</label>
+          <select name="material" id="printMaterial" class="form-select" onchange="calculatePrintPrice()">
+            <option value="PLA">PLA</option>
+            <option value="PETG">PETG</option>
+            <option value="ABS">ABS</option>
+            <option value="ASA">ASA</option>
+            <option value="TPU">TPU</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ilość szt.</label>
+          <input type="number" name="quantity" id="printQuantity" min="1" value="1" class="form-input" onchange="calculatePrintPrice()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Kolor</label>
+          <select name="color" id="printColor" class="form-select" onchange="calculatePrintPrice()">
+            <option value="natural">Natural</option>
+            <option value="black">Czarny</option>
+            <option value="white">Biały</option>
+            <option value="blue">Niebieski</option>
+            <option value="red">Czerwony</option>
+            <option value="green">Zielony</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Objętość (cm³)</label>
+          <input type="number" id="printVolume" min="0" step="0.1" value="100" class="form-input" onchange="calculatePrintPrice()" placeholder="zostanie przeliczon">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Wysyłka</label>
+        <select name="shipping" id="printShipping" class="form-select" onchange="calculatePrintPrice()">
+          <option value="standard">Standard (2-5 dni)</option>
+          <option value="express">Express (24h)</option>
+          <option value="pickup">Odbiór osobisty (Gdańsk)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Region</label>
+        <select name="shipping_region" id="printRegion" class="form-select" onchange="calculatePrintPrice()">
+          <option value="PL">Polska (+15 zł)</option>
+          <option value="EU">UE (+35 zł)</option>
+          <option value="GLOBAL">Świat (+55 zł)</option>
+        </select>
+      </div>
+      <div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px;margin:16px 0">
+        <div id="printPriceBreakdown" style="font-size:13px">Wprowadź objętość by zobaczyć cenę</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Telefon (dla kuriera)</label>
+        <input type="tel" name="phone" maxlength="30" class="form-input" placeholder="+48 123 456 789">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closePrintOrderModal()">Anuluj</button>
+        <button type="submit" class="btn btn-primary">Zamów — płatność BLIKIEM</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Modal: new request -->
 <div class="modal-backdrop" id="newRequestModal">
   <div class="modal">

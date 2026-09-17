@@ -473,6 +473,11 @@ function openJobModal(jobId) {
         doConvertOnDemand(j.uuid, j.id);
     };
     dlStl.onclick = () => window.open('/api/download/' + j.uuid + '?format=stl', '_blank');
+    var printBtn = document.getElementById('jobPrintOrderBtn');
+    if (printBtn) {
+        printBtn.style.display = '';
+        printBtn.onclick = () => openPrintOrderModal({ job_id: j.id, uuid: j.uuid, title: j.original_filename || j.filename });
+    }
     shareBtn.onclick = () => doShare(j.id);
     delBtn.onclick = () => deleteMyJob(j.id);
     const heroSection = document.getElementById('jobPreviewHero');

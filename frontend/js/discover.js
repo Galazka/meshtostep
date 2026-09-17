@@ -2,6 +2,8 @@
 
 let discoverOffset = 0;
 let _activeTag = '';
+let _currentModels = [];
+
 function doDiscover(more){
     if(!more) discoverOffset = 0;
     const q = document.getElementById('discoverQ').value || '';
@@ -9,24 +11,32 @@ function doDiscover(more){
     const params = new URLSearchParams({q: q, sort: sort, offset: discoverOffset, limit: 24});
     if(_activeTag) params.set('tag', _activeTag);
     const grid = document.getElementById('discoverGrid');
-    if(!more) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px">Ładowanie...</div>';
+    if(!more) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px">Ładowanie…</div>';
     fetch('/api/models?'+params.toString()).then(function(r){
         if(!r.ok) throw 0;
         return r.json();
     }).then(function(d){
         var items = d.items || d || [];
+        _currentModels = items;
         var html = items.map(function(m){
-            var img = m.preview_image ? m.preview_image : (m.uuid ? '/api/thumb/'+m.uuid : '');
-            return '<a href="'+(m.vanity||'/s/'+m.uuid)+'" style="display:block;border:1px solid var(--border);border-radius:10px;overflow:hidden;text-decoration:none;color:inherit;background:#fff">'
-            + (img ? '<img src="'+img+'" style="width:100%;height:140px;object-fit:cover" onerror="this.style.display=\'none\'">' : '<div style="height:140px;background:var(--bg-alt);display:flex;align-items:center;justify-content:center;color:var(--text-muted)">\uD83D\uDCC4</div>')
-            + '<div style="padding:10px 12px"><div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+String(m.title||m.slug||'Model').replace(/</g,'&lt;')+'</div>'
-            + '<div style="font-size:11px;color:var(--text-muted)">'+(m.username?'by '+String(m.username).replace(/</g,'&lt;')+' \u00b7 ':'')+(m.faces||'?')+' \u015b\u0105cian'+'</div></div></a>';
+            var img = m.preview_url ? m.preview_url : (m.uuid ? '/api/thumb/'+m.uuid : '');
+            var title = m.title || m.slug || 'Model';
+            var safeTitle = String(title).replace(/</g,'&lt;');
+            var safeUser = String(m.username||'').replace(/</g,'&lt;');
+            var safeUuid = String(m.uuid||'').replace(/'/g, "&#39;");
+            var safeTitleAttr = String(title).replace(/'/g, "&#39;");
+            return ''
+            + '<a href="'+(m.vanity||'/s/'+m.uuid)+'" style="display:block;border:1px solid var(--border);border-radius:10px;overflow:hidden;text-decoration:none;color:inherit;background:#fff;position:relative">'
+            + '<button onclick="sendToPrinter(event,'+m.job_id+',\''+safeUuid+'\',\''+safeTitleAttr+'\')" title="Wyślij do drukarni" style="position:absolute;top:6px;right:6px;background:#2563eb;color:#fff;border:none;border-radius:6px;padding:4px 8px;font-size:11px;cursor:pointer;width:24px;height:24px;display:flex;align-items:center;justify-content:center">🖨</button>'
+            + (img ? '<img src="'+img+'" style="width:100%;height:140px;object-fit:cover" onerror="this.style.display=\'none\'">' : '<div style="height:140px;background:var(--bg-alt);display:flex;align-items:center;justify-content:center;color:var(--text-muted)">📄</div>')
+            + '<div style="padding:10px 12px"><div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+safeTitle+'</div>'
+            + '<div style="font-size:11px;color:var(--text-muted)">'+(m.username?'by '+safeUser+' · ':'')+(m.faces||'?')+' śącian'+'</div></div></a>';
         }).join('');
-        if(more) grid.innerHTML += html; else grid.innerHTML = html || '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px">Brak wynik\u00f3w</div>';
+        if(more) grid.innerHTML += html; else grid.innerHTML = html || '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px">Brak wyników</div>';
         document.getElementById('discoverMore').style.display = (items.length >= 24) ? 'block' : 'none';
         updateTagHighlight();
     }).catch(function(e){
-        if(!more) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px">B\u0142\u0105d wyszukiwania</div>';
+        if(!more) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px">Błąd wyszukiwania</div>';
     });
 }
 function setTag(tag){
@@ -43,7 +53,7 @@ function updateTagHighlight(){
         b.style.borderColor = (b.dataset.tag === _activeTag) ? 'var(--primary)' : 'var(--border)';
     });
     var label = document.getElementById('activeTagLabel');
-    if(label) label.textContent = _activeTag ? 'Tag: '+_activeTag+'  \u2715' : '';
+    if(label) label.textContent = _activeTag ? 'Tag: '+_activeTag+'  ×' : '';
 }
 function clearTag(){ _activeTag=''; updateTagHighlight(); doDiscover(); }
 async function loadPopularTags(){
@@ -57,7 +67,8 @@ async function loadPopularTags(){
         tags.forEach(function(tg){
             var name = typeof tg==='string' ? tg : (tg.name||tg.tag);
             var safe = String(name).replace(/</g,'&lt;');
-            html += '<a class="tag-chip" data-tag="'+String(name).replace(/"/g,'&quot;')+'" href="/tag/'+encodeURIComponent(String(name).toLowerCase())+'" onclick="setTag(\''+String(name).replace(/'/g,"\'")+'\');return false" style="padding:6px 14px;border:1px solid var(--border);border-radius:999px;background:#fff;font-size:12px;cursor:pointer;color:var(--text-secondary);transition:all .15s;text-decoration:none">'+safe+'</a>';
+            var sq = String(name).replace(/'/g, "\\'");
+            html += '<a class="tag-chip" data-tag="'+String(name)+'" href="/tag/'+encodeURIComponent(String(name).toLowerCase())+'" onclick="setTag(&quot;'+sq+'&quot;);return false" style="padding:6px 14px;border:1px solid var(--border);border-radius:999px;background:#fff;font-size:12px;cursor:pointer;color:var(--text-secondary);transition:all .15s;text-decoration:none">'+safe+'</a>';
         });
         box.innerHTML = html;
     }catch(e){}
@@ -73,3 +84,11 @@ window.setTag = setTag;
 window.clearTag = clearTag;
 window.loadPopularTags = loadPopularTags;
 window.discoverMore = discoverMore;
+
+window.escapeAttr = function(s){ return String(s||'').replace(/'/g, "&#39;").replace(/"/g,'&quot;'); };
+
+window.sendToPrinter = function(e, jobId, uuid, title) {
+    e.preventDefault();
+    e.stopPropagation();
+    openPrintOrderModal({ job_id: jobId, uuid: uuid, title: title });
+};

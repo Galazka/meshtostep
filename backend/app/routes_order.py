@@ -1,7 +1,7 @@
 """Order management + automated pricing. — 3dfile.link"""
 from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Request, Form
-from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.responses import JSONResponse, HTMLResponse, Response
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 
@@ -298,3 +298,68 @@ def update_order(
     db.commit()
     db.refresh(o)
     return {"ok": True, "order_id": o.id, "status": o.status, "is_paid": o.is_paid}
+
+
+@router.get("/api/orders/{order_id}/pay")
+def get_payment_info(order_id: int, request: Request, db: Session = Depends(get_db)):
+    """Return BLIK payment info (static — real BLIK dynamic via API)."""
+    o = db.get(models.Order, order_id)
+    if not o:
+        raise HTTPException(404, "Order not found")
+    # Static BLIK — user adds own BLIK number
+    return {
+        "ok": True,
+        "order_id": o.id,
+        "total": o.total,
+        "currency": "PLN",
+        "blik_code": "123456789",  # static — replace with real BLIK dynamic
+        "bank_name": "mBank",
+        "titled": f"3dfile.link #{o.id}",
+    }
+
+
+@router.get("/api/orders/export")
+def export_orders(request: Request, admin=Depends(get_current_user), db: Session = Depends(get_db)):
+    """Export all orders to Excel (admin only)."""
+    if not admin or not getattr(admin, "is_admin", False):
+        raise HTTPException(403, "Admin only")
+    from openpyxl import Workbook
+    from io import BytesIO
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Zamówienia"
+    ws.append(["ID", "Data", "Imię", "Email", "Telefon", "Adres", "Miasto", "Kraj",
+               "Materiał", "Kolor", "Ilość", "Wysyłka", "Objętość cm³", "Filament g",
+               "Godz. druku", "Do zapłaty", "Status", "Zapłacony", "Notatki"])
+    for o in db.query(models.Order).order_by(models.Order.id.desc()).all():
+        ws.append([
+            o.id,
+            o.created_at.strftime("%Y-%m-%d %H:%M"),
+            o.customer_name, o.customer_email, o.customer_phone,
+            o.customer_address, o.customer_city, o.customer_country,
+            o.material, None, o.quantity, o.shipping_method,
+            o.volume_cm3, o.filament_grams, o.printing_hours,
+            o.total, o.status, "Tak" if o.is_paid else "Nie", o.notes
+        ])
+    ws2 = wb.create_sheet("Statystyki")
+    from sqlalchemy import func as _func
+    total_orders = db.query(models.Order).count()
+    paid = db.query(models.Order).filter(models.Order.is_paid == True).count()
+    revenue = db.query(models.Order).filter(models.Order.is_paid == True).with_entities(models.Order.total).all()
+    ws2.append(["Liczba zamówień", total_orders])
+    ws2.append(["Zapłacone", paid])
+    ws2.append(["Niezapłacone", total_orders - paid])
+    ws2.append(["Przychód (PLN)", round(sum(r[0] or 0 for r in revenue), 2)])
+    # status breakdown
+    stats = db.query(models.Order.status, _func.count(models.Order.id)).group_by(models.Order.status).all()
+    for s, c in stats:
+        ws2.append([f"Status {s}", c])
+
+    buf = BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+    return Response(
+        content=buf.getvalue(),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename=zamowienia_3dfile_{datetime.utcnow().strftime('%Y%m%d')}.xlsx"}
+    )
