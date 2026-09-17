@@ -1,12 +1,9 @@
-/* ===== print.js — 3D Printing service logic (EN) ===== */
-
+/* ===== print.js v80 — 3D Printing service logic ===== */
 (function() {
   "use strict";
-
   var toastContainer = document.getElementById('toastContainer');
   var currencyRates = { PLN: { symbol: 'zł', rate: 1.0 }, USD: { symbol: '$', rate: 4.2 }, EUR: { symbol: '€', rate: 4.55 } };
   var currentCurrency = 'PLN';
-  var currentModel = {};
 
   function currencySymbol() {
     return (currencyRates[currentCurrency] && currencyRates[currentCurrency].symbol) || 'zł';
@@ -27,7 +24,6 @@
         if (saved && currencyRates[saved]) currentCurrency = saved;
         else currentCurrency = 'PLN';
         renderCurrencyToggle();
-        // update currency hidden + re-render price if modal open
         var curHidden = document.getElementById('printCurrency');
         if (curHidden) curHidden.value = currentCurrency;
       }
@@ -39,7 +35,7 @@
     if (!el) return;
     el.innerHTML = Object.keys(currencyRates).map(function(c) {
       var active = c === currentCurrency;
-      return '<button type="button" onclick="switchCurrency(\'' + c + '\')" style="padding:4px 10px;border-radius:6px;border:1px solid ' +
+      return '<button type="button" data-currency="' + c + '" style="padding:4px 10px;border-radius:6px;border:1px solid ' +
         (active ? '#2563eb' : '#d1d5db') + ';background:' + (active ? '#2563eb' : '#fff') +
         ';color:' + (active ? '#fff' : '#374151') + ';font-size:12px;cursor:pointer">' + c + '</button>';
     }).join('');
@@ -64,7 +60,6 @@
 
   /* ==== Auth ==== */
   var currentUser = null;
-
   function getStoredToken() {
     var m = document.cookie.match(/token=([^;]+)/);
     if (m) return m[1];
@@ -89,21 +84,13 @@
     var box = document.getElementById('materialList');
     if (!box) return;
     try {
-      var res = await fetch('/api/admin/materials?' + Date.now(), {
-        headers: { 'Authorization': 'Bearer ' + getStoredToken(), 'Accept': 'application/json' }
-      });
-      var data;
-      if (res.ok) {
-        data = await res.json();
-      } else {
-        data = { materials: { "PLA": 79, "PETG": 95, "ABS": 89, "ASA": 159, "PA12 CF": 349 }, colors: {} };
-      }
+      var res = await fetch('/api/admin/materials?' + Date.now());
+      var data = res.ok ? await res.json() : { materials: { "PLA": 79, "PETG": 95, "ABS": 89, "ASA": 159, "PA12 CF": 349, "TPU": 130 }, colors: {} };
       var html = Object.keys(data.materials || {}).map(function(m) {
         var p = data.materials[m];
         var price = typeof p === 'number' ? p : (p.price_kg || 0);
-        var dens = (typeof p === 'object' && p.density) ? ' ' + p.density + ' g/cm³' : '';
         return '<div style="padding:12px;border:1px solid #e5e7eb;border-radius:8px"><strong>' + m +
-               '</strong><br><span style="color:#6b7280">' + price + ' zł/kg' + dens + '</span></div>';
+               '</strong><br><span style="color:#6b7280">' + price + ' zł/kg</span></div>';
       }).join('');
       box.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px">' + html + '</div>';
     } catch (e) {
@@ -115,10 +102,10 @@
     var tbody = document.getElementById('shippingTable');
     if (!tbody) return;
     var rows = [
-      ["Standard (5 business days)", 15, 35, 55],
-      ["Express (2 days)", 25, 55, 85],
-      ["Priority (next day)", 40, 80, 130],
-      ["Pickup (local)", 0, 0, 0]
+      ["Standard (5 dni)", 15, 35, 55],
+      ["Ekspres (2 dni)", 25, 55, 85],
+      ["Priorytet (1 dzień)", 40, 80, 130],
+      ["Odbiór osobisty", 0, 0, 0]
     ];
     tbody.innerHTML = rows.map(function(r) {
       return '<tr><td style="padding:8px">' + r[0] + '</td><td style="padding:8px">' + r[1] + ' zł</td><td style="padding:8px">' + r[2] + ' zł</td><td style="padding:8px">' + r[3] + ' zł</td></tr>';
@@ -128,12 +115,10 @@
   /* ==== Print order modal ==== */
   window.openPrintOrderModal = function(model) {
     model = model || {};
-    currentModel = model;
     var modal = document.getElementById('printOrderModal');
-    if (!modal) { showToast('Order form unavailable', 'error'); return; }
+    if (!modal) { showToast('Formularz niedostępny', 'error'); return; }
     document.getElementById('printOrderId').value = model.job_id || '';
     document.getElementById('printOrderUuid').value = model.uuid || 'calculator';
-
     if (model.volume_cm3) {
       document.getElementById('printVolume').value = model.volume_cm3;
       document.getElementById('printVolumeHidden').value = model.volume_cm3;
@@ -144,15 +129,7 @@
       warnBox.innerHTML = model.warnings.map(function(w) { return '<div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;padding:8px 12px;margin:8px 0;font-size:12px;color:#92400e">⚠ ' + w + '</div>'; }).join('');
       warnBox.style.display = model.warnings.length ? 'block' : 'none';
     }
-    if (model.dims_mm) document.getElementById('printDims').value = model.dims_mm;
-
-    // pre-fill notes with model metadata
-    var notesField = document.getElementById('printOrderNotes');
-    if (notesField) {
-      var desc = model.title || '';
-      notesField.value = desc;
-    }
-
+    if (model.dims_mm && document.getElementById('printDims')) document.getElementById('printDims').value = model.dims_mm;
     loadCurrencies();
     setTimeout(function() { calculatePrintPrice(); }, 100);
     document.body.style.overflow = 'hidden';
@@ -165,42 +142,62 @@
     document.body.style.overflow = '';
   };
 
-  function getFormValues() {
-    var volInput = document.getElementById('printVolume');
-    var dimsInput = document.getElementById('printDims');
-    var qtyEl = document.getElementById('printOrderQty');
-    var matEl = document.getElementById('printMaterial');
-    var colEl = document.getElementById('printColor');
-    var shipEl = document.getElementById('printOrderShipping');
-    var regEl = document.getElementById('printOrderRegion');
-    var vol = volInput ? (parseFloat(volInput.value) || 0) : 0;
+  /* ==== File upload via /api/estimate ==== */
+  window.onFileUpload = function() {
+    var inp = document.getElementById('printFileUpload');
+    var f = inp ? inp.files[0] : null;
+    var status = document.getElementById('printFileStatus');
+    if (!f || !status) return;
+    status.textContent = 'Przesyłam ' + f.name + '...';
+    var fd = new FormData();
+    fd.append('file', f);
+    fetch('/api/estimate?t=' + Date.now(), { method: 'POST', body: fd })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        if (d.volume_cm3) {
+          document.getElementById('printVolume').value = d.volume_cm3;
+          document.getElementById('printVolumeHidden').value = d.volume_cm3;
+          if (d.dims && document.getElementById('printDims')) document.getElementById('printDims').value = d.dims;
+          status.innerHTML = '✓ ' + f.name + ' — ' + d.volume_cm3 + ' cm³, ' + d.dimensions;
+          calculatePrintPrice();
+        } else {
+          status.textContent = 'Błąd przetwarzania — spróbuj inny format';
+        }
+      })
+      .catch(function() { status.textContent = 'Błąd sieci — spróbuj ponownie'; });
+  };
 
-    if (!vol && dimsInput && dimsInput.value) {
-      var nums = dimsInput.value.match(/[\d.]+/g);
+  /* ==== Form values (null-safe) ==== */
+  function getFormValues() {
+    function val(id, def) { var e = document.getElementById(id); return e ? (e.value || '') : ''; }
+    function num(id, def) { var e = document.getElementById(id); return e ? (parseFloat(e.value) || def) : def; }
+    var dims = val('printDims', '');
+    var vol = num('printVolume', 0);
+    if (!vol && dims) {
+      var nums = dims.match(/[\d.]+/g);
       if (nums && nums.length >= 3) {
         vol = (parseFloat(nums[0]) * parseFloat(nums[1]) * parseFloat(nums[2])) / 1000;
-        if (volInput) volInput.value = vol.toFixed(1);
+        var vi = document.getElementById('printVolume');
+        if (vi) vi.value = vol.toFixed(1);
       }
     }
-
     return {
       vol: vol,
-      qty: qtyEl ? (parseInt(qtyEl.value) || 1) : 1,
-      material: matEl ? (matEl.value || 'PLA') : 'PLA',
-      color: colEl ? (colEl.value || 'natural') : 'natural',
-      shipping: shipEl ? (shipEl.value || 'standard') : 'standard',
-      region: regEl ? (regEl.value || 'PL') : 'PL',
-      dims: dimsInput ? dimsInput.value : '',
+      qty: num('printOrderQty', 1),
+      material: val('printMaterial', 'PLA'),
+      color: val('printColor', 'natural'),
+      shipping: val('printOrderShipping', 'standard'),
+      region: val('printOrderRegion', 'PL'),
+      dims: dims
     };
   }
 
   window.calculatePrintPrice = function() {
     var v = getFormValues();
-
-    if (document.getElementById('printVolumeHidden'))
-      document.getElementById('printVolumeHidden').value = v.vol.toFixed(1);
-    if (document.getElementById('printDimsHidden'))
-      document.getElementById('printDimsHidden').value = v.dims;
+    var vh = document.getElementById('printVolumeHidden');
+    if (vh) vh.value = v.vol.toFixed(1);
+    var dh = document.getElementById('printDimsHidden');
+    if (dh) dh.value = v.dims;
 
     var summaryEl = document.getElementById('printPriceSummary');
     var totalEl = document.getElementById('priceTotal');
@@ -236,24 +233,26 @@
             discountLine.style.display = 'none';
           }
           totalEl.textContent = data.total.toFixed(2) + ' ' + sym;
-          hint.textContent = data.parts > 1 ? 'Model split into ' + data.parts + ' parts (max 25×25 mm per part)' : '';
-          summaryEl.style.background = '#fff';
+          hint.textContent = data.parts > 1 ? 'Model podzielony na ' + data.parts + ' części' : '';
+          if (data.warnings && data.warnings.length) {
+            var wb = document.getElementById('printWarnings');
+            if (wb) wb.innerHTML = data.warnings.map(function(w) { return '<div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;padding:6px 10px;margin:6px 0;font-size:12px;color:#92400e">⚠ ' + w + '</div>'; }).join('');
+          }
         }
       })
-      .catch(function() { showToast('Calculation error', 'error'); });
+      .catch(function() { showToast('Błąd wyliczania', 'error'); });
     } else {
       productEl.textContent = '—';
       shippingEl.textContent = '—';
       totalEl.textContent = '—';
-      hint.textContent = 'Enter volume or dimensions to calculate price';
+      hint.textContent = 'Wprowadź objętość albo wymiary';
     }
   };
 
   window.applyDiscountCode = function() {
     var code = document.getElementById('printOrderCode').value.trim();
-    if (!code) { showToast('Enter a discount code first', 'error'); return; }
+    if (!code) { showToast('Wpisz kod rabatowy', 'error'); return; }
     var v = getFormValues();
-
     fetch('/api/calculate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -271,13 +270,12 @@
       if (data.ok) {
         var sym = currencySymbol();
         document.getElementById('priceTotal').textContent = data.total.toFixed(2) + ' ' + sym;
-        document.getElementById('printPriceSummary').style.background = '#fff';
-        showToast('Discount code ' + code + ' applied: -' + data.discount_pln.toFixed(2) + ' ' + sym, 'success');
+        showToast('Kod ' + code + ' zastosowany: -' + data.discount_pln.toFixed(2) + ' ' + sym, 'success');
       } else {
-        showToast(data.detail || 'Invalid code', 'error');
+        showToast(data.detail || 'Nieprawidłowy kod', 'error');
       }
     })
-    .catch(function() { showToast('Network error', 'error'); });
+    .catch(function() { showToast('Błąd sieci', 'error'); });
   };
 
   window.submitPrintOrder = function(e) {
@@ -286,27 +284,15 @@
     var fd = new FormData(form);
     fd.append('payment_method', 'blik');
     fd.append('currency', currentCurrency);
-
-    // merge notes manual into notes
     var notesManual = document.getElementById('printOrderNotesManual') ? document.getElementById('printOrderNotesManual').value.trim() : '';
-    var notesHidden = document.getElementById('printOrderNotes') ? document.getElementById('printOrderNotes').value || '' : '';
-    var combinedNotes = notesHidden;
-    if (notesManual) combinedNotes += (combinedNotes ? '\n' : '') + notesManual;
-    fd.set('notes', combinedNotes);
-
+    var notesHidden = document.getElementById('printOrderNotes') ? (document.getElementById('printOrderNotes').value || '') : '';
+    var combined = notesHidden;
+    if (notesManual) combined += (combined ? '\n' : '') + notesManual;
+    fd.set('notes', combined);
     var name = fd.get('name');
     var email = fd.get('email');
-    if (!name || !email) {
-      showToast('Name and email are required', 'error');
-      return;
-    }
-
-    var v = getFormValues();
-    if (v.vol <= 0 && v.dims) {
-      // recalculate vol silently — backend also derives it
-    }
-
-    fetch('/api/orders?' + Date.now(), {
+    if (!name || !email) { showToast('Imię i email są wymagane', 'error'); return; }
+    fetch('/api/orders?t=' + Date.now(), {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + getStoredToken() },
       body: fd
@@ -315,13 +301,13 @@
     .then(function(data) {
       if (data.ok) {
         var sym = currencySymbol();
-        showToast('Order placed! Price: ' + data.total.toFixed(2) + ' ' + sym + '. We will contact you to confirm payment.', 'success');
+        showToast('Zamówienie #' + data.order_id + '! Cena: ' + data.total.toFixed(2) + ' ' + sym + '. Skontaktujemy się w celu potwierdzenia płatności.', 'success');
         closePrintModal();
       } else {
-        showToast(data.detail || 'Order error', 'error');
+        showToast(data.detail || 'Błąd zamówienia', 'error');
       }
     })
-    .catch(function() { showToast('Network error', 'error'); });
+    .catch(function() { showToast('Błąd sieci', 'error'); });
   };
 
   /* ==== Admin panel ==== */
@@ -334,18 +320,17 @@
 
   window.authenticateAdmin = function() {
     var code = document.getElementById('adminTokenInput').value.trim();
-    if (!code) { showToast('Enter token', 'error'); return; }
+    if (!code) { showToast('Wpisz token', 'error'); return; }
     localStorage.setItem('token', code);
-    checkAdminAuth();
-    showToast('Admin unlocked', 'success');
+    showToast('Admin odblokowany', 'success');
+    setTimeout(checkAdminAuth, 100);
   };
 
   async function checkAdminAuth() {
     var token = getStoredToken();
     if (!token) return;
-    var headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' };
     try {
-      var res = await fetch('/api/orders/stats?' + Date.now(), { headers: headers });
+      var res = await fetch('/api/orders/stats?' + Date.now(), { headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' } });
       if (res.ok) {
         var authDiv = document.getElementById('adminAuth');
         var contentDiv = document.getElementById('adminContent');
@@ -363,7 +348,6 @@
       var res = await fetch('/api/orders?' + Date.now(), { headers: headers });
       var data = await res.json();
       if (data.ok && data.orders) {
-        var sym = currencySymbol();
         var tbody = '';
         data.orders.forEach(function(o) {
           var statusColor = '#6b7280';
@@ -371,85 +355,62 @@
           if (o.status === 'wysłane') statusColor = '#3b82f6';
           if (o.status === 'dostarczone') statusColor = '#10b981';
           if (o.status === 'anulowane') statusColor = '#ef4444';
-          var cur = o.currency || 'PLN';
-          var orderSym = (currencyRates[cur] && currencyRates[cur].symbol) || 'zł';
           tbody += '<tr style="border-bottom:1px solid #e5e7eb">' +
             '<td style="padding:8px">' + o.id + '</td>' +
             '<td style="padding:8px">' + new Date(o.created_at).toLocaleString('en-GB') + '</td>' +
             '<td style="padding:8px">' + (o.customer_name || '') + '</td>' +
             '<td style="padding:8px">' + (o.customer_email || '') + '</td>' +
-            '<td style="padding:8px">' + (o.customer_phone || o.phone || '') + '</td>' +
             '<td style="padding:8px">' + (o.material || '') + '</td>' +
             '<td style="padding:8px">' + (o.quantity || 1) + '</td>' +
-            '<td style="padding:8px">' + (o.shipping_method || '') + '</td>' +
             '<td style="padding:8px">' + (o.filament_grams || 0) + 'g</td>' +
             '<td style="padding:8px">Fil: ' + (o.filament_cost || 0).toFixed(0) + 'zł</td>' +
             '<td style="padding:8px">Marża: ' + (o.margin_pln || 0).toFixed(0) + 'zł</td>' +
-            '<td style="padding:8px;font-weight:600">' + (o.total || 0).toFixed(2) + ' ' + orderSym + '</td>' +
-            '<td style="padding:8px;color:#10b981;font-weight:600">Profit: ' + ((o.total || 0) - (o.filament_cost || 0) - (o.electricity_cost || 0) - (o.shipping_cost || 0)).toFixed(0) + 'zł</td>' +
+            '<td style="padding:8px;font-weight:600">' + (o.total || 0).toFixed(2) + ' ' + (o.currency || 'PLN') + '</td>' +
+            '<td style="padding:8px;color:#10b981">Profit: ' + ((o.total || 0) - (o.filament_cost || 0) - (o.electricity_cost || 0) - (o.shipping_cost || 0)).toFixed(0) + 'zł</td>' +
             '<td style="padding:8px"><span style="color:' + statusColor + ';font-weight:600">' + (o.status || 'nowy') + '</span></td>' +
             '<td style="padding:8px">' + (o.is_paid ? '✓' : '') + '</td>' +
-            '<td style="padding:8px"><button onclick="exportOrder(' + o.id + ')" style="padding:4px 8px;border:1px solid #d1d5db;border-radius:4px;background:#f9fafb">CSV</button></td>' +
+            '<td style="padding:8px"><button data-action="exportOrder" data-id="' + o.id + '" style="padding:4px 8px;border:1px solid #d1d5db;border-radius:4px">CSV</button></td>' +
             '</tr>';
         });
         document.getElementById('adminOrders').innerHTML =
-          '<button onclick="exportAllOrders()" style="padding:8px 16px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:6px;background:#f9fafb">Export all (Excel)</button>' +
-          '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">' +
-          '<thead><tr style="border-bottom:2px solid #e5e7eb"><th style="padding:8px;text-align:left">ID</th><th style="padding:8px;text-align:left">Date</th><th style="padding:8px;text-align:left">Client</th><th style="padding:8px;text-align:left">Email</th><th style="padding:8px;text-align:left">Phone</th><th style="padding:8px;text-align:left">Material</th><th style="padding:8px;text-align:left">Qty</th><th style="padding:8px;text-align:left">Fil. g</th><th style="padding:8px;text-align:left">Fil. koszt</th><th style="padding:8px;text-align:left">Marża</th><th style="padding:8px;text-align:left">Total</th><th style="padding:8px;text-align:left">Profit</th><th style="padding:8px;text-align:left">Status</th><th style="padding:8px;text-align:left">Paid</th><th style="padding:8px;text-align:left">CSV</th></tr></thead>' +
-          '<tbody>' + tbody + '</tbody></table></div>';
+          '<button onclick="exportAllOrders()" style="padding:8px 16px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:6px">Export all (Excel)</button><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="border-bottom:2px solid #e5e7eb"><th style="padding:8px">ID</th><th style="padding:8px">Data</th><th style="padding:8px">Klient</th><th style="padding:8px">Email</th><th style="padding:8px">Mat.</th><th style="padding:8px">Qty</th><th style="padding:8px">Fil.g</th><th style="padding:8px">Fil.koszt</th><th style="padding:8px">Marża</th><th style="padding:8px">Total</th><th style="padding:8px">Profit</th><th style="padding:8px">Status</th><th style="padding:8px">Zapł.</th><th style="padding:8px">CSV</th></tr></thead><tbody>' + tbody + '</tbody></table></div>';
       }
     } catch (e) {
-      document.getElementById('adminOrders').innerHTML = '<p style="color:#ef4444">Load failed</p>';
+      document.getElementById('adminOrders').innerHTML = '<p style="color:#ef4444">Błąd ładowania</p>';
     }
   }
 
-  window.exportOrder = function(orderId) {
-    window.open('/api/orders/' + orderId + '/export?' + Date.now(), '_blank');
-  };
-
-  window.exportAllOrders = function() {
-    window.open('/api/orders/export?' + Date.now(), '_blank');
-  };
+  window.exportOrder = function(orderId) { window.open('/api/orders/' + orderId + '/export?t=' + Date.now(), '_blank'); };
+  window.exportAllOrders = function() { window.open('/api/orders/export?t=' + Date.now(), '_blank'); };
 
   async function loadAdminStats() {
-    var token = getStoredToken();
-    var headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' };
+    var headers = { 'Authorization': 'Bearer ' + getStoredToken(), 'Accept': 'application/json' };
     try {
       var res = await fetch('/api/orders/stats?' + Date.now(), { headers: headers });
       var data = await res.json();
       if (data.stats) {
         var s = data.stats;
-        var html = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px">' +
-          '<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:16px"><div style="font-size:12px;color:#6b7280">Total orders</div><div style="font-size:24px;font-weight:700">' + s.total_orders + '</div></div>' +
-          '<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:16px"><div style="font-size:12px;color:#6b7280">Revenue (PLN)</div><div style="font-size:24px;font-weight:700">' + s.total_revenue_pln + '</div></div>' +
-          '<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:16px"><div style="font-size:12px;color:#6b7280">Pending</div><div style="font-size:24px;font-weight:700;color:#f59e0b">' + (s.pending || 0) + '</div></div>' +
-          '<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:16px"><div style="font-size:12px;color:#6b7280">Shipped</div><div style="font-size:24px;font-weight:700;color:#3b82f6">' + (s.shipped || 0) + '</div></div>' +
+        document.getElementById('adminStats').innerHTML =
+          '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px">' +
+          '<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:12px"><div style="font-size:11px;color:#6b7280">Zamówienia</div><div style="font-size:20px;font-weight:700">' + s.total_orders + '</div></div>' +
+          '<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:12px"><div style="font-size:11px;color:#6b7280">Przychód PLN</div><div style="font-size:20px;font-weight:700">' + s.total_revenue_pln + '</div></div>' +
           '</div>';
-        document.getElementById('adminStats').innerHTML = html + '<pre style="background:#1f2937;color:#e5e7eb;padding:12px;border-radius:8px;margin-top:16px;font-size:12px;overflow-x:auto">' + JSON.stringify(s, null, 2) + '</pre>';
       }
-    } catch (e) {
-      document.getElementById('adminStats').innerHTML = '<p style="color:#ef4444">Load failed</p>';
-    }
+    } catch (e) {}
   }
 
   async function loadAdminPricing() {
-    var token = getStoredToken();
-    var headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' };
+    var headers = { 'Authorization': 'Bearer ' + getStoredToken(), 'Accept': 'application/json' };
     try {
       var res = await fetch('/api/admin/pricing?' + Date.now(), { headers: headers });
       var data = await res.json();
-      var html = '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="border-bottom:2px solid #e5e7eb"><th style="padding:6px;text-align:left">Key</th><th style="padding:6px;text-align:left">Value</th><th style="padding:6px;text-align:left">Type</th><th style="padding:6px">Action</th></tr></thead><tbody>';
+      var html = '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="border-bottom:2px solid #e5e7eb"><th style="padding:6px">Key</th><th style="padding:6px">Value</th></tr></thead><tbody>';
       (data || []).forEach(function(r) {
-        html += '<tr style="border-bottom:1px solid #e5e7eb"><td style="padding:6px">' + r.key + '</td>' +
-                '<td style="padding:6px"><input type="text" value="' + r.value + '" onchange="updatePricing(\'' + r.key + '\', this.value)" style="width:120px;padding:4px;font-size:12px"></td>' +
-                '<td style="padding:6px">' + r.kind + '</td>' +
-                '<td style="padding:6px"><button onclick="deletePricing(\'' + r.key + '\')" style="padding:2px 6px;font-size:11px">del</button></td></tr>';
+        html += '<tr style="border-bottom:1px solid #e5e7eb"><td style="padding:6px">' + r.key + '</td><td style="padding:6px"><input type="text" value="' + r.value + '" onchange="updatePricing(\'' + r.key + '\', this.value)" style="width:120px;padding:4px;font-size:12px"></td></tr>';
       });
-      html += '</tbody></table><div style="margin-top:12px"><input type="text" id="newPricingKey" placeholder="key" style="padding:4px;font-size:12px;width:120px"><input type="text" id="newPricingVal" placeholder="value" style="padding:4px;font-size:12px;width:100px"><button onclick="addPricing()" style="padding:4px 8px;font-size:12px">Add</button></div>';
+      html += '</tbody></table>';
       document.getElementById('adminPricing').innerHTML = html;
-    } catch (e) {
-      document.getElementById('adminPricing').innerHTML = '<p style="color:#ef4444">Load failed</p>';
-    }
+    } catch (e) {}
   }
 
   window.updatePricing = function(key, value) {
@@ -458,103 +419,38 @@
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/x-www-form-urlencoded' },
       body: 'key=' + encodeURIComponent(key) + '&value=' + encodeURIComponent(value)
-    }).then(function() { showToast('Updated', 'success'); });
-  };
-
-  window.addPricing = function() {
-    var k = document.getElementById('newPricingKey').value.trim();
-    var v = document.getElementById('newPricingVal').value.trim();
-    if (!k || !v) return;
-    window.updatePricing(k, v);
-    setTimeout(function() { loadAdminPricing(); }, 500);
-  };
-
-  window.deletePricing = function(key) {
-    if (!confirm('Delete pricing key ' + key + '?')) return;
-    var token = getStoredToken();
-    fetch('/api/admin/pricing/' + encodeURIComponent(key) + '?' + Date.now(), {
-      method: 'DELETE',
-      headers: { 'Authorization': 'Bearer ' + token }
-    }).then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.ok) { showToast('Deleted', 'success'); setTimeout(loadAdminPricing, 500); }
-      else showToast(data.detail || 'Error', 'error');
-    });
+    }).then(function() { showToast('Zapisano', 'success'); });
   };
 
   window.switchAdminTab = function(tab) {
     document.querySelectorAll('.admin-tab').forEach(function(e) { e.style.display = 'none'; });
-    document.querySelectorAll('.admin-tab-btn').forEach(function(e) {
-      e.classList.remove('active');
-      e.style.borderBottom = 'none';
-    });
-    document.getElementById('admin' + tab.charAt(0).toUpperCase() + tab.slice(1)).style.display = 'block';
-    var activeBtn = document.querySelector('.admin-tab-btn[onclick="switchAdminTab(\'' + tab + '\')"]');
-    if (activeBtn) activeBtn.style.borderBottom = '2px solid #2563eb';
+    document.querySelectorAll('.admin-tab-btn').forEach(function(e) { e.classList.remove('active'); e.style.borderBottom = 'none'; });
+    var t = document.getElementById('admin' + tab.charAt(0).toUpperCase() + tab.slice(1));
+    if (t) t.style.display = 'block';
     if (tab === 'orders') setTimeout(loadAdminOrders, 50);
     if (tab === 'stats') setTimeout(loadAdminStats, 50);
     if (tab === 'pricing') setTimeout(loadAdminPricing, 50);
-    if (tab === 'codes') setTimeout(loadAdminCodes, 50);
   };
-
-  async function loadAdminCodes() {
-    var token = getStoredToken();
-    var headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' };
-    try {
-      var res = await fetch('/api/admin/discount_codes?' + Date.now(), { headers: headers });
-      var data = await res.json();
-      var html = '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:12px"><thead><tr style="border-bottom:2px solid #e5e7eb"><th style="padding:6px;text-align:left">Code</th><th style="padding:6px;text-align:left">PLN off</th><th style="padding:6px;text-align:left">% off</th><th style="padding:6px;text-align:left">Uses</th><th style="padding:6px">Active</th></tr></thead><tbody>';
-      (data.codes || []).forEach(function(c) {
-        html += '<tr style="border-bottom:1px solid #e5e7eb"><td style="padding:6px">' + c.code + '</td><td style="padding:6px">' + (c.discount_pln || 0) + '</td><td style="padding:6px">' + (c.discount_pct || 0) + '</td><td style="padding:6px">' + (c.uses || 0) + '</td><td style="padding:6px">' + (c.is_active ? 'y' : 'n') + '</td></tr>';
-      });
-      html += '</tbody></table>';
-      html += '<form onsubmit="addDiscountCode(event)" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><input name="code" placeholder="Code e.g. WELCOME10" required style="padding:6px;font-size:12px"><input name="discount_pln" type="number" step="0.01" placeholder="PLN off" style="padding:6px;font-size:12px"><input name="discount_pct" type="number" step="0.1" placeholder="pct off" style="padding:6px;font-size:12px"><input name="max_uses" type="number" placeholder="Max uses (blank=∞)" style="padding:6px;font-size:12px"><button type="submit" class="submit-btn">Add code</button></form>';
-      document.getElementById('adminCodes').innerHTML = html;
-    } catch (e) {
-      document.getElementById('adminCodes').innerHTML = '<p style="color:#ef4444">Load failed</p>';
-    }
-  }
-
-  window.addDiscountCode = function(e) {
-    e.preventDefault();
-    var form = e.target;
-    var token = getStoredToken();
-    var fd = new FormData(form);
-    fetch('/api/admin/discount_codes?' + Date.now(), {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + token },
-      body: fd
-    }).then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.ok) { showToast('Code added', 'success'); form.reset(); setTimeout(loadAdminCodes, 500); }
-      else showToast(data.detail || 'Error', 'error');
-    });
-  };
-
-  /* ==== Export ==== */
-  function escapeHtml(str) {
-    if (!str) return '';
-    return String(str).replace(/[&<>\"]/g, function(c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] || c;
-    });
-  }
 
   /* ==== Init ==== */
+  // event delegation for dynamically created buttons
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('[data-currency]');
+    if (btn) { setCurrency(btn.dataset.currency); return; }
+    btn = e.target.closest('[data-action]');
+    if (btn && btn.dataset.action === 'exportOrder') { exportOrder(parseInt(btn.dataset.id)); return; }
+  });
+
   document.addEventListener('DOMContentLoaded', function() {
-    checkAuth();
+    loadCurrencies();
     loadMaterials();
     loadShipping();
-    loadCurrencies();
-    checkAdminAuth();
-
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') closePrintModal();
-    });
+    checkAuth();
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closePrintModal(); });
     window.addEventListener('click', function(e) {
       if (e.target && e.target.classList && e.target.classList.contains('modal-backdrop')) closePrintModal();
     });
   });
-
   window.showToast = showToast;
   window.currencySymbol = currencySymbol;
 })();

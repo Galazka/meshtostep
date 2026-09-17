@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563eb">
-    <link rel="apple-touch-icon" href="/logo.png?v=56">
+    <link rel="apple-touch-icon" href="/logo.png?v=78">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="3dfile">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -33,6 +33,7 @@
     if(!window.loadMyJobs) window.loadMyJobs = function(){};
     if(!window.loadAccount) window.loadAccount = function(){};
     if(!window.loadAdSlots) window.loadAdSlots = function(){};
+    if(!window.toggleTheme) window.toggleTheme = function(){};
     if(!window.cookieConsent) window.cookieConsent = function(){};
     </script>
     <style>
@@ -361,7 +362,7 @@
 <nav class="nav">
     <div class="nav-inner">
         <a href="/" class="nav-logo">
-            <img src="/logo.png?v=56" alt="3DFILE" onerror="this.style.display='none'">
+            <img src="/logo.png?v=78" alt="3DFILE" onerror="this.style.display='none'">
         </a>
         <div class="nav-links" id="navLinks">
             <button class="nav-link active" data-page="home" onclick="go('home')">
@@ -671,16 +672,16 @@
     <div class="footer-inner-wrap">
     <div class="footer-inner">
         <div class="footer-brand" style="max-width:420px">
-            <img src="/logo.png?v=56" alt="3DFILE" style="max-height:44px" onerror="this.style.display='none'">
+            <img src="/logo.png?v=78" alt="3DFILE" style="max-height:44px" onerror="this.style.display='none'">
             <p data-i18n="footerAbout" style="font-size:13px;line-height:1.6;color:var(--text-secondary)">Trzy proste kroki od mesh do STEP. Wgraj STL / 3MF / OBJ (do 200 MB), zobacz model w 3D na telefonie, przekonwertuj do STEP do CAD i udostępnij jednym linkiem. Hosting, konwersja i podglad 3D za darmo, bez instalacji i bez limitu czasu dla plikow publicznych. Prywatne i unlisted: 100 MB darmowo, foldery, tagi, komentarze, osadzanie na stronach. Polski projekt, wlasna infrastruktura.</p>
         </div>
         <div class="footer-cols">
             <div class="footer-col">
                 <h4 data-i18n="footerProduct">Produkt</h4>
-                <a href="#\" onclick=\"go('home')\" data-i18n=\"navConverter\">Wgraj</a>
-                <a href=\"#\" onclick=\"go('discover')\" data-i18n=\"navDiscover\">Odkrywaj</a>
-                <a href=\"/print.html\" data-i18n=\"navPrint\">Druk 3D</a>
-                <a href=\"#\" onclick=\"go('faq')\" data-i18n=\"navFAQ\">FAQ</a>
+<a href="#" onclick="go('home')" data-i18n="navConverter">Wgraj</a>
+                <a href="#" onclick="go('discover')" data-i18n="navDiscover">Odkrywaj</a>
+                <a href="/print.html" data-i18n="navPrint">Druk 3D</a>
+                <a href="#" onclick="go('faq')" data-i18n="navFAQ">FAQ</a>
             </div>
             <div class="footer-col">
                 <h4 data-i18n="footerLegal">Prawne</h4>
@@ -930,15 +931,15 @@
     window.dispatchEvent(new Event('three-ready'));
 </script>
 <script type="module">
-    import './js/shared.js?v=56';
-    import './js/i18n.js?v=56';
-    import './js/viewer3d.js?v=56';
-    import './js/auth.js?v=56';
-    import './js/convert.js?v=56';
-    import './js/discover.js?v=56';
-    import './js/myfiles.js?v=56';
-    import './js/account.js?v=56';
-    import './js/main.js?v=56';
+    import './js/shared.js?v=78';
+    import './js/i18n.js?v=78';
+    import './js/viewer3d.js?v=78';
+    import './js/auth.js?v=78';
+    import './js/convert.js?v=78';
+    import './js/discover.js?v=78';
+    import './js/myfiles.js?v=78';
+    import './js/account.js?v=78';
+    import './js/main.js?v=78';
 </script>
 
 <script>
@@ -982,7 +983,7 @@ window.toggleFaq = toggleFaq;
 
 <!-- ═══ PWA SW ═══ -->
 <script>
-if('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js?v=56').catch(()=>{}); }
+if('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js?v=78').catch(()=>{}); }
 var _deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); _deferredPrompt = e; document.getElementById('pwaBanner').style.display = 'flex'; });
 document.getElementById('pwaInstallBtn').addEventListener('click', async function() { if (!_deferredPrompt) return; _deferredPrompt.prompt(); await _deferredPrompt.userChoice; _deferredPrompt = null; document.getElementById('pwaBanner').style.display = 'none'; });

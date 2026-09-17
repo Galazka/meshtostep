@@ -7,6 +7,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from pathlib import Path
 
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
@@ -95,7 +96,7 @@ async def convert_file(
     folder_id: str = Form(None),
     user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
-):
+) -> Optional[models.User]:
     t0 = time.time()
     # Early reject: don't buffer huge bodies into RAM
     try:
@@ -108,12 +109,12 @@ async def convert_file(
     if ext not in (".stl", ".3mf", ".obj"):
         raise HTTPException(400, "Obsługiwane: .stl, .3mf, .obj")
 
-    # quota check for logged users
+    # quota check for logged users only
     if user:
         limit = getattr(user, "quota_limit_bytes", None) or QUOTA_DEFAULT
+        bonus = (getattr(user, "bonus_mb", 0) or 0) * 1024 * 1024
+        limit += bonus
         used = _quota_used(db, user.id)
-        # peek size — need to read first to know size, but we check after read
-        pass
 
     job_uuid = uuid.uuid4().hex[:12]
     job_dir = JOBS_DIR / job_uuid
@@ -139,14 +140,15 @@ async def convert_file(
         shutil.rmtree(job_dir, ignore_errors=True)
         raise HTTPException(400, "Błąd odczytu pliku")
     data_len = size
-    limit = getattr(user, "quota_limit_bytes", None) or QUOTA_DEFAULT
-    # bonus: +100 MB per completed print order (>=50 zł)
-    bonus = (getattr(user, "bonus_mb", 0) or 0) * 1024 * 1024
-    limit += bonus
-    used = _quota_used(db, user.id)
-    if used + data_len > limit:
-        shutil.rmtree(job_dir, ignore_errors=True)
-        raise HTTPException(413, f"Przekroczono limit {round(limit/1024/1024)} MB. Zwolnij miejsce usuwając pliki, albo zamów druk — +100 MB gratis.")
+    # quota check — only for logged-in users
+    if user:
+        limit = getattr(user, "quota_limit_bytes", None) or QUOTA_DEFAULT
+        bonus = (getattr(user, "bonus_mb", 0) or 0) * 1024 * 1024
+        limit += bonus
+        used = _quota_used(db, user.id)
+        if used + data_len > limit:
+            shutil.rmtree(job_dir, ignore_errors=True)
+            raise HTTPException(413, f"Przekroczono limit {round(limit/1024/1024)} MB. Zwolnij miejsce usuwając pliki, albo zamów druk — +100 MB gratis.")
 
     if user and not getattr(user,'username',None):
         base = re.sub(r'[^a-z0-9]+','', (user.email.split('@')[0].lower()))[:20] or 'user'

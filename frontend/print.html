@@ -180,7 +180,7 @@
     status.textContent = 'Przesyłam ' + f.name + '...';
     var fd = new FormData();
     fd.append('file', f);
-    fetch('/api/convert?t=' + Date.now(), { method: 'POST', body: fd })
+    fetch('/api/estimate?t=' + Date.now(), { method: 'POST', body: fd })
       .then(function(r) { return r.json(); })
       .then(function(d) {
         if (d.job_id || d.uuid) {
