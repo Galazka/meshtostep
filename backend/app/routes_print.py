@@ -181,6 +181,7 @@ async def estimate_model(
     material: str = Form("PLA"),
     color: str = Form("natural"),
     mode: str = Form("auto"),
+    currency: str = Form("PLN"),
     db=Depends(get_db),
 ):
     """Upload STL/OBJ/PLY → get volume, dims, grams, print_hours.
@@ -197,6 +198,7 @@ async def estimate_model(
         material=material, color=color, quantity=1,
         shipping="standard", shipping_region="PL",
         volume_cm3=stats["volume_cm3"], dims=dims_str, db=db,
+        currency=currency,
     )
 
     elapsed = round(_time.monotonic() - t0, 2)
@@ -213,6 +215,13 @@ async def estimate_model(
             "product_subtotal": calc["product_subtotal"],
             "shipping_cost": calc["shipping_cost"],
             "total": calc["total"],
+        },
+        "currency": calc["currency"],
+        "exchange_rate": calc["exchange_rate"],
+        "estimate_pln": {
+            "product_subtotal": calc["product_subtotal_pln"],
+            "shipping_cost": calc["shipping_cost_pln"],
+            "total": round(calc["product_subtotal_pln"] + calc["shipping_cost_pln"], 2),
         },
         "mode": m,
         "elapsed_s": elapsed,

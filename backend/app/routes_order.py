@@ -23,6 +23,20 @@ from .config import settings
 
 router = APIRouter()
 
+# —— Multi-currency config endpoint (K3) ——
+@router.get("/api/config/currencies")
+def get_currencies():
+    """Public currency config — rates cached in env, no API key."""
+    return {
+        "ok": True,
+        "base": "PLN",
+        "rates": {
+            "PLN": {"code": "PLN", "symbol": "zł", "rate": 1.0, "name": "Złoty"},
+            "USD": {"code": "USD", "symbol": "$", "rate": settings.currency_rate_usd, "name": "Dollar"},
+            "EUR": {"code": "EUR", "symbol": "€", "rate": settings.currency_rate_eur, "name": "Euro"},
+        },
+    }
+
 # ── Material & cost constants (defaults; overridden by PricingConfig rows) ──
 DEFAULT_MATERIAL_PRICES = {
     "PLA": 89.0, "PLA HT": 120.0, "PLA CF": 140.0,
@@ -187,6 +201,7 @@ def calculate_price(
     dims: str = None,
     discount_code: str = None,
     db=None,
+    currency: str = "PLN",
 ):
     """Calculate price. Returns dict with PUBLIC (customer-facing) + INTERNAL cost sheet.
 
@@ -221,14 +236,27 @@ def calculate_price(
     if discount_code and db:
         discount_pln, discount_info = _apply_discount(db, discount_code, product_total)
 
-    total = round(product_total + shipping_cost - discount_pln, 2)
+    pln_total = round(product_total + shipping_cost - discount_pln, 2)
+
+    # —— multi-currency (K3) —— convert PLN base to requested currency
+    cur = currency.upper() if currency else "PLN"
+    rate = {"USD": settings.currency_rate_usd, "EUR": settings.currency_rate_eur}.get(cur, 1.0)
+    # For PLN, rate is 1.0 (no conversion); for USD/EUR divide PLN→currency.
+    total = round(pln_total / rate, 2) if rate else pln_total
+    subtotal_cur = round(product_total / rate, 2) if rate else product_total
+    shipping_cur = round(shipping_cost / rate, 2) if rate else shipping_cost
+    discount_cur = round(discount_pln / rate, 2) if rate else discount_pln
 
     return {
         # ── klient widzi ──
-        "product_subtotal": product_total,   # druk + marża (ukryta)
-        "shipping_cost": shipping_cost,
+        "product_subtotal": subtotal_cur,   # druk + marża (ukryta)
+        "product_subtotal_pln": product_total,
+        "shipping_cost": shipping_cur,
+        "shipping_cost_pln": shipping_cost,
         "discount_pln": round(discount_pln, 2),
         "total": total,
+        "currency": cur,
+        "exchange_rate": rate,
         # ── admin / kosztorys ──
         "internal": {
             "filament_g": round(total_filament_g, 2),
@@ -257,17 +285,20 @@ def calculate_price_endpoint(
     estimated_hours: float = Form(0),
     dims: str = Form(None),
     discount_code: str = Form(None),
+    currency: str = Form("PLN"),
     db: Session = Depends(get_db),
 ):
     """Public price calculator — only shows shipping + total to customer."""
     calc = calculate_price(material, color, quantity, shipping, shipping_region,
-                           volume_cm3, estimated_hours, dims, discount_code, db)
+                           volume_cm3, estimated_hours, dims, discount_code, db, currency)
     return {
         "ok": True,
         "product_subtotal": calc["product_subtotal"],
         "shipping_cost": calc["shipping_cost"],
         "discount_pln": calc["discount_pln"],
         "total": calc["total"],
+        "currency": calc["currency"],
+        "exchange_rate": calc["exchange_rate"],
         "parts": calc["parts"],
         "material": material,
         "color": color,
@@ -300,12 +331,13 @@ def create_order(
     discount_code: str = Form(None),
     notes: str = Form(None),
     payment_method: str = Form("blik"),
+    currency: str = Form("PLN"),
     user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """Create order — user can be logged-in or anonymous (email required)."""
     calc = calculate_price(material, color, quantity, shipping, shipping_region,
-                           volume_cm3, estimated_hours, dims, discount_code, db)
+                           volume_cm3, estimated_hours, dims, discount_code, db, currency)
     internal = calc["internal"]
 
     order = models.Order(
@@ -336,6 +368,8 @@ def create_order(
         discount_pln=calc["discount_pln"],
         total=calc["total"],
         print_parts=calc["parts"],
+        currency=calc["currency"],
+        exchange_rate=calc["exchange_rate"],
         status="nowy",
         is_paid=False,
         created_at=datetime.utcnow(),
@@ -353,6 +387,8 @@ def create_order(
         "ok": True,
         "order_id": order.id,
         "total": calc["total"],
+        "currency": calc["currency"],
+        "exchange_rate": calc["exchange_rate"],
         "shipping_cost": calc["shipping_cost"],
         "product_subtotal": calc["product_subtotal"],
         "discount_pln": calc["discount_pln"],
@@ -395,6 +431,7 @@ def list_orders(
             "volume_cm3": o.volume_cm3,
             "subtotal": o.subtotal, "margin_pln": o.margin_pln,
             "shipping_cost": o.shipping_cost, "total": o.total,
+            "currency": o.currency, "exchange_rate": o.exchange_rate,
             "discount_pln": o.discount_pln, "print_parts": o.print_parts,
             "status": o.status, "is_paid": o.is_paid, "payment_method": o.payment_method,
             "notes": o.notes, "admin_notes": getattr(o, "admin_notes", None),
@@ -480,7 +517,8 @@ def get_payment_info(order_id: int, request: Request, db: Session = Depends(get_
         "ok": True,
         "order_id": o.id,
         "total": o.total,
-        "currency": "PLN",
+        "currency": o.currency or "PLN",
+        "exchange_rate": o.exchange_rate or 1.0,
         "blik_code": "123456789",  # static — replace with real BLIK dynamic
         "bank_name": "mBank",
         "titled": f"3dfile.link #{o.id}",

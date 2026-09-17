@@ -264,6 +264,8 @@ class Order(Base):
     discount_pln = Column(Float, default=0.0)  # coupon / global discount (visible as line)
     total = Column(Float, default=0.0)  # = subtotal + margin + shipping - discount
     print_parts = Column(Integer, default=1)  # how many 25x25mm parts model was split into
+    currency = Column(String(10), default="PLN")  # PLN, USD, EUR
+    exchange_rate = Column(Float, default=1.0)  # PLN per unit of currency (e.g., 4.20 for USD)
     status = Column(String(20), default="nowy")
     is_paid = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)

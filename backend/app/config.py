@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     DEBUG: bool = False  # True only for local dev — enables reset-link stdout fallback
     print_margin_percent: float = 68.0  # Tom's markup on print cost
     ADMIN_EMAIL_PRINTER: str = ""  # Tom's email for order notifications
+    # —— Multi-currency (hardcoded ECB rates, no API key required) ——
+    currency_rate_usd: float = 4.20  # 1 USD = 4.20 PLN
+    currency_rate_eur: float = 4.55  # 1 EUR = 4.55 PLN
 
     class Config:
         env_file = ".env"
