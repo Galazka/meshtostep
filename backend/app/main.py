@@ -22,6 +22,7 @@ from .routes_ads import router as ads_router
 from .routes_community import router as community_router
 from .routes_comments import router as comments_router
 from .routes_order import router as order_router
+from .routes_print import router as print_router
 from .routes_folders import router as folders_router
 from .routes_sitemap import router as sitemap_router
 from .routes_interstitial import router as interstitial_router
@@ -117,6 +118,7 @@ app.include_router(ads_router)
 app.include_router(community_router)
 app.include_router(comments_router)
 app.include_router(order_router)
+app.include_router(print_router)
 app.include_router(folders_router)
 app.include_router(sitemap_router)
 app.include_router(interstitial_router)
