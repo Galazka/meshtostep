@@ -121,9 +121,9 @@
     var tbody = document.getElementById('shippingTable');
     if (!tbody) return;
     var rows = [
-          ["Standard — InPost Paczkomat (2-3 dni)", 21.49, 40, 60],
-          ["Ekspres — kurier InPost (1 dzień)", 24.49, 60, 90],
-          ["Priorytet — kurier (następny dzień)", 30.49, 85, 135],
+          ["Standard — InPost Paczkomat (5 dni)", 21.49, 40, 60],
+          ["Ekspres — 2 dni (x2)", 38, 75, 115],
+          ["Priorytet — kurier (1 dzień)", 45.99, 100, 165],
           ["Odbiór osobisty (Gdańsk)", 0, 0, 0]
         ];
         tbody.innerHTML = '<tr><td style="padding:8px;color:#6b7280;font-size:11px" colspan="4">Wysyłka: cena przesyłki InPost + 5 zł koszt pakowania (karton, etykieta, folia). Odbiór osobisty — bez opłat.</td></tr>' + rows.map(function(r) {

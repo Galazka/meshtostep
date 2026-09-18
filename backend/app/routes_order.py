@@ -59,12 +59,12 @@ DEFAULT_COLOR_PREMIUM = {
     "carbon": 20.0, "wood": 15.0, "brass": 25.0,
 }
 
-# InPost 2026: Paczkomat gabaryt A 16,49 zł / kurier standard ~19,49 zł. Pakowanie (+5 zł)
-# dolicza calculate_price — osobny wiersz, pomijany przy pickup.
+# InPost 2026: Paczkomat gabaryt A 16,49 zł. Standard = 5 dni (normalna cena).
+# Ekspres = 2 dni, ale x2 (Tom potrzebuje czasu na wydruki / kolejkowanie).
 DEFAULT_SHIPPING = {
     "standard":  {"PL": 16.49, "EU": 35.0, "GLOBAL": 55.0},
-    "express":   {"PL": 19.49, "EU": 55.0, "GLOBAL": 85.0},
-    "priority":  {"PL": 25.49, "EU": 80.0, "GLOBAL": 130.0},
+    "express":   {"PL": 33.00, "EU": 70.0, "GLOBAL": 110.0},
+    "priority":  {"PL": 40.99, "EU": 95.0, "GLOBAL": 160.0},
     "pickup":    {"PL": 0.0,   "EU": 0.0,  "GLOBAL": 0.0},
 }
 
