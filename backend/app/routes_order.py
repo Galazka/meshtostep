@@ -352,6 +352,7 @@ def calculate_price_endpoint(
         "ok": True,
         "product_subtotal": calc["product_subtotal"],
         "shipping_cost": calc["shipping_cost"],
+        "free_shipping": calc["free_shipping"],
         "discount_pln": calc["discount_pln"],
         "total": calc["total"],
         "currency": calc["currency"],
