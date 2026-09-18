@@ -309,7 +309,18 @@ class OrderItem(Base):
     order = relationship("Order", back_populates="items")
 
 
+class OrderReview(Base):
+    """Public review of a print order — customer feedback, admin moderated (Hormozi social proof)."""
+    __tablename__ = "order_reviews"
 
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable=True, index=True)
+    reviewer_name = Column(String(120), nullable=False)
+    reviewer_email = Column(String(255), nullable=True)
+    rating = Column(Integer, nullable=False)  # 1-5
+    text = Column(Text, nullable=True)
+    is_approved = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 
 class Gallery(Base):

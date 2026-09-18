@@ -28,6 +28,7 @@ from .routes_sitemap import router as sitemap_router
 from .routes_interstitial import router as interstitial_router
 from .routes_stripe import router as stripe_router
 from .routes_gallery import router as gallery_router
+from .routes_reviews import router as reviews_router
 
 app = FastAPI(title="3dfile.link", version="1.0.0")
 
@@ -126,6 +127,7 @@ app.include_router(sitemap_router)
 app.include_router(interstitial_router)
 app.include_router(stripe_router)
 app.include_router(gallery_router)
+app.include_router(reviews_router)
 
 @app.get("/api/health")
 def health():

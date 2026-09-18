@@ -884,3 +884,62 @@ def download_backup(name: str, admin: models.User = Depends(require_admin)):
     if not path.is_file():
         raise HTTPException(404, "Brak backupu")
     return FileResponse(str(path), filename=safe)
+
+@router.get("/api/admin/report")
+def admin_report(kind: str = "week", admin: models.User = Depends(require_admin),
+                 db: Session = Depends(get_db)):
+    """Report: sprzedaż/orders/reviews/nowi użytkownicy per day (last N=14) or per month (last 6)."""
+    import datetime as _dt
+    if not admin or not getattr(admin, "is_admin", False):
+        raise HTTPException(403, detail="Admin only")
+    now = datetime.utcnow()
+    buckets = []
+    if kind == "month":
+        start = now - _dt.timedelta(days=180)
+        for i in range(6):
+            m_start = _dt.datetime(now.year, now.month, 1) - _dt.timedelta(days=30 * (5 - i))
+            m_end = (m_start + _dt.timedelta(days=32)).replace(day=1)
+            buckets.append((m_start, m_end, m_start.strftime("%Y-%m")))
+    else:  # day/week → last 14 days
+        start = now - _dt.timedelta(days=14)
+        for i in range(14):
+            d = start + _dt.timedelta(days=i)
+            buckets.append((d.replace(hour=0, minute=0), d.replace(hour=0) + _dt.timedelta(days=1), d.strftime("%Y-%m-%d")))
+
+    rows = []
+    for b0, b1, lbl in buckets:
+        ords = db.query(models.Order).filter(models.Order.created_at >= b0, models.Order.created_at < b1).all()
+        total = sum(o.total or 0 for o in ords)
+        margin = sum(o.margin_pln or 0 for o in ords)
+        paid = sum(1 for o in ords if o.is_paid)
+        revs = db.query(models.OrderReview).filter(models.OrderReview.created_at >= b0, models.OrderReview.created_at < b1).count()
+        newu = db.query(models.User).filter(models.User.created_at >= b0, models.User.created_at < b1).count()
+        rows.append({"label": lbl, "orders": len(ords), "paid": paid, "revenue": round(total, 2),
+                     "margin": round(margin, 2), "reviews": revs, "new_users": newu})
+    totals = {"orders": sum(r["orders"] for r in rows), "revenue": round(sum(r["revenue"] for r in rows), 2),
+              "margin": round(sum(r["margin"] for r in rows), 2), "reviews": sum(r["reviews"] for r in rows)}
+    return {"ok": True, "kind": kind, "period": "last 14 days" if kind != "month" else "last 6 months",
+            "rows": rows, "totals": totals}
+
+
+@router.get("/api/admin/report/export")
+def admin_report_export(kind: str = "week", fmt: str = "csv",
+                        admin: models.User = Depends(require_admin), db: Session = Depends(get_db)):
+    """Export report CSV — do Excela / analizy. Kluczowe dla Toma: pełna tabela z mocami/dekoltami."""
+    import csv as _csv, io as _io
+    if not admin or not getattr(admin, "is_admin", False):
+        raise HTTPException(403, detail="Admin only")
+    # reuse report logic
+    rep = admin_report(kind=kind, admin=admin, db=db)
+    data = rep if isinstance(rep, dict) else {}
+    out = _io.StringIO()
+    w = _csv.writer(out)
+    w.writerow(["okres (label)", "zamówienia", "zapłacone", "przychód PLN", "marża PLN", "recenzje", "nowi użytkownicy"])
+    for r in (data.get("rows") or []):
+        w.writerow([r["label"], r["orders"], r["paid"], r["revenue"], r["margin"], r["reviews"], r["new_users"]])
+    w.writerow([])
+    w.writerow(["RAZEM", data.get("totals", {}).get("orders", 0), "", data.get("totals", {}).get("revenue", 0),
+                data.get("totals", {}).get("margin", 0), data.get("totals", {}).get("reviews", 0)])
+    from fastapi.responses import Response
+    return Response(content=out.getvalue(), media_type="text/csv; charset=utf-8",
+                    headers={"Content-Disposition": "attachment; filename=3dfile-report-%s.csv" % kind})
