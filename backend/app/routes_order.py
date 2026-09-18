@@ -579,22 +579,7 @@ def update_order(
     return {"ok": True, "order_id": o.id, "status": o.status, "is_paid": o.is_paid}
 
 
-@router.get("/api/orders/{order_id}/pay")
-def get_payment_info(order_id: int, request: Request, db: Session = Depends(get_db)):
-    """Return BLIK payment info (static — real BLIK dynamic via API)."""
-    o = db.get(models.Order, order_id)
-    if not o:
-        raise HTTPException(status_code=404, detail="Order not found")
-    return {
-        "ok": True,
-        "order_id": o.id,
-        "total": o.total,
-        "currency": o.currency or "PLN",
-        "exchange_rate": o.exchange_rate or 1.0,
-        "blik_code": "123456789",  # static — replace with real BLIK dynamic
-        "bank_name": "mBank",
-        "titled": f"3dfile.link #{o.id}",
-    }
+
 
 
 @router.get("/api/orders/{order_id}/export")
