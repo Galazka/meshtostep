@@ -919,5 +919,18 @@
         document.body.appendChild(a); a.click(); a.remove();
       }).catch(function(){ showToast('Błąd eksportu', 'error'); });
   };
+  // auto-open admin panel when URL has #admin (np. /admin -> /drukuje#admin)
+  function _openAdminOnHash(){
+    if (location.hash === '#admin' || location.hash.startsWith('#admin')) {
+      var panel = document.getElementById('adminPanel');
+      if (panel) { panel.style.display = 'block'; panel.scrollIntoView({behavior:'smooth'}); }
+      if (getStoredToken()) setTimeout(checkAdminAuth, 200);
+      var tab = location.hash.split('#admin')[1] || '';
+      if (tab.startsWith('/')) tab = tab.slice(1);
+      if (tab && typeof switchAdminTab === 'function') setTimeout(function(){ switchAdminTab(tab); }, 300);
+    }
+  }
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', _openAdminOnHash); }
+  else { setTimeout(_openAdminOnHash, 50); }
 
 })();

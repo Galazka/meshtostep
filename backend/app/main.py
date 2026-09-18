@@ -175,8 +175,11 @@ FRONTEND_DIR = Path(__file__).parent.parent.parent / "frontend"
 
 @app.get("/admin", include_in_schema=False)
 def admin_page():
-    from fastapi.responses import FileResponse
-    return FileResponse(str(FRONTEND_DIR / "admin.html"))
+    # Panel drukarni (Zamówienia + Statystyki + Cennik + Galeria + Recenzje + Raporty)
+    # jest na /drukuje#admin. /admin prowadzi tam (spójnie — user oczekuje zamówień).
+    # Hosting-admin (użytkownicy/pliki/reklamy) zostaje pod /admin.html.
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/drukuje#admin", status_code=302)
 
 # Redirect legacy routes BEFORE mount (mount shadows them)
 @app.get("/prywatnosc", include_in_schema=False)
