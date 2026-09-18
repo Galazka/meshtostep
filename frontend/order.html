@@ -67,6 +67,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 .warnbox{margin-top:10px;background:#fff7ed;border:1px solid #fdba74;border-left:4px solid #f97316;border-radius:10px;padding:10px 14px;font-size:12.5px;color:#7c3a1a}
 .toast{position:fixed;bottom:22px;right:22px;background:#0f172a;color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;z-index:9999;opacity:0;transition:opacity .25s;box-shadow:var(--shadow-lg)}
 .loading{position:absolute;inset:0;background:rgba(255,255,255,.75);display:none;align-items:center;justify-content:center;font-size:14px;color:var(--muted);z-index:5}
+.swatch{display:flex;align-items:center;gap:6px;padding:7px 9px;border-radius:9px;border:2px solid var(--border);background:var(--bg);cursor:pointer;font-size:12px;font-weight:600;color:var(--fg);font-family:inherit;transition:all .12s}
+.swatch::before{content:'';width:14px;height:14px;border-radius:50%;background:var(--sw,#ccc);flex:none;border:1px solid rgba(0,0,0,.12)}
+.swatch.sel{border-color:var(--accent,#2563eb);box-shadow:0 0 0 2px rgba(37,99,235,.18)}
 </style>
 <script type="importmap">
 {"imports":{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js","three/addons/loaders/OBJLoader.js":"/vendor/three/loaders/OBJLoader.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js"}}
@@ -113,15 +116,23 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
         <p style="font-size:12.5px;color:var(--muted);margin:0 0 12px">Wybrany model: <b id="colFor">—</b>. Ustaw kolor i ile kolorów ma mieć wydruk.</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div><label data-i18n="col">Kolor</label>
-                      <select id="colSel">
-              <option value="natural">Naturalny</option><option value="black">Czarny</option>
-              <option value="white">Biały</option><option value="blue">Niebieski</option>
-              <option value="red">Czerwony</option><option value="green">Zielony</option>
-              <option value="yellow">Żółty</option><option value="orange">Pomarańczowy</option>
-              <option value="purple">Fioletowy</option><option value="pink">Różowy</option>
-              <option value="gray">Szary</option><option value="silver">Srebrny</option>
-              <option value="gold">Złoty</option><option value="carbon">Węglowy</option>
-            </select>
+            <div id="colSwatches" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px">
+              <button type="button" class="swatch" data-color="black" style="--sw:#1e293b" onclick="pickColor('black')">Czarny</button>
+              <button type="button" class="swatch" data-color="white" style="--sw:#f1f5f9;border:1px solid #cbd5e1;color:#334155" onclick="pickColor('white')">Biały</button>
+              <button type="button" class="swatch" data-color="gray" style="--sw:#94a3b8" onclick="pickColor('gray')">Szary</button>
+              <button type="button" class="swatch" data-color="red" style="--sw:#dc2626" onclick="pickColor('red')">Czerwony</button>
+              <button type="button" class="swatch" data-color="orange" style="--sw:#ea580c" onclick="pickColor('orange')">Pomarańczowy</button>
+              <button type="button" class="swatch" data-color="yellow" style="--sw:#eab308;color:#3f3f00" onclick="pickColor('yellow')">Żółty</button>
+              <button type="button" class="swatch" data-color="green" style="--sw:#16a34a" onclick="pickColor('green')">Zielony</button>
+              <button type="button" class="swatch" data-color="blue" style="--sw:#2563eb" onclick="pickColor('blue')">Niebieski</button>
+              <button type="button" class="swatch" data-color="purple" style="--sw:#7c3aed" onclick="pickColor('purple')">Fioletowy</button>
+              <button type="button" class="swatch" data-color="pink" style="--sw:#db2777" onclick="pickColor('pink')">Różowy</button>
+              <button type="button" class="swatch" data-color="silver" style="--sw:#cbd5e1;color:#334155" onclick="pickColor('silver')">Srebrny (+20)</button>
+              <button type="button" class="swatch" data-color="gold" style="--sw:#facc15;color:#3f3f00" onclick="pickColor('gold')">Złoty (+25)</button>
+              <button type="button" class="swatch" data-color="carbon" style="--sw:#0f172a" onclick="pickColor('carbon')">Węglowy (+15)</button>
+              <button type="button" class="swatch" data-color="transparent" style="--sw:linear-gradient(135deg,rgba(255,255,255,.28),rgba(200,220,240,.5));border:1px solid #cbd5e1;color:#334155;background:repeating-linear-gradient(45deg,#e2e8f0 0 4px,#f8fafc 4px 8px)" onclick="pickColor('transparent')">Przezroczysty (+30)</button>
+            </div>
+            <div style="font-size:11.5px;color:var(--muted);margin-top:6px">Szczególne pigmenty (srebrny/złoty/węglowy/przezroczysty) mają dopłatę — dodawana do ceny modelu.</div>
           </div>
           <div><label data-i18n="colCount">Ile kolorów w modelu</label>
             <select id="colCount"><option value="1">1 (standard)</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
@@ -144,12 +155,27 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
         <div><label data-i18n="fAddr">Adres</label><textarea id="fAddr" rows="2" data-i18n-ph="fAddr" placeholder="Ulica i numer"></textarea></div>
         <div class="form-row" style="margin-top:10px">
           <div><label data-i18n="fRegion">Kraj</label><select id="fRegion" data-i18n-ph="fRegion"><option value="PL">Polska</option><option value="EU">UE</option><option value="GLOBAL">Świat</option></select></div>
-                    <div><label data-i18n="fShipping">Wysyłka</label><select id="fShipping" data-i18n-ph="fShipping" onchange="calc()">
-            <option value="standard">Standard · 5 dni (InPost Paczkomat)</option>
-            <option value="express">Ekspres · 2 dni (x2)</option>
-            <option value="pickup">Odbiór osobisty (Gdańsk)</option>
-          </select></div>
-        </div>
+                    <div><label data-i18n="fShipping">Wysyłka</label><select id="fShipping" data-i18n-ph="fShipping" onchange="calc();toggleShipUI()">
+                                <option value="standard">Standard · 5 dni (InPost Paczkomat)</option>
+                                <option value="express">Ekspres · 2 dni (x2)</option>
+                                <option value="pickup">Odbiór osobisty (Gdańsk)</option>
+                              </select></div>
+                            </div>
+                            <div id="pickupRow" style="display:none;margin-top:10px">
+                              <label>📍 Paczkomat InPost — wybierz punkt</label>
+                              <input id="fPaczkomat" placeholder="Wpisz miasto, np. Gdańsk…" style="padding:9px 12px;border:1px solid var(--border);border-radius:9px;width:100%;margin-top:6px">
+                              <div id="paczkomatList" style="display:grid;gap:6px;margin-top:8px;max-height:220px;overflow:auto"></div>
+                              <input type="hidden" id="fPaczkomatName">
+                            </div>
+                            <div style="margin-top:12px;display:flex;gap:8px">
+                              <button type="button" id="custTypePerson" onclick="setCustType('person')" style="flex:1;padding:9px;border:2px solid var(--accent);background:#eff6ff;color:var(--accent);border-radius:9px;font-weight:600;font-size:13px">👤 Osoba fizyczna</button>
+                              <button type="button" id="custTypeFirm" onclick="setCustType('firm')" style="flex:1;padding:9px;border:2px solid var(--border);background:var(--bg);color:var(--muted);border-radius:9px;font-weight:600;font-size:13px">🏢 Firma</button>
+                            </div>
+                            <div id="firmRow" style="display:none;margin-top:10px">
+                              <label>NIP / firmowa nazwa</label>
+                              <input id="fNip" placeholder="NIP, np. 521-345-12-90" style="padding:9px 12px;border:1px solid var(--border);border-radius:9px;width:100%;margin-top:6px">
+                              <input id="fCompany" placeholder="Pełna nazwa firmy" style="padding:9px 12px;border:1px solid var(--border);border-radius:9px;width:100%;margin-top:6px">
+                            </div>
         <div class="form-row" style="margin-top:10px">
           <div><label data-i18n="fCode">Kod rabatowy</label><input id="fCode" data-i18n-ph="fCode" placeholder="opcjonalnie"></div>
           <div><label>Waluta</label><div id="curBox" style="display:flex;gap:6px"></div></div>
@@ -191,6 +217,7 @@ var CART=[]; var cur='PLN'; var RATES={PLN:1,USD:4.20,EUR:4.55}; var SYM={PLN:'z
 var MATS={}; var CUR_ACTSYM=1; var selIdx=-1;
 
 function toast(m,ok){var t=document.createElement('div');t.className='toast';t.style.opacity=1;t.textContent=m;t.style.background=ok?'#059669':'#dc2626';document.body.appendChild(t);setTimeout(function(){t.style.opacity=0;setTimeout(function(){t.remove()},300);},2600);}
+function _colP(c){return {silver:20,gold:25,carbon:15,transparent:30}[c]||0;}
 function sym(){return SYM[cur];}
 function cx(v){return Math.ceil(v*2)/2;}
 function fmt(v){return v.toFixed(2).replace('.',',')+' '+sym();}
@@ -203,8 +230,51 @@ function loadMats(){
 }
 function selectMat(k){ if(selIdx<0){toast('Najpierw kliknij model w koszyku','');return;} CART[selIdx].material=k; drawCart(); refreshMatSel(); calc(); }
 function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document.querySelectorAll('.mat').forEach(function(x){x.classList.toggle('sel',x.dataset.mat===m);}); document.getElementById('matFor').textContent=(selIdx>=0)?('#'+(selIdx+1)+' · '+(CART[selIdx].model_name||'Model')):'—'; }
-  function refreshCol(){ var sel=document.getElementById('colSel'),cnt=document.getElementById('colCount'); if(selIdx>=0&&sel){ sel.value=CART[selIdx].color||'natural'; } if(cnt&&selIdx>=0){ cnt.value=String(CART[selIdx].colors||1); } document.getElementById('colFor').textContent=(selIdx>=0)?('#'+(selIdx+1)+' · '+(CART[selIdx].model_name||'Model')):'—'; }
-  function applyColor(){ if(selIdx<0){toast('Kliknij model w koszyku','');return;} var sel=document.getElementById('colSel'),cnt=document.getElementById('colCount'); if(sel) CART[selIdx].color=sel.value; var n=parseInt(cnt?cnt.value:'1'); CART[selIdx].colors=(n>1)?n:1; drawCart(); calc(); toast('Kolor: '+CART[selIdx].color+' · '+CART[selIdx].colors+'x'); refreshCol(); }
+  function refreshCol(){ var cnt=document.getElementById('colCount'); if(cnt&&selIdx>=0){ cnt.value=String(CART[selIdx].colors||1); } document.querySelectorAll('.swatch').forEach(function(x){x.classList.toggle('sel',x.dataset.color===(selIdx>=0?(CART[selIdx].color||'black'):''));}); document.getElementById('colFor').textContent=(selIdx>=0)?('#'+(selIdx+1)+' · '+(CART[selIdx].model_name||'Model')):'—'; }
+  function applyColor(){ if(selIdx<0){toast('Kliknij model w koszyku','');return;} var cnt=document.getElementById('colCount'); var n=parseInt(cnt?cnt.value:'1'); CART[selIdx].colors=(n>1)?n:1; drawCart(); calc(); refreshCol(); toast('Kolory: '+CART[selIdx].colors+'x'); }
+  function pickColor(c){ if(selIdx<0){toast('Kliknij model w koszyku','');return;} CART[selIdx].color=c; drawCart(); calc(); refreshCol(); toast('Kolor: '+c); }
+  function setCustType(t){
+    var p=document.getElementById('custTypePerson'),f=document.getElementById('custTypeFirm'),fr=document.getElementById('firmRow');
+    if(t==='firm'){
+      f.style.border='2px solid var(--accent)';f.style.background='#eff6ff';f.style.color='var(--accent)';
+      p.style.border='2px solid var(--border)';p.style.background='var(--bg)';p.style.color='var(--muted)';
+      fr.style.display='block';
+    } else {
+      p.style.border='2px solid var(--accent)';p.style.background='#eff6ff';p.style.color='var(--accent)';
+      f.style.border='2px solid var(--border)';f.style.background='var(--bg)';f.style.color='var(--muted)';
+      fr.style.display='none';
+    }
+  }
+  function toggleShipUI(){
+    var ship=document.getElementById('fShipping').value, row=document.getElementById('pickupRow');
+    if(ship==='standard'||ship==='express'){ row.style.display='block'; if(!document.getElementById('fPaczkomat').value) searchPaczkomat('Gda%C5%84sk'); }
+    else row.style.display='none';
+  }
+  function searchPaczkomat(q){
+    var box=document.getElementById('paczkomatList'); if(!box) return;
+    box.innerHTML='<div style="color:var(--muted);font-size:13px;padding:6px">Szukam punktów…</div>';
+    fetch('/api/inpost/points?q='+encodeURIComponent(q)+'&t='+Date.now()).then(function(r){return r.json();}).then(function(d){
+      var items=(d&&d.items)||[];
+      if(!items.length){ box.innerHTML='<div style="color:var(--muted);font-size:13px">Brak punktów — wybierz inne miasto.</div>'; return; }
+      box.innerHTML=items.map(function(p){
+        var disp = String(p.display_name||'');
+        var addr = String(p.street||'')+' '+String(p.building_number||'')+', '+String(p.post_code||'')+' '+String(p.city||'');
+        var bn = String(p.name||'');
+        return '<button type="button" data-pczbk="'+bn+'" data-pczdisp="'+disp+'"><b>'+disp+'</b><br><span class="pczk-sub" style="color:var(--muted)">'+addr+'</span></button>';
+      }).join('');
+      // delegation: pick via data attrs (no broken inline-quote escaping)
+      box.querySelectorAll('button[data-pczbk]').forEach(function(b){
+        b.style.cssText='text-align:left;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card);cursor:pointer;font-size:12.5px;display:block;width:100%';
+        b.onclick=function(){ pickPaczkomat(b.getAttribute('data-pczbk'), b.getAttribute('data-pczdisp')); };
+      });
+    }).catch(function(){ box.innerHTML='<div style="color:var(--muted);font-size:13px">Nie udało się pobrać punktów.</div>'; });
+  }
+  function pickPaczkomat(name, disp){
+    document.getElementById('fPaczkomat').value=disp||name;
+    document.getElementById('fPaczkomatName').value=name;
+    document.getElementById('paczkomatList').innerHTML='';
+  }
+
 
 function drawCart(){
   var c=document.getElementById('cart');
@@ -233,7 +303,8 @@ document.getElementById('fileInput').addEventListener('change',function(){ var f
   fetch('/api/estimate?t='+Date.now(),{method:'POST',body:fd}).then(function(r){return r.json();}).then(function(d){
     document.getElementById('loading').style.display='none';
     var vol=d.volume_cm3||0;
-    var item={job_id:null,job_uuid:d.uuid||null,model_name:f.name,material:'PLA',color:'natural',qty:1,vol:vol,dims:d.dimensions||'',desc:'',price:5.0,_bytes:null};
+    var estPrice=(d.estimate && d.estimate.product_subtotal)?d.estimate.product_subtotal:0;
+    var item={job_id:null,job_uuid:d.uuid||null,model_name:f.name,material:'PLA',color:'natural',qty:1,vol:vol,dims:d.dimensions||'',desc:'',price:estPrice,_bytes:null};
     // read local bytes for instant 3D preview (no server round-trip)
     f.arrayBuffer().then(function(buf){
       item._bytes=new Uint8Array(buf);
@@ -256,9 +327,12 @@ function calc(){
   if(!CART.length){ box.style.display='none'; empty.style.display='block'; btn.disabled=true; return; }
   var rate=RATES[cur]||1; var productsPLN=0; var shippingPLN=0; var rowsHTML='';
   CART.forEach(function(it){
-    var prn = it.price || 5.0;
+    var colP=_colP(it.color);
+    var prn = ((+it.price)||0) + colP;
     productsPLN += prn * it.qty;
-    rowsHTML+='<div class="summary-row"><span>'+esc(it.model_name||'Model')+' ×'+it.qty+'</span><span>'+fmt(cx(prn*it.qty/rate))+'</span></div>';
+    var colTag=(it.colors&&it.colors>1)?' · '+it.colors+' kol.':' (1 kol.)';
+    rowsHTML+='<div class="summary-row"><span style="font-weight:600">'+esc(it.model_name||'Model')+' ×'+it.qty+'</span><span>'+fmt(cx(prn*it.qty/rate))+'</span></div>';
+    rowsHTML+='<div class="summary-row" style="font-size:12px;color:var(--muted)"><span>'+esc(it.material||'PLA')+' · '+esc(it.color||'natural')+colTag+'</span><span></span></div>';
   });
   var shipBase={standard:{PL:16.49,EU:35,GLOBAL:55},express:{PL:33,EU:70,GLOBAL:110},pickup:{PL:0,EU:0,GLOBAL:0}};
   var reg=document.getElementById('fRegion').value, ship=document.getElementById('fShipping').value;
@@ -275,11 +349,17 @@ function calc(){
   var total=cx(totalPLN/rate);
   var freeLine = freeShip ? '<div class="summary-row" style="color:#059669"><span>✅ Darmowa wysyłka (zamówienie ≥ 200 zł)</span><span>0,00 zł</span></div>' : '';
   var total=cx(totalPLN/rate);
+  // VAT — PL: netto + 23% VAT brutto (transparentne dla klienta)
+  var isPL=(document.getElementById('fRegion').value==='PL');
+  var vatLine='';
+  if(isPL){ var netto=+(cx(totalPLN/rate)); var vat=Math.round(netto*23)/100; var brutto=cx(netto+vat); vatLine='<div class="summary-row" style="border-top:1px dashed var(--border);color:var(--muted)"><span>Netto</span><span>'+fmt(netto)+'</span></div><div class="summary-row" style="color:var(--muted)"><span>VAT 23%</span><span>'+fmt(vat)+'</span></div><div class="summary-total"><span>Brutto (z VAT)</span><span>'+fmt(brutto)+'</span></div>'; }
+
+  var netTotalLine='<div class="summary-total"><span>Razem (netto)</span><span>'+fmt(total)+'</span></div>';
   box.innerHTML=rowsHTML+
     '<div class="summary-row"><span>Druk ('+CART.length+' model'+(CART.length>1?'i':'')+')</span><span>'+fmt(cx(productsPLN/rate))+'</span></div>'+
     '<div class="summary-row"><span>Wysyłka'+(ship==='pickup'?' (odbiór)':' + pakowanie')+'</span><span>'+(shippingPLN===0?'0,00 zł':fmt(shippingPLN/rate))+'</span></div>'+
     freeLine +
-    '<div class="summary-total"><span>Razem</span><span>'+fmt(total)+'</span></div>';
+    netTotalLine + vatLine;
   empty.style.display='none'; box.style.display='block'; btn.disabled=false;
   document.getElementById('vatNote').textContent = reg==='PL'?'① Do ceny doliczony zostanie VAT 23% (Polska) — Stripe naliczy go przy płatności.':'① Do ceny doliczony zostanie VAT wg kraju dostawy — Stripe naliczy go przy płatności.';
   document.getElementById('fxNote').textContent = cur==='PLN'?'Waluta: PLN (konto własne)':'Waluta: '+cur+' · kurs 1 '+cur+' = '+(1/rate).toFixed(4)+' PLN';
@@ -305,7 +385,13 @@ function submitOrder(){
   var nm=document.getElementById('fName').value.trim(), em=document.getElementById('fEmail').value.trim();
   if(!nm||!em){ toast('Wpisz imię i email',''); return; }
   if(!CART.length){ toast('Dodaj co najmniej jeden model',''); return; }
-  var body={name:nm,email:em,phone:document.getElementById('fPhone').value.trim(),address:document.getElementById('fAddr').value.trim(),city:document.getElementById('fCity').value.trim(),country:document.getElementById('fRegion').value,shipping:document.getElementById('fShipping').value,shipping_region:document.getElementById('fRegion').value,discount_code:document.getElementById('fCode').value.trim(),notes:document.getElementById('fNotes').value.trim(),payment_method:'stripe',currency:cur,items:CART.map(function(it){return {job_uuid:it.job_uuid,job_id:it.job_id,model_name:it.model_name,material:it.material,color:it.color,colors:it.colors||1,quantity:it.qty,volume_cm3:it.vol,estimated_hours:0,dims:it.dims};})};
+  var pczk=(document.getElementById('fPaczkomatName')||{}).value||document.getElementById('fPaczkomat').value.trim();
+  var nip=(document.getElementById('fNip')||{}).value||'';
+  var comp=(document.getElementById('fCompany')||{}).value||'';
+  var shipAddr=document.getElementById('fAddr').value.trim();
+  if(pczk){ shipAddr=(shipAddr?shipAddr+', ':'')+'Paczkomat: '+pczk; }
+  if(nip){ shipAddr=(shipAddr?shipAddr+', ':'')+'NIP: '+nip; if(comp) shipAddr+=', ' + comp; }
+  var body={name:nm,email:em,phone:document.getElementById('fPhone').value.trim(),address:shipAddr,city:document.getElementById('fCity').value.trim(),country:document.getElementById('fRegion').value,shipping:document.getElementById('fShipping').value,shipping_region:document.getElementById('fRegion').value,discount_code:document.getElementById('fCode').value.trim(),notes:document.getElementById('fNotes').value.trim(),payment_method:'stripe',currency:cur,items:CART.map(function(it){return {job_uuid:it.job_uuid,job_id:it.job_id,model_name:it.model_name,material:it.material,color:it.color,colors:it.colors||1,quantity:it.qty,volume_cm3:it.vol,estimated_hours:0,dims:it.dims};})};
   var btn=document.getElementById('submitBtn'); btn.disabled=true; btn.textContent='Tworzę zamówienie…';
   fetch('/api/orders/multi?t='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};});})
@@ -317,6 +403,9 @@ function submitOrder(){
 }
 
 buildCur(); loadMats(); drawCart(); calc(); autofillShipping();
+var ppEl=document.getElementById('fPaczkomat');
+if(ppEl){ ppEl.addEventListener('input',function(){ var v=ppEl.value.trim(); if(v.length>=2){ clearTimeout(window.__ppe); window.__ppe=setTimeout(function(){searchPaczkomat(v);},450); } }); }
+if(document.getElementById('fShipping').value!=='pickup') toggleShipUI();
 function autofillShipping(){
   var t=localStorage.getItem('token')||localStorage.getItem('mt_token');
   if(!t) return;
@@ -374,11 +463,17 @@ window.__local3d = {
         if (isNaN(box.min.x)) { var b0=new THREE.Box3(new THREE.Vector3(-10,-10,-10),new THREE.Vector3(10,10,10)); box=b0; }
         var size = box.getSize(new THREE.Vector3());
         var c = box.getCenter(new THREE.Vector3());
+        // SADZKA NA SIATKA: przesuń bryłę tak, by spód (min.y) leżał na y=0
+        var drop = box.min.y;
+        if (drop !== 0) m.position.y -= drop;
+        box.setFromObject(m);
+        size = box.getSize(new THREE.Vector3());
+        c = box.getCenter(new THREE.Vector3());
         var maxdim = Math.max(size.x, size.y, size.z) || 10;
         var d = maxdim * 2.6 + 30;
-        cam.position.set(c.x + d*0.75, c.y + d*0.45, c.z + d*1.15);
-        cam.lookAt(c);
-        if (controls) { controls.target.copy(c); controls.update(); }
+        cam.position.set(c.x, maxdim*0.5 + d*0.35, c.z + d*1.1);
+        cam.lookAt(new THREE.Vector3(c.x, 0, c.z));
+        if (controls) { controls.target.set(c.x, 0, c.z); controls.update(); }
         // faint ambient + directional light
         scene.remove(scene.getObjectByName('l0')); scene.remove(scene.getObjectByName('l1'));
         var l0=new THREE.AmbientLight(0xffffff, 0.75); l0.name='l0'; scene.add(l0);
