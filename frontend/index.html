@@ -720,7 +720,20 @@
             <div id="kontoEmail" style="font-size:14px"></div>
             <div id="kontoAdmin" style="display:none;color:var(--primary);font-weight:600;margin-top:4px">ADMIN</div>
             <div id="kontoCreated" style="font-size:13px;color:var(--text-secondary);margin-top:4px"></div>
-        </div>
+                    </div>
+                    <div class="account-card">
+                        <h3 data-i18n="kontoShipping">📦 Dane do wysyłki druku</h3>
+                        <p style="font-size:12.5px;color:var(--text-secondary);margin:0 0 10px">Te dane automatycznie wypełnią się w formularzu zamówienia druku — możesz je zmienić w każdej chwili.</p>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                            <input id="kontoName" placeholder="Imię i nazwisko" style="padding:10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px">
+                            <input id="kontoPhone" placeholder="Telefon" style="padding:10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px">
+                            <input id="kontoCity" placeholder="Kod pocztowy / Miasto" style="padding:10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px">
+                            <input id="kontoCountry" placeholder="Kraj (PL)" value="PL" style="padding:10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px">
+                        </div>
+                        <input id="kontoAddress" placeholder="Ulica i numer" style="padding:10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;width:100%;margin-top:10px">
+                        <button onclick="saveKontoShipping()" style="padding:10px 20px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;margin-top:10px">Zapisz dane do wysyłki</button>
+                        <div id="kontoShipStatus" style="font-size:13px;color:var(--success);margin-top:6px"></div>
+                    </div>
         <div class="account-card">
             <h3 data-i18n="kontoQuota">Przechowywanie</h3>
             <div class="quota-track"><div id="kontoQuotaFill" style="height:100%;background:var(--primary);border-radius:99px;transition:width .3s;width:0"></div></div>
@@ -1012,7 +1025,7 @@
     import './js/convert.js?v=81';
     import './js/discover.js?v=81';
     import './js/myfiles.js?v=83';
-    import './js/account.js?v=81';
+    import './js/account.js?v=82';
     import './js/main.js?v=81';
 </script>
 
