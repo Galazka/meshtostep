@@ -684,6 +684,8 @@
     if (tab === 'pricing') setTimeout(loadAdminPricing, 50);
     if (tab === 'codes') setTimeout(loadAdminCodes, 50);
     if (tab === 'gallery') setTimeout(loadAdminGallery, 50);
+    if (tab === 'reviews') setTimeout(loadAdminReviews, 50);
+    if (tab === 'reports') setTimeout(loadAdminReports, 50);
   };
 
   /* ==== Init ==== */
@@ -702,6 +704,7 @@
       updateMaterialNote();
       checkAuth();
       loadGallery();
+      loadReviews();
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closePrintModal(); });
     window.addEventListener('click', function(e) {
       if (e.target && e.target.classList && e.target.classList.contains('modal-backdrop')) closePrintModal();
@@ -716,6 +719,50 @@
   }
   window.showToast = showToast;
   window.currencySymbol = currencySymbol;
+
+  /* ==== Reviews (social proof) ==== */
+  window.renderStars = function(n) {
+    var out = '';
+    for (var i = 1; i <= 5; i++) out += i <= n ? '★' : '☆';
+    return out;
+  };
+  window.loadReviews = function() {
+    var grid = document.getElementById('reviewsGrid');
+    var sum = document.getElementById('revSummary');
+    if (!grid) return;
+    fetch('/api/reviews?t=' + Date.now()).then(function(r){ return r.json(); }).then(function(d){
+      var items = (d && d.items) || [];
+      if (sum) sum.innerHTML = (d && d.count) ? ('<b style="color:var(--accent);font-size:22px">' + d.avg + ' / 5</b> <span style="color:var(--muted)">na podstawie ' + d.count + ' opinii</span>') : '';
+      if (!items.length) { grid.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;grid-column:1/-1">Pierwsze opinie pojawią się wkrótce.</div>'; return; }
+      grid.innerHTML = items.map(function(r){
+        return '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:var(--shadow)">' +
+          '<div style="color:#f59e0b;letter-spacing:2px;font-size:14px">' + renderStars(r.rating) + '</div>' +
+          '<div style="font-weight:700;font-size:15px;margin-top:6px">' + esc(r.name||'') + '</div>' +
+          (r.text ? '<div style="color:var(--muted);font-size:13.5px;margin-top:6px;line-height:1.5">' + esc(r.text) + '</div>' : '') +
+          '<div style="color:#94a3b8;font-size:12px;margin-top:8px">' + (r.created_at||'') + '</div></div>';
+      }).join('');
+    }).catch(function(){ grid.innerHTML='<div style="text-align:center;padding:16px;grid-column:1/-1">Nie udało się wczytać opinii.</div>'; });
+  };
+
+  window.submitReview = function() {
+    var name = (document.getElementById('revName')||{}).value||'';
+    var email = (document.getElementById('revEmail')||{}).value||'';
+    var text = (document.getElementById('revText')||{}).value||'';
+    var rating = parseInt((document.getElementById('revRating')||{}).value||'5');
+    var st = document.getElementById('revStatus');
+    if (!name.trim()) { if (st) st.textContent = 'Podaj imię.'; return; }
+    fetch('/api/reviews', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name: name, email: email, rating: rating, text: text }) })
+      .then(function(r){ return r.json(); }).then(function(d){
+        if (d.ok) {
+          if (st) { st.textContent = '✓ Dziękujemy! Twoja opinia została dodana.'; st.style.color = '#15803d'; }
+          ['revName','revEmail','revText'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+          loadReviews();
+        } else if (st) st.textContent = d.detail || 'Błąd.';
+      }).catch(function(){ if (st) st.textContent = 'Błąd sieci.'; });
+  };
+
+
   window.addEventListener('languagechange', function(){
     if (typeof loadShipping === 'function') loadShipping();
     if (typeof loadMaterials === 'function') loadMaterials();
@@ -801,4 +848,76 @@
     fetch('/api/admin/gallery/' + id, { method:'DELETE', headers:{ 'Authorization':'Bearer '+getStoredToken() } })
       .then(function(r){ loadAdminGallery(); loadGallery(); });
   };
+
+  /* ==== Admin Reviews (moderacja) ==== */
+  window.loadAdminReviews = function() {
+    var box = document.getElementById('adminReviews');
+    if (!box) return;
+    var headers = { 'Authorization': 'Bearer ' + getStoredToken(), 'Accept':'application/json' };
+    fetch('/api/admin/reviews?t=' + Date.now(), { headers: headers }).then(function(r){ return r.json(); }).then(function(d){
+      var items = (d && d.items) || [];
+      var rows = items.map(function(rg){
+        return '<div style="display:flex;gap:12px;align-items:flex-start;border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px;background:var(--card)">' +
+          '<div style="min-width:70px;color:#f59e0b">' + renderStars(rg.rating) + '</div>' +
+          '<div style="flex:1"><b>' + esc(rg.name||'') + '</b>' + (rg.email? ' <span style="color:#94a3b8;font-size:12px">(' + esc(rg.email) + ')</span>':'') +
+          '<div style="color:var(--muted);font-size:13px;margin-top:3px">' + esc(rg.text||'') + '</div>' +
+          '<div style="color:#94a3b8;font-size:11px;margin-top:4px">' + (rg.created_at||'') + (rg.approved===false ? ' · <span style="color:#ef4444">ukryta</span>':'') + '</div></div>' +
+          '<div style="display:flex;flex-direction:column;gap:6px"><button onclick="toggleReview(' + rg.id + ')" style="padding:5px 12px;border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:12px">' + (rg.approved===false?'Pokaż':'Ukryj') + '</button>' +
+          '<button onclick="delReview(' + rg.id + ')" style="padding:5px 12px;border:1px solid #dc2626;color:#dc2626;background:none;border-radius:7px;cursor:pointer;font-size:12px">Usuń</button></div></div>';
+      }).join('');
+      box.innerHTML = (items.length ? '<b style="font-size:13px">Recenzje (' + items.length + '):</b>' + rows : '<p style="color:var(--muted)">Brak recenzji.</p>');
+    }).catch(function(){ box.innerHTML = '<p style="color:var(--error)">Błąd ładowania</p>'; });
+  };
+  window.toggleReview = function(id) {
+    fetch('/api/admin/reviews/' + id, { method:'PATCH', headers:{ 'Authorization':'Bearer '+getStoredToken() } })
+      .then(function(){ loadAdminReviews(); loadReviews(); });
+  };
+  window.delReview = function(id) {
+    if (!confirm('Usunąć recenzję?')) return;
+    fetch('/api/admin/reviews/' + id, { method:'DELETE', headers:{ 'Authorization':'Bearer '+getStoredToken() } })
+      .then(function(){ loadAdminReviews(); loadReviews(); });
+  };
+
+  /* ==== Admin Reports (wykres + export) ==== */
+  window.loadAdminReports = function() {
+    var box = document.getElementById('adminReports');
+    if (!box) return;
+    var headers = { 'Authorization': 'Bearer ' + getStoredToken(), 'Accept':'application/json' };
+    fetch('/api/admin/report?kind=week&t=' + Date.now(), { headers: headers }).then(function(r){ return r.json(); }).then(function(d){
+      if (!(d && d.ok)) { box.innerHTML = '<p style="color:var(--error)">Błąd raportu</p>'; return; }
+      var rows = d.rows || [];
+      var t = d.totals || {};
+      // prosta tabela + mini bar chart (inline SVG)
+      var max = 1;
+      rows.forEach(function(r){ if (r.revenue > max) max = r.revenue; });
+      var bars = rows.map(function(r){
+        var h = Math.max(4, Math.round((r.revenue / max) * 110));
+        return '<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1">' +
+          '<div style="height:' + h + 'px;width:22px;background:var(--accent);border-radius:4px 4px 0 0" title="' + r.revenue + ' zł"></div>' +
+          '<span style="font-size:10px;color:var(--muted)">' + r.label.slice(5) + '</span></div>';
+      }).join('');
+      box.innerHTML =
+        '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">' +
+        '<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--accent)">' + t.orders + '</div><div style="color:var(--muted);font-size:12px">zamówienia</div></div>' +
+        '<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--accent)">' + t.revenue + '</div><div style="color:var(--muted);font-size:12px">przychód (zł)</div></div>' +
+        '<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--accent)">' + t.margin + '</div><div style="color:var(--muted);font-size:12px">marża (zł)</div></div>' +
+        '<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:800;color:var(--accent)">' + t.reviews + '</div><div style="color:var(--muted);font-size:12px">recenzje</div></div></div>' +
+        '<div style="display:flex;gap:6px;align-items:flex-end;height:140px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px">' + bars + '</div>' +
+        '<div style="margin-top:6px"><a href="/api/admin/report/export?kind=week" style="display:inline-block;padding:9px 18px;background:var(--accent);color:#fff;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none" onclick="exportReport(event)">Eksport CSV (tydzień)</a> ' +
+        '<a href="/api/admin/report/export?kind=month" style="display:inline-block;padding:9px 18px;border:1px solid var(--accent);color:var(--accent);border-radius:8px;font-size:13px;font-weight:600;text-decoration:none" onclick="exportReport(event)">Eksport CSV (miesiąc)</a></div>';
+    }).catch(function(){ box.innerHTML='<p style="color:var(--error)">Błąd raportu</p>'; });
+  };
+  window.exportReport = function(ev) {
+    // ensure auth header on CSV GET — fetch with Bearer then blob-download
+    ev.preventDefault();
+    var url = ev.target.getAttribute('href');
+    fetch(url + (url.indexOf('?')>-1?'&':'?') + 't=' + Date.now(), { headers:{ 'Authorization':'Bearer '+getStoredToken() } })
+      .then(function(r){ return r.ok ? r.blob() : Promise.reject(); })
+      .then(function(b){
+        var a = document.createElement('a'); a.href = URL.createObjectURL(b);
+        a.download = url.indexOf('month')>-1 ? '3dfile-report-month.csv' : '3dfile-report-week.csv';
+        document.body.appendChild(a); a.click(); a.remove();
+      }).catch(function(){ showToast('Błąd eksportu', 'error'); });
+  };
+
 })();

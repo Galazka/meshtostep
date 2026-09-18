@@ -325,12 +325,16 @@
           <button class="admin-tab-btn" onclick="switchAdminTab('pricing')" data-i18n="adminTabPricing">Cennik</button>
           <button class="admin-tab-btn" onclick="switchAdminTab('codes')" data-i18n="adminTabCodes">Kody rabatowe</button>
                     <button class="admin-tab-btn" onclick="switchAdminTab('gallery')" data-i18n="adminTabGallery">Galeria</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('reviews')" data-i18n="adminTabReviews">Recenzje</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('reports')" data-i18n="adminTabReports">Raporty</button>
                   </div>
         <div id="adminOrders" class="admin-tab"></div>
         <div id="adminStats" class="admin-tab" style="display:none"></div>
         <div id="adminPricing" class="admin-tab" style="display:none"></div>
         <div id="adminCodes" class="admin-tab" style="display:none"></div>
         <div id="adminGallery" class="admin-tab" style="display:none"></div>
+        <div id="adminReviews" class="admin-tab" style="display:none"></div>
+        <div id="adminReports" class="admin-tab" style="display:none"></div>
       </div>
     </div>
   </main>
@@ -407,8 +411,8 @@
       </form>
     </div>
   </div>
-  <script src="/js/print_i18n.js?v=1"></script>
-  <script src="/asset/print.js?v=94"></script>
+  <script src="/js/print_i18n.js?v=2"></script>
+  <script src="/asset/print.js?v=95"></script>
   <script>
   // Cache-bust fetch + upload handler + init
   window.addEventListener('load', function() {
@@ -419,4 +423,34 @@
       });
       </script>
 </body>
-</html>
+</html    <!-- Reviews / social proof (Hormozi) -->
+    <section class="reviews-print reveal" id="reviews" style="padding:40px 0;background:var(--bg-alt);border-radius:16px">
+      <div class="section-head">
+        <span class="section-kicker" data-i18n="revKicker">Opinie klientów</span>
+        <h2 data-i18n="revTitle">Co mówią ci, którzy już wydrukowali</h2>
+        <p class="section-sub" data-i18n="revSub">Prawdziwe opinie z naszych zleceń. Twoja satysfakcja to nasza najlepsza reklama.</p>
+      </div>
+      <div id="revSummary" style="text-align:center;font-size:15px;margin-bottom:8px"></div>
+      <div id="reviewsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;max-width:1080px;margin:0 auto;padding:0 16px">
+        <div style="text-align:center;color:var(--muted);font-size:14px;padding:20px" data-i18n="revLoad">Wczytywanie opinii…</div>
+      </div>
+      <div style="max-width:520px;margin:26px auto 0;padding:20px;background:var(--card);border:1px solid var(--border);border-radius:14px">
+        <h3 style="font-size:16px;margin-bottom:10px" data-i18n="revFormTitle">Zamówiłeś u nas wydruk? Podziel się opinią</h3>
+        <input id="revName" placeholder="Twoje imię" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:9px;margin-bottom:8px">
+        <input id="revEmail" placeholder="Email (opcjonalnie)" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:9px;margin-bottom:8px">
+        <textarea id="revText" rows="3" placeholder="Jak Ci się podobał wydruk?" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:9px;margin-bottom:8px"></textarea>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+          <select id="revRating" style="padding:8px;border:1px solid var(--border);border-radius:9px">
+            <option value="5" data-i18n="r5">★★★★★ (5)</option>
+            <option value="4" data-i18n="r4">★★★★ (4)</option>
+            <option value="3" data-i18n="r3">★★★ (3)</option>
+            <option value="2" data-i18n="r2">★★ (2)</option>
+            <option value="1" data-i18n="r1">★ (1)</option>
+          </select>
+          <button onclick="submitReview()" style="padding:10px 22px;background:var(--accent);color:#fff;border:none;border-radius:9px;font-weight:700;cursor:pointer" data-i18n="revBtn">Dodaj opinię</button>
+        </div>
+        <div id="revStatus" style="margin-top:8px;font-size:13px;color:var(--muted)"></div>
+      </div>
+    </section>
+
+>
