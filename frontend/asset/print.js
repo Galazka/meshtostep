@@ -680,6 +680,7 @@
     if (tab === 'stats') setTimeout(loadAdminStats, 50);
     if (tab === 'pricing') setTimeout(loadAdminPricing, 50);
     if (tab === 'codes') setTimeout(loadAdminCodes, 50);
+    if (tab === 'gallery') setTimeout(loadAdminGallery, 50);
   };
 
   /* ==== Init ==== */
@@ -697,6 +698,7 @@
       loadShipping();
       updateMaterialNote();
       checkAuth();
+      loadGallery();
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closePrintModal(); });
     window.addEventListener('click', function(e) {
       if (e.target && e.target.classList && e.target.classList.contains('modal-backdrop')) closePrintModal();
@@ -711,4 +713,82 @@
   }
   window.showToast = showToast;
   window.currencySymbol = currencySymbol;
+
+  /* ==== Gallery (landing + admin) ==== */
+  window.loadGallery = function() {
+    var grid = document.getElementById('galleryGrid');
+    if (!grid) return;
+    fetch('/api/gallery?t=' + Date.now()).then(function(r){ return r.json(); }).then(function(d){
+      var items = (d && d.items) || [];
+      if (!items.length) { grid.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:14px;padding:24px">Galeria w przygotowaniu — wkrótce dodamy pierwsze prace.</div>'; return; }
+      grid.innerHTML = items.map(function(g){
+        return '<div class="gallery-card" style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);transition:all .15s">' +
+          '<img src="' + (g.image||'') + '" loading="lazy" style="width:100%;height:190px;object-fit:cover;display:block" onerror="this.remove()">' +
+          '<div style="padding:12px 14px"><div style="font-weight:700;font-size:15px;color:var(--fg)">' + esc(g.title||'') + '</div>' +
+          (g.material? '<div style="color:#64748b;font-size:12.5px;margin-top:4px">' + esc(g.material) + (g.color?' · '+esc(g.color):'') + '</div>':'') +
+          (g.description? '<div style="color:var(--muted);font-size:12.5px;margin-top:4px;line-height:1.4">' + esc(g.description) + '</div>':'') +
+          '</div></div>';
+      }).join('');
+    }).catch(function(){ grid.innerHTML='<div style="text-align:center;color:var(--muted);padding:20px">Nie udało się wczytać galerii.</div>'; });
+  };
+
+  window.loadAdminGallery = function() {
+    var box = document.getElementById('adminGallery');
+    if (!box) return;
+    var headers = { 'Authorization': 'Bearer ' + getStoredToken(), 'Accept': 'application/json' };
+    fetch('/api/admin/gallery?t=' + Date.now(), { headers: headers }).then(function(r){ return r.json(); }).then(function(d){
+      var items = (d && d.items) || [];
+      var rows = items.map(function(g){
+        return '<div class="gallery-item" style="display:flex;gap:10px;align-items:center;border:1px solid var(--border);border-radius:10px;padding:8px;margin-bottom:8px;background:var(--card)">' +
+          (g.image? '<img src="' + g.image + '" style="width:56px;height:56px;object-fit:cover;border-radius:8px">':'<div style="width:56px;height:56px;background:#e5e7eb;border-radius:8px"></div>') +
+          '<div style="flex:1"><b>' + esc(g.title||'') + '</b><br><span style="color:var(--muted);font-size:12px">' + (g.material||'') + (g.color?' · '+esc(g.color):'') + (g.is_active===false?' · <span style="color:#ef4444">ukryta</span>':'') + '</span></div>' +
+          '<button onclick="toggleGalleryItem(' + g.id + ')" style="padding:5px 10px;border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:12px">' + (g.is_active === false ? 'Pokaż' : 'Ukryj') + '</button>' +
+          '<button onclick="delGalleryItem(' + g.id + ')" style="padding:5px 10px;border:1px solid #dc2626;color:#dc2626;border-radius:7px;cursor:pointer;font-size:12px;background:none">Usuń</button>' +
+          '</div>';
+      }).join('');
+      box.innerHTML =
+        '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px"><b>Dodaj pracę do galerii</b>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">' +
+        '<input id="galTitle" placeholder="Tytuł (np. Obudowa robota)" style="padding:8px;border:1px solid var(--border);border-radius:8px">' +
+        '<input id="galMat" placeholder="Materiał (np. PETG)" style="padding:8px;border:1px solid var(--border);border-radius:8px">' +
+        '<input id="galColor" placeholder="Kolor" style="padding:8px;border:1px solid var(--border);border-radius:8px">' +
+        '<input id="galFile" type="file" accept="image/*" style="padding:6px;border:1px solid var(--border);border-radius:8px">' +
+        '</div>' +
+        '<textarea id="galDesc" rows="2" placeholder="Krótki opis (opcjonalnie)" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;margin-top:8px"></textarea>' +
+        '<button onclick="addGalleryItem()" style="margin-top:8px;padding:9px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer">Dodaj do galerii</button></div>' +
+        (rows ? '<b style="font-size:13px">Wpisy (' + items.length + '):</b>' + rows : '<p style="color:var(--muted)">Brak wpisów.</p>');
+    }).catch(function(){ box.innerHTML = '<p style="color:var(--error)">Błąd ładowania galerii</p>'; });
+  };
+
+  window.addGalleryItem = function() {
+    var title = (document.getElementById('galTitle')||{}).value||'';
+    var file = (document.getElementById('galFile')||{}).files ? document.getElementById('galFile').files[0] : null;
+    if (!title) { showToast('Podaj tytuł', 'error'); return; }
+    if (!file) { showToast('Wybierz obrazek', 'error'); return; }
+    var rd = new FileReader(); rd.onloadend = function(){
+      var data = rd.result ? String(rd.result) : '';
+      var body = {
+        title: title,
+        material: (document.getElementById('galMat')||{}).value||'',
+        color: (document.getElementById('galColor')||{}).value||'',
+        description: (document.getElementById('galDesc')||{}).value||'',
+        image: data
+      };
+      fetch('/api/admin/gallery', { method:'POST', headers:{ 'Content-Type':'application/json','Authorization':'Bearer '+getStoredToken() }, body: JSON.stringify(body) })
+        .then(function(r){ return r.json(); }).then(function(d){
+          if (d.ok) { showToast('Dodano do galerii', 'success'); loadAdminGallery(); loadGallery(); } else showToast((d.detail)||'Błąd', 'error');
+        }).catch(function(){ showToast('Błąd sieci', 'error'); });
+    };
+    rd.readAsDataURL(file);
+  };
+
+  window.toggleGalleryItem = function(id) {
+    fetch('/api/admin/gallery/' + id + '/toggle', { method:'POST', headers:{ 'Authorization':'Bearer '+getStoredToken() } })
+      .then(function(r){ loadAdminGallery(); loadGallery(); });
+  };
+  window.delGalleryItem = function(id) {
+    if (!confirm('Usunąć z galerii?')) return;
+    fetch('/api/admin/gallery/' + id, { method:'DELETE', headers:{ 'Authorization':'Bearer '+getStoredToken() } })
+      .then(function(r){ loadAdminGallery(); loadGallery(); });
+  };
 })();

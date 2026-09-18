@@ -157,7 +157,16 @@
         <tbody id="shippingTable"></tbody>
       </table>
     </section>
-    <!-- Admin panel — hidden by default, accessible via #admin anchor -->
+        <!-- Gallery / nasze wydruki -->
+    <section class="shots-gallery reveal" id="shots" style="padding:40px 0">
+      <div class="section-head"><span class="section-kicker">Nasze wydruki</span><h2>Galeria prac</h2>
+      <p class="section-sub">Kilka realnych wydruków z naszej pracowni — prototypy, modele i elementy funkcjonalne.</p></div>
+      <div class="gallery-grid" id="galleryGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:8px">
+        <div style="text-align:center;color:var(--muted);font-size:14px;padding:30px">Wczytywanie galerii…</div>
+      </div>
+    </section>
+
+<!-- Admin panel — hidden by default, accessible via #admin anchor -->
         <div id="adminPanel" style="display:none">
       <h2>Panel admina</h2>
       <div id="adminAuth">
@@ -177,11 +186,13 @@
           <button class="admin-tab-btn" onclick="switchAdminTab('stats')">Statystyki</button>
           <button class="admin-tab-btn" onclick="switchAdminTab('pricing')">Cennik</button>
           <button class="admin-tab-btn" onclick="switchAdminTab('codes')">Kody rabatowe</button>
-        </div>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('gallery')">Galeria</button>
+                  </div>
         <div id="adminOrders" class="admin-tab"></div>
         <div id="adminStats" class="admin-tab" style="display:none"></div>
         <div id="adminPricing" class="admin-tab" style="display:none"></div>
         <div id="adminCodes" class="admin-tab" style="display:none"></div>
+        <div id="adminGallery" class="admin-tab" style="display:none"></div>
       </div>
     </div>
   </main>
@@ -257,7 +268,7 @@
       </form>
     </div>
   </div>
-  <script src="/asset/print.js?v=90"></script>
+  <script src="/asset/print.js?v=93"></script>
   <script>
   // Cache-bust fetch + upload handler + init
   window.addEventListener('load', function() {
