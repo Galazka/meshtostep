@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, text
 
 from . import models
+from pydantic import BaseModel
 from .auth import get_current_user, require_user, require_admin
 from .database import get_db
 from .config import settings
@@ -499,6 +500,13 @@ def list_orders(
     for o in q.order_by(models.Order.id.desc()).limit(limit).all():
         rows.append({
             "id": o.id, "job_id": o.job_id, "job_uuid": o.job_uuid,
+            "items": [{
+                "id": it.id, "model_name": it.model_name, "job_uuid": it.job_uuid,
+                "material": it.material, "color": it.color, "quantity": it.quantity,
+                "volume_cm3": it.volume_cm3, "dims_mm": it.dims_mm,
+                "filament_grams": it.filament_grams, "subtotal": it.subtotal,
+                "margin_pln": it.margin_pln, "print_parts": it.print_parts,
+            } for it in (o.items or [])],
             "customer_name": o.customer_name, "customer_email": o.customer_email,
             "customer_phone": o.customer_phone, "customer_city": o.customer_city,
             "customer_country": o.customer_country,
@@ -787,3 +795,139 @@ def delete_discount_code(code: str, db: Session = Depends(get_db), admin=Depends
     db.execute(text("DELETE FROM discount_codes WHERE code = :c"), {"c": code.upper()})
     db.commit()
     return {"ok": True}
+
+# ---- Multi-model order: several uploaded models in one cart (1 shipping) ----
+class OrderItemReq(BaseModel):
+    job_id: int = None
+    job_uuid: str = None
+    model_name: str = None
+    material: str = "PLA"
+    color: str = "natural"
+    quantity: int = 1
+    volume_cm3: float = 0
+    estimated_hours: float = 0
+    dims: str = None
+
+
+class MultiOrderReq(BaseModel):
+    name: str
+    email: str
+    phone: str = None
+    address: str = None
+    city: str = None
+    postal_code: str = None
+    country: str = "PL"
+    shipping: str = "standard"
+    shipping_region: str = "PL"
+    discount_code: str = None
+    notes: str = None
+    payment_method: str = "blik"
+    currency: str = "PLN"
+    items: list
+
+
+@router.post("/api/orders/multi")
+def create_multi_order(req: MultiOrderReq, db: Session = Depends(get_db)):
+    """Create an order with multiple models. Each item priced via calculate_price,
+    one shared shipping + packing. Returns order_id, item_count, totals."""
+    if not req.items:
+        raise HTTPException(400, detail="Brak modeli w zamówieniu")
+    shipping_cost = round(_cfg_value(db, req.shipping, req.shipping_region), 2)
+    packing_fee = 0.0 if req.shipping == "pickup" else float(_cfg(db, "packing_pln", PACKING_FEE_PLN))
+    shipping_cost = round(shipping_cost + packing_fee, 2)
+
+    total = shipping_cost
+    subtotal_sum = 0.0
+    margin_sum = 0.0
+    discount_pln = 0.0
+    items_rows = []
+    for it in req.items:
+        calc = calculate_price(
+            material=it.material, color=it.color, quantity=it.quantity,
+            shipping=req.shipping, shipping_region=req.shipping_region,
+            volume_cm3=it.volume_cm3 or 0, estimated_hours=it.estimated_hours or 0,
+            dims=it.dims, discount_code=req.discount_code, db=db, currency="PLN",
+        )
+        internal = calc["internal"]
+        row = models.OrderItem(
+            job_id=it.job_id, job_uuid=it.job_uuid,
+            model_name=(it.model_name or it.job_uuid or "Model"),
+            material=it.material[:30], color=it.color[:20], quantity=it.quantity,
+            volume_cm3=round(it.volume_cm3 or 0, 2), dims_mm=it.dims,
+            filament_grams=internal["filament_g"],
+            filament_cost=internal["filament_cost"],
+            electricity_cost=internal["electricity_cost"],
+            color_premium=internal["color_premium"],
+            subtotal=internal["filament_cost"] + internal["electricity_cost"] + internal["color_premium"],
+            margin_pln=internal["margin_pln"],
+            print_parts=internal["print_parts"],
+        )
+        subtotal_sum += row.subtotal + row.margin_pln   # product (druk)
+        margin_sum += row.margin_pln
+        total += calc["total"] - calc["shipping_cost"]   # product per item (PLN, no shipping)
+        items_rows.append(row)
+
+    # discount across whole order (apply once on product total)
+    if req.discount_code and db:
+        d, info = _apply_discount(db, req.discount_code, max(subtotal_sum, 5.0))
+        discount_pln = d
+        total -= d
+
+    if total < 5.0:
+        total = subtotal_sum if subtotal_sum > 5.0 else 5.0
+    total = _ceil05(total)
+
+    cur = (req.currency or "PLN").upper()
+    rate = {"USD": settings.currency_rate_usd, "EUR": settings.currency_rate_eur}.get(cur, 1.0)
+    total_cur = _ceil05(total / rate if rate else total)
+
+    order = models.Order(
+        user_id=None,
+        customer_name=req.name[:100], customer_email=req.email[:255],
+        customer_phone=req.phone[:30] if req.phone else None,
+        customer_address=req.address[:500] if req.address else None,
+        customer_city=req.city[:100] if req.city else None,
+        customer_postal=req.postal_code[:20] if req.postal_code else None,
+        customer_country=req.country[:30],
+        material="MIX", color="mixed",
+        quantity=sum(i.quantity for i in req.items),
+        shipping_method=req.shipping[:20], shipping_region=req.shipping_region[:20],
+        estimated_hours=0.0, volume_cm3=round(sum(i.volume_cm3 or 0 for i in req.items), 2),
+        filament_grams=round(sum(i.filament_grams for i in items_rows), 2),
+        filament_cost=round(sum(i.filament_cost for i in items_rows), 2),
+        electricity_cost=round(sum(i.electricity_cost for i in items_rows), 2),
+        color_premium=round(sum(i.color_premium for i in items_rows), 2),
+        printing_hours=0.0,
+        notes=req.notes or None,
+        payment_method=req.payment_method[:20],
+        subtotal=round(subtotal_sum, 2),
+        margin_pln=round(margin_sum, 2),
+        shipping_cost=round(shipping_cost, 2),
+        discount_pln=round(discount_pln, 2),
+        total=round(total, 2),
+        print_parts=sum(i.print_parts for i in items_rows),
+        currency=cur,
+        exchange_rate=rate,
+        status="nowy", is_paid=False,
+    )
+    db.add(order)
+    db.flush()
+    for r in items_rows:
+        r.order_id = order.id
+        db.add(r)
+    db.commit()
+
+    if req.discount_code:
+        try:
+            db.execute(text("UPDATE discount_codes SET uses = uses + 1 WHERE code = :c"), {"c": req.discount_code.upper()})
+            db.commit()
+        except Exception:
+            db.rollback()
+
+    return {
+        "ok": True, "order_id": order.id,
+        "total": total_cur, "currency": cur, "exchange_rate": rate,
+        "shipping_cost": _ceil05(shipping_cost / rate) if rate else shipping_cost,
+        "item_count": len(items_rows),
+        "discount_pln": round(discount_pln, 2),
+    }

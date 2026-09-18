@@ -275,6 +275,33 @@ class Order(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, onupdate=datetime.utcnow)
     user = relationship("User", foreign_keys=[user_id])
+    items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
+
+
+class OrderItem(Base):
+    """One line of a print order - each uploaded model is a separate item."""
+    __tablename__ = "order_items"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    order_id = Column(Integer, ForeignKey("orders.id", ondelete="CASCADE"), nullable=False, index=True)
+    job_id = Column(Integer, nullable=True)
+    job_uuid = Column(String(64), nullable=True)
+    model_name = Column(String(255), nullable=True)
+    material = Column(String(30), default="PLA")
+    color = Column(String(20), default="natural")
+    quantity = Column(Integer, default=1)
+    volume_cm3 = Column(Float, nullable=True)
+    dims_mm = Column(String(80), nullable=True)
+    filament_grams = Column(Float, default=0.0)
+    filament_cost = Column(Float, default=0.0)
+    electricity_cost = Column(Float, default=0.0)
+    color_premium = Column(Float, default=0.0)
+    subtotal = Column(Float, default=0.0)
+    margin_pln = Column(Float, default=0.0)
+    print_parts = Column(Integer, default=1)
+    order = relationship("Order", back_populates="items")
+
+
 
 
 class PricingConfig(Base):
