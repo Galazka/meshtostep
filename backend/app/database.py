@@ -144,6 +144,8 @@ def init_db():
         _cfg.set_main_option("script_location", "/app/alembic")
         _acmd.upgrade(_cfg, "head")
         print("[3dfile] alembic upgrade head OK")
+        # create_all is idempotent — adds any tables missing from alembic (e.g. new order_items)
+        models.Base.metadata.create_all(bind=engine)
     except Exception as e:
         print(f"[3dfile] alembic upgrade failed, legacy fallback: {e}")
         models.Base.metadata.create_all(bind=engine)
