@@ -421,8 +421,36 @@
     }
   }
 
-  window.exportOrder = function(orderId) { window.open('/api/orders/' + orderId + '/export?t=' + Date.now(), '_blank'); };
-  window.exportAllOrders = function() { window.open('/api/orders/export?t=' + Date.now(), '_blank'); };
+  window.exportOrder = function(orderId) {
+      fetch('/api/orders/' + orderId + '/export?t=' + Date.now(), {
+        headers: { 'Authorization': 'Bearer ' + getStoredToken(), 'Accept': 'text/csv' }
+      }).then(function(r) {
+        if (!r.ok) { showToast('Błąd eksportu (' + r.status + ')', 'error'); return; }
+        return r.blob();
+      }).then(function(b) {
+        if (!b) return;
+        var url = URL.createObjectURL(b);
+        var a = document.createElement('a');
+        a.href = url; a.download = 'zamowienie_' + orderId + '_' + Date.now() + '.csv';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function() { URL.revokeObjectURL(url); }, 5000);
+      });
+    };
+    window.exportAllOrders = function() {
+      fetch('/api/orders/export?t=' + Date.now(), {
+        headers: { 'Authorization': 'Bearer ' + getStoredToken(), 'Accept': 'text/csv' }
+      }).then(function(r) {
+        if (!r.ok) { showToast('Błąd eksportu (' + r.status + ')', 'error'); return; }
+        return r.blob();
+      }).then(function(b) {
+        if (!b) return;
+        var url = URL.createObjectURL(b);
+        var a = document.createElement('a');
+        a.href = url; a.download = 'zamowienia_3dfile_' + Date.now() + '.csv';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function() { URL.revokeObjectURL(url); }, 5000);
+      });
+    };
 
   window.updateOrderStatus = function(id, status) {
     fetch('/api/orders/' + id + '?' + Date.now(), {
