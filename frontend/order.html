@@ -118,7 +118,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
     <div>
       <div class="card">
         <h2><span class="n">1</span> Dodaj modele do druku</h2>
-        <label for="fileInput" class="dropzone"><span data-i18n="dropTitle">📦 Załaduj swój model (STL / OBJ / 3MF)</span>
+        <label for="fileInput" class="dropzone"><span data-i18n="dropTitle"><strong style="font-size:18px">📦 Umieść TUTAJ swoje pliki</strong><br>STL / OBJ / 3MF — kliknij, aby dodać model (możesz dodać kilka)</span>
                   <small data-i18n="dropSub">Objętość i wymiary wypełnią się automatycznie. Dodaj wiele modeli do jednej paczki.</small>
         </label>
         <input type="file" id="fileInput" accept=".stl,.obj,.3mf" style="display:none">
@@ -240,6 +240,10 @@ var MATS={}; var CUR_ACTSYM=1; var selIdx=-1;
 
 function toast(m,ok){var t=document.createElement('div');t.className='toast';t.style.opacity=1;t.textContent=m;var col=(ok===false||ok==='')?'#dc2626':(ok==='w'?'#d97706':'#059669');t.style.background=col;document.body.appendChild(t);setTimeout(function(){t.style.opacity=0;setTimeout(function(){t.remove()},300);},2600);}
 function _colP(c){return {silver:20,gold:25,carbon:15,transparent:30}[c]||0;}
+function _colHex(c){
+  var m={black:'#1e293b',white:'#f8fafc',gray:'#94a3b8',red:'#dc2626',orange:'#ea580c',yellow:'#eab308',green:'#16a34a',blue:'#2563eb',purple:'#7c3aed',pink:'#db2777',silver:'#cbd5e1',gold:'#facc15',carbon:'#0f172a',transparent:'linear-gradient(135deg,#e2e8f0,#f8fafc)'};
+  return m[c]||'#cccccc';
+}
 function sym(){return SYM[cur];}
 function cx(v){return Math.ceil(v*2)/2;}
 function fmt(v){return v.toFixed(2).replace('.',',')+' '+sym();}
@@ -302,18 +306,19 @@ function drawCart(){
   var c=document.getElementById('cart');
   if(!CART.length){ c.innerHTML='<div class="cart-empty">Koszyk pusty — prześlij model powyżej (możesz dodać kilka).</div>'; return; }
   var h='';
-  CART.forEach(function(it,i){
-    var active = i===selIdx;
-    h+='<div class="item" style="'+(active?'outline:2px solid '+MY_ACC()+';': '')+'">'+
-        '<div class="thumb '+(active?'active':'')+'" onclick="preview('+i+')" title="Podgląd 3D">🖼</div>'+
-        '<div class="meta"><div class="nm">'+esc(it.model_name||('Model '+(i+1)))+'</div>'+
-        '<div class="sub">'+(it.material||'PLA')+' · '+it.qty+' szt · '+(it.vol?it.vol.toFixed(1):'?')+' cm³</div>'+
-        '<div class="sub" style="color:#7c3a1d">'+esc(it.desc||'')+'</div></div>'+
-        '<div style="display:flex;gap:8px;align-items:center"><div class="qty">'+
-        '<button onclick="chg('+i+',-1)">−</button><span>'+it.qty+'</span><button onclick="chg('+i+',1)">+</button></div>'+
-        '<button class="del" onclick="del('+i+')">✕</button></div></div>';
-  });
-  c.innerHTML=h;
+    CART.forEach(function(it,i){
+      var active = i===selIdx;
+      var colHex = _colHex(it.color);
+      h+='<div class="item" style="'+(active?'outline:2px solid '+MY_ACC()+';': '')+'cursor:pointer" onclick="preview('+i+')">'+
+          '<div class="thumb '+(active?'active':'')+'" title="Podgląd 3D">🖼</div>'+
+          '<div class="meta"><div class="nm">'+esc(it.model_name||('Model '+(i+1)))+'</div>'+
+          '<div class="sub"><span style="display:inline-flex;align-items:center;gap:6px">'+(it.material||'PLA')+' · '+it.qty+' szt · '+(it.vol?it.vol.toFixed(1):'?')+' cm³</span></div>'+
+          '<div class="sub" style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:14px;border-radius:50%;background:'+colHex+';border:1px solid rgba(0,0,0,.15);display:inline-block"></span><span>'+esc(it.color||'—')+'</span><span style="color:var(--muted)">'+(it.colors&&it.colors>1?(' · '+it.colors+' kol.'):'')+'</span></div></div>'+
+          '<div style="display:flex;gap:8px;align-items:center"><div class="qty">'+
+          '<button onclick="event.stopPropagation();chg('+i+',-1)">−</button><span>'+it.qty+'</span><button onclick="event.stopPropagation();chg('+i+',1)">+</button></div>'+
+          '<button class="del" onclick="event.stopPropagation();del('+i+')">✕</button></div></div>';
+    });
+    c.innerHTML=h;
 }
 function MY_ACC(){return '#2563eb';}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -337,7 +342,7 @@ document.getElementById('fileInput').addEventListener('change',function(){ var f
     var fd3=new FormData(); fd3.append('mode','auto'); fd3.append('file',f);
     fetch('/api/convert?t='+Date.now(),{method:'POST',body:fd3}).then(function(r){return r.json();}).then(function(cv){ if(cv&&cv.job_id){ item.job_id=cv.job_id; if(selIdx===CART.length-1){ preview(CART.length-1); } } }).catch(function(){});
     var fd2=new FormData(); fd2.append('material','PLA'); fd2.append('color','natural'); fd2.append('quantity','1'); fd2.append('shipping','standard'); fd2.append('shipping_region','PL'); fd2.append('volume_cm3',String(vol)); fd2.append('estimated_hours','0'); fd2.append('dim',String(d.dimensions||'')); fd2.append('currency','PLN');
-    fetch('/api/calculate?t='+Date.now(),{method:'POST',body:fd2}).then(function(r){return r.json();}).then(function(c){if(c.ok){item.price=c.total; item.desc=c.material+''; calc();}}).catch(function(){});
+    fetch('/api/calculate?t='+Date.now(),{method:'POST',body:fd2}).then(function(r){return r.json();}).then(function(c){if(c.ok){item.price=c.total; if(!item.desc) item.desc=''; calc();}}).catch(function(){});
     CART.push(item); selIdx=CART.length-1; drawCart(); refreshMatSel(); calc();
     if(item.vol) preview(selIdx); toast('Dodano: '+f.name,true);
   }).catch(function(){document.getElementById('loading').style.display='none';toast('Błąd przetwarzania pliku','');});
@@ -352,9 +357,9 @@ function calc(){
     var colP=_colP(it.color);
     var prn = ((+it.price)||0) + colP;
     productsPLN += prn * it.qty;
-    var colTag=(it.colors&&it.colors>1)?' · '+it.colors+' kol.':' (1 kol.)';
-    rowsHTML+='<div class="summary-row"><span style="font-weight:600">'+esc(it.model_name||'Model')+' ×'+it.qty+'</span><span>'+fmt(cx(prn*it.qty/rate))+'</span></div>';
-    rowsHTML+='<div class="summary-row" style="font-size:12px;color:var(--muted)"><span>'+esc(it.material||'PLA')+' · '+esc(it.color||'natural')+colTag+'</span><span></span></div>';
+    var colTag=(it.colors&&it.colors>1)?' · '+it.colors+' kol.':'';
+    rowsHTML+='<div class="summary-row" style="cursor:pointer" onclick="preview('+CART.indexOf(it)+');refreshCol()"><span style="font-weight:600">'+esc(it.model_name||('Model '+i))+' ×'+it.qty+'</span><span>'+fmt(cx(prn*it.qty/rate))+'</span></div>';
+    rowsHTML+='<div class="summary-row" style="font-size:12px;color:var(--muted);cursor:pointer" onclick="preview('+CART.indexOf(it)+');refreshCol()"><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:50%;background:'+_colHex(it.color)+';border:1px solid rgba(0,0,0,.15);display:inline-block"></span>'+esc(it.material||'PLA')+' · '+esc(it.color||'—')+colTag+'</span><span style="color:var(--accent);font-size:11px">edytuj</span></div>';
   });
   var shipBase={standard:{PL:16.49,EU:35,GLOBAL:55},express:{PL:33,EU:70,GLOBAL:110},pickup:{PL:0,EU:0,GLOBAL:0}};
   var reg=document.getElementById('fRegion').value, ship=document.getElementById('fShipping').value;
