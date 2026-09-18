@@ -163,6 +163,38 @@ check("admin-sees-order", s == 200 and order_id in ids, f"status={s} order={orde
 s, d = api("GET", "/api/orders/stats", token=admin_tok)
 check("admin-stats", s == 200 and d.get("stats", {}).get("total_orders", 0) >= 1, f"status={s}")
 
+# 8b. admin updates order status + paid flag (PATCH)
+patch_fields = _up.urlencode({"status": "realizacja", "is_paid": "1"}).encode()
+req = urllib.request.Request(BASE + f"/api/orders/{order_id}", data=patch_fields,
+                             headers={"Authorization": "Bearer " + admin_tok,
+                                      "Content-Type": "application/x-www-form-urlencoded",
+                                      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) 3dfile-e2e/1.0"},
+                             method="PATCH")
+try:
+    with urllib.request.urlopen(req, timeout=30) as r:
+        d = json.loads(r.read()); s = r.status
+except Exception as e:
+    s, d = getattr(e, "code", "?"), {}
+check("admin-update-status", s == 200 and d.get("status") == "realizacja" and d.get("is_paid") is True,
+      f"status={s} d={d}")
+
+# 8c. admin creates discount code + lists it
+code_req = _up.urlencode({"code": "E2E10", "discount_pln": "10", "is_active": "1"}).encode()
+req = urllib.request.Request(BASE + "/api/admin/discount_codes", data=code_req,
+                             headers={"Authorization": "Bearer " + admin_tok,
+                                      "Content-Type": "application/x-www-form-urlencoded",
+                                      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) 3dfile-e2e/1.0"},
+                             method="POST")
+try:
+    with urllib.request.urlopen(req, timeout=30) as r:
+        s = r.status; d = json.loads(r.read())
+except Exception as e:
+    s, d = getattr(e, "code", "?"), {}
+check("admin-add-code", s == 200 and d.get("code") == "E2E10", f"status={s}")
+s, d = api("GET", "/api/admin/discount_codes", token=admin_tok)
+codes = [c.get("code") for c in d] if isinstance(d, list) else []
+check("admin-list-code", s == 200 and "E2E10" in codes, f"status={s} codes={codes}")
+
 # 9. health
 s, d = api("GET", "/api/health")
 check("health", s == 200 and d.get("ok"), f"status={s}")

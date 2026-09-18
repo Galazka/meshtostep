@@ -8,7 +8,7 @@
   <meta name="description" content="Polski hub druku 3D. Automatyczna wycena w czasie rzeczywistym. Dostawa na świecie. Prześlij model — natychmiastowa cena i zamówienie.">
   <link rel="icon" href="/asset/logo_3d.svg?v=78" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/asset/print.css?v=79">
+  <link rel="stylesheet" href="/asset/print.css?v=80">
 </head>
 <body>
   <div class="toast-container" id="toastContainer"></div>
@@ -92,8 +92,15 @@
     <div id="adminPanel">
       <h2>Panel admina</h2>
       <div id="adminAuth">
-        <p>Wpisz token admina.</p>
-        <div><input type="password" id="adminTokenInput" placeholder="JWT admin token"><button onclick="authenticateAdmin()">Odblokuj</button></div>
+        <p style="margin:8px 0;color:#6b7280">Zaloguj się jako administrator, aby zarządzać zamówieniami.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">
+          <input type="email" id="adminEmail" placeholder="Email administratora" style="padding:8px;border:1px solid #d1d5db;border-radius:6px;flex:1;min-width:180px">
+          <input type="password" id="adminPassword" placeholder="Hasło" onkeydown="if(event.key==='Enter')adminLogin()" style="padding:8px;border:1px solid #d1d5db;border-radius:6px;flex:1;min-width:160px">
+          <button onclick="adminLogin()" style="padding:8px 16px;background:#1d4ed8;color:#fff;border:none;border-radius:6px;cursor:pointer">Zaloguj</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin:12px 0"><span style="color:#9ca3af;font-size:12px">lub podaj token:</span>
+          <input type="password" id="adminTokenInput" placeholder="JWT token" style="padding:6px;border:1px solid #d1d5db;border-radius:6px;flex:1"><button onclick="authenticateAdmin()" style="padding:6px 12px;border:1px solid #d1d5db;border-radius:6px">Odblokuj</button>
+        </div>
       </div>
       <div id="adminContent" style="display:none">
         <div class="admin-tabs">
@@ -169,7 +176,7 @@
       </form>
     </div>
   </div>
-  <script src="/asset/print.js?v=79"></script>
+  <script src="/asset/print.js?v=80"></script>
   <script>
   // Cache-bust fetch + upload handler + init
   window.addEventListener('load', function() {
