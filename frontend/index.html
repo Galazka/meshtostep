@@ -115,6 +115,21 @@
         .hero h1 span { color: var(--primary); }
         .hero p { color: var(--text-secondary); font-size: 16px; line-height: 1.7; margin-bottom: 28px; max-width: 520px; margin-left: auto; margin-right: auto; }
         .hero-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        /* ── Lamina-style hero (2-col: text + 3D printer visual) ── */
+        .hero-lamina { display: block; }
+        .hero-lamina-inner { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 40px; align-items: center; }
+        .hero-lamina-text { text-align: left; }
+        .hero-lamina-text h1 { font-size: 44px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.12; margin: 6px 0 14px; }
+        .hero-lamina-text h1 span { color: var(--primary); }
+        .hero-lamina-text p { font-size: 17px; color: var(--text-secondary); line-height: 1.55; margin: 0 0 22px; max-width: 520px; }
+        .hero-lamina-visual {
+            background: linear-gradient(135deg, var(--primary-light) 0%, #e6e9ff 55%, var(--bg) 100%);
+            border: 1px solid var(--border); border-radius: var(--radius-lg);
+            padding: 26px 22px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 280px;
+        }
+        .hero-lamina-img { max-width: 100%; max-height: 240px; object-fit: contain; filter: drop-shadow(0 8px 18px rgba(15,23,42,.18)); }
+        .hero-lamina-cap { margin-top: 12px; font-size: 13px; font-weight: 600; color: var(--primary); text-align: center; line-height: 1.4; }
+        .hero-lamina .hero-actions { justify-content: flex-start; }
         .btn-hero { padding: 12px 24px; border-radius: var(--radius-sm); font-weight: 600; font-size: 15px; border: none; cursor: pointer; font-family: inherit; transition: all var(--transition); text-decoration: none !important; }
         .btn-hero-primary { background: var(--primary); color: #fff; box-shadow: 0 1px 2px rgba(37,99,235,.3); }
         .btn-hero-primary:hover { background: var(--primary-hover); box-shadow: 0 4px 12px rgba(37,99,235,.3); transform: translateY(-1px); }
@@ -353,8 +368,10 @@
         html[data-theme="dark"] .modal-overlay { background: rgba(0,0,0,.6); }
         html[data-theme="dark"] .job-overlay { background: rgba(0,0,0,.6); }
         html[data-theme="dark"] .viewer-wrap { background: #111827; }
-        html[data-theme="dark"] .fs-overlay { background: #0f172a; }
-    </style>
+                html[data-theme="dark"] .fs-overlay { background: #0f172a; }
+                /* Lamina hero responsive */
+                @media (max-width: 860px) { .hero-lamina-inner { grid-template-columns: 1fr; } .hero-lamina-text { text-align: center; } .hero-lamina .hero-actions { justify-content: center; } }
+            </style>
 </head>
 <body>
 
@@ -413,18 +430,26 @@
 
 <!-- ═══ HOME ═══ -->
 <div class="page active" id="page-home">
-    <div class="hero">
-        <div class="hero-badge">✦ Bez limitu · 24h darmowy · RODO</div>
-        <h1>Hosting modeli <span>3D</span><br>STL → STEP</h1>
-        <p>Wgraj <strong>STL / 3MF / OBJ</strong>, zobacz w 3D, przekonwertuj do STEP i udostępnij jednym linkiem.</p>
-        <div class="hero-retention" style="margin-top:16px;padding:12px 16px;background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;line-height:1.5;color:var(--text-secondary)">
-            <strong style="color:var(--text-primary)">Bez logowania:</strong> pliki dostępne 24h, potem usuwane. <strong style="color:var(--primary)">Załóż darmowe konto</strong> — foldery, 100 MB, linki na stałe i dostęp w dowolnym momencie.
+    <div class="hero hero-lamina">
+            <div class="hero-lamina-inner">
+                <div class="hero-lamina-text">
+                    <div class="hero-badge">✦ Bez limitu · 24h darmowy · RODO</div>
+                    <h1>Hosting modeli <span>3D</span><br>STL → STEP</h1>
+                    <p>Wgraj <strong>STL / 3MF / OBJ</strong>, zobacz w 3D, przekonwertuj do STEP i udostępnij jednym linkiem.</p>
+                    <div class="hero-actions">
+                        <a href="#upload" class="btn-hero btn-hero-primary" onclick="scrollToUpload();return false">Wgraj model</a>
+                        <button class="btn-hero btn-hero-outline" onclick="showModal('register')">Załóż konto — 100 MB zawsze</button>
+                    </div>
+                </div>
+                <div class="hero-lamina-visual">
+                    <img src="/asset/hero_printer.png?v=1" alt="Druk 3D" class="hero-lamina-img">
+                    <div class="hero-lamina-cap">Automatyczna wycena druku 3D<br>i hosting STL → STEP</div>
+                </div>
+            </div>
+            <div class="hero-retention-lamina" style="margin-top:20px;max-width:680px;padding:12px 16px;background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;line-height:1.6;color:var(--text-secondary)">
+                <strong style="color:var(--text-primary)">Bez logowania:</strong> pliki dostępne 24h, potem usuwane. <strong style="color:var(--primary)">Załóż darmowe konto</strong> — foldery, 100 MB, linki na stałe i dostęp w dowolnym momencie.
+            </div>
         </div>
-        <div class="hero-actions">
-            <a href="#upload" class="btn-hero btn-hero-primary" onclick="scrollToUpload();return false">Wgraj model</a>
-            <button class="btn-hero btn-hero-outline" onclick="showModal('register')">Załóż konto — 100 MB zawsze</button>
-        </div>
-    </div>
 
     <div class="trust">
         <div class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Za darmo</div>
