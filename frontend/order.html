@@ -70,6 +70,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 .swatch{display:flex;align-items:center;gap:6px;padding:7px 9px;border-radius:9px;border:2px solid var(--border);background:var(--bg);cursor:pointer;font-size:12px;font-weight:600;color:var(--fg);font-family:inherit;transition:all .12s}
 .swatch::before{content:'';width:14px;height:14px;border-radius:50%;background:var(--sw,#ccc);flex:none;border:1px solid rgba(0,0,0,.12)}
 .swatch.sel{border-color:var(--accent,#2563eb);box-shadow:0 0 0 2px rgba(37,99,235,.18)}
+.nav-burger{display:none;background:none;border:1px solid var(--border);border-radius:8px;cursor:pointer;padding:8px 10px;font-size:19px;line-height:1;color:var(--fg);order:2}
+@media(max-width:900px){.nav-burger{display:inline-flex;align-items:center;gap:6px}.order-nav{display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border-bottom:1px solid var(--border);box-shadow:var(--shadow-lg);padding:10px 16px;flex-direction:column;align-items:stretch!important;z-index:60}.order-nav.open{display:flex}.header-in{position:relative}.order-nav a,.order-nav button{width:100%;text-align:left;padding:12px 10px!important}}
 </style>
 <script type="importmap">
 {"imports":{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js","three/addons/loaders/OBJLoader.js":"/vendor/three/loaders/OBJLoader.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js"}}
@@ -80,7 +82,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 <div class="loading" id="loading">Przeliczam…</div>
 <header class="header"><div class="header-in">
   <div class="logo"><a href="/"><img src="/logo.png?v=81" alt="3DFILE.link"></a></div>
-  <nav class="order-nav" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+  <button class="nav-burger" onclick="document.getElementById('orderNav').classList.toggle('open')" aria-label="Menu">☰ <span style="font-size:12px;font-weight:600">Menu</span></button>
+  <nav class="order-nav" id="orderNav" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
     <a href="/" class="onav" style="padding:8px 13px;border-radius:8px;font-size:13.5px;color:var(--muted);text-decoration:none;font-weight:500">Hosting</a>
     <a href="/drukuje" class="onav" style="padding:8px 13px;border-radius:8px;font-size:13.5px;color:var(--muted);text-decoration:none;font-weight:500">Druk 3D</a>
     <a href="/blog.html" class="onav" style="padding:8px 13px;border-radius:8px;font-size:13.5px;color:var(--muted);text-decoration:none;font-weight:500">Blog</a>
@@ -517,6 +520,7 @@ window.__local3d = {
 </script>
 
 <script src="/js/print_i18n.js?v=2"></script>
+<script>document.addEventListener('click',function(ev){var nb=document.getElementById('orderNav');if(nb&&nb.classList.contains('open')&&ev.target.closest('#orderNav a')){nb.classList.remove('open');}});</script>
 <footer style="background:#0f172a;color:#94a3b8;text-align:center;padding:24px;font-size:13px;margin-top:40px">
   © 2026 3DFILE.link — <a href="/drukuje" style="color:#cbd5e1;text-decoration:none">druk 3D na życzenie</a> · <a href="/" style="color:#cbd5e1;text-decoration:none">Hosting modeli</a> · <a href="/blog.html" style="color:#cbd5e1;text-decoration:none">Blog</a> · <a href="/kontakt" style="color:#cbd5e1;text-decoration:none">Kontakt</a> · <a href="/prywatnosc.html" style="color:#cbd5e1;text-decoration:none">Prywatność</a>
 </footer>

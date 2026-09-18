@@ -420,7 +420,16 @@
                 html[data-theme="dark"] .fs-overlay { background: #0f172a; }
                 /* Lamina hero responsive */
                 @media (max-width: 860px) { .hero-lamina-inner { grid-template-columns: 1fr; } .hero-lamina-text { text-align: center; } .hero-lamina .hero-actions { justify-content: center; } }
-            </style>
+        
+        .nav-burger { display:none; background:none; border:1px solid var(--border); border-radius:var(--radius-sm); cursor:pointer; padding:8px 11px; font-size:20px; line-height:1; color:var(--text); }
+        @media (max-width: 980px) {
+            .nav-burger { display:inline-flex; align-items:center; gap:6px; }
+            .nav-links { display:none; position:absolute; top:64px; left:0; right:0; background:var(--bg); border-bottom:1px solid var(--border); box-shadow:var(--shadow-md); flex-direction:column; padding:10px 16px; gap:2px; align-items:stretch!important; }
+            .nav-links.open { display:flex; }
+            .nav-links .nav-link { width:100%; text-align:left; padding:12px 10px!important; font-size:15px; }
+            .nav-inner { position:relative; }
+        }
+    </style>
 </head>
 <body>
 
@@ -459,6 +468,7 @@
                 Konto
             </button>
         </div>
+        <button class="nav-burger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">☰ <span style="font-size:12px;font-weight:600">Menu</span></button>
         <div class="nav-right">
             <button class="nav-btn" id="themeToggle" onclick="toggleTheme()" title="Tryb ciemny">🌙</button>
             <button class="nav-btn" id="langToggle" onclick="toggleLang()">EN</button>
@@ -1026,7 +1036,7 @@
     import './js/auth.js?v=81';
     import './js/convert.js?v=81';
     import './js/discover.js?v=81';
-    import './js/myfiles.js?v=84';
+    import './js/myfiles.js?v=85';
     import './js/account.js?v=82';
     import './js/main.js?v=81';
 </script>
@@ -1161,5 +1171,6 @@ function cookieConsent(accept) {
   </div>
 </div>
 
+<script>document.addEventListener('click',function(ev){var nl=document.getElementById('navLinks');if(nl&&nl.classList.contains('open')&&ev.target.closest('#navLinks a,#navLinks button')){nl.classList.remove('open');}});</script>
 </body>
 </html>

@@ -222,3 +222,13 @@ section h2,.section-head h2{font-size:26px;font-weight:700;letter-spacing:-0.02e
 .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
 .reveal.in{opacity:1;transform:translateY(0)}
 @media (prefers-reduced-motion: reduce){ .reveal{opacity:1;transform:none} }
+
+/* === Interaktywne menu mobilne (hamburger) === */
+.nav-burger{display:none;background:none;border:1px solid var(--border);border-radius:9px;cursor:pointer;padding:8px 10px;margin-left:auto;font-size:20px;line-height:1;color:var(--fg)}
+@media(max-width:900px){
+  .nav-print{display:none;position:absolute;top:100%;left:0;right:0;background:var(--card);border-bottom:1px solid var(--border);box-shadow:0 12px 24px rgba(15,23,42,.12);padding:10px 16px;flex-direction:column;align-items:stretch!important;gap:2px}
+  .nav-print.open{display:flex}
+  .nav-print .nav-link-print,.nav-print .btn-nav-print{width:100%;text-align:left;padding:12px 10px!important;font-size:15px}
+  .nav-burger{display:inline-flex;align-items:center;gap:6px}
+  .header-print{position:relative}
+}

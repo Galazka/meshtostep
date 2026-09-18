@@ -47,11 +47,14 @@ textarea{resize:vertical;min-height:120px}
 footer{background:#0f172a;color:#94a3b8;text-align:center;padding:26px;font-size:13px}
 footer a{color:#cbd5e1;text-decoration:none}
 @media(max-width:760px){.grid{grid-template-columns:1fr}h1{font-size:28px}}
+.nav-burger{display:none;background:none;border:1px solid #334155;border-radius:8px;cursor:pointer;padding:8px 10px;font-size:19px;line-height:1;color:#fff}
+@media(max-width:760px){.nav-burger{display:inline-flex;align-items:center;gap:6px}.nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border-bottom:1px solid #334155;padding:10px 20px;flex-direction:column;align-items:stretch!important;z-index:60}.nav-links.open{display:flex}.nav{position:relative}.nav-links a{width:100%;text-align:left;margin-left:0!important;padding:12px 4px}}
 </style>
 </head>
 <body>
 <nav class="nav"><div class="nav-in">
   <a href="/">3DFILE.link</a>
+  <button class="nav-burger" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">☰</button>
   <div class="nav-links"><a href="/drukuje">Druk 3D</a><a href="/">Hosting</a><a href="/blog.html">Blog</a><a href="/kontakt" class="active">Kontakt</a></div>
 </div></nav>
 <div class="wrap">
@@ -117,5 +120,6 @@ function sendContact(ev){
     .catch(function(){st.className='status err';st.textContent='Błąd sieci. Napisz bezpośrednio: tomekgalazka@gmail.com';btn.disabled=false;btn.textContent='Wyślij wiadomość';});
 }
 </script>
+<script>document.addEventListener('click',function(ev){var nl=document.querySelector('.nav-links');if(nl&&nl.classList.contains('open')&&ev.target.closest('.nav-links a')){nl.classList.remove('open');}});</script>
 </body>
 </html>
