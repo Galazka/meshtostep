@@ -53,7 +53,7 @@ def _stripe_build_session(order):
         cancel_url=success_url + f"/print.html?order={order.id}&cancelled=1",
     )
     session = stripe.checkout.Session.create(**checkout_params)
-    return session.get("url") or None
+    return session["url"] or None
 
 
 @router.post("/api/orders/{order_id}/checkout")
