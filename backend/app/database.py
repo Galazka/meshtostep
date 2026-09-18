@@ -95,6 +95,12 @@ def _migrate_columns():
             existing = {c["name"] for c in insp.get_columns("users")}
             add_col(conn, "users", "quota_limit_bytes", "INTEGER DEFAULT 104857600", existing)
             add_col(conn, "users", "bonus_mb", "INTEGER DEFAULT 0", existing)
+            add_col(conn, "users", "ship_full_name", "VARCHAR(100)", existing)
+            add_col(conn, "users", "ship_phone", "VARCHAR(30)", existing)
+            add_col(conn, "users", "ship_address", "VARCHAR(500)", existing)
+            add_col(conn, "users", "ship_city", "VARCHAR(100)", existing)
+            add_col(conn, "users", "ship_postal", "VARCHAR(20)", existing)
+            add_col(conn, "users", "ship_country", "VARCHAR(30) DEFAULT 'PL'", existing)
         except Exception as e:
             print(f"[3dfile] quota migrate: {e}")
         try:
