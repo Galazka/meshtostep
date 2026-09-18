@@ -788,6 +788,7 @@ class OrderItemReq(BaseModel):
     model_name: str = None
     material: str = "PLA"
     color: str = "natural"
+    colors: int = 1
     quantity: int = 1
     volume_cm3: float = 0
     estimated_hours: float = 0
@@ -845,6 +846,12 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db)):
             dims=it.dims, discount_code=req.discount_code, db=db, currency="PLN",
         )
         internal = calc["internal"]
+        # Multi-color premium: 1 coloring = normal; each extra color +20 zł, next +10 zł ea.
+        # (printed model with N colors is more expensive than single-color)
+        n_colors = max(1, getattr(it, "colors", 1) or 1)
+        color_mult = 0.0
+        if n_colors > 1:
+            color_mult = 20.0 + (n_colors - 2) * 10.0
         row = models.OrderItem(
             job_id=it.job_id, job_uuid=it.job_uuid,
             model_name=(it.model_name or it.job_uuid or "Model"),
@@ -858,9 +865,11 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db)):
             margin_pln=internal["margin_pln"],
             print_parts=internal["print_parts"],
         )
-        subtotal_sum += row.subtotal + row.margin_pln   # product (druk)
+        subtotal_sum += row.subtotal + row.margin_pln + color_mult   # product (druk) + multi-color
         margin_sum += row.margin_pln
-        total += calc["total"] - calc["shipping_cost"]   # product per item (PLN, no shipping)
+        if n_colors > 1:
+            row.model_name = (row.model_name or "Model") + f" ({n_colors}x kolor)"
+        total += (calc["total"] - calc["shipping_cost"]) + color_mult   # product per item (PLN, no shipping)
         items_rows.append(row)
 
     # FREE SHIPPING: product >= 200 PLN -> shipping gratis (Tom covers cost)
