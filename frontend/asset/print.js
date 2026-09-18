@@ -90,12 +90,12 @@
               var p = data.materials[m];
               var price = typeof p === 'number' ? p : (p.price_kg || 0);
               var desc = (typeof p === 'object' && p.desc) ? p.desc : '';
-              return '<div class="material-card" style="padding:12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff"><strong>' + m +
-                     '<\/strong><br><span style="color:#6b7280">' + price + ' zł/kg<\/span>' +
-                     (desc ? '<p style="color:#4b5563;font-size:12px;margin-top:6px;line-height:1.4">' + desc + '<\/p>' : '') +
-                     '<\/div>';
+              return '<div class="material-card"><strong>' + m +
+                             '</strong><br><span class="price">' + price + ' zł/kg</span>' +
+                             (desc ? '<span class="desc">' + desc + '</span>' : '') +
+                             '</div>';
             }).join('');
-      box.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">' + html + '</div>';
+      box.innerHTML = html;
     } catch (e) {
       box.innerHTML = '<p style="color:#6b7280">Materials list unavailable</p>';
     }

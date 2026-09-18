@@ -8,7 +8,7 @@
   <meta name="description" content="Polski hub druku 3D. Automatyczna wycena w czasie rzeczywistym. Dostawa na świecie. Prześlij model — natychmiastowa cena i zamówienie.">
   <link rel="icon" href="/asset/logo_3d.svg?v=78" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/asset/print.css?v=83">
+  <link rel="stylesheet" href="/asset/print.css?v=84">
 </head>
 <body>
   <div class="toast-container" id="toastContainer"></div>
@@ -34,8 +34,8 @@
     <!-- Hero -->
     <section class="hero-print">
       <div class="hero-text">
-        <h1>Druk 3D On Demand</h1>
-        <p class="hero-desc">Polski hub druku 3D. Automatyczna wycena w czasie rzeczywistym. Dostawa na świecie.</p>
+        <h1>Druk 3D <span class="grad">On&nbsp;Demand</span></h1>
+        <p class="hero-desc">Polski hub druku 3D. Automatyczna wycena w czasie rzeczywistym, zamówienie w dwa kliknięcia i dostawa na cały świat.</p>
         <button class="hero-cta" onclick="openPrintOrderModal({job_uuid:'calculator',title:'Kalkulator cen'})">
           Oblicz cenę
         </button>
@@ -46,7 +46,11 @@
     </section>
     <!-- How it works -->
     <section class="how-print">
-      <h2>Jak to działa</h2>
+      <div class="section-head">
+        <span class="section-kicker">Proces</span>
+        <h2>Jak to działa</h2>
+        <p class="section-sub">Cztery kroki od pliku do gotowego wydruku — bez rejestracji i zbędnej biurokracji.</p>
+      </div>
       <div class="steps-grid">
         <div class="step-card">
           <div class="step-num">1</div>
@@ -72,7 +76,8 @@
     </section>
     <!-- Materials -->
         <section class="materials-print">
-          <h2>Materiały i kolory</h2>
+          <div class="section-head"><span class="section-kicker">Materiały</span><h2>Materiały i kolory</h2>
+          <p class="section-sub">Każdy materiał z opisem właściwości i typowym zastosowaniem — wybierz świadomie.</p></div>
           <div class="tolerance-note">
             <strong>⚠ Wymiary a rzeczywisty wydruk:</strong> wymiary Twojego modelu mogą nieznacznie różnić się od podanych w pliku. Każdy filament nieco kurczy się i rozkurcza podczas drukowania i stygnięcia — mimo że staramy się o najwyższą jakość, różnica wynosi zwykle <strong>0,3–1%</strong>, a dla materiałów technicznych (jak nylon PA12) może sięgać <strong>do ok. 2%</strong>. To normalna cecha druku 3D i nie ma wpływu na wytrzymałość czy funkcjonalność elementu.
           </div>
@@ -80,7 +85,8 @@
         </section>
     <!-- Shipping -->
     <section class="shipping-print">
-      <h2>Metody wysyłki</h2>
+      <div class="section-head"><span class="section-kicker">Dostawa</span><h2>Metody wysyłki</h2>
+      <p class="section-sub">Wysyłamy na cały świat. Podstawa to ekonomiczna przesyłka — wersje ekspresowe dla zniecierpliwionych.</p></div>
       <table class="shipping-table">
         <thead><tr>
           <th> Opcja </th><th>Polska</th><th>UE</th><th>Świat</th>
@@ -117,9 +123,9 @@
     </div>
   </main>
     <div id="toastEl" class="toast-print"></div>
-    <footer style="margin-top:48px;padding:20px 0;border-top:1px solid var(--border);color:var(--muted);font-size:13px;display:flex;justify-content:space-between;align-items:center">
-      <span>© 2026 3dfile.link — druk 3D na wymiar.</span>
-      <a href="#" onclick="openAdminPanel();return false" style="color:var(--muted);text-decoration:none;font-size:12px">Administracja</a>
+    <footer class="footer-print">
+      <span class="copyright">© 2026 3dfile.link — druk 3D na wymiar.</span>
+      <a href="#" onclick="openAdminPanel();return false">Administracja</a>
     </footer>
   <!-- Print Order Modal -->
   <div class="modal-backdrop" id="printOrderModal">
@@ -130,13 +136,13 @@
         <input type="hidden" name="job_id" id="printOrderId">
         <input type="hidden" name="job_uuid" id="printOrderUuid">
         <input type="file" id="printFileUpload" accept=".stl,.obj,.ply,.3mf" onchange="onFileUpload()" style="display:none">
-                <label for="printFileUpload" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px 16px;border:2px dashed #bfdbfe;border-radius:12px;background:#eff6ff;cursor:pointer;margin-bottom:12px;text-align:center">
-                  <span style="font-size:22px">📦</span>
-                  <strong style="margin-top:6px">Załaduj swój model (STL / OBJ / 3MF)</strong>
-                  <span style="color:#6b7280;font-size:12px">Kliknij i wybierz plik — objętość i wymiary wypełnią się automatycznie przed wyceną</span>
+                <label for="printFileUpload" class="dropzone">
+                  <span class="dz-icon">📦</span>
+                  <strong>Załaduj swój model (STL / OBJ / 3MF)</strong>
+                  <span>Kliknij i wybierz plik — objętość i wymiary wypełnią się automatycznie przed wyceną</span>
                 </label>
-                <p id="printFileStatus" style="font-size:12px;color:#6b7280">Model: brak wybranego</p>
-                <div id="printModelSummary" style="display:none;font-size:13px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;padding:10px 14px;margin:8px 0"></div>
+                <p class="file-status" id="printFileStatus">Model: brak wybranego</p>
+                <div id="printModelSummary" class="model-summary" style="display:none"></div>
         <div class="form-row">
           <div class="form-group"><input type="text" name="name" id="printOrderName" required placeholder="Imię i nazwisko"></div>
           <div class="form-group"><input type="email" name="email" id="printOrderEmail" required placeholder="Email"></div>
@@ -159,8 +165,8 @@
                   <div class="form-group"><select name="material" id="printMaterial" onchange="updateMaterialNote()"><option value="PLA">PLA</option><option value="PETG">PETG</option><option value="ABS">ABS</option><option value="ASA">ASA</option><option value="PA12 CF">PA12-CF</option><option value="TPU">TPU</option></select></div>
                   <div class="form-group"><select name="color" id="printColor"><option value="natural">Naturalny</option><option value="black">Czarny</option><option value="blue">Niebieski</option><option value="red">Czerwony</option><option value="silver">Srebrny</option><option value="brass">Brązowy</option></select></div>
                 </div>
-                <div class="material-note" id="printMaterialNote" style="font-size:12px;color:#4b5563;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:8px 12px;margin:8px 0">PLA — uniwersalny, tani, sztywny.</div>
-                <div class="tolerance-note-inline" style="font-size:11px;color:#6b7280;margin:4px 0">Rzeczywisty wydruk może różnić się od modelu o 0,3–1% (do ~2% dla materiałów technicznych).</div>
+                <div class="material-note" id="printMaterialNote">PLA — uniwersalny, tani, sztywny.</div>
+                <div class="tolerance-note-inline">Rzeczywisty wydruk może różnić się od modelu o 0,3–1% (do ~2% dla materiałów technicznych).</div>
         <div class="form-group"><input type="text" name="dims" id="printDims" placeholder="Wymiary mm (X Y Z)" onchange="calculatePrintPrice()"></div>
         <div class="form-group"><input type="number" id="printVolume" min="0" step="0.1" value="100" onchange="calculatePrintPrice()"></div>
         <div class="form-group">
@@ -180,15 +186,15 @@
           <div class="price-row discount-line" id="discountLine"><span>Rabat</span><span id="priceDiscount">—</span></div>
           <div class="price-total"><span>Razem</span><span id="priceTotal">—</span></div>
                     <div class="price-hint" id="priceHint"></div>
-                    <div style="font-size:11px;color:#6b7280;margin-top:6px" id="priceVatNote">① Do ceny doliczony zostanie VAT wg kraju dostawy — Stripe naliczy go automatycznie przy płatności.</div>
-                    <div style="font-size:11px;color:#6b7280" id="priceFxNote">Waluta: PLN</div>
+                    <div class="vat-note" id="priceVatNote">① Do ceny doliczony zostanie VAT wg kraju dostawy — Stripe naliczy go automatycznie przy płatności.</div>
+                    <div class="fx-note" id="priceFxNote">Waluta: PLN</div>
                   </div>
         <div class="form-group"><textarea name="notes_manual" id="printOrderNotesManual" placeholder="Uwagi dla drukarza"></textarea></div>
         <button type="submit" class="submit-btn">Zamów — płatność po potwierdzeniu</button>
       </form>
     </div>
   </div>
-  <script src="/asset/print.js?v=83"></script>
+  <script src="/asset/print.js?v=84"></script>
   <script>
   // Cache-bust fetch + upload handler + init
   window.addEventListener('load', function() {
