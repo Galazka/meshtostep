@@ -121,6 +121,7 @@ async function fetchUser() {
     document.getElementById('authBtns').style.display='none';
     document.getElementById('userPanel').style.display='inline';
     document.getElementById('navFiles').style.display='';
+    var kn = document.getElementById('kontoNav'); if (kn) kn.style.display='';
     if (d.is_admin) {
         const a = document.createElement('a'); a.href='/admin'; a.textContent='Admin'; a.style.cssText='margin-left:8px;font-size:13px;color:var(--text-secondary)';
         document.querySelector('.nav-right').insertBefore(a, document.getElementById('themeToggle'));

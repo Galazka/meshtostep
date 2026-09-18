@@ -467,11 +467,14 @@ def list_orders(
     country: str = None,
     material: str = None,
     paid: bool = None,
-    limit: int = 100,
+    search: str = None,
+    sort: str = "newest",
+    page: int = 1,
+    limit: int = 50,
     admin=Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    """Admin: list all orders sorted desc by id."""
+    """Admin: list orders, sorted/filtered. search matches name/email/phone/address/city/notes; sort newest|oldest|total|date-paids."""
     if not admin or not getattr(admin, "is_admin", False):
         raise HTTPException(403, "Admin only")
     q = db.query(models.Order)
@@ -483,8 +486,26 @@ def list_orders(
         q = q.filter(models.Order.customer_country == country)
     if material:
         q = q.filter(models.Order.material == material)
+    if search and search.strip():
+        like = f"%{search.strip()}%"
+        q = q.filter(db.or_(
+            models.Order.customer_name.ilike(like),
+            models.Order.customer_email.ilike(like),
+            models.Order.customer_phone.ilike(like),
+            models.Order.customer_address.ilike(like),
+            models.Order.customer_city.ilike(like),
+            models.Order.customer_postal.ilike(like),
+            models.Order.notes.ilike(like),
+        ))
+    if sort == "oldest":
+        q = q.order_by(models.Order.id.asc())
+    elif sort == "total":
+        q = q.order_by(models.Order.total.desc())
+    else:
+        q = q.order_by(models.Order.id.desc())
+    total_count = q.count()
     rows = []
-    for o in q.order_by(models.Order.id.desc()).limit(limit).all():
+    for o in q.offset((page - 1) * limit).limit(limit).all():
         rows.append({
             "id": o.id, "job_id": o.job_id, "job_uuid": o.job_uuid,
             "items": [{
@@ -511,7 +532,7 @@ def list_orders(
             "notes": o.notes, "admin_notes": getattr(o, "admin_notes", None),
             "created_at": o.created_at.isoformat() if o.created_at else None,
         })
-    return {"ok": True, "orders": rows, "total": len(rows)}
+    return {"ok": True, "orders": rows, "total": total_count, "returned": len(rows), "page": page, "limit": limit}
 
 
 @router.get("/api/orders/stats")

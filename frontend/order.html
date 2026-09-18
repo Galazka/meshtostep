@@ -303,13 +303,31 @@ function submitOrder(){
   fetch('/api/orders/multi?t='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};});})
     .then(function(res){
-      if(res.ok&&res.d.ok){ document.getElementById('thanksOrder').textContent='#'+res.d.order_id; document.getElementById('pageOrder').style.display='none'; document.getElementById('pageThanks').style.display='block'; window.scrollTo(0,0); }
+      if(res.ok&&res.d.ok){ document.getElementById('thanksOrder').textContent='#'+res.d.order_id; if(typeof saveProfileShip==='function') saveProfileShip(); document.getElementById('pageOrder').style.display='none'; document.getElementById('pageThanks').style.display='block'; window.scrollTo(0,0); }
       else { toast((res.d&&res.d.detail)||'Błąd zamówienia',''); btn.disabled=false; btn.textContent='Zamawiam — pełne podsumowanie poniżej'; }
     })
     .catch(function(){toast('Błąd sieci','');btn.disabled=false;btn.textContent='Zamawiam — pełne podsumowanie poniżej';});
 }
 
-buildCur(); loadMats(); drawCart(); calc();
+buildCur(); loadMats(); drawCart(); calc(); autofillShipping();
+function autofillShipping(){
+  var t=localStorage.getItem('token')||localStorage.getItem('mt_token');
+  if(!t) return;
+  fetch('/api/auth/me',{headers:{'Authorization':'Bearer '+t}}).then(function(r){return r.ok?r.json():null;}).then(function(d){
+    if(!d) return;
+    if(d.ship_full_name){ var e=document.getElementById('fName'); if(e&&!e.value) e.value=d.ship_full_name; }
+    if(d.ship_city){ var e=document.getElementById('fCity'); if(e&&!e.value) e.value=d.ship_city; }
+    if(d.ship_phone){ var e=document.getElementById('fPhone'); if(e&&!e.value) e.value=d.ship_phone; }
+    if(d.ship_address){ var e=document.getElementById('fAddr'); if(e&&!e.value) e.value=d.ship_address; }
+    if(d.ship_country){ var e=document.getElementById('fRegion'); if(e) e.value=d.ship_country; }
+  }).catch(function(){});
+}
+// save shipping to profile after successful order (if logged in)
+function saveProfileShip(){
+  var t=localStorage.getItem('token')||localStorage.getItem('mt_token'); if(!t) return;
+  var body={ship_full_name:document.getElementById('fName').value,ship_phone:document.getElementById('fPhone').value,ship_address:document.getElementById('fAddr').value,ship_city:document.getElementById('fCity').value,ship_country:document.getElementById('fRegion').value};
+  fetch('/api/account/shipping',{method:'PUT',headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},body:JSON.stringify(body)}).catch(function(){});
+}
 </script>
 
 <script type="module">

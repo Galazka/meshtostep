@@ -453,11 +453,17 @@
     } catch (e) {}
   }
 
-  async function loadAdminOrders() {
-    var token = getStoredToken();
-    var headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' };
-    try {
-      var res = await fetch('/api/orders?' + Date.now(), { headers: headers });
+  var __adminQ = { search: '', sort: 'newest', page: 1 };
+    window.adminSetSearch = function(v, f){ if(f) __adminQ.search=v; __adminQ.page=1; loadAdminOrders(); };
+    window.adminSetSort = function(v){ __adminQ.sort=v; __adminQ.page=1; loadAdminOrders(); };
+    window.adminPage = function(d){ __adminQ.page = Math.max(1, __adminQ.page + d); loadAdminOrders(); };
+    async function loadAdminOrders() {
+      var token = getStoredToken();
+      var headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' };
+      try {
+        var q = '/api/orders?t=' + Date.now() + '&page=' + __adminQ.page + '&sort=' + __adminQ.sort;
+        if (__adminQ.search) q += '&search=' + encodeURIComponent(__adminQ.search);
+        var res = await fetch(q, { headers: headers });
       var data = await res.json();
       if (res.ok && data.ok && data.orders) {
         var tbody = '';
@@ -481,8 +487,23 @@
             '</tr>';
         });
         document.getElementById('adminOrders').innerHTML =
-          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px"><strong>Zamówienia (' + data.orders.length + ')</strong><button onclick="exportAllOrders()" style="padding:8px 16px;border:1px solid #1d4ed8;background:#1d4ed8;color:#fff;border-radius:6px;cursor:pointer">Export Excel</button></div>' +
-          '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:2px solid #e5e7eb;text-align:left"><th style="padding:8px">ID</th><th style="padding:8px">Data</th><th style="padding:8px">Klient</th><th style="padding:8px">Model</th><th style="padding:8px">Fil.</th><th style="padding:8px">Cena</th><th style="padding:8px">Status</th><th style="padding:8px;text-align:center">Zapł.</th><th style="padding:8px">Akcje</th></tr></thead><tbody>' + tbody + '</tbody></table></div>';
+                  '<div class="admin-toolbar" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px">' +
+                  '<input type="text" id="adminSearchInp" placeholder="🔎 Szukaj: nazwa, tel, email, adres, miasto, uwagi…" value="' + (__adminQ.search||'').replace(/\"/g,'&quot;') + '" onkeydown="if(event.key===\'Enter\')adminSetSearch(this.value,true)" style="padding:8px 12px;border:1px solid #d1d5db;border-radius:8px;min-width:260px;font-size:13px">' +
+                  '<button onclick="adminSetSearch(document.getElementById(\'adminSearchInp\').value,true)" style="padding:8px 14px;border:1px solid #1d4ed8;background:#1d4ed8;color:#fff;border-radius:8px;cursor:pointer">Szukaj</button>' +
+                  '<select onchange="adminSetSort(this.value)" style="padding:8px;border:1px solid #d1d5db;border-radius:8px;font-size:12px">' +
+                    '<option value="newest"' + (__adminQ.sort==='newest'?'selected':'') + '>Najnowsze</option>' +
+                    '<option value="oldest"' + (__adminQ.sort==='oldest'?'selected':'') + '>Najstarsze</option>' +
+                    '<option value="total"' + (__adminQ.sort==='total'?'selected':'') + '>Wartość od najwyższej</option>' +
+                  '</select>' +
+                  '<strong>Zamówienia: ' + data.total + '</strong>' +
+                  '<button onclick="exportAllOrders()" style="padding:8px 16px;border:1px solid #1d4ed8;background:#1d4ed8;color:#fff;border-radius:8px;cursor:pointer">Export Excel</button>' +
+                  '</div>' +
+                  '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:2px solid #e5e7eb;text-align:left"><th style="padding:8px">ID</th><th style="padding:8px">Data</th><th style="padding:8px">Klient</th><th style="padding:8px">Model</th><th style="padding:8px">Fil.</th><th style="padding:8px">Cena</th><th style="padding:8px">Status</th><th style="padding:8px;text-align:center">Zapł.</th><th style="padding:8px">Akcje</th></tr></thead><tbody>' + tbody + '</tbody></table></div>' +
+                  '<div style="margin-top:10px;display:flex;gap:8px;align-items:center">' +
+                    '<button onclick="adminPage(-1)" ' + (__adminQ.page<=1?'disabled':'') + ' style="padding:6px 12px;border:1px solid #d1d5db;border-radius:8px;cursor:pointer">← Poprzednia</button>' +
+                    '<span style="font-size:13px;color:#6b7280">Strona ' + __adminQ.page + '</span>' +
+                    '<button onclick="adminPage(1)" ' + ((__adminQ.page*data.limit||50)>=data.total?'disabled':'') + ' style="padding:6px 12px;border:1px solid #d1d5db;border-radius:8px;cursor:pointer">Następna →</button>' +
+                  '</div>';
       } else {
         document.getElementById('adminOrders').innerHTML = '<p style="color:#ef4444">Brak dostępu lub brak zamówień</p>';
       }
@@ -681,6 +702,13 @@
       if (e.target && e.target.classList && e.target.classList.contains('modal-backdrop')) closePrintModal();
     });
   });
+  // Scroll reveal
+  if ('IntersectionObserver' in window) {
+    var _ro = new IntersectionObserver(function(es){ es.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add('in'); _ro.unobserve(en.target); } }); }, {threshold: 0.12});
+    document.querySelectorAll('.reveal').forEach(function(el){ _ro.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in'); });
+  }
   window.showToast = showToast;
   window.currencySymbol = currencySymbol;
 })();

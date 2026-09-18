@@ -83,10 +83,10 @@ img{max-width:100%;height:auto}
 .hero-image img{width:100%;max-width:360px;opacity:0.95}
 
 /* ===== Section headers ===== */
-.section-head{display:flex;flex-direction:column;gap:4px;margin:8px 0 28px}
+.section-head{display:flex;flex-direction:column;gap:4px;margin:8px 0 28px;align-items:center;text-align:center}
 .section-kicker{font-size:12px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em}
 section h2,.section-head h2{font-size:26px;font-weight:700;letter-spacing:-0.02em;color:var(--fg)}
-.section-sub{font-size:15px;color:var(--muted);max-width:620px}
+.section-sub{font-size:15px;color:var(--muted);max-width:640px;text-align:center;margin:0 auto}
 
 /* ===== How it works ===== */
 .how-print{padding:56px 0;background:var(--bg-alt);border-radius:0}
@@ -218,3 +218,7 @@ section h2,.section-head h2{font-size:26px;font-weight:700;letter-spacing:-0.02e
   .material-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
   .printing-content .hero-text h1{font-size:27px}
 }
+/* ===== Scroll reveal (subtle, professional) ===== */
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+.reveal.in{opacity:1;transform:translateY(0)}
+@media (prefers-reduced-motion: reduce){ .reveal{opacity:1;transform:none} }

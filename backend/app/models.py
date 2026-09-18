@@ -38,6 +38,13 @@ class User(Base):
     avatar_url = Column(String(512), nullable=True)
     quota_limit_bytes = Column(Integer, default=100 * 1024 * 1024, nullable=False)  # 100 MB
     bonus_mb = Column(Integer, default=0)  # bonus MB earned from print orders
+    # — zapisane dane do wysyłki druku (profil klienta, auto-fill w zamówieniach) —
+    ship_full_name = Column(String(100), nullable=True)
+    ship_phone = Column(String(30), nullable=True)
+    ship_address = Column(String(500), nullable=True)
+    ship_city = Column(String(100), nullable=True)
+    ship_postal = Column(String(20), nullable=True)
+    ship_country = Column(String(30), default="PL")
 
     jobs = relationship("Job", back_populates="user")
     folders = relationship("Folder", back_populates="user", cascade="all, delete-orphan")

@@ -8,7 +8,7 @@
   <meta name="description" content="Polski hub druku 3D. Automatyczna wycena w czasie rzeczywistym. Dostawa na świecie. Prześlij model — natychmiastowa cena i zamówienie.">
   <link rel="icon" href="/asset/logo_3d.svg?v=78" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/asset/print.css?v=88">
+  <link rel="stylesheet" href="/asset/print.css?v=90">
 </head>
 <body>
   <div class="toast-container" id="toastContainer"></div>
@@ -36,7 +36,7 @@
   </header>
   <main class="container-print" id="mainContent">
     <!-- Hero -->
-    <section class="hero-print">
+    <section class="hero-print reveal">
       <div class="hero-text">
         <h1>Druk 3D <span class="grad">On&nbsp;Demand</span></h1>
         <p class="hero-desc">Polski hub druku 3D. Automatyczna wycena w czasie rzeczywistym, zamówienie w dwa kliknięcia i dostawa na cały świat.</p>
@@ -47,7 +47,7 @@
       </div>
     </section>
     <!-- About / kim jesteśmy -->
-    <section class="about-print" id="about" style="padding:48px 0;background:var(--bg-alt);border-radius:14px">
+    <section class="about-print reveal" id="about" style="padding:48px 0;background:var(--bg-alt);border-radius:14px">
       <div class="section-head" style="text-align:center">
         <span class="section-kicker">O nas</span>
         <h2 style="font-size:26px">Niezależna pracownia druku 3D</h2>
@@ -60,7 +60,7 @@
       </div>
     </section>
     <!-- How it works -->
-    <section class="how-print" id="how">
+    <section class="how-print reveal" id="how">
       <div class="section-head">
         <span class="section-kicker">Proces</span>
         <h2>Jak to działa</h2>
@@ -90,7 +90,7 @@
       </div>
     </section>
     <!-- Materials -->
-        <section class="materials-print" id="materials">
+        <section class="materials-print reveal" id="materials">
           <div class="section-head"><span class="section-kicker">Materiały</span><h2>Materiały i kolory</h2>
           <p class="section-sub">Każdy materiał z opisem właściwości i typowym zastosowaniem — wybierz świadomie.</p></div>
           <div class="tolerance-note">
@@ -99,7 +99,7 @@
           <div class="material-grid" id="materialList"></div>
         </section>
     <!-- Shipping -->
-    <section class="shipping-print" id="shipping">
+    <section class="shipping-print reveal" id="shipping">
       <div class="section-head"><span class="section-kicker">Dostawa</span><h2>Metody wysyłki</h2>
       <p class="section-sub">Wysyłamy na cały świat. Podstawa to ekonomiczna przesyłka — wersje ekspresowe dla zniecierpliwionych.</p></div>
       <table class="shipping-table">
@@ -209,7 +209,7 @@
       </form>
     </div>
   </div>
-  <script src="/asset/print.js?v=89"></script>
+  <script src="/asset/print.js?v=90"></script>
   <script>
   // Cache-bust fetch + upload handler + init
   window.addEventListener('load', function() {
