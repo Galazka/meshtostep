@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kontakt — napisz do nas | 3DFILE.link</title>
+<meta name="description" content="Skontaktuj się z 3DFILE.link — pracownią druku 3D w Gdańsku Osowa. Formularz zapytań, odbiór osobisty (ul. Międzygwiezdna 31/2, 80-299), wyceny i pytania o wydruki.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://3dfile.link/kontakt">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#0f172a;--muted:#64748b;--accent:#0ea5e9;--border:#e2e8f0;--card:#fff;--bg:#f8fafc}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);line-height:1.65}
+.nav{background:#0f172a;color:#fff;padding:16px 0;position:sticky;top:0;z-index:50}
+.nav-in{max-width:1080px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.nav a{color:#fff;text-decoration:none;font-weight:600;font-size:14px}
+.nav-links a{margin-left:18px;opacity:.85}.nav-links a:hover{opacity:1;color:#7dd3fc}
+.nav-links a.active{color:#7dd3fc}
+.wrap{max-width:1080px;margin:0 auto;padding:44px 24px 70px}
+.head{max-width:760px;margin-bottom:34px}
+.kicker{color:var(--accent);font-size:14px;font-weight:800;letter-spacing:.5px;text-transform:uppercase}
+h1{font-size:36px;line-height:1.15;font-weight:800;letter-spacing:-.5px;margin:12px 0 14px}
+.sub{color:var(--muted);font-size:17px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+.form-card,.info-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px}
+.info-card{background:#0f172a;color:#e2e8f0;border:none}
+.info-card h2{color:#fff;font-size:21px;margin-bottom:18px}
+.info-row{display:flex;gap:14px;align-items:flex-start;margin-bottom:18px;font-size:15px}
+.info-row .ic{width:40px;height:40px;border-radius:10px;background:rgba(125,211,252,.15);color:#7dd3fc;display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
+.info-row strong{display:block;color:#fff;font-weight:700;margin-bottom:2px}
+.info-row p{color:#94a3b8;font-size:14px;line-height:1.6}
+.info-row a{color:#7dd3fc;text-decoration:none}.info-row a:hover{text-decoration:underline}
+label{display:block;font-size:13.5px;font-weight:600;margin:14px 0 6px}
+input,textarea{width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:10px;font-family:inherit;font-size:15px;background:#fff;color:var(--fg)}
+input:focus,textarea:focus{outline:2px solid var(--accent);border-color:transparent}
+textarea{resize:vertical;min-height:120px}
+.btn{display:inline-block;background:linear-gradient(135deg,#0ea5e9,#0b5394);color:#fff;font-weight:800;padding:13px 30px;border:none;border-radius:10px;font-size:16px;cursor:pointer;margin-top:18px;font-family:inherit;width:100%;transition:opacity .15s}
+.btn:hover{opacity:.92}.btn:disabled{opacity:.5;cursor:not-allowed}
+.status{margin-top:14px;font-size:14px;font-weight:600}
+.status.ok{color:#15803d}
+.status.err{color:#dc2626}
+.pickup-box{background:rgba(125,211,252,.1);border:1px solid rgba(125,211,252,.25);border-radius:12px;padding:16px;margin-top:22px}
+.pickup-box .big{font-size:17px;font-weight:800;color:#fff}
+.pickup-box .small{color:#94a3b8;font-size:14px;margin-top:4px}
+.hours{color:#94a3b8;font-size:13px;line-height:1.7;margin-top:4px}
+footer{background:#0f172a;color:#94a3b8;text-align:center;padding:26px;font-size:13px}
+footer a{color:#cbd5e1;text-decoration:none}
+@media(max-width:760px){.grid{grid-template-columns:1fr}h1{font-size:28px}}
+</style>
+</head>
+<body>
+<nav class="nav"><div class="nav-in">
+  <a href="/">3DFILE.link</a>
+  <div class="nav-links"><a href="/drukuje">Druk 3D</a><a href="/">Hosting</a><a href="/blog.html">Blog</a><a href="/kontakt" class="active">Kontakt</a></div>
+</div></nav>
+<div class="wrap">
+  <div class="head">
+    <div class="kicker">Kontakt</div>
+    <h1>Porozmawiajmy o Twoim wydruku</h1>
+    <p class="sub">Pytania o wycenę, materiały, formaty, odbiór osobisty lub współpracę — odezwij się. Odpowiadamy zwykle tego samego dnia.</p>
+  </div>
+  <div class="grid">
+    <div class="form-card">
+      <h2 style="font-size:22px;margin-bottom:6px">Wyślij zapytanie</h2>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:4px">Formularz trafia prosto na naszą skrzynkę.</p>
+      <form id="contactForm" onsubmit="sendContact(event)">
+        <label for="cName">Imię i nazwisko *</label>
+        <input id="cName" required placeholder="Jan Kowalski">
+        <label for="cEmail">Twój email *</label>
+        <input id="cEmail" type="email" required placeholder="jan@przyklad.pl">
+        <label for="cSubject">Temat</label>
+        <input id="cSubject" placeholder="np. Wycena wydruku, pytanie o materiał…">
+        <label for="cMessage">Wiadomość *</label>
+        <textarea id="cMessage" required placeholder="Opisz swój model, potrzebny materiał, termin…"></textarea>
+        <button class="btn" id="contactBtn" type="submit">Wyślij wiadomość</button>
+        <div class="status" id="contactStatus"></div>
+      </form>
+    </div>
+    <div class="info-card">
+      <h2>Dane kontaktowe</h2>
+      <div class="info-row"><div class="ic">📧</div><div><strong>Email</strong><p><a href="mailto:tomekgalazka@gmail.com" id="infoEmail">tomekgalazka@gmail.com</a></p></div></div>
+      <div class="info-row"><div class="ic">📍</div><div><strong>Pracownia / odbiór osobisty</strong><p id="infoStreet">ul. Międzygwiezdna 31/2</p><p>80-299 Gdańsk Osowa</p></div></div>
+      <div class="info-row"><div class="ic">🖨</div><div><strong>Druk 3D na życzenie</strong><p>Zamówienia i wyceny: <a href="/drukuje">3dfile.link/drukuje</a></p><p>Hosting modeli: <a href="/">3dfile.link</a></p></div></div>
+      <div class="pickup-box">
+        <div class="big">Odbiór osobisty — Gdańsk Osowa</div>
+        <div class="small">ul. Międzygwiezdna 31/2, 80-299. Odbiór po wcześniejszym umówieniu (druk jest gotowy, bez kosztów wysyłki).</div>
+        <div class="hours" style="margin-top:8px">📅 Pon–Pt: 9:00–18:00 (po umówieniu)<br>✉️ Najszybciej przez formularz → odpowiadamy mailowo</div>
+      </div>
+    </div>
+  </div>
+</div>
+<footer>© 2026 3DFILE.link — <a href="/drukuje">druk 3D na życzenie</a> · <a href="/blog.html">Blog</a> · <a href="/kontakt">Kontakt</a> · <a href="/prywatnosc.html">Prywatność</a></footer>
+<script>
+function sendContact(ev){
+  ev.preventDefault();
+  var name=document.getElementById('cName').value.trim();
+  var email=document.getElementById('cEmail').value.trim();
+  var subject=document.getElementById('cSubject').value.trim();
+  var message=document.getElementById('cMessage').value.trim();
+  var st=document.getElementById('contactStatus');
+  var btn=document.getElementById('contactBtn');
+  btn.disabled=true; btn.textContent='Wysyłanie…'; st.className='status';
+  fetch('/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({name:name,email:email,subject:subject,message:message})})
+    .then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d};});})
+    .then(function(res){
+      if(res.ok&&res.d.ok){
+        st.className='status ok'; st.textContent='✓ Dziękujemy! Twoja wiadomość została wysłana — odezwiemy się wkrótce.';
+        ['cName','cEmail','cSubject','cMessage'].forEach(function(id){document.getElementById(id).value='';});
+      } else {
+        st.className='status err'; st.textContent=(res.d&&res.d.detail)||'Błąd wysyłania. Napisz bezpośrednio: tomekgalazka@gmail.com';
+      }
+      btn.disabled=false; btn.textContent='Wyślij wiadomość';
+    })
+    .catch(function(){st.className='status err';st.textContent='Błąd sieci. Napisz bezpośrednio: tomekgalazka@gmail.com';btn.disabled=false;btn.textContent='Wyślij wiadomość';});
+}
+</script>
+</body>
+</html>

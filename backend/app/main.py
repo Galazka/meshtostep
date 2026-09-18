@@ -212,6 +212,11 @@ def en_order_page():
     html = html.replace("</head>", _EN_INJECT + "</head>", 1)
     return HTMLResponse(content=html)
 
+@app.get("/kontakt", response_class=HTMLResponse, include_in_schema=False)
+def kontakt_page():
+    from fastapi.responses import FileResponse
+    return FileResponse(str(FRONTEND_DIR / "kontakt.html"))
+
 if FRONTEND_DIR.exists():
     app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
 
