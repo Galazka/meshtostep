@@ -11,6 +11,7 @@ Pricing logic:
     PricingConfig table).
 """
 from datetime import datetime
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Request, Form, status
 from fastapi.responses import JSONResponse, HTMLResponse, Response
 from sqlalchemy.orm import Session
