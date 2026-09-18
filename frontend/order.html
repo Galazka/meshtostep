@@ -179,16 +179,22 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
           <div><label data-i18n="fRegion">Kraj</label><select id="fRegion" data-i18n-ph="fRegion"><option value="PL">Polska</option><option value="EU">UE</option><option value="GLOBAL">Świat</option></select></div>
                     <div><label data-i18n="fShipping">Wysyłka</label><select id="fShipping" data-i18n-ph="fShipping" onchange="calc();toggleShipUI()">
                                 <option value="standard">Standard · 5 dni (InPost Paczkomat)</option>
-                                <option value="express">Ekspres · 2 dni (x2)</option>
+                                                                <option value="express">Ekspres · 2 dni (x2)</option>
+                                                                <option value="address">Dostawa kurierem na adres (firma/osoba)</option>
                                 <option value="pickup">Odbiór osobisty (Gdańsk)</option>
                               </select></div>
                             </div>
                             <div id="pickupRow" style="display:none;margin-top:10px">
-                              <label>📍 Paczkomat InPost — wybierz punkt</label>
-                              <input id="fPaczkomat" placeholder="Wpisz miasto, np. Gdańsk…" style="padding:9px 12px;border:1px solid var(--border);border-radius:9px;width:100%;margin-top:6px">
-                              <div id="paczkomatList" style="display:grid;gap:6px;margin-top:8px;max-height:220px;overflow:auto"></div>
-                              <input type="hidden" id="fPaczkomatName">
-                            </div>
+                                      <label>📍 Paczkomat InPost — wybierz punkt</label>
+                                      <input id="fPaczkomat" placeholder="Wpisz miasto, np. gdansk albo Gdańsk…" style="padding:9px 12px;border:1px solid var(--border);border-radius:9px;width:100%;margin-top:6px">
+                                      <div id="paczkomatList" style="display:grid;gap:6px;margin-top:8px;max-height:260px;overflow:auto"></div>
+                                      <input type="hidden" id="fPaczkomatName"><input type="hidden" id="fPaczkomatAddr"><input type="hidden" id="fPaczkomatLat"><input type="hidden" id="fPaczkomatLon">
+                                      <div id="pickupMap" style="display:none"></div>
+                                    </div>
+                                    <div id="companyShipRow" style="display:none;margin-top:10px">
+                                      <label>🏢 Wysyłka na adres firmy</label>
+                                      <input id="fCompanyShip" placeholder="Ulica, numer, kod, miasto" style="padding:9px 12px;border:1px solid var(--border);border-radius:9px;width:100%;margin-top:6px">
+                                    </div>
                             <div style="margin-top:12px;display:flex;gap:8px">
                               <button type="button" id="custTypePerson" onclick="setCustType('person')" style="flex:1;padding:9px;border:2px solid var(--accent);background:#eff6ff;color:var(--accent);border-radius:9px;font-weight:600;font-size:13px">👤 Osoba fizyczna</button>
                               <button type="button" id="custTypeFirm" onclick="setCustType('firm')" style="flex:1;padding:9px;border:2px solid var(--border);background:var(--bg);color:var(--muted);border-radius:9px;font-weight:600;font-size:13px">🏢 Firma</button>
@@ -272,33 +278,53 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
     }
   }
   function toggleShipUI(){
-    var ship=document.getElementById('fShipping').value, row=document.getElementById('pickupRow');
-    if(ship==='standard'||ship==='express'){ row.style.display='block'; if(!document.getElementById('fPaczkomat').value) searchPaczkomat('Gda%C5%84sk'); }
-    else row.style.display='none';
-  }
+      var ship=document.getElementById('fShipping').value, row=document.getElementById('pickupRow'), csr=document.getElementById('companyShipRow');
+      if(ship==='standard'||ship==='express'){ row.style.display='block'; csr.style.display='none'; if(!document.getElementById('fPaczkomat').value) searchPaczkomat('Gda%C5%84sk'); }
+      else if(ship==='address'){ row.style.display='none'; csr.style.display='block'; }
+      else { row.style.display='none'; csr.style.display='none'; }
+    }
   function searchPaczkomat(q){
     var box=document.getElementById('paczkomatList'); if(!box) return;
+    if(!q||q.trim().length<2){ box.innerHTML=''; return; }
     box.innerHTML='<div style="color:var(--muted);font-size:13px;padding:6px">Szukam punktów…</div>';
-    fetch('/api/inpost/points?q='+encodeURIComponent(q)+'&t='+Date.now()).then(function(r){return r.json();}).then(function(d){
+    fetch('/api/inpost/points?q='+encodeURIComponent(q.trim())+'&t='+Date.now()).then(function(r){return r.json();}).then(function(d){
       var items=(d&&d.items)||[];
-      if(!items.length){ box.innerHTML='<div style="color:var(--muted);font-size:13px">Brak punktów — wybierz inne miasto.</div>'; return; }
+      if(!items.length){ box.innerHTML='<div style="color:var(--muted);font-size:13px">Nie znaleziono paczkomatów — sprawdź miasto (np. Gdańsk, wejście bez polskich znaków też zadziała).</div>'; return; }
       box.innerHTML=items.map(function(p){
         var disp = String(p.display_name||'');
-        var addr = String(p.street||'')+' '+String(p.building_number||'')+', '+String(p.post_code||'')+' '+String(p.city||'');
+        var addr = '<b style="color:var(--fg)">'+String(p.street||'')+' '+String(p.building_number||'')+'</b>';
+        addr += '<br><span style="color:var(--muted);font-size:12px">'+String(p.post_code||'')+' '+String(p.city||'')+'</span>';
         var bn = String(p.name||'');
-        return '<button type="button" data-pczbk="'+bn+'" data-pczdisp="'+disp+'"><b>'+disp+'</b><br><span class="pczk-sub" style="color:var(--muted)">'+addr+'</span></button>';
+        var lat=p.lat?p.lat:''; var lon=p.lon?p.lon:'';
+        return '<button type="button" data-pczbk="'+bn+'" data-pczdisp="'+disp+'" data-pczlat="'+lat+'" data-pczlon="'+lon+'" data-pczaddr="'+esc(String(p.street||'')+' '+String(p.building_number||'')+', '+String(p.post_code||'')+' '+String(p.city||''))+'">'+
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><b>'+disp+'</b><span style="color:var(--accent);font-size:11px;white-space:nowrap">Wybierz →</span></div>'+addr+'</button>';
       }).join('');
-      // delegation: pick via data attrs (no broken inline-quote escaping)
+      // delegation
       box.querySelectorAll('button[data-pczbk]').forEach(function(b){
-        b.style.cssText='text-align:left;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card);cursor:pointer;font-size:12.5px;display:block;width:100%';
-        b.onclick=function(){ pickPaczkomat(b.getAttribute('data-pczbk'), b.getAttribute('data-pczdisp')); };
+        b.style.cssText='text-align:left;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--card);cursor:pointer;font-size:13px;display:block;width:100%;margin-bottom:6px';
+        b.onclick=function(){
+          var addr=b.getAttribute('data-pczaddr')||'';
+          document.getElementById('fPaczkomatName').value=b.getAttribute('data-pczbk');
+          document.getElementById('fPaczkomat').value=b.getAttribute('data-pczdisp');
+          document.getElementById('fPaczkomatAddr').value=addr;
+          document.getElementById('fPaczkomatLat').value=b.getAttribute('data-pczlat')||'';
+          document.getElementById('fPaczkomatLon').value=b.getAttribute('data-pczlon')||'';
+          box.innerHTML='';
+          showPickupMap();
+          toast('Wybrano: '+b.getAttribute('data-pczbk')+' — '+addr, true);
+        };
       });
     }).catch(function(){ box.innerHTML='<div style="color:var(--muted);font-size:13px">Nie udało się pobrać punktów.</div>'; });
   }
-  function pickPaczkomat(name, disp){
-    document.getElementById('fPaczkomat').value=disp||name;
-    document.getElementById('fPaczkomatName').value=name;
-    document.getElementById('paczkomatList').innerHTML='';
+  function showPickupMap(){
+    var lat=document.getElementById('fPaczkomatLat').value, lon=document.getElementById('fPaczkomatLon').value;
+    var box=document.getElementById('pickupMap');
+    if(!box) return;
+    if(!lat||!lon){ box.innerHTML=''; return; }
+    box.style.display='block';
+    box.innerHTML='<div style="margin-top:10px"><div style="font-size:12px;color:var(--muted);margin-bottom:6px">📍 Lokalizacja punktu na mapie:</div>'+
+      '<iframe loading="lazy" style="width:100%;height:200px;border:1px solid var(--border);border-radius:10px" src="https://www.openstreetmap.org/export/embed.html?bbox='+(parseFloat(lon)-0.01)+','+(parseFloat(lat)-0.006)+','+(parseFloat(lon)+0.01)+','+(parseFloat(lat)+0.006)+'&layer=mapnik&marker='+lat+','+lon+'"></iframe>'+
+      '<div style="font-size:11px;color:var(--muted);margin-top:4px">Wybrany paczkomat: <b>'+document.getElementById('fPaczkomatName').value+'</b> · '+document.getElementById('fPaczkomatAddr').value+'</div></div>';
   }
 
 
@@ -412,12 +438,19 @@ function submitOrder(){
   var nm=document.getElementById('fName').value.trim(), em=document.getElementById('fEmail').value.trim();
   if(!nm||!em){ toast('Wpisz imię i email',''); return; }
   if(!CART.length){ toast('Dodaj co najmniej jeden model',''); return; }
-  var pczk=(document.getElementById('fPaczkomatName')||{}).value||document.getElementById('fPaczkomat').value.trim();
-  var nip=(document.getElementById('fNip')||{}).value||'';
-  var comp=(document.getElementById('fCompany')||{}).value||'';
-  var shipAddr=document.getElementById('fAddr').value.trim();
-  if(pczk){ shipAddr=(shipAddr?shipAddr+', ':'')+'Paczkomat: '+pczk; }
-  if(nip){ shipAddr=(shipAddr?shipAddr+', ':'')+'NIP: '+nip; if(comp) shipAddr+=', ' + comp; }
+  var shipSel=document.getElementById('fShipping').value;
+    var nip=(document.getElementById('fNip')||{}).value||'';
+    var comp=(document.getElementById('fCompany')||{}).value||'';
+    var shipAddr=document.getElementById('fAddr').value.trim();
+    if(shipSel==='address'){
+      var dest=(document.getElementById('fCompanyShip')||{}).value.trim();
+      if(dest){ shipAddr=(shipAddr?shipAddr+', ':'')+'DOSTAWA NA ADRES: '+dest; }
+      else { shipAddr=(shipAddr?shipAddr+', ':'')+'DOSTAWA KURIEREM NA ADRES'; }
+    } else {
+      var pczk=(document.getElementById('fPaczkomatName')||{}).value||document.getElementById('fPaczkomat').value.trim();
+      if(pczk){ shipAddr=(shipAddr?shipAddr+', ':'')+'Paczkomat: '+pczk; }
+    }
+    if(nip){ shipAddr=(shipAddr?shipAddr+', ':'')+'NIP: '+nip; if(comp) shipAddr+=', ' + comp; }
   var body={name:nm,email:em,phone:document.getElementById('fPhone').value.trim(),address:shipAddr,city:document.getElementById('fCity').value.trim(),country:document.getElementById('fRegion').value,shipping:document.getElementById('fShipping').value,shipping_region:document.getElementById('fRegion').value,discount_code:document.getElementById('fCode').value.trim(),notes:document.getElementById('fNotes').value.trim(),payment_method:'stripe',currency:cur,items:CART.map(function(it){return {job_uuid:it.job_uuid,job_id:it.job_id,model_name:it.model_name,material:it.material,color:it.color,colors:it.colors||1,quantity:it.qty,volume_cm3:it.vol,estimated_hours:0,dims:it.dims};})};
   var btn=document.getElementById('submitBtn'); btn.disabled=true; btn.textContent='Tworzę zamówienie…';
   fetch('/api/orders/multi?t='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
