@@ -44,13 +44,8 @@ DEFAULT_MATERIAL_PRICES = {
     "PLA": 79.0, "PLA HT": 120.0, "PLA CF": 199.0,
     "PETG": 95.0, "PETG HF": 129.0, "PETG FR": 150.0,
     "ABS": 89.0, "ASA": 159.0, "ASA CF": 299.0,
-    "TPU": 130.0, "TPU 75D": 150.0,
-    "PA12 CF": 349.0, "PA12": 180.0,
-    "PCTG": 140.0,
-    "Iglidur I150PF": 450.0, "Iglidur I180PF": 480.0, "Iglidur I190PF": 520.0,
+    "TPU": 130.0,
     "PLA Matte": 100.0, "PLA Silk": 110.0, "PLA Glow": 130.0,
-    "BAMBU PLA Basic": 99.0, "BAMBU PETG HF": 129.0, "BAMBU ASA": 159.0,
-    "BAMBU PA12-CF": 349.0, "BAMBU PLA Matte": 109.0,
 }
 
 DEFAULT_COLOR_PREMIUM = {
@@ -73,19 +68,15 @@ DEFAULT_SHIPPING = {
 DEFAULT_WATTS = 150
 DEFAULT_KWH = getattr(settings, "kwh_price", 1.50)  # Bamboo P1S ~1.5 zł/kWh
 PACKING_FEE_PLN = 5.0  # karton + etykieta + folia na przesyłkę (InPost Paczkomat)
+FREE_SHIPPING_MIN_PLN = 200.0  # zamówienia >=200 zł → wysyłka gratis (Tom pokrywa koszt)
 MARGIN_PERCENT = getattr(settings, "print_margin_percent", 68)
 MAX_PART_AREA_MM2 = 65536  # 256×256 mm build (Bamboo P1S)
 DENSITIES = {
     "PLA": 1.24, "PLA HT": 1.24, "PLA CF": 1.24,
     "PLA Matte": 1.24, "PLA Silk": 1.24, "PLA Glow": 1.24,
     "PETG": 1.27, "PETG HF": 1.27, "PETG FR": 1.28,
-    "BAMBU PLA Basic": 1.24, "BAMBU PETG HF": 1.27, "BAMBU ASA": 1.07,
-    "BAMBU PA12-CF": 1.25, "BAMBU PLA Matte": 1.24,
     "ABS": 1.04, "ASA": 1.07, "ASA CF": 1.15,
-    "TPU": 1.20, "TPU 75D": 1.20,
-    "PA12": 1.14, "PA12 CF": 1.25,
-    "PCTG": 1.27,
-    "Iglidur I150PF": 1.42,
+    "TPU": 1.20,
 }
 
 # — Material descriptions: properties + typical use (shown to customer before ordering) —
@@ -103,18 +94,6 @@ MATERIAL_DESCRIPTIONS = {
     "ASA": "Odporny na UV i warunki atmosferyczne (nie żółknie na słońcu). Elementy zewnętrzne, ogrodowe, motoryzacyjne, części narażone na słońce.",
     "ASA CF": "ASA z włóknem węglowym — odporny na UV i sztywny. Elementy zewnętrzne i konstrukcyjne, części motoryzacyjne premium.",
     "TPU": "Elastyczny, gumowy. Uszczelki, ochraniacze, amortyzatory, części giętkie i odporne na ścieranie.",
-    "TPU 75D": "TPU twardy (twardość 75D), na pograniczu twardego plastiku i gumy. Sprężyste części, zawiasy klipsowe, elementy wymagające elastyczności i wytrzymałości.",
-    "PA12 CF": "Najmocniejszy: nylon z włóknem węglowym. Elementy funkcjonalne pod obciążeniem, części mechaniczne, koła zębate, haki, wsporniki. Najwyższa wytrzymałość i odporność na ścieranie.",
-    "PA12": "Nylon — mocny, odporny na ścieranie i chemię. Koła zębate, elementy mechaniczne, części pracujące, łożyska ślizgowe.",
-    "PCTG": "Bardzo przezroczysty, odporny na uderzenia, do kontaktu z żywnością. Elementy optyczne, przezroczyste obudowy, pojemniki.",
-    "Iglidur I150PF": "Łożyskowy Iglidur — samosmarujący, cichy i odporny na ścieranie. Łożyska ślizgowe, prowadnice, zawiasy, części ruchome pracujące bez smarowania.",
-    "Iglidur I180PF": "Iglidur o podwyższonej wytrzymałości mechanicznej. Łożyska i części ruchome o większym obciążeniu.",
-    "Iglidur I190PF": "Iglidur najwyższej wytrzymałości — do wymagających zastosowań technicznych, łożysk i elementów obciążonych.",
-    "BAMBU PLA Basic": "PLA Bambu Lab — uniwersalny, do prototypów, modeli i codziennych części.",
-    "BAMBU PETG HF": "PETG Bambu Lab o wysokiej jakości, przejrzysty i udarny.",
-    "BAMBU ASA": "ASA Bambu Lab — odporny na UV, do elementów zewnętrznych i motoryzacyjnych.",
-    "BAMBU PA12-CF": "Nylon z włóknem węglowym Bambu Lab — najwyższa wytrzymałość do części funkcjonalnych.",
-    "BAMBU PLA Matte": "Matowy PLA Bambu Lab — estetyczne wykończenie do modeli i dekoracji.",
 }
 
 
@@ -307,6 +286,11 @@ def calculate_price(
     # minimum order: product must be >= 5 zł
     if product_total < 5.0:
         product_total = 5.0
+    # FREE SHIPPING: zamówienia >=200 zł (produkt) → wysyłka gratis, Tom pokrywa koszt
+    free_shipping = False
+    if shipping_cost > 0 and product_total >= float(_cfg(db, "free_shipping_min_pln", FREE_SHIPPING_MIN_PLN)):
+        shipping_cost = 0.0
+        free_shipping = True
     pln_total = round(product_total + shipping_cost - discount_pln, 2)
 
     # round up to nearest 0.5 zł (customer pricing)
@@ -878,6 +862,12 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db)):
         margin_sum += row.margin_pln
         total += calc["total"] - calc["shipping_cost"]   # product per item (PLN, no shipping)
         items_rows.append(row)
+
+    # FREE SHIPPING: product >= 200 PLN -> shipping gratis (Tom covers cost)
+    product_pln = total - shipping_cost  # przed rabatem, sama produkcja
+    if shipping_cost > 0 and product_pln >= float(_cfg(db, "free_shipping_min_pln", FREE_SHIPPING_MIN_PLN)):
+        total -= shipping_cost
+        shipping_cost = 0.0
 
     # discount across whole order (apply once on product total)
     if req.discount_code and db:
