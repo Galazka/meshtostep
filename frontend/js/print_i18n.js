@@ -76,7 +76,7 @@ const PI18N = {
     adminKicker: 'Panel admina', adminTitle: 'Panel admina', adminSub: 'Zaloguj się jako administrator, aby zarządzać zamówieniami.',
     adminTabOrders: 'Zamówienia', adminTabStats: 'Statystyki', adminTabPricing: 'Cennik', adminTabCodes: 'Kody rabatowe', adminTabGallery: 'Galeria',
     ctaTitle: 'Zamów druk', ctaSub: 'Wgraj model i wyceń go w sekundy.', ctaBtn: 'Rozpocznij zamówienie',
-    footerRights: 'Wszystkie prawa zastrzeżone.', footerPrint: 'Zamów druk', footerHost: 'Hosting modeli', footerContact: 'Kontakt', footerAbout: 'O nas',
+    footerRights: '© 2026 3dfile.link — druk 3D na życzenie.', sfAbout: 'Niezależna pracownia druku 3D z Gdańska. Druk na życzenie, hosting modeli i konwersja STL→STEP — wszystko w jednym miejscu.', sfNav: 'Nawigacja', sfHelp: 'Pomoc', sfContact: 'Kontakt', sfBottom: 'Druk 3D · Hosting modeli · STL → STEP', footerPrint: 'Zamów druk', footerHost: 'Hosting modeli', footerContact: 'Kontakt', footerAbout: 'O nas',
     // order.html
     dropTitle: '📦 Załaduj swój model (STL / OBJ / 3MF)',
     dropSub: 'Objętość i wymiary wypełnią się automatycznie. Dodaj wiele modeli do jednej paczki.',
@@ -170,7 +170,7 @@ const PI18N = {
     adminKicker: 'Admin panel', adminTitle: 'Admin panel', adminSub: 'Sign in as administrator to manage orders.',
     adminTabOrders: 'Orders', adminTabStats: 'Statistics', adminTabPricing: 'Pricing', adminTabCodes: 'Discount codes', adminTabGallery: 'Gallery',
     ctaTitle: 'Order a print', ctaSub: 'Upload a model and get a price in seconds.', ctaBtn: 'Start your order',
-    footerRights: 'All rights reserved.', footerPrint: 'Order a print', footerHost: 'Model hosting', footerContact: 'Contact', footerAbout: 'About',
+    footerRights: '© 2026 3dfile.link — on-demand 3D printing.', sfAbout: 'Independent 3D printing studio from Gdańsk. On-demand printing, model hosting and STL→STEP conversion — all in one place.', sfNav: 'Navigation', sfHelp: 'Help', sfContact: 'Contact', sfBottom: '3D printing · Model hosting · STL → STEP', footerPrint: 'Order a print', footerHost: 'Model hosting', footerContact: 'Contact', footerAbout: 'About',
     dropTitle: '📦 Upload your model (STL / OBJ / 3MF)',
     dropSub: 'Volume and dimensions fill in automatically. Add multiple models to one batch.',
     warnDim: 'The actual print may differ from the model by 0.3–1% (up to ~2% for technical materials).',
