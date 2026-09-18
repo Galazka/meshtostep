@@ -68,6 +68,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 .toast{position:fixed;bottom:22px;right:22px;background:#0f172a;color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;z-index:9999;opacity:0;transition:opacity .25s;box-shadow:var(--shadow-lg)}
 .loading{position:absolute;inset:0;background:rgba(255,255,255,.75);display:none;align-items:center;justify-content:center;font-size:14px;color:var(--muted);z-index:5}
 </style>
+<script type="importmap">
+{"imports":{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js","three/addons/loaders/OBJLoader.js":"/vendor/three/loaders/OBJLoader.js"}}
+</script>
+
 </head>
 <body>
 <div class="loading" id="loading">Przeliczam…</div>
@@ -222,7 +226,13 @@ document.getElementById('fileInput').addEventListener('change',function(){ var f
   fetch('/api/estimate?t='+Date.now(),{method:'POST',body:fd}).then(function(r){return r.json();}).then(function(d){
     document.getElementById('loading').style.display='none';
     var vol=d.volume_cm3||0;
-    var item={job_id:null,job_uuid:d.uuid||null,model_name:f.name,material:'PLA',color:'natural',qty:1,vol:vol,dims:d.dimensions||'',desc:'',price:5.0};
+    var item={job_id:null,job_uuid:d.uuid||null,model_name:f.name,material:'PLA',color:'natural',qty:1,vol:vol,dims:d.dimensions||'',desc:'',price:5.0,_bytes:null};
+    // read local bytes for instant 3D preview (no server round-trip)
+    f.arrayBuffer().then(function(buf){
+      item._bytes=new Uint8Array(buf);
+      try{ if(selIdx===CART.length-1 && typeof window.__local3d!=='undefined' && typeof local3dPreview==='function'){ local3dPreview(CART.length-1); } }catch(e){}
+    }).catch(function(){});
+    function local3dPreview(i){ if(window.__local3d&&CART[i]&&CART[i]._bytes){ window.__local3d.renderBytes(CART[i].model_name,CART[i]._bytes,'previewBox'); } }
     // always get a hostable job for 3D preview (public /e/{job_id})
     var fd3=new FormData(); fd3.append('mode','auto'); fd3.append('file',f);
     fetch('/api/convert?t='+Date.now(),{method:'POST',body:fd3}).then(function(r){return r.json();}).then(function(cv){ if(cv&&cv.job_id){ item.job_id=cv.job_id; if(selIdx===CART.length-1){ preview(CART.length-1); } } }).catch(function(){});
@@ -271,6 +281,7 @@ function calc(){
 function preview(i){
   selIdx=i; drawCart(); refreshMatSel(); if(typeof refreshCol==='function') refreshCol();
   var it=CART[i], box=document.getElementById('previewBox');
+  if(it && it._bytes && typeof window.__local3d!=='undefined'){ try{ window.__local3d.renderBytes(it.model_name,it._bytes,'previewBox'); return; }catch(e){ } }
   if(it.job_id){
     box.innerHTML='<iframe class="preview-iframe" src="/e/'+it.job_id+'" frameborder="0" allowfullscreen></iframe>';
   } else {
@@ -300,5 +311,57 @@ function submitOrder(){
 
 buildCur(); loadMats(); drawCart(); calc();
 </script>
+
+<script type="module">
+import * as THREE from 'three';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+window.__local3d = {
+  renderBytes: function(filename, bytes, boxId){
+    var ext = (filename || '').split('.').pop().toLowerCase();
+    var isStl = (ext==='stl'); var isObj = (ext==='obj'||ext==='ply');
+    var box = document.getElementById(boxId||'previewBox');
+    if(!box) return;
+    box.innerHTML = '<div class="local3d-box" style="width:100%;height:340px;position:relative"><canvas style="width:100%;height:340px;display:block"></canvas><div style="position:absolute;bottom:8px;left:10px;font-size:11px;color:#64748b">przytrzymaj LPM = obrót · scroll = zoom</div></div>';
+    var canvas = box.querySelector('canvas');
+    var renderer;
+    try { renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true}); }
+    catch(e){ renderer = new THREE.WebGLRenderer(); }
+    var scene = new THREE.Scene();
+    var cam = new THREE.PerspectiveCamera(60);
+    cam.position.set(0, 60, 120);
+    var grid = new THREE.GridHelper(200, 20, {units: THREE.Units.MM});
+    scene.add(grid);
+    var onMesh = function(mesh){
+      mesh.material = new THREE.MeshLambertMaterial({color: new THREE.Color(0.8, 0.82, 0.85)});
+      scene.add(mesh);
+      cam.lookAt(new THREE.Number(0,0,0));
+      _fit(canvas, renderer, scene, cam);
+      renderer.render(scene, cam);
+      _spin();
+    };
+    var _fit = function(){
+      var b=scene.getBox(); if(!b) return;
+      var max=Math.max(b.xInterval().length, b.yInterval().length, b.zInterval().length);
+      var d=max*2.2+20; cam.position.set(d*0.7, d*0.4, d*1.1);
+    };
+    var _spin=false;
+    var handleEv = {onMouseMove:function(e,c){ if(_spin){ cam.position.x+=e.dx*0.2; }} };
+    try {
+      if(isStl){
+        var loader = new STLLoader();
+        loader.load(new THREE.IStream(bytes, 'stl'), function(mesh){ onMesh(mesh); }, function(){ onMesh(loader.get()); });
+      } else if(isObj){
+        var ol= new OBJLoader();
+        ol.load(new THREE.IStream(bytes,'obj'), function(mesh){ onMesh(mesh); }, function(){ onMesh(ol.get()); });
+      } else {
+        box.innerHTML='<div style="padding:20px;text-align:center">📦 <b>'+esc2((filename||'Model'))+'</b><br><span style="color:var(--muted);font-size:13px">Ten format podglądamy dla STL/OBJ — inne formaty 3MF/GLB wymagają konwersji (chwilę)</span></div>';
+      }
+    } catch(err){ box.innerHTML='<div style="padding:20px;text-align:center">Podgląd 3D: '+String(err).slice(0,120)+'</div>'; }
+    function esc2(x){ return String(x).replace(/</g,'&lt;').replace(/&/g,'&amp;'); }
+  }
+};
+</script>
+
 </body>
 </html>
