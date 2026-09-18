@@ -1,0 +1,4 @@
+<footer class="footer-print">
+      <span class="copyright" data-i18n="footerRights">© 2026 3dfile.link — druk 3D na wymiar.</span>
+      <a href="#" onclick="openAdminPanel();return false">Administracja</a>
+    </footer>

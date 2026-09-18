@@ -79,6 +79,7 @@
           <a href="/#hiw" class="nav-link-print" data-i18n="navHow">Jak to działa</a>
           <a href="/drukuje" class="nav-link-print active" data-i18n="navPrint">Zleć nam wydruk</a>
           <a href="/#faq" class="nav-link-print" data-i18n="navFAQ">FAQ</a>
+          <a href="/blog.html" class="nav-link-print">Blog</a>
           <span style="display:inline-flex;align-items:center;gap:4px;margin-left:4px">
                       <a href="/" class="btn-nav-print">Zaloguj</a>
                       <a href="/" class="btn-nav-print primary">Załóż konto</a>
@@ -102,7 +103,25 @@
         <img src="/asset/hero_printer.png?v=1" alt="Druk 3D na życzenie" loading="lazy" style="width:100%;max-width:380px;object-fit:contain;filter:drop-shadow(0 10px 22px rgba(15,23,42,.18))">
       </div>
     </section>
-    <!-- About / kim jesteśmy -->
+    <!-- Grand Slam Offer / gwarancja — Hormozi style -->
+    <section class="guarantee-print reveal" id="oferta" style="margin:26px 0;border:2px solid var(--accent);border-radius:16px;overflow:hidden;background:linear-gradient(135deg,#0b5394,#0ea5e9);color:#fff">
+      <div style="padding:28px 30px">
+        <div style="font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#e0f2fe;margin-bottom:10px" data-i18n="offerKicker">Nasza obietnica</div>
+        <h2 style="font-size:26px;font-weight:800;line-height:1.25;color:#fff" data-i18n="offerTitle">Wydruk jak z modelu, na czas — albo oddajemy pieniądze</h2>
+        <p style="margin-top:12px;font-size:15px;color:#e0f2fe;max-width:720px" data-i18n="offerSub">Wgraj plik, wyceń w 30 sekund, zapłać online. Dostajesz wydruk w 5 dni roboczych (albo 2 w trybie ekspres) — a jeśli nie spełni oczekiwań co do wymiarów i jakości, <strong style="color:#fff">dokonujemy zwrotu</strong>. Zero ryzyka z Twojej strony.</p>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:18px">
+          <span style="background:rgba(255,255,255,.16);padding:8px 14px;border-radius:30px;font-size:13px;font-weight:600" data-i18n="offerG1">✓ Wycena w 30 s, bez ukrytych kosztów</span>
+          <span style="background:rgba(255,255,255,.16);padding:8px 14px;border-radius:30px;font-size:13px;font-weight:600" data-i18n="offerG2">✓ Druga próba przy problemie z jakością</span>
+          <span style="background:rgba(255,255,255,.16);padding:8px 14px;border-radius:30px;font-size:13px;font-weight:600" data-i18n="offerG3">✓ Darmowa wysyłka od 200 zł</span>
+          <span style="background:rgba(255,255,255,.16);padding:8px 14px;border-radius:30px;font-size:13px;font-weight:600" data-i18n="offerG4">✓ Status od druku po dostawę</span>
+        </div>
+        <div style="margin-top:20px">
+          <a href="/zamow" class="hero-cta" style="background:#fff;color:#0b5394;display:inline-block;padding:14px 32px;border-radius:10px;font-weight:800;font-size:16px" data-i18n="offerCta">Zamów wydruk teraz → wycena w 30 s</a>
+        </div>
+      </div>
+    </section>
+
+<!-- About / kim jesteśmy -->
 <section class="about-print reveal" id="about" style="padding:56px 0;background:var(--bg-alt);border-radius:18px">
   <div class="section-head">
     <span class="section-kicker" data-i18n="aboutKicker">O nas</span>
@@ -193,7 +212,29 @@
               <details style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px"><summary style="font-weight:600;cursor:pointer;font-size:15px" data-i18n="faq5q">Jak zapłacę i czy jest bezpiecznie?</summary><div style="margin-top:8px;color:var(--muted);font-size:14px">Płatność przez <strong>Stripe</strong> (karta, BLIK, przelew) — bezpieczny standard dla e-commerce. Faktura/VAT według kraju dostawy doliczany automatycznie.</div></details>
             </div>
           </section>
-          <!-- Guide / wiedza (SEO) -->
+      <!-- Hosting value stack (Hormozi-style) -->
+    <section class="hosting-value reveal" id="hosting" style="padding:44px 0;background:var(--card);border:1px solid var(--border);border-radius:16px">
+      <div class="section-head">
+        <span class="section-kicker" data-i18n="hostKicker">Hosting modeli 3D</span>
+        <h2 data-i18n="hostTitle2">Udostępniaj modele jak profesjonalista — za darmo</h2>
+        <p class="section-sub" data-i18n="hostSub">Nie jesteśmy tylko drukarnią. Zapisuj, podglądaj i dziel się modelami 3D jednym linkiem — bez instalacji, na telefonie i laptopie.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:1080px;margin:14px auto 0;padding:0 16px">
+        <div class="step-card"><div class="step-num">1</div><h3 data-i18n="h1t">Podgląd 3D w przeglądarce</h3><p data-i18n="h1d">Obrót, zoom, sprawdzenie detali. Działa na telefonie i laptopie, bez instalacji.</p></div>
+        <div class="step-card"><div class="step-num">🔗</div><h3 data-i18n="h2t">Jeden link wszędzie</h3><p data-i18n="h2d">Wklej na Printables, MakerWorld, Thingiverse. Do Instagrama, opisów czy aukcji.</p></div>
+        <div class="step-card"><div class="step-num">🛡</div><h3 data-i18n="h3t">Prywatność i kontrola</h3><p data-i18n="h3d">Publiczny, unlisted (tylko link) lub prywatny. Twoje pliki, Twoje zasady.</p></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:1080px;margin:14px auto 0;padding:0 16px">
+        <div class="step-card"><div class="step-num">📦</div><h3 data-i18n="h4t">Formaty STL / OBJ / 3MF</h3><p data-i18n="h4d">Wielokolorowe 3MF widzisz z kolorami, STL/OBJ z podglądem geometrii.</p></div>
+        <div class="step-card"><div class="step-num">↔</div><h3 data-i18n="h5t">Konwersja STL → STEP</h3><p data-i18n="h5d">Przekonwertuj mesh na edytowalną bryłę CAD prosto w przeglądarce.</p></div>
+        <div class="step-card"><div class="step-num">∞</div><h3 data-i18n="h6t">Bez limitu i konta</h3><p data-i18n="h6d">Zacznij od razu. Hosting przyjazny i prywatny — RODO, bez sprzedaży danych.</p></div>
+      </div>
+      <div style="text-align:center;margin-top:22px">
+        <a href="/" class="hero-cta" style="display:inline-block;padding:13px 30px;border-radius:10px;background:var(--accent);color:#fff;font-weight:700" data-i18n="hostCta">Wgraj model za darmo</a>
+      </div>
+    </section>
+
+    <!-- Guide / wiedza (SEO) -->
     <section class="guide-reveal reveal" id="guide" style="padding:44px 0;background:var(--card);border:1px solid var(--border);border-radius:16px">
       <div class="section-head">
         <span class="section-kicker" data-i18n="guideKicker">Przewodnik po druku 3D</span>
@@ -251,6 +292,18 @@
       </div>
     </section>
 
+<!-- Final CTA / urgency (Hormozi) -->
+    <section class="final-cta reveal" id="drukuj-teraz" style="margin:30px 0;border-radius:18px;overflow:hidden;background:linear-gradient(135deg,#0f172a,#0b5394);color:#fff;text-align:center;padding:46px 24px">
+      <div style="font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#7dd3fc" data-i18n="finKicker">Druk 3D na życzenie</div>
+      <h2 style="font-size:30px;font-weight:800;margin:10px 0;color:#fff" data-i18n="finTitle">Twój model czeka — zamień go w realny wydruk</h2>
+      <p style="max-width:640px;margin:0 auto;font-size:15px;color:#cbd5e1" data-i18n="finSub">Wycena w 30 sekund. Druki od 5 zł. Przedpłata tylko po akceptacji ceny. Drukujemy od 5 dni roboczych, wysyłka InPost na cały świat.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:20px">
+        <a href="/zamow" style="background:var(--accent);color:#fff;padding:16px 38px;border-radius:12px;font-weight:800;font-size:17px;display:inline-block" data-i18n="finCta">Zamów wydruk → wycena w 30 s</a>
+        <a href="/en/order" style="border:2px solid rgba(255,255,255,.4);color:#fff;padding:16px 38px;border-radius:12px;font-weight:700;font-size:17px;display:inline-block" data-i18n="finCtaEn">Order in English</a>
+      </div>
+      <div style="margin-top:22px;font-size:13px;color:#94a3b8" data-i18n="finNote">✓ Płatność Stripe (karta / BLIK / przelew) · ✓ Gwarancja zwrotu · ✓ Wsparcie PL/EN</div>
+    </section>
+
 <!-- Admin panel — hidden by default, accessible via #admin anchor -->
         <div id="adminPanel" style="display:none">
       <h2 data-i18n="adminTitle">Panel admina</h2>
@@ -283,9 +336,10 @@
   </main>
     <div id="toastEl" class="toast-print"></div>
     <footer class="footer-print">
-      <span class="copyright" data-i18n="footerRights">© 2026 3dfile.link — druk 3D na wymiar.</span>
-      <a href="#" onclick="openAdminPanel();return false">Administracja</a>
-    </footer>
+          <span class="copyright" data-i18n="footerRights">© 2026 3dfile.link — druk 3D na wymiar.</span>
+          <a href="/blog.html">Blog</a>
+          <a href="#" onclick="openAdminPanel();return false">Administracja</a>
+        </footer>
   <!-- Print Order Modal -->
   <div class="modal-backdrop" id="printOrderModal">
     <div class="modal">
@@ -294,7 +348,7 @@
       <form id="printOrderForm" onsubmit="submitPrintOrder(event)">
         <input type="hidden" name="job_id" id="printOrderId">
         <input type="hidden" name="job_uuid" id="printOrderUuid">
-        <input type="file" id="printFileUpload" accept=".stl,.obj,.ply,.3mf" onchange="onFileUpload()" style="display:none">
+        <input type="file" id="printFileUpload" accept=".stl,.obj,.3mf" onchange="onFileUpload()" style="display:none">
                 <label for="printFileUpload" class="dropzone">
                   <span class="dz-icon">📦</span>
                   <strong>Załaduj swój model (STL / OBJ / 3MF)</strong>

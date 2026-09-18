@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tolerancje i dokładność druku 3D — co musisz wiedzieć | 3DFILE.link</title>
+<meta name="description" content="Jak dokładny jest druk 3D? Tolerancje wymiarowe FDM: PLA 0,3-0,5%, PETG 0,4-1%, ABS/ASA ~0,5%, nylon do 2%. Skurcz, odkształcenia, kalibracja. Poradnik.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://3dfile.link/blog/tolerancje-i-dokladnosc-druku-3d.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#0f172a;--muted:#64748b;--accent:#0ea5e9;--accent2:#0b5394;--border:#e2e8f0;--card:#ffffff;--bg:#f8fafc}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);line-height:1.65}
+.nav{background:#0f172a;color:#fff;padding:14px 0;position:sticky;top:0;z-index:50}
+.nav-in{max-width:920px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.nav a{color:#fff;text-decoration:none;font-weight:600;font-size:14px}
+.nav-links a{margin-left:18px;opacity:.85}
+.nav-links a:hover{opacity:1}
+.badge{background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.3px}
+.wrap{max-width:920px;margin:0 auto;padding:34px 20px 60px}
+.crumbs{font-size:13px;color:var(--muted);margin-bottom:18px}
+.crumbs a{color:var(--accent);text-decoration:none}
+.crumbs a:hover{text-decoration:underline}
+h1{font-size:34px;line-height:1.2;font-weight:800;letter-spacing:-.5px;margin-bottom:14px}
+.meta{color:var(--muted);font-size:14px;margin-bottom:22px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.hero-img{width:100%;border-radius:14px;margin-bottom:26px;box-shadow:0 6px 24px rgba(15,23,42,.12)}
+h2{font-size:24px;font-weight:800;margin:34px 0 12px;letter-spacing:-.3px;line-height:1.3}
+h3{font-size:19px;font-weight:700;margin:26px 0 10px}
+p{margin-bottom:16px}
+ul,ol{margin:0 0 18px 22px}
+li{margin-bottom:8px}
+.box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin:20px 0}
+.box.cta{background:linear-gradient(135deg,#0ea5e9,#0b5394);color:#fff;border:none;text-align:center;padding:28px}
+.box.cta h3{color:#fff;font-size:22px;margin-bottom:8px}
+.box.cta p{color:#e0f2fe;font-size:15px}
+.btn{display:inline-block;background:#fff;color:#0b5394;font-weight:800;padding:13px 30px;border-radius:10px;text-decoration:none;font-size:16px;margin-top:14px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.btn:hover{transform:translateY(-1px)}
+.tip table{width:100%;border-collapse:collapse;margin:14px 0}
+.tip td,.tip th{border:1px solid var(--border);padding:10px 12px;font-size:14px;text-align:left}
+.tip th{background:#f1f5f9;font-weight:700}
+blockquote{border-left:4px solid var(--accent);background:var(--card);padding:4px 20px;font-size:17px;margin:20px 0;font-style:italic}
+.tag{display:inline-block;background:#e0f2fe;color:#0369a1;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;margin-right:8px;margin-top:6px}
+.tag:hover{background:#bae6fd;text-decoration:none}
+.related h3{font-size:21px;margin:44px 0 16px}
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.rel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;text-decoration:none;color:var(--fg);display:block;transition:transform .15s,box-shadow .15s}
+.rel:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(15,23,42,.1)}
+.rel img{width:100%;height:120px;object-fit:cover}
+.rel .b{padding:12px 14px}
+.rel .b strong{font-size:15px;display:block;margin-bottom:4px;line-height:1.4}
+.rel .b span{color:var(--muted);font-size:13px}
+footer{background:#0f172a;color:#94a3b8;text-align:center;padding:24px;font-size:13px}
+footer a{color:#cbd5e1;text-decoration:none}
+@media(max-width:600px){h1{font-size:26px}h2{font-size:20px}}
+</style>
+</head>
+<body>
+<nav class="nav"><div class="nav-in">
+  <a href="/">3DFILE.link</a>
+  <div class="nav-links"><a href="/drukuje">Druk</a><a href="/">Hosting</a><a href="/blog.html">Blog</a></div>
+</div></nav>
+<div class="wrap">
+  <div class="crumbs"><a href="/drukuje">Strona główna</a> › <a href="/blog.html">Blog</a> › <span>tolerancje-i-dokladnosc-druku-3d</span></div>
+  <h1>Tolerancje i dokładność druku 3D — co musisz wiedzieć</h1>
+  <div class="meta"><span>📅 18.09.2026</span><span>✍️ Zespół 3DFILE.link</span><span>⏱ 7 min czytania</span></div>
+  <img src="/asset/blog/printer3.jpg" alt="tolerancje druk 3d dokladnosc wymiary" class="hero-img" loading="lazy">
+
+  <p>„Zrobię model w CAD, wrzucę na drukarkę i wyjdzie idealnie jak w pliku”. To jedno z najczęstszych założeń, z jakim trafiają do nas klienci — i jedno z tych, które najszybciej prowadzą do rozczarowania. Prawda jest prostsza i wcale nie gorsza: druk 3D jest bardzo dokładny, ale „bardzo” nie znaczy „co do mikrona”. Każdy rzeczywisty przedmiot powstaje z materiału, który podlega skurczowi, chłodzeniu i siłom, o których Twój plik nic nie wie. Zrozumienie, <strong>czym są tolerancje wymiarowe</strong>, to pierwszy krok do wydruków, które naprawdę do siebie pasują — zamiast tych, które „prawie” pasują. W tym poradniku pokazuję, jakie odchyłki realnie uzyskasz w technologii FDM i jak je kontrolować.</p>
+
+  <h2>Czym jest tolerancja w druku 3D</h2>
+  <p>Tolerancja wymiarowa to dopuszczalna różnica między wymiarem zapisanym w modelu a wymiarem, który faktycznie zmierzymy na wydruku. Drukarka nie przenosi geometrii 1:1 — zawsze wystąpi jakaś odchyłka i umiemy tylko sprawić, żeby była mała i powtarzalna. Skąd się ona bierze?</p>
+  <p>Po pierwsze, z <strong>skurczu materiału</strong>. Termoplasty takie jak PLA czy PETG są wtłaczane w postaci stopionego pasma, a następnie stygną w trakcie układania każdej warstwy. Kurczący się filament napina kolejne warstwy, a wiązania temperaturowe odkształcają element. Drugim źródłem jest <strong>rozszerzalność termiczna i geometria osi</strong>: oś X używa paska zębatego, oś Z skoku śruby — każdy taki mechanizm ma własną, drobną, ale powtarzalną niedokładność kroku. Trzecim, czysto fizycznym ograniczeniem jest <strong>średnica dyszy i wysokość warstwy</strong>. Jeśli Twój model ma ścianę węższą niż dwukrotna szerokość ekstrudowanego pasma, drukarka po prostu nie potrafi jej odtworzyć — materiał wypełni przestrzeń „jak mu wyjdzie”. Do tego dochodzi <strong>delay ekstruzji</strong> (rozbieżność między ruchem głowicy a wypływem filamentu na zakrętach) oraz chłodzenie podczas druku, które odkształca element zwłaszcza wtedy, gdy ma cienkie, wysokie ścianki.</p>
+  <p>W praktyce oznacza to jedno: <strong>odchyłka nie wynosi zero</strong>. Ale hel z dokładną znajomością tych mechanizmów możemy przewidzieć, zmierzyć i częściowo skompensować — i o tym jest reszta tego artykułu.</p>
+
+  <h2>Tabela tolerancji materiałów</h2>
+  <p>Najczęściej używane filamenty mają różny charakter skurczu, więc i różne typowe tolerancje. Poniżej zbiór wartości, którymi posługujemy się w pracowni przy projektowaniu i wycenach:</p>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Materiał</th><th>Typowa tolerancja</th><th>Uwagi</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>PLA</td><td>0,3–0,5%</td><td>Najlepsze odwzorowanie detali, minimalny skurcz, mało krzywienia.</td></tr>
+        <tr><td>PETG</td><td>0,4–1%</td><td>Wytrzymały i udarny, ale nieco mniej precyzyjny w cienkich ściankach.</td></tr>
+        <tr><td>ABS</td><td>~0,5%</td><td>Kurczy się mocniej, podatny na odkształcenia warstw.</td></tr>
+        <tr><td>ASA</td><td>~0,5%</td><td>Jak ABS, plus odporność na promieniowanie UV — dobry na zewnątrz.</td></tr>
+        <tr><td>PA12 / nylon</td><td>do 2%</td><td>Higroskopijny — chłonie wilgoć, wymaga suszenia przed drukiem.</td></tr>
+      </tbody>
+    </table>
+    <p>Zakresy podane są dla pojedynczego wymiaru w odniesieniu do rozmiaru elementu. W praktyce przyjmujemy, że <strong>bezpieczny górny próg to ~2%</strong> — powyżej niego projektujemy już pod konkretne pasowania i sprawdzamy wymiar na próbce, a nie na przekonaniu.</p>
+  </div>
+
+  <h2>Co wpływa na dokładność</h2>
+  <p>Nawet ten sam filament na tej samej drukarce da inne wyniki, jeśli zmienisz któryś z poniższych czynników:</p>
+  <ul>
+    <li><strong>Kalibracja maszyny</strong> — wyosiowanie stołu, kroki osi (esteps) i poziomowanie to fundament. Rozjechany stół zniszczy dokładność każdego materiału.</li>
+    <li><strong>Temperatura wydruku</strong> — zbyt gorąca dysza daje „ciasteczkowate” warstwy i wypukłości, zbyt zimna słabe wiązanie między warstwami i efekt kokonów.</li>
+    <li><strong>Wilgotność filamentu</strong> — szczególnie w nylonie i PETG: wilgoć zamienia się w parę w dyszy, powodując pęcherze, która drastycznie psuje wymiary. Suszenie przed drukiem to konieczność.</li>
+    <li><strong>Orientacja wydruku na stole</strong> — wymiary w płaszczyźnie XY są zwykle dokładniejsze niż w osi Z, gdzie liczy się wysokość warstwy. Okrągły otwór lepiej wydrukować pionowo niż poziomo, by uniknąć spłaszczenia u góry.</li>
+    <li><strong>Wsporniki</strong> — tam, gdzie podpory dotykają elementu, zostawiają ślad i potrafią „pociągnąć” materiał podczas usuwania. To zawsze punkt o niższej dokładności.</li>
+  </ul>
+
+  <h2>Jak ograniczyć odchyłki</h2>
+  <p>Nie chodzi o eliminację odchyłek, tylko o to, żeby trafiły tam, gdzie nie przeszkadzają, i o pozostawienie materiałowi miejsca na jego naturę:</p>
+  <ul>
+    <li><strong>Planuj rysy i pasowania z zapasem</strong> — tłoczek w otworze to nie dzielna ścisłość; planuj ~0,2–0,3 mm luzu na element ruchomy i pracuj na promieniach zaokrągleń, zamiast ostrych krawędzi.</li>
+    <li><strong>Drukuj próbki</strong> — przed produkcją serii zrób jeden testowy wydruk kluczowych wymiarów. Zmierz suwmiarką, porównaj z modelem, skompensuj.</li>
+    <li><strong>Kalibruj regularnie</strong> — po każdej wymianie dyszy lub filamencie. Dobrze skalibrowana maszyna daje wyniki równie dobre jak drogi, ale nieodkalibrowany sprzęt — nigdy.</li>
+    <li><strong>Dopasuj parametry do materiału</strong> — inne chłodzenie dla PLA, inne dla ABS; podobnie z temperaturami. Nie drukuj PETG „jakby był PLA”.</li>
+  </ul>
+  <p>Do pomiarów używaj suwmiarki z noniuszem (dokładność ok. 0,05 mm) albo mikrometru do wymiarów poniżej milimetra. Mierz zawsze w trzech miejscach elementu i porównuj z modelem — to pokaże Ci nie tylko odchylenie średnie, ale i tendencję (np. „wszystkie otwory są o 0,15 mm mniejsze”), którą skompensujesz ustawieniem XY-holes w slicerze. Systematyczna kompensacja potrafi zawęzić realną tolerancję serii do wartości, o których mówimy w tabeli powyżej.</p>
+
+  <blockquote>
+    Zasada z pracowni: jeśli ma być idealnie na „zero”, to nie druk 3D — to tokarka. Jeśli ma być funkcjonalne i powtarzalne, druk 3D da radę — pod warunkiem, że zaplanujesz miejsce na tolerancje.
+  </blockquote>
+
+  <h2>Dlaczego nie gwarantujemy 100%</h2>
+  <p>Moglibyśmy obiecać „wymiary co do mikrona” i wmówić Ci, że model będzie idealną kopią pliku. Tylko że taka obietnica byłaby kłamstwem — a kłamstwo psuje projekt i relację. Dlatego w 3DFILE.link mówimy wprost: <strong>tolerancje są częścią technologii</strong>, a nie jej wadą. Zanim wystartuje produkcja, pokazujemy realne parametry materiału, doradzamy orientację i parametry, a dla krytycznych wymiarów sugerujemy próbkę, którą sprawdzisz fizycznie, zanim zamówisz większą serię.</p>
+  <p>Ta uczciwość ma konkretną praktyczną wartość: otrzymasz wydruk, który wiesz, jak pasuje do Twojej obudowy, łożyska czy wspornika — zamiast dostawać idealny kosmetycznie, ale „prawie pasujący” element. Jeśli projekt ma wymiary krytyczne, naszym obowiązkiem jest poinformować Cię o tym przed startem, a nie po fakcie.</p>
+
+  <div class="box cta">
+    <h3>Chcesz wiedzieć czy Twój wymiar się zmieści?</h3>
+    <p>Opisz nam swój projekt, a sprawdzimy wymiary, dobierzemy materiał i podpowiemy, gdzie zostawić luz.</p>
+    <a class="btn" href="/drukuje">Wyceń wydruk z tolerancją</a>
+  </div>
+
+  <div class="related">
+    <h3>← Przeczytaj też</h3>
+    <div class="rel-grid">
+      <a class="rel" href="/blog/jaki-filament-wybrac-3d.html"><img src="/asset/blog/printer3.jpg" alt=""><div class="b"><strong>PLA vs PETG vs ABS</strong></div></a>
+      <a class="rel" href="/blog/jak-przygotowac-plik-do-druku-3d.html"><img src="/asset/blog/prototype.jpg" alt=""><div class="b"><strong>Jak przygotować plik</strong></div></a>
+      <a class="rel" href="/blog/prototypowanie-3d-dla-firm.html"><img src="/asset/blog/prototype.jpg" alt=""><div class="b"><strong>Prototypowanie 3D dla firm</strong></div></a>
+    </div>
+  </div>
+</div>
+<footer>© 2026 3DFILE.link — <a href="/drukuje">druk 3D na życzenie</a> · <a href="/blog.html">Blog</a> · <a href="/prywatnosc.html">Prywatność</a></footer>
+</body>
+</html>
