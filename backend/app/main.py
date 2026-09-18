@@ -69,6 +69,17 @@ async def csp_middleware(request: Request, call_next):
     if request.url.path.startswith("/e/"):
         csp = csp.replace("frame-ancestors 'self';", "frame-ancestors *;")
     response.headers["Content-Security-Policy"] = csp
+    # ── dodatkowe security headers ──
+    if not request.url.path.startswith("/e/"):
+        response.headers["X-Frame-Options"] = "SAMEORIGIN"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(self), interest-cohort=()"
+    if request.headers.get("x-forwarded-proto") == "https":
+        try:
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        except Exception:
+            pass
     # HTML, SW and app JS never cached — fresh UI + immediate updates (Cloudflare respects no-store).
     # /vendor (three.js) stays cached — stable, heavy.
     _p = request.url.path
