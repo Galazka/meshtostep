@@ -30,6 +30,7 @@ from .routes_stripe import router as stripe_router
 from .routes_gallery import router as gallery_router
 from .routes_reviews import router as reviews_router
 from .routes_contact import router as contact_router
+from .routes_inpost import router as inpost_router
 
 app = FastAPI(title="3dfile.link", version="1.0.0")
 
@@ -130,6 +131,7 @@ app.include_router(stripe_router)
 app.include_router(gallery_router)
 app.include_router(reviews_router)
 app.include_router(contact_router)
+app.include_router(inpost_router)
 
 @app.get("/api/health")
 def health():
