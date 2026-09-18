@@ -830,6 +830,17 @@ class MultiOrderReq(BaseModel):
 def create_multi_order(req: MultiOrderReq, db: Session = Depends(get_db)):
     """Create an order with multiple models. Each item priced via calculate_price,
     one shared shipping + packing. Returns order_id, item_count, totals."""
+    try:
+        return _create_multi_order_impl(req, db)
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(500, detail=f"multi order failed: {e}")
+
+
+def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db)):
     if not req.items:
         raise HTTPException(400, detail="Brak modeli w zamówieniu")
     shipping_cost = round(_cfg_value(db, req.shipping, req.shipping_region), 2)
