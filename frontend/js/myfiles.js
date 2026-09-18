@@ -352,7 +352,7 @@ function mfRender(){
         + '</div>'
         + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
         + '<button onclick="event.stopPropagation();showDownloadDialog(\''+j.uuid+'\',\''+(j.title||j.original_filename||'').replace(/'/g,"\\'")+'\')" style="flex:1;padding:7px 8px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Pobierz</button>'
-        + '<button data-action="mfPrint" data-id="'+j.id+'" style="flex:1;padding:7px 8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:inherit" title="Wyślij do druku">🖨</button>''
+        + '<button data-action="mfPrint" data-id="'+j.id+'" style="flex:1;padding:7px 8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:inherit" title="Wyślij do druku">🖨</button>'
         + '<button onclick="openShareModalFor('+j.id+')" style="flex:1;padding:7px 8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:inherit">Udostępnij</button>'
         + '</div>'
         + '</div></div>';
