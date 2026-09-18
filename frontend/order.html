@@ -219,7 +219,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 var CART=[]; var cur='PLN'; var RATES={PLN:1,USD:4.20,EUR:4.55}; var SYM={PLN:'zł',USD:'$',EUR:'€'};
 var MATS={}; var CUR_ACTSYM=1; var selIdx=-1;
 
-function toast(m,ok){var t=document.createElement('div');t.className='toast';t.style.opacity=1;t.textContent=m;t.style.background=ok?'#059669':'#dc2626';document.body.appendChild(t);setTimeout(function(){t.style.opacity=0;setTimeout(function(){t.remove()},300);},2600);}
+function toast(m,ok){var t=document.createElement('div');t.className='toast';t.style.opacity=1;t.textContent=m;var col=(ok===false||ok==='')?'#dc2626':(ok==='w'?'#d97706':'#059669');t.style.background=col;document.body.appendChild(t);setTimeout(function(){t.style.opacity=0;setTimeout(function(){t.remove()},300);},2600);}
 function _colP(c){return {silver:20,gold:25,carbon:15,transparent:30}[c]||0;}
 function sym(){return SYM[cur];}
 function cx(v){return Math.ceil(v*2)/2;}
@@ -234,8 +234,8 @@ function loadMats(){
 function selectMat(k){ if(selIdx<0){toast('Najpierw kliknij model w koszyku','');return;} CART[selIdx].material=k; drawCart(); refreshMatSel(); calc(); }
 function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document.querySelectorAll('.mat').forEach(function(x){x.classList.toggle('sel',x.dataset.mat===m);}); document.getElementById('matFor').textContent=(selIdx>=0)?('#'+(selIdx+1)+' · '+(CART[selIdx].model_name||'Model')):'—'; }
   function refreshCol(){ var cnt=document.getElementById('colCount'); if(cnt&&selIdx>=0){ cnt.value=String(CART[selIdx].colors||1); } document.querySelectorAll('.swatch').forEach(function(x){x.classList.toggle('sel',x.dataset.color===(selIdx>=0?(CART[selIdx].color||'black'):''));}); document.getElementById('colFor').textContent=(selIdx>=0)?('#'+(selIdx+1)+' · '+(CART[selIdx].model_name||'Model')):'—'; }
-  function applyColor(){ if(selIdx<0){toast('Kliknij model w koszyku','');return;} var cnt=document.getElementById('colCount'); var n=parseInt(cnt?cnt.value:'1'); CART[selIdx].colors=(n>1)?n:1; drawCart(); calc(); refreshCol(); toast('Kolory: '+CART[selIdx].colors+'x'); }
-  function pickColor(c){ if(selIdx<0){toast('Kliknij model w koszyku','');return;} CART[selIdx].color=c; drawCart(); calc(); refreshCol(); toast('Kolor: '+c); }
+  function applyColor(){ if(selIdx<0){toast('Kliknij model w koszyku','');return;} var cnt=document.getElementById('colCount'); var n=parseInt(cnt?cnt.value:'1'); CART[selIdx].colors=(n>1)?n:1; drawCart(); calc(); refreshCol(); toast('Kolory: '+CART[selIdx].colors+'x',true); }
+  function pickColor(c){ if(selIdx<0){toast('Kliknij model w koszyku','');return;} CART[selIdx].color=c; drawCart(); calc(); refreshCol(); toast('Kolor: '+c,true); }
   function setCustType(t){
     var p=document.getElementById('custTypePerson'),f=document.getElementById('custTypeFirm'),fr=document.getElementById('firmRow');
     if(t==='firm'){
@@ -320,7 +320,7 @@ document.getElementById('fileInput').addEventListener('change',function(){ var f
     var fd2=new FormData(); fd2.append('material','PLA'); fd2.append('color','natural'); fd2.append('quantity','1'); fd2.append('shipping','standard'); fd2.append('shipping_region','PL'); fd2.append('volume_cm3',String(vol)); fd2.append('estimated_hours','0'); fd2.append('dim',String(d.dimensions||'')); fd2.append('currency','PLN');
     fetch('/api/calculate?t='+Date.now(),{method:'POST',body:fd2}).then(function(r){return r.json();}).then(function(c){if(c.ok){item.price=c.total; item.desc=c.material+''; calc();}}).catch(function(){});
     CART.push(item); selIdx=CART.length-1; drawCart(); refreshMatSel(); calc();
-    if(item.vol) preview(selIdx); toast('Dodano: '+f.name);
+    if(item.vol) preview(selIdx); toast('Dodano: '+f.name,true);
   }).catch(function(){document.getElementById('loading').style.display='none';toast('Błąd przetwarzania pliku','');});
   this.value='';
 });
@@ -414,7 +414,7 @@ function loadJobFromUrl(){
     if(!(d&&d.ok)) return;
     var item={job_id:d.id,job_uuid:d.uuid,model_name:d.name||'Model',material:'PLA',color:'black',qty:1,vol:+(d.volume_cm3||0),dims:d.dimensions||'',desc:'',price:(d.volume_cm3?0:0),_bytes:null,fromFile:d.id?true:false};
     CART.push(item); selIdx=CART.length-1; drawCart(); refreshMatSel(); calc();
-    toast('Załadowano model: '+(d.name||'Model'));
+    toast('Załadowano model: '+(d.name||'Model'),true);
     history.replaceState(null,'','/zamow');
   }).catch(function(){});
 }

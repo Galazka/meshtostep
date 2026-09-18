@@ -165,12 +165,13 @@
         .hero p { color: var(--text-secondary); font-size: 16px; line-height: 1.7; margin-bottom: 28px; max-width: 520px; margin-left: auto; margin-right: auto; }
         .hero-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
         /* ── Lamina-style hero (2-col: text + 3D printer visual) ── */
-        .hero-lamina { display: block; }
-        .hero-lamina-inner { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 40px; align-items: center; }
+        .hero-lamina { display: block; max-width: 1320px; margin-left: auto; margin-right: auto; padding: 8px 8px;
+        }
+        .hero-lamina-inner { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 44px; align-items: center; }
         .hero-lamina-text { text-align: left; }
         .hero-lamina-text h1 { font-size: 44px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.12; margin: 6px 0 14px; }
         .hero-lamina-text h1 span { color: var(--primary); }
-        .hero-lamina-text p { font-size: 17px; color: var(--text-secondary); line-height: 1.55; margin: 0 0 22px; max-width: 520px; }
+        .hero-lamina-text p { font-size: 17px; color: var(--text-secondary); line-height: 1.6; margin: 0 0 22px; max-width: 560px; }
         .hero-lamina-visual {
             background: linear-gradient(135deg, var(--primary-light) 0%, #e6e9ff 55%, var(--bg) 100%);
             border: 1px solid var(--border); border-radius: var(--radius-lg);
@@ -408,7 +409,6 @@
         .ad-slot iframe, .ad-slot ins { max-width: 100%; }
 
         /* ═══ PWA BANNER ═══ */
-        .pwa-banner { display: none; position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 9999; background: var(--text); color: #fff; border-radius: var(--radius); padding: 12px 16px; align-items: center; gap: 12px; box-shadow: var(--shadow-lg); font-size: 13px; }
 
         /* ═══ DARK MODE ═══ */
         html[data-theme="dark"] { --bg: #0f172a; --bg-alt: #1e293b; --bg-subtle: #1e293b; --card: #1e293b; --border: #334155; --border-light: #1e293b; --text: #f1f5f9; --text-secondary: #94a3b8; --text-muted: #64748b; --primary-light: #1e3a5f; --primary-subtle: #1e3a5f; color-scheme: dark; }
@@ -507,7 +507,7 @@
                     <div class="hero-lamina-cap">Automatyczna wycena druku 3D<br>i hosting STL → STEP</div>
                 </div>
             </div>
-            <div class="hero-retention-lamina" style="margin-top:20px;max-width:680px;padding:12px 16px;background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;line-height:1.6;color:var(--text-secondary)">
+            <div class="hero-retention-lamina" style="margin-top:20px;max-width:1320px;padding:14px 18px;background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;line-height:1.6;color:var(--text-secondary)">
                 <strong style="color:var(--text-primary)">Bez logowania:</strong> pliki dostępne 24h, potem usuwane. <strong style="color:var(--primary)">Załóż darmowe konto</strong> — foldery, 100 MB, linki na stałe i dostęp w dowolnym momencie.
             </div>
         </div>
@@ -996,13 +996,6 @@
 <!-- ═══ TOAST ═══ -->
 <div id="toast" class="toast"></div>
 
-<!-- ═══ PWA ═══ -->
-<div class="pwa-banner" id="pwaBanner">
-    <span>Zainstaluj 3dfile na telefonie</span>
-    <button id="pwaInstallBtn" style="background:var(--primary);color:#fff;border:0;padding:8px 14px;border-radius:8px;cursor:pointer">Zainstaluj</button>
-    <button id="pwaDismiss" style="background:transparent;border:1px solid #4b5563;color:#9ca3af;padding:8px 14px;border-radius:8px;cursor:pointer">Nie teraz</button>
-</div>
-
 <!-- ═══ IMPORTMAP + MODULES ═══ -->
 <script type="importmap">
 {
@@ -1082,11 +1075,7 @@ window.toggleFaq = toggleFaq;
 
 <!-- ═══ PWA SW ═══ -->
 <script>
-if('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js?v=82').catch(()=>{}); }
-var _deferredPrompt = null;
-window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); _deferredPrompt = e; document.getElementById('pwaBanner').style.display = 'flex'; });
-document.getElementById('pwaInstallBtn').addEventListener('click', async function() { if (!_deferredPrompt) return; _deferredPrompt.prompt(); await _deferredPrompt.userChoice; _deferredPrompt = null; document.getElementById('pwaBanner').style.display = 'none'; });
-document.getElementById('pwaDismiss').addEventListener('click', function() { document.getElementById('pwaBanner').style.display = 'none'; });
+if('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js?v=83').catch(()=>{}); }
 
 // Global drag-and-drop overlay — works anywhere on the page
 var _globalDropOverlay = document.getElementById('globalDropOverlay');

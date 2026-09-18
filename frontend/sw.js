@@ -1,4 +1,4 @@
-const CACHE = '3dfile-v17';
+const CACHE = '3dfile-v18';
 const ASSETS = ['/manifest.json', '/logo.png?v=2'];
 
 self.addEventListener('install', e => {
@@ -23,16 +23,18 @@ self.addEventListener('fetch', e => {
   // an ES module throws "Invalid or unexpected token" and kills the whole
   // module chain (showModal/doAuth stay undefined -> broken UI/buttons).
   if (u.includes('/js/') || u.includes('/vendor/')) {
-    e.respondWith(fetch(e.request).then(resp => {
-      if (resp.ok) {
-        const cl = resp.clone();
-        caches.open(CACHE).then(c => c.put(e.request, cl)).catch(()=>{});
-      }
-      return resp;
-    }).catch(() => caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return new Response('', {status: 503, statusText: 'Retry later', headers: {'Retry-After': '3'}});
-    })));
+    // cache-first for JS/vendor: once loaded, page works offline without 503;
+    // revalidate in background so deploys still reach the browser.
+    e.respondWith(caches.match(e.request).then(cached => {
+      const network = fetch(e.request).then(resp => {
+        if (resp.ok) {
+          const cl = resp.clone();
+          caches.open(CACHE).then(c => c.put(e.request, cl)).catch(()=>{});
+        }
+        return resp;
+      }).catch(() => cached);
+      return cached || network;
+    }));
     return;
   }
   e.respondWith(caches.match(e.request).then(cached => {
