@@ -11,11 +11,11 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);line-height:1.6}
 .header{background:#fff;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;box-shadow:var(--shadow)}
-.header-in{max-width:1120px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+.header-in{max-width:1360px;margin:0 auto;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .logo a{display:flex;align-items:center;gap:8px;font-weight:700;font-size:18px;color:var(--fg);text-decoration:none}
 .logo img{height:30px}
 .steps{font-size:13px;color:var(--muted)}.steps b{color:var(--accent)}
-.wrap{max-width:1120px;margin:0 auto;padding:24px 20px}
+.wrap{max-width:1360px;margin:0 auto;padding:24px 28px}
 .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:28px;align-items:start}
 @media(max-width:900px){.grid{grid-template-columns:1fr}}
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;margin-bottom:18px}
@@ -77,6 +77,13 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 <div class="loading" id="loading">Przeliczam…</div>
 <header class="header"><div class="header-in">
   <div class="logo"><a href="/"><img src="/logo.png?v=81" alt="3DFILE.link"></a></div>
+  <nav class="order-nav" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
+    <a href="/" class="onav" style="padding:8px 13px;border-radius:8px;font-size:13.5px;color:var(--muted);text-decoration:none;font-weight:500">Hosting</a>
+    <a href="/drukuje" class="onav" style="padding:8px 13px;border-radius:8px;font-size:13.5px;color:var(--muted);text-decoration:none;font-weight:500">Druk 3D</a>
+    <a href="/blog.html" class="onav" style="padding:8px 13px;border-radius:8px;font-size:13.5px;color:var(--muted);text-decoration:none;font-weight:500">Blog</a>
+    <a href="/kontakt" class="onav" style="padding:8px 13px;border-radius:8px;font-size:13.5px;color:var(--muted);text-decoration:none;font-weight:500">Kontakt</a>
+    <button id="langToggle" class="onav" style="padding:7px 12px;border-radius:8px;font-size:13px;color:var(--muted);background:none;border:1px solid var(--border);cursor:pointer;font-weight:600" onclick="window.__pi18n.setLang(window.__pi18n.lang==='pl'?'en':'pl')">EN</button>
+  </nav>
   <div class="steps"><b>Zamówienie druku</b> · 3 kroki</div>
 </div></header>
 
@@ -414,5 +421,9 @@ window.__local3d = {
 };
 </script>
 
+<script src="/js/print_i18n.js?v=2"></script>
+<footer style="background:#0f172a;color:#94a3b8;text-align:center;padding:24px;font-size:13px;margin-top:40px">
+  © 2026 3DFILE.link — <a href="/drukuje" style="color:#cbd5e1;text-decoration:none">druk 3D na życzenie</a> · <a href="/" style="color:#cbd5e1;text-decoration:none">Hosting modeli</a> · <a href="/blog.html" style="color:#cbd5e1;text-decoration:none">Blog</a> · <a href="/kontakt" style="color:#cbd5e1;text-decoration:none">Kontakt</a> · <a href="/prywatnosc.html" style="color:#cbd5e1;text-decoration:none">Prywatność</a>
+</footer>
 </body>
 </html>
