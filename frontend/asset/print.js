@@ -260,8 +260,20 @@
             discountLine.style.display = 'none';
           }
           totalEl.textContent = data.total.toFixed(2) + ' ' + sym;
-          hint.textContent = data.parts > 1 ? 'Model podzielony na ' + data.parts + ' części' : '';
-          if (data.warnings && data.warnings.length) {
+                    hint.textContent = data.parts > 1 ? 'Model podzielony na ' + data.parts + ' części' : '';
+                    // VAT note (region-specific) + FX note
+                    var vatNote = document.getElementById('priceVatNote');
+                    if (vatNote) {
+                      if (v.region === 'PL') vatNote.textContent = '① Do ceny doliczony zostanie VAT 23% (Polska) — Stripe naliczy go przy płatności.';
+                      else if (v.region === 'EU') vatNote.textContent = '① Do ceny może zostać doliczony VAT wg kraju UE — Stripe naliczy go przy płatności.';
+                      else vatNote.textContent = '① Do ceny może zostać doliczony VAT wg kraju dostawy — Stripe naliczy go przy płatności.';
+                    }
+                    var fxNote = document.getElementById('priceFxNote');
+                    if (fxNote) {
+                      var rate = data.exchange_rate || 1.0;
+                      fxNote.textContent = data.currency === 'PLN' ? 'Waluta: PLN (konto własne)' : 'Waluta: ' + data.currency + ' · kurs 1 ' + data.currency + ' = ' + (1 / rate).toFixed(4) + ' PLN';
+                    }
+                    if (data.warnings && data.warnings.length) {
             var wb = document.getElementById('printWarnings');
             if (wb) wb.innerHTML = data.warnings.map(function(w) { return '<div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;padding:6px 10px;margin:6px 0;font-size:12px;color:#92400e">⚠ ' + w + '</div>'; }).join('');
           }

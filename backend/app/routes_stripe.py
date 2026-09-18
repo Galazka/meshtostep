@@ -39,6 +39,7 @@ def _stripe_build_session(order):
     checkout_params = dict(
         mode="payment",
         automatic_tax={"enabled": True},
+        tax_id_collection={"enabled": True},
         line_items=[{
             "price_data": {
                 "currency": currency,

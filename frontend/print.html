@@ -8,7 +8,7 @@
   <meta name="description" content="Polski hub druku 3D. Automatyczna wycena w czasie rzeczywistym. Dostawa na świecie. Prześlij model — natychmiastowa cena i zamówienie.">
   <link rel="icon" href="/asset/logo_3d.svg?v=78" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/asset/print.css?v=82">
+  <link rel="stylesheet" href="/asset/print.css?v=83">
 </head>
 <body>
   <div class="toast-container" id="toastContainer"></div>
@@ -179,14 +179,16 @@
           <div class="price-row"><span>Wysyłka</span><span id="priceShipping">—</span></div>
           <div class="price-row discount-line" id="discountLine"><span>Rabat</span><span id="priceDiscount">—</span></div>
           <div class="price-total"><span>Razem</span><span id="priceTotal">—</span></div>
-          <div class="price-hint" id="priceHint"></div>
-        </div>
+                    <div class="price-hint" id="priceHint"></div>
+                    <div style="font-size:11px;color:#6b7280;margin-top:6px" id="priceVatNote">① Do ceny doliczony zostanie VAT wg kraju dostawy — Stripe naliczy go automatycznie przy płatności.</div>
+                    <div style="font-size:11px;color:#6b7280" id="priceFxNote">Waluta: PLN</div>
+                  </div>
         <div class="form-group"><textarea name="notes_manual" id="printOrderNotesManual" placeholder="Uwagi dla drukarza"></textarea></div>
         <button type="submit" class="submit-btn">Zamów — płatność po potwierdzeniu</button>
       </form>
     </div>
   </div>
-  <script src="/asset/print.js?v=82"></script>
+  <script src="/asset/print.js?v=83"></script>
   <script>
   // Cache-bust fetch + upload handler + init
   window.addEventListener('load', function() {
