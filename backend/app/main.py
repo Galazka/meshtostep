@@ -191,6 +191,23 @@ def zamow_order():
     from fastapi.responses import FileResponse
     return FileResponse(str(FRONTEND_DIR / "order.html"))
 
+# EN locales: same pages, JS forces language=EN (persisted) via injected snippet
+_EN_INJECT = "<script>(function(){try{localStorage.setItem('mt_lang','en');}catch(e){}})();</script>"
+
+@app.get("/en/print", response_class=HTMLResponse, include_in_schema=False)
+def en_print_landing():
+    from fastapi.responses import HTMLResponse
+    html = (FRONTEND_DIR / "print.html").read_text(encoding="utf-8")
+    html = html.replace("</head>", _EN_INJECT + "</head>", 1)
+    return HTMLResponse(content=html)
+
+@app.get("/en/order", response_class=HTMLResponse, include_in_schema=False)
+def en_order_page():
+    from fastapi.responses import HTMLResponse
+    html = (FRONTEND_DIR / "order.html").read_text(encoding="utf-8")
+    html = html.replace("</head>", _EN_INJECT + "</head>", 1)
+    return HTMLResponse(content=html)
+
 if FRONTEND_DIR.exists():
     app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
 
