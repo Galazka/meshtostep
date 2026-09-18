@@ -17,7 +17,7 @@ PICKUP_ADDRESS = "Gdańsk Osowa, 80-299, ul. Międzygwiezdna 31/2"
 def contact_info():
     return {"ok": True,
             "email": CONTACT_EMAIL,
-            "phone": "+48 000 000 000",
+            "phone": "+48 790 824 762",
             "pickup_address": PICKUP_ADDRESS,
             "city": "Gdańsk Osowa",
             "postal": "80-299",
