@@ -309,6 +309,7 @@ def calculate_price(
         "product_subtotal_pln": product_total,
         "shipping_cost": shipping_cur,
         "shipping_cost_pln": shipping_cost,
+        "free_shipping": free_shipping,
         "discount_pln": round(discount_pln, 2),
         "total": total,
         "currency": cur,

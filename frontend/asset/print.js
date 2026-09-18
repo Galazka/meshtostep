@@ -85,7 +85,7 @@
     if (!box) return;
     try {
       var res = await fetch('/api/admin/materials?' + Date.now());
-      var data = res.ok ? await res.json() : { materials: { "PLA": 79, "PETG": 95, "ABS": 89, "ASA": 159, "PA12 CF": 349, "TPU": 130 }, colors: {} };
+      var data = res.ok ? await res.json() : { materials: { "PLA": 79, "PETG": 95, "ABS": 89, "ASA": 159, "TPU": 130 }, colors: {} };
             var html = Object.keys(data.materials || {}).map(function(m) {
               var p = data.materials[m];
               var price = typeof p === 'number' ? p : (p.price_kg || 0);
@@ -106,13 +106,20 @@
     var note = document.getElementById('printMaterialNote');
     if (!sel || !note) return;
     var map = {
-      'PLA': 'PLA — uniwersalny, tani, sztywny. Do prototypów, osłon, modeli i dekoracji. Unikaj wysokich temperatur (~60°C) i intensywnej eksploatacji.',
-      'PETG': 'PETG — udarny, odporny na uderzenia i chemię, w połowie przezroczysty. Klosze, osłony, elementy przezroczyste.',
-      'ABS': 'ABS — trwały, udarny klasyk przemysłowy. Obudowy, uchwyty, części mechaniczne.',
-      'ASA': 'ASA — odporny na UV i warunki atmosferyczne (nie żółknie na słońcu). Elementy zewnętrzne, ogrodowe, motoryzacyjne.',
-      'PA12 CF': 'PA12 CF — najwyższa wytrzymałość: nylon z włóknem węglowym. Części funkcjonalne pod obciążeniem, koła zębate, wsporniki.',
-      'TPU': 'TPU — elastyczny, gumowy. Uszczelki, ochraniacze, amortyzatory, części giętkie.'
-    };
+          'PLA': 'PLA — uniwersalny, tani, sztywny. Do prototypów, osłon, modeli i dekoracji. Unikaj wysokich temperatur (~60°C) i intensywnej eksploatacji.',
+          'PETG': 'PETG — udarny, odporny na uderzenia i chemię, w połowie przezroczysty. Klosze, osłony, elementy przezroczyste.',
+          'ABS': 'ABS — trwały, udarny klasyk przemysłowy. Obudowy, uchwyty, części mechaniczne.',
+          'ASA': 'ASA — odporny na UV i warunki atmosferyczne (nie żółknie na słońcu). Elementy zewnętrzne, ogrodowe, motoryzacyjne.',
+          'TPU': 'TPU — elastyczny, gumowy. Uszczelki, ochraniacze, amortyzatory, części giętkie.',
+          'PLA HT': 'PLA HT — odporny na wyższe temperatury (~90–100°C). Osłony LED, uchwyty, elementy przy cieple.',
+          'PLA CF': 'PLA CF — z włóknem węglowym, sztywniejszy i lżejszy. Części konstrukcyjne, drony.',
+          'PETG HF': 'PETG HF — wysokiej jakości, lepsza przejrzystość i udarność.',
+          'PETG FR': 'PETG FR — niepalny (V-0). Obudowy elektroniczne, normy przeciwpożarowe.',
+          'ASA CF': 'ASA CF — z włóknem węglowym, odporny na UV i sztywny.',
+          'PLA Matte': 'PLA Matte — matowe, eleganckie wykończenie. Modele premium, figury.',
+          'PLA Silk': 'PLA Silk — jedwabisty połysk, gładki w dotyku.',
+          'PLA Glow': 'PLA Glow — świeci w ciemności. Figurki, breloki, dekoracje.'
+        };
     note.textContent = map[sel.value] || 'Wybierz materiał — pojawi się jego opis i zastosowanie.';
     if (typeof calculatePrintPrice === 'function') calculatePrintPrice();
   };
@@ -273,8 +280,12 @@
                       var rate = data.exchange_rate || 1.0;
                       fxNote.textContent = data.currency === 'PLN' ? 'Waluta: PLN (konto własne)' : 'Waluta: ' + data.currency + ' · kurs 1 ' + data.currency + ' = ' + (1 / rate).toFixed(4) + ' PLN';
                     }
-                    if (data.warnings && data.warnings.length) {
-            var wb = document.getElementById('printWarnings');
+                    if (data.free_shipping) {
+                                          var shLine = document.getElementById('priceShipping');
+                                          if (shLine) shLine.textContent = '0,00 zł (darmowa wysyłka ≥ 200 zł)';
+                                        }
+                                        if (data.warnings && data.warnings.length) {
+                                var wb = document.getElementById('printWarnings');
             if (wb) wb.innerHTML = data.warnings.map(function(w) { return '<div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;padding:6px 10px;margin:6px 0;font-size:12px;color:#92400e">⚠ ' + w + '</div>'; }).join('');
           }
         }
