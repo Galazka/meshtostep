@@ -943,3 +943,47 @@ def admin_report_export(kind: str = "week", fmt: str = "csv",
     from fastapi.responses import Response
     return Response(content=out.getvalue(), media_type="text/csv; charset=utf-8",
                     headers={"Content-Disposition": "attachment; filename=3dfile-report-%s.csv" % kind})
+
+@router.post("/api/admin/users/{uid}/bonus")
+def admin_set_bonus(uid: int, mb: int = 0, admin: models.User = Depends(require_admin), db: Session = Depends(get_db)):
+    """Hosting admin: przydziel/zmień darmowe MB bonusowe dla użytkownika (Hormozi value: nagroda za aktywność)."""
+    if not admin or not getattr(admin, "is_admin", False):
+        raise HTTPException(403, detail="Admin only")
+    u = db.get(models.User, uid)
+    if not u:
+        raise HTTPException(404, detail="Brak użytkownika")
+    u.bonus_mb = max(0, int(mb))
+    db.commit()
+    return {"ok": True, "user_id": uid, "bonus_mb": u.bonus_mb}
+
+
+@router.get("/api/admin/emails")
+def admin_emails_export(admin: models.User = Depends(require_admin), db: Session = Depends(get_db)):
+    """Eksport bazy kontaktów (klienci zamówień) — email + imię + telefon + miasto. Marketing/Warstwa RODO."""
+    import csv as _csv, io as _io
+    if not admin or not getattr(admin, "is_admin", False):
+        raise HTTPException(403, detail="Admin only")
+    seen = {}
+    for o in db.query(models.Order).order_by(models.Order.id.desc()).all():
+        if o.customer_email and o.customer_email.lower() not in seen:
+            seen[o.customer_email.lower()] = (o.customer_name or "", o.customer_phone or "", o.customer_city or "")
+    out = _io.StringIO()
+    w = _csv.writer(out)
+    w.writerow(["Email", "Imię i nazwisko", "Telefon", "Miasto"])
+    for email, (nm, ph, ct) in seen.items():
+        w.writerow([email, nm, ph, ct])
+    from fastapi.responses import Response
+    return Response(content=out.getvalue(), media_type="text/csv; charset=utf-8",
+                    headers={"Content-Disposition": "attachment; filename=3dfile-klienci-emails.csv"})
+
+
+@router.delete("/api/admin/orders/{oid}")
+def admin_delete_order(oid: int, admin: models.User = Depends(require_admin), db: Session = Depends(get_db)):
+    """Usuń zamówienie (RODO 'prawo do bycia zapomnianym' / sprzątanie)."""
+    if not admin or not getattr(admin, "is_admin", False):
+        raise HTTPException(403, detail="Admin only")
+    o = db.get(models.Order, oid)
+    if not o:
+        raise HTTPException(404, detail="Brak zamówienia")
+    db.delete(o); db.commit()
+    return {"ok": True}
