@@ -72,7 +72,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 <body>
 <div class="loading" id="loading">Przeliczam…</div>
 <header class="header"><div class="header-in">
-  <div class="logo"><a href="/"><img src="/logo.png?v=81" alt="3DFILE.link"><span>3DFILE.link</span></a></div>
+  <div class="logo"><a href="/"><img src="/logo.png?v=81" alt="3DFILE.link"></a></div>
   <div class="steps"><b>Zamówienie druku</b> · 3 kroki</div>
 </div></header>
 
@@ -98,7 +98,30 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
       </div>
 
       <div class="card">
-        <h2><span class="n">3</span> Dane i dostawa</h2>
+        <h2><span class="n">3</span> Kolor i liczba kolorów</h2>
+        <p style="font-size:12.5px;color:var(--muted);margin:0 0 12px">Wybrany model: <b id="colFor">—</b>. Ustaw kolor i ile kolorów ma mieć wydruk.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label>Kolor</label>
+            <select id="colSel">
+              <option value="natural">Naturalny</option><option value="black">Czarny</option>
+              <option value="white">Biały</option><option value="blue">Niebieski</option>
+              <option value="red">Czerwony</option><option value="green">Zielony</option>
+              <option value="yellow">Żółty</option><option value="orange">Pomarańczowy</option>
+              <option value="purple">Fioletowy</option><option value="pink">Różowy</option>
+              <option value="gray">Szary</option><option value="silver">Srebrny</option>
+              <option value="gold">Złoty</option><option value="carbon">Węglowy</option>
+            </select>
+          </div>
+          <div><label>Ile kolorów w modelu</label>
+            <select id="colCount"><option value="1">1 (standard)</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
+          </div>
+        </div>
+        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:9px 12px;margin:10px 0;font-size:12.5px;color:#1e40af" id="colPriceNote">Wydruk wielokolorowy (jako jeden model) jest droższy ze względu na dłuższy czas druku: 1. kolor ekstra +20 zł, każdy kolejny +10 zł.</div>
+        <button onclick="applyColor()" style="margin-top:8px;padding:10px 18px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer">Zastosuj kolor do modelu</button>
+      </div>
+
+      <div class="card">
+        <h2><span class="n">4</span> Dane i dostawa</h2>
         <div class="form-row">
           <div><label>Imię i nazwisko *</label><input id="fName" placeholder="Jan Kowalski"></div>
           <div><label>Email *</label><input id="fEmail" type="email" placeholder="jan@przyklad.pl"></div>
@@ -169,6 +192,8 @@ function loadMats(){
 }
 function selectMat(k){ if(selIdx<0){toast('Najpierw kliknij model w koszyku','');return;} CART[selIdx].material=k; drawCart(); refreshMatSel(); calc(); }
 function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document.querySelectorAll('.mat').forEach(function(x){x.classList.toggle('sel',x.dataset.mat===m);}); document.getElementById('matFor').textContent=(selIdx>=0)?('#'+(selIdx+1)+' · '+(CART[selIdx].model_name||'Model')):'—'; }
+  function refreshCol(){ var sel=document.getElementById('colSel'),cnt=document.getElementById('colCount'); if(selIdx>=0&&sel){ sel.value=CART[selIdx].color||'natural'; } if(cnt&&selIdx>=0){ cnt.value=String(CART[selIdx].colors||1); } document.getElementById('colFor').textContent=(selIdx>=0)?('#'+(selIdx+1)+' · '+(CART[selIdx].model_name||'Model')):'—'; }
+  function applyColor(){ if(selIdx<0){toast('Kliknij model w koszyku','');return;} var sel=document.getElementById('colSel'),cnt=document.getElementById('colCount'); if(sel) CART[selIdx].color=sel.value; var n=parseInt(cnt?cnt.value:'1'); CART[selIdx].colors=(n>1)?n:1; drawCart(); calc(); toast('Kolor: '+CART[selIdx].color+' · '+CART[selIdx].colors+'x'); refreshCol(); }
 
 function drawCart(){
   var c=document.getElementById('cart');
@@ -198,6 +223,9 @@ document.getElementById('fileInput').addEventListener('change',function(){ var f
     document.getElementById('loading').style.display='none';
     var vol=d.volume_cm3||0;
     var item={job_id:null,job_uuid:d.uuid||null,model_name:f.name,material:'PLA',color:'natural',qty:1,vol:vol,dims:d.dimensions||'',desc:'',price:5.0};
+    // always get a hostable job for 3D preview (public /e/{job_id})
+    var fd3=new FormData(); fd3.append('mode','auto'); fd3.append('file',f);
+    fetch('/api/convert?t='+Date.now(),{method:'POST',body:fd3}).then(function(r){return r.json();}).then(function(cv){ if(cv&&cv.job_id){ item.job_id=cv.job_id; if(selIdx===CART.length-1){ preview(CART.length-1); } } }).catch(function(){});
     var fd2=new FormData(); fd2.append('material','PLA'); fd2.append('color','natural'); fd2.append('quantity','1'); fd2.append('shipping','standard'); fd2.append('shipping_region','PL'); fd2.append('volume_cm3',String(vol)); fd2.append('estimated_hours','0'); fd2.append('dim',String(d.dimensions||'')); fd2.append('currency','PLN');
     fetch('/api/calculate?t='+Date.now(),{method:'POST',body:fd2}).then(function(r){return r.json();}).then(function(c){if(c.ok){item.price=c.total; item.desc=c.material+''; calc();}}).catch(function(){});
     CART.push(item); selIdx=CART.length-1; drawCart(); refreshMatSel(); calc();
@@ -219,11 +247,21 @@ function calc(){
   var reg=document.getElementById('fRegion').value, ship=document.getElementById('fShipping').value;
   var base=(shipBase[ship]||{})[reg]||0;
   shippingPLN = ship==='pickup'?0:(base+5);
-  var totalPLN=Math.max(5,productsPLN)+shippingPLN;
+  // multi-color premium (client-side estimate): 1st extra color +20, next +10
+  var colorExt=0; CART.forEach(function(it){ var c=it.colors||1; if(c>1) colorExt += 20+(c-2)*10; });
+  var totalPLN=Math.max(5,productsPLN+colorExt)+shippingPLN;
+  // FREE shipping on orders >= 200 PLN
+  var freeShip = (productsPLN+colorExt)>=200 && shippingPLN>0;
+  if(freeShip) shippingPLN=0;
+  totalPLN=Math.max(5,productsPLN+colorExt)+shippingPLN;
+  if(freeShip) totalPLN-=shippingPLN;
+  var total=cx(totalPLN/rate);
+  var freeLine = freeShip ? '<div class="summary-row" style="color:#059669"><span>✅ Darmowa wysyłka (zamówienie ≥ 200 zł)</span><span>0,00 zł</span></div>' : '';
   var total=cx(totalPLN/rate);
   box.innerHTML=rowsHTML+
     '<div class="summary-row"><span>Druk ('+CART.length+' model'+(CART.length>1?'i':'')+')</span><span>'+fmt(cx(productsPLN/rate))+'</span></div>'+
     '<div class="summary-row"><span>Wysyłka'+(ship==='pickup'?' (odbiór)':' + pakowanie')+'</span><span>'+(shippingPLN===0?'0,00 zł':fmt(shippingPLN/rate))+'</span></div>'+
+    freeLine +
     '<div class="summary-total"><span>Razem</span><span>'+fmt(total)+'</span></div>';
   empty.style.display='none'; box.style.display='block'; btn.disabled=false;
   document.getElementById('vatNote').textContent = reg==='PL'?'① Do ceny doliczony zostanie VAT 23% (Polska) — Stripe naliczy go przy płatności.':'① Do ceny doliczony zostanie VAT wg kraju dostawy — Stripe naliczy go przy płatności.';
@@ -231,12 +269,12 @@ function calc(){
 }
 
 function preview(i){
-  selIdx=i; drawCart(); refreshMatSel();
+  selIdx=i; drawCart(); refreshMatSel(); if(typeof refreshCol==='function') refreshCol();
   var it=CART[i], box=document.getElementById('previewBox');
   if(it.job_id){
     box.innerHTML='<iframe class="preview-iframe" src="/e/'+it.job_id+'" frameborder="0" allowfullscreen></iframe>';
   } else {
-    box.innerHTML='<div style="padding:22px;text-align:center">📦 <b>'+esc(it.model_name||'Model')+'</b><br><span style="color:var(--muted);font-size:13px">'+(it.vol?it.vol.toFixed(1)+' cm³': '')+(it.dims?' · '+it.dims:'')+'</span><br><br><span style="color:var(--muted);font-size:12px">Podgląd 3D pojawi się po zalogowaniu lub dla zapisanych modeli.</span></div>';
+    box.innerHTML='<div style="padding:22px;text-align:center">📦 <b>'+esc(it.model_name||'Model')+'</b><br><span style="color:var(--muted);font-size:13px">'+(it.vol?it.vol.toFixed(1)+' cm³': '')+(it.dims?' · '+it.dims:'')+'</span><br><span style="color:#2563eb;font-size:12px">'+esc(it.material||'PLA')+' · kolor '+esc(it.color||'natural')+' · '+it.qty+' szt</span><br><br><span style="color:var(--muted);font-size:12px">Wgrywam podgląd 3D… (pozwól chwilę konwersji)</span></div>';
   }
 }
 
@@ -249,7 +287,7 @@ function submitOrder(){
   var nm=document.getElementById('fName').value.trim(), em=document.getElementById('fEmail').value.trim();
   if(!nm||!em){ toast('Wpisz imię i email',''); return; }
   if(!CART.length){ toast('Dodaj co najmniej jeden model',''); return; }
-  var body={name:nm,email:em,phone:document.getElementById('fPhone').value.trim(),address:document.getElementById('fAddr').value.trim(),city:document.getElementById('fCity').value.trim(),country:document.getElementById('fRegion').value,shipping:document.getElementById('fShipping').value,shipping_region:document.getElementById('fRegion').value,discount_code:document.getElementById('fCode').value.trim(),notes:document.getElementById('fNotes').value.trim(),payment_method:'stripe',currency:cur,items:CART.map(function(it){return {job_uuid:it.job_uuid,job_id:it.job_id,model_name:it.model_name,material:it.material,color:it.color,quantity:it.qty,volume_cm3:it.vol,estimated_hours:0,dims:it.dims};})};
+  var body={name:nm,email:em,phone:document.getElementById('fPhone').value.trim(),address:document.getElementById('fAddr').value.trim(),city:document.getElementById('fCity').value.trim(),country:document.getElementById('fRegion').value,shipping:document.getElementById('fShipping').value,shipping_region:document.getElementById('fRegion').value,discount_code:document.getElementById('fCode').value.trim(),notes:document.getElementById('fNotes').value.trim(),payment_method:'stripe',currency:cur,items:CART.map(function(it){return {job_uuid:it.job_uuid,job_id:it.job_id,model_name:it.model_name,material:it.material,color:it.color,colors:it.colors||1,quantity:it.qty,volume_cm3:it.vol,estimated_hours:0,dims:it.dims};})};
   var btn=document.getElementById('submitBtn'); btn.disabled=true; btn.textContent='Tworzę zamówienie…';
   fetch('/api/orders/multi?t='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};});})
