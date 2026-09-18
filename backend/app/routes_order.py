@@ -11,7 +11,7 @@ Pricing logic:
     PricingConfig table).
 """
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Request, Form, status
 from fastapi.responses import JSONResponse, HTMLResponse, Response
 from sqlalchemy.orm import Session
@@ -821,16 +821,16 @@ def delete_discount_code(code: str, db: Session = Depends(get_db), admin=Depends
 
 # ---- Multi-model order: several uploaded models in one cart (1 shipping) ----
 class OrderItemReq(BaseModel):
-    job_id: int = None
-    job_uuid: str = None
-    model_name: str = None
+    job_id: Optional[int] = None
+    job_uuid: Optional[str] = None
+    model_name: Optional[str] = None
     material: str = "PLA"
     color: str = "natural"
     colors: int = 1
     quantity: int = 1
     volume_cm3: float = 0
     estimated_hours: float = 0
-    dims: str = None
+    dims: Optional[str] = None
 
 
 class MultiOrderReq(BaseModel):
