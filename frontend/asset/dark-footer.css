@@ -1,0 +1,11 @@
+/* Shared professional dark footer — consistent across all pages (3dfile.link) */
+.site-footer{background:#0f172a;color:#94a3b8;margin-top:56px;padding:48px 0 0}
+.site-footer .sf-in{max-width:1360px;margin:0 auto;padding:0 28px;display:grid;grid-template-columns:2fr 1fr 1fr 1.4fr;gap:32px}
+.site-footer .sf-brand{display:flex;align-items:center;gap:10px;color:#fff;font-size:18px;margin-bottom:14px}
+.site-footer .sf-about{font-size:13.5px;line-height:1.65;max-width:280px}
+.site-footer h4{color:#fff;font-size:13px;letter-spacing:.5px;text-transform:uppercase;margin:0 0 14px;font-weight:700}
+.site-footer .sf-col a,.site-footer .sf-col span{display:block;color:#94a3b8;font-size:13.5px;line-height:1.7;text-decoration:none;margin-bottom:6px}
+.site-footer .sf-col a:hover{color:#7dd3fc;text-decoration:none}
+.site-footer .sf-bottom{border-top:1px solid #1e293b;margin-top:36px;padding:18px 28px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12.5px;color:#64748b;max-width:1360px;margin-left:auto;margin-right:auto}
+@media(max-width:900px){.site-footer .sf-in{grid-template-columns:1fr 1fr;gap:24px;padding:0 20px}.site-footer .sf-bottom{padding:16px 20px}}
+@media(max-width:520px){.site-footer .sf-in{grid-template-columns:1fr}}

@@ -40,7 +40,8 @@ footer a{color:#cbd5e1;text-decoration:none}
 @media(max-width:600px){h1{font-size:28px}}
 .nav-burger{display:none;background:none;border:1px solid #334155;border-radius:8px;cursor:pointer;padding:8px 10px;font-size:19px;line-height:1;color:#fff}
 @media(max-width:760px){.nav-burger{display:inline-flex;align-items:center;gap:6px}.nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border-bottom:1px solid #334155;padding:10px 20px;flex-direction:column;align-items:stretch!important;z-index:60}.nav-links.open{display:flex}.nav{position:relative}.nav-links a{width:100%;text-align:left;margin-left:0!important;padding:12px 4px}}
-</style>
+<link rel="stylesheet" href="/asset/dark-footer.css?v=1"></style>
+<link rel="stylesheet" href="/asset/dark-footer.css?v=1">
 </head>
 <body>
 <nav class="nav"><div class="nav-in">
@@ -87,7 +88,35 @@ footer a{color:#cbd5e1;text-decoration:none}
     <a class="btn" href="/drukuje">Zamów wydruk 3D</a>
   </div>
 </div>
-<footer>© 2026 3DFILE.link — <a href="/drukuje">druk 3D na życzenie</a> · <a href="/blog.html">Blog</a> · <a href="/kontakt">Kontakt</a> · <a href="/prywatnosc.html">Prywatność</a></footer>
+<footer class="site-footer">
+  <div class="sf-in">
+    <div class="sf-col">
+      <div class="sf-brand"><img src="/logo.png?v=82" alt="3DFILE.link" style="width:34px;height:34px;object-fit:contain"><b>3DFILE.link</b></div>
+      <p class="sf-about">Niezależna pracownia druku 3D z Gdańska. Druk na życzenie, hosting modeli i konwersja STL→STEP — wszystko w jednym miejscu.</p>
+    </div>
+    <div class="sf-col">
+      <h4>Nawigacja</h4>
+      <a href="/">Hosting modeli</a>
+      <a href="/drukuje">Zleć nam wydruk</a>
+      <a href="/blog.html">Blog</a>
+      <a href="/kontakt">Kontakt</a>
+    </div>
+    <div class="sf-col">
+      <h4>Pomoc</h4>
+      <a href="/blog/jak-przygotowac-plik-do-druku-3d.html">Jak przygotować plik</a>
+      <a href="/blog/jaki-filament-wybrac-3d.html">Jaki filament wybrać</a>
+      <a href="/blog/druk-3d-na-zamowienie-ile-kosztuje.html">Ile kosztuje druk</a>
+            <a href="/prywatnosc.html">Polityka prywatności</a>
+    </div>
+    <div class="sf-col">
+      <h4>Kontakt</h4>
+            <span>📧 <a href="mailto:tomekgalazka@gmail.com">tomekgalazka@gmail.com</a></span>
+      <span>▶ <a href="tel:+48790824762">+48 790 824 762</a></span>
+      <span>📍 ul. Międzygwiezdna 31/2<br>80-299 Gdańsk Osowa</span>
+    </div>
+  </div>
+  <div class="sf-bottom"><span>© 2026 3dfile.link — druk 3D na życzenie.</span><span>Druk 3D · Hosting modeli · STL → STEP</span></div>
+</footer>
 <script>document.addEventListener('click',function(ev){var nl=document.querySelector('.nav-links');if(nl&&nl.classList.contains('open')&&ev.target.closest('.nav-links a')){nl.classList.remove('open');}});</script>
 </body>
 </html>
