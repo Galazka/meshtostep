@@ -40,6 +40,18 @@ img{max-width:100%;height:auto}
 .logo-link{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;color:var(--fg);letter-spacing:-0.02em}
 .logo-link:hover{color:var(--accent)}
 .logo{width:34px;height:34px;object-fit:contain}
+/* Spójny header z głównym: zakładki + guziki auth (jak na / ) */
+.nav-print{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.nav-link-print{
+  display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border:none;background:none;
+  font-size:14px;font-weight:500;color:var(--muted);border-radius:8px;cursor:pointer;text-decoration:none;transition:all .15s;
+}
+.nav-link-print:hover{background:var(--bg-alt);color:var(--fg)}
+.nav-link-print.active{background:var(--accent);color:#fff;font-weight:600}
+.btn-nav-print{padding:7px 14px;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;color:var(--fg);border:1px solid var(--border);background:var(--card);display:inline-block}
+.btn-nav-print:hover{border-color:var(--accent);color:var(--accent)}
+.btn-nav-print.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-nav-print.primary:hover{background:var(--accent-2)}
 .nav-print,.nav{display:flex;gap:8px;align-items:center}
 .nav-link{
   padding:10px 16px;border-radius:8px;color:var(--muted);font-weight:500;font-size:14px;

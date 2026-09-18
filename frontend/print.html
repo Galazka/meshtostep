@@ -8,7 +8,7 @@
   <meta name="description" content="Polski hub druku 3D. Automatyczna wycena w czasie rzeczywistym. Dostawa na świecie. Prześlij model — natychmiastowa cena i zamówienie.">
   <link rel="icon" href="/asset/logo_3d.svg?v=78" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/asset/print.css?v=87">
+  <link rel="stylesheet" href="/asset/print.css?v=88">
 </head>
 <body>
   <div class="toast-container" id="toastContainer"></div>
@@ -16,17 +16,22 @@
     <div class="container-print">
       <div class="header-inner">
         <a href="/" class="logo-link">
-          <img src="/logo.png?v=81" alt="3DFILE.link" class="logo" width="34" height="34" loading="lazy">
+          <img src="/logo.png?v=82" alt="3DFILE.link" class="logo" width="34" height="34" loading="lazy">
           <span>3DFILE.link</span>
         </a>
-        <nav class="nav-print">
-                  <a href="/print.html" class="nav-link active">Zleć nam wydruk</a>
-                  <a href="/print.html#materials" class="nav-link">Materiały</a>
-                  <a href="/print.html#how" class="nav-link">Jak to działa</a>
-                  <a href="/print.html#shipping" class="nav-link">Wysyłka</a>
-                  <span id="adminLink" style="display:none">
-                              <a href="#" onclick="openAdminPanel();return false" class="nav-link">Admin</a>
-                            </span>
+        <nav class="nav-print" id="printNav">
+          <a href="/" class="nav-link-print">Wgraj</a>
+          <a href="/#discover" class="nav-link-print">Odkrywaj</a>
+          <a href="/#hiw" class="nav-link-print">Jak to działa</a>
+          <a href="/drukuje" class="nav-link-print active">Zleć nam wydruk</a>
+          <a href="/#faq" class="nav-link-print">FAQ</a>
+          <span style="display:inline-flex;align-items:center;gap:4px;margin-left:4px">
+            <a href="/" class="btn-nav-print">Zaloguj</a>
+            <a href="/" class="btn-nav-print primary">Załóż konto</a>
+          </span>
+          <!-- admin hidden — only via /drukuje#admin -->
+          <a href="#admin" style="display:none" onclick="openAdminPanel();return false">Admin</a>
+        </nav>
       </div>
     </div>
   </header>
