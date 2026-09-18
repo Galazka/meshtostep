@@ -318,6 +318,7 @@ function _filteredJobs(){
 function mfRender(){
     if(typeof renderFolderChips==='function'){ try{renderFolderChips();}catch(e){} }
     const jobs=_filteredJobs();
+    window.__mfJobs = jobs;
     const grid=document.getElementById('mfGrid');
     if(!jobs.length){
         grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px">Brak plików dla filtra</div>';
@@ -351,7 +352,7 @@ function mfRender(){
         + '</div>'
         + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
         + '<button onclick="event.stopPropagation();showDownloadDialog(\''+j.uuid+'\',\''+(j.title||j.original_filename||'').replace(/'/g,"\\'")+'\')" style="flex:1;padding:7px 8px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Pobierz</button>'
-        + '<button onclick="openPrintOrderModal({job_id:'+j.id+',uuid:\\''+j.uuid+'\\',title:\\''+(j.title||j.filename||'').replace(/'/g,\\\\'')+'\\',volume_cm3:'+(j.volume_cm3||0)+',dims_mm:\\''+(j.dimensions||'')+'\\'})" style="flex:1;padding:7px 8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:inherit" title="Wyślij do druku">🖨</button>'
+        + '<button data-action="mfPrint" data-id="'+j.id+'" style="flex:1;padding:7px 8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:inherit" title="Wyślij do druku">🖨</button>''
         + '<button onclick="openShareModalFor('+j.id+')" style="flex:1;padding:7px 8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:inherit">Udostępnij</button>'
         + '</div>'
         + '</div></div>';
@@ -1139,3 +1140,20 @@ async function logoutEverywhere(){
     }catch(e){ alert('Błąd: '+e.message); }
 }
 window.logoutEverywhere=logoutEverywhere;
+
+
+// mfPrint: open print order modal for a stored job (data-action button)
+window.addEventListener('click', function(e){
+  var btn = e.target.closest ? e.target.closest('[data-action]') : null;
+  if (btn && btn.dataset && btn.dataset.action === 'mfPrint') {
+    var id = parseInt(btn.dataset.id, 10);
+    var jobs = window.__mfJobs || [];
+    var j = null;
+    for (var i=0;i<jobs.length;i++){ if ((jobs[i].id===id)||(jobs[i].id+''===btn.dataset.id)){ j=jobs[i]; break; } }
+    if (typeof window.openPrintOrderModal === 'function') {
+      window.openPrintOrderModal({ job_id: j ? j.id : id, uuid: j ? j.uuid : '', title: j ? (j.original_filename || j.title || j.filename || '') : '' });
+    } else {
+      alert('Formularz zamówienia niedostępny na tej stronie — wejdź na /print.html');
+    }
+  }
+});

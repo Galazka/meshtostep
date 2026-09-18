@@ -91,9 +91,9 @@
               var price = typeof p === 'number' ? p : (p.price_kg || 0);
               var desc = (typeof p === 'object' && p.desc) ? p.desc : '';
               return '<div class="material-card"><strong>' + m +
-                             '</strong><br><span class="price">' + price + ' zł/kg</span>' +
-                             (desc ? '<span class="desc">' + desc + '</span>' : '') +
-                             '</div>';
+                                           '</strong>' +
+                                           (desc ? '<span class="desc">' + desc + '</span>' : '') +
+                                           '</div>';
             }).join('');
       box.innerHTML = html;
     } catch (e) {
