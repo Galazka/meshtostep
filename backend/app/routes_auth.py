@@ -220,29 +220,6 @@ def me(user: models.User = Depends(require_user)):
     }
 
 
-class ShippingReq(BaseModel):
-    ship_full_name: str = None
-    ship_phone: str = None
-    ship_address: str = None
-    ship_city: str = None
-    ship_postal: str = None
-    ship_country: str = "PL"
-
-
-@router.put("/api/account/shipping")
-def save_shipping(req: ShippingReq, db: Session = Depends(get_db),
-                  user: models.User = Depends(require_user)):
-    """Zapisz dane do wysyłki druku na profilu — auto-fill w kolejnych zamówieniach."""
-    user.ship_full_name = (req.ship_full_name or "")[:100] or None
-    user.ship_phone = (req.ship_phone or "")[:30] or None
-    user.ship_address = (req.ship_address or "")[:500] or None
-    user.ship_city = (req.ship_city or "")[:100] or None
-    user.ship_postal = (req.ship_postal or "")[:20] or None
-    user.ship_country = (req.ship_country or "PL")[:30]
-    db.commit()
-    return {"ok": True}
-
-
 # ── Email verification ───────────────────────────────────────────────
 @router.get("/verify/{token}", response_class=HTMLResponse)
 def verify_email(token: str, db: Session = Depends(get_db)):
