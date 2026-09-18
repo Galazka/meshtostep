@@ -823,7 +823,7 @@ class MultiOrderReq(BaseModel):
     notes: str = None
     payment_method: str = "blik"
     currency: str = "PLN"
-    items: list
+    items: List[OrderItemReq]
 
 
 @router.post("/api/orders/multi")
