@@ -86,12 +86,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
     <div>
       <div class="card">
         <h2><span class="n">1</span> Dodaj modele do druku</h2>
-        <label for="fileInput" class="dropzone">📦 Załaduj swój model (STL / OBJ / 3MF)
-          <small>Objętość i wymiary wypełnią się automatycznie. Dodaj wiele modeli do jednej paczki.</small>
+        <label for="fileInput" class="dropzone"><span data-i18n="dropTitle">📦 Załaduj swój model (STL / OBJ / 3MF)</span>
+                  <small data-i18n="dropSub">Objętość i wymiary wypełnią się automatycznie. Dodaj wiele modeli do jednej paczki.</small>
         </label>
         <input type="file" id="fileInput" accept=".stl,.obj,.3mf" style="display:none">
         <div id="cart"></div>
-        <div class="warnbox">Rzeczywisty wydruk może różnić się od modelu o 0,3–1% (do ~2% dla materiałów technicznych).</div>
+        <div class="warnbox" data-i18n="warnDim">Rzeczywisty wydruk może różnić się od modelu o 0,3–1% (do ~2% dla materiałów technicznych).</div>
       </div>
 
       <div class="card">
@@ -105,8 +105,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
         <h2><span class="n">3</span> Kolor i liczba kolorów</h2>
         <p style="font-size:12.5px;color:var(--muted);margin:0 0 12px">Wybrany model: <b id="colFor">—</b>. Ustaw kolor i ile kolorów ma mieć wydruk.</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div><label>Kolor</label>
-            <select id="colSel">
+          <div><label data-i18n="col">Kolor</label>
+                      <select id="colSel">
               <option value="natural">Naturalny</option><option value="black">Czarny</option>
               <option value="white">Biały</option><option value="blue">Niebieski</option>
               <option value="red">Czerwony</option><option value="green">Zielony</option>
@@ -116,40 +116,40 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
               <option value="gold">Złoty</option><option value="carbon">Węglowy</option>
             </select>
           </div>
-          <div><label>Ile kolorów w modelu</label>
+          <div><label data-i18n="colCount">Ile kolorów w modelu</label>
             <select id="colCount"><option value="1">1 (standard)</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
           </div>
         </div>
         <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:9px 12px;margin:10px 0;font-size:12.5px;color:#1e40af" id="colPriceNote">Wydruk wielokolorowy (jako jeden model) jest droższy ze względu na dłuższy czas druku: 1. kolor ekstra +20 zł, każdy kolejny +10 zł.</div>
-        <button onclick="applyColor()" style="margin-top:8px;padding:10px 18px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer">Zastosuj kolor do modelu</button>
+        <button onclick="applyColor()" style="margin-top:8px;padding:10px 18px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer" data-i18n="applyColor">Zastosuj kolor do modelu</button>
       </div>
 
       <div class="card">
         <h2><span class="n">4</span> Dane i dostawa</h2>
         <div class="form-row">
-          <div><label>Imię i nazwisko *</label><input id="fName" placeholder="Jan Kowalski"></div>
-          <div><label>Email *</label><input id="fEmail" type="email" placeholder="jan@przyklad.pl"></div>
+          <div><label data-i18n="fName">Imię i nazwisko *</label><input id="fName" data-i18n-ph="fName" placeholder="Jan Kowalski"></div>
+                    <div><label data-i18n="fEmail">Email *</label><input id="fEmail" type="email" data-i18n-ph="fEmail" placeholder="jan@przyklad.pl"></div>
         </div>
         <div class="form-row" style="margin-top:10px">
-          <div><label>Telefon</label><input id="fPhone" placeholder="+48 600 000 000"></div>
-          <div><label>Kod pocztowy / Miasto</label><input id="fCity" placeholder="80-000 Gdańsk"></div>
+          <div><label data-i18n="fPhone">Telefon</label><input id="fPhone" data-i18n-ph="fPhone" placeholder="+48 600 000 000"></div>
+                    <div><label data-i18n="fCity">Kod pocztowy / Miasto</label><input id="fCity" data-i18n-ph="fCity" placeholder="80-000 Gdańsk"></div>
         </div>
-        <div><label>Adres</label><textarea id="fAddr" rows="2" placeholder="Ulica i numer"></textarea></div>
+        <div><label data-i18n="fAddr">Adres</label><textarea id="fAddr" rows="2" data-i18n-ph="fAddr" placeholder="Ulica i numer"></textarea></div>
         <div class="form-row" style="margin-top:10px">
-          <div><label>Kraj</label><select id="fRegion"><option value="PL">Polska</option><option value="EU">UE</option><option value="GLOBAL">Świat</option></select></div>
-          <div><label>Wysyłka</label><select id="fShipping" onchange="calc()">
+          <div><label data-i18n="fRegion">Kraj</label><select id="fRegion" data-i18n-ph="fRegion"><option value="PL">Polska</option><option value="EU">UE</option><option value="GLOBAL">Świat</option></select></div>
+                    <div><label data-i18n="fShipping">Wysyłka</label><select id="fShipping" data-i18n-ph="fShipping" onchange="calc()">
             <option value="standard">Standard · 5 dni (InPost Paczkomat)</option>
             <option value="express">Ekspres · 2 dni (x2)</option>
             <option value="pickup">Odbiór osobisty (Gdańsk)</option>
           </select></div>
         </div>
         <div class="form-row" style="margin-top:10px">
-          <div><label>Kod rabatowy</label><input id="fCode" placeholder="opcjonalnie"></div>
+          <div><label data-i18n="fCode">Kod rabatowy</label><input id="fCode" data-i18n-ph="fCode" placeholder="opcjonalnie"></div>
           <div><label>Waluta</label><div id="curBox" style="display:flex;gap:6px"></div></div>
         </div>
-        <div><label style="margin-top:10px">Uwagi dla drukarza (opcjonalnie)</label>
-          <textarea id="fNotes" class="note-field" rows="2" placeholder="np. podkreśl nacięcia, kolor docelowy itp."></textarea></div>
-        <button class="btn-main" id="submitBtn" onclick="submitOrder()">Zamawiam — pełne podsumowanie poniżej</button>
+        <div><label style="margin-top:10px" data-i18n="fNotes">Uwagi dla drukarza (opcjonalnie)</label>
+                  <textarea id="fNotes" class="note-field" rows="2" data-i18n-ph="fNotes" placeholder="np. podkreśl nacięcia, kolor docelowy itp."></textarea></div>
+                <button class="btn-main" id="submitBtn" onclick="submitOrder()" data-i18n="fSubmit">Zamawiam — pełne podsumowanie poniżej</button>
         <div style="font-size:11.5px;color:var(--muted);margin-top:10px">Płatność: Stripe (karta / BLIK) po potwierdzeniu · VAT wg kraju dostawy doliczy Stripe.</div>
       </div>
     </div>
@@ -161,7 +161,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
         <div class="preview-box" id="previewBox">Wybierz model z listy, żeby zobaczyć go tutaj.</div>
       </div>
       <div class="card" id="summaryCard">
-        <h2>🧾 Podsumowanie</h2>
+        <h2 data-i18n="summary">🧾 Podsumowanie</h2>
         <div id="sumEmpty" class="empty">Dodaj modele, a zobaczysz pełne zestawienie.</div>
         <div id="sumBody" style="display:none"></div>
         <div class="vat" id="vatNote">Do ceny doliczony zostanie VAT wg kraju dostawy — Stripe naliczy go przy płatności.</div>
@@ -173,10 +173,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 
 <div class="thanks" id="pageThanks" style="display:none">
   <div class="ico">✅</div>
-  <h1>Dziękujemy za zamówienie!</h1>
-  <p>Twoje zamówienie <b class="ord" id="thanksOrder">#—</b> zostało przyjęte.<br>Prześlemy potwierdzenie i szczegóły płatności na podany email. Drukujemy i wysyłamy w wybranym terminie.</p>
-  <p style="margin-top:14px;color:var(--muted)">W razie pytań: <b>hallo@3dfile.link</b></p>
-  <button class="btn-main" onclick="location='/'">← Wróć na stronę</button>
+  <h1 data-i18n="thanksTitle">Dziękujemy za zamówienie!</h1>
+    <p>Twoje zamówienie <b class="ord" id="thanksOrder" data-i18n="thanksNo">#—</b> zostało przyjęte.<br>Prześlemy potwierdzenie i szczegóły płatności na podany email. Drukujemy i wysyłamy w wybranym terminie.</p>
+    <p style="margin-top:14px;color:var(--muted)">W razie pytań: <b>hallo@3dfile.link</b></p>
+    <button class="btn-main" onclick="location='/'" data-i18n="backHome">← Wróć na stronę</button>
 </div>
 
 <script>

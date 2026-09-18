@@ -2,11 +2,66 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Cache-Control" content="no-store, max-age=0">
-  <title>3DFILE.link — Zleć nam wydruk 3D</title>
-  <meta name="description" content="Polski hub druku 3D. Automatyczna wycena w czasie rzeczywistym. Dostawa na świecie. Prześlij model — natychmiastowa cena i zamówienie.">
-  <link rel="icon" href="/asset/logo_3d.svg?v=78" type="image/svg+xml">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Cache-Control" content="no-store, max-age=0">
+    <title>Druk 3D na życzenie | Zamów wydruk STL/OBJ/3MF online — 3DFILE.link</title>
+    <meta name="description" content="Polska pracownia druku 3D (Gdańsk). Wgraj model STL/OBJ/3MF, wyceń natychmiast i zamów wydruk online — Bambu Lab P1S, druk wielokolorowy, od 5 zł. Wysyłka na świecie.">
+    <meta name="keywords" content="druk 3d, druk 3d online, zamów wydruk 3d, druk 3d na życzenie, wydruk 3d z pliku, druk 3d stl, druk 3d obj, druk 3d 3mf, dokładny druk 3d, polska drukarnia 3d, bambu lab, druk wielokolorowy, prototypowanie 3d, 3d printing poland, on demand 3d print, cnc prototype">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <link rel="alternate" hreflang="pl" href="https://3dfile.link/drukuje">
+    <link rel="alternate" hreflang="en" href="https://3dfile.link/en/print">
+    <link rel="alternate" hreflang="x-default" href="https://3dfile.link/drukuje">
+    <link rel="canonical" href="https://3dfile.link/drukuje">
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="3DFILE.link">
+    <meta property="og:url" content="https://3dfile.link/drukuje">
+    <meta property="og:title" content="Druk 3D na życzenie — zamów wydruk online | 3DFILE.link">
+    <meta property="og:description" content="Wgraj STL/OBJ/3MF, wyceń natychmiast, zamów wydruk. Bambu Lab P1S, druk wielokolorowy, od 5 zł, wysyłka na świecie.">
+    <meta property="og:image" content="https://3dfile.link/asset/hero_printer.png">
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Druk 3D na życzenie | 3DFILE.link">
+    <meta property="twitter:description" content="Wgraj model, wyceń, zamów wydruk 3D online. Od 5 zł, wysyłka na świecie.">
+    <meta property="twitter:image" content="https://3dfile.link/asset/hero_printer.png">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "@id": "https://3dfile.link/#printshop",
+      "name": "3DFILE.link — Pracownia Druku 3D",
+      "alternateName": "3DFILE 3D Printing Studio",
+      "description": "Polska pracownia druku 3D na życzenie (Gdańsk). Druk STL/OBJ/3MF, druk wielokolorowy, prototypowanie. Bambu Lab P1S.",
+      "url": "https://3dfile.link/drukuje",
+      "image": "https://3dfile.link/asset/hero_printer.png",
+      "priceRange": "5 PLN - 500 PLN",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Gdańsk",
+        "addressCountry": "PL"
+      },
+      "areaServed": ["PL", "EU", "World"],
+      "sameAs": [],
+      "openingHours": "Mo-Fr 09:00-18:00",
+      "offers": {
+        "@type": "Offer",
+        "priceCurrency": "PLN",
+        "description": "On-demand 3D printing of STL/OBJ/3MF models"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {"@type":"Question","name":"Jakie pliki mogę wgrać?","acceptedAnswer":{"@type":"Answer","text":"STL, OBJ oraz 3MF (wielokolorowe). Objętość, wymiary i orientacyjna cena policzą się automatycznie — bez rejestracji."}},
+        {"@type":"Question","name":"Ile kosztuje druk 3D?","acceptedAnswer":{"@type":"Answer","text":"Od 5 zł. Końcowa cena = filament + prąd + czas druku + marża + wysyłka. Pełna wycena przed zamówieniem, w PLN / USD / EUR. Zamówienia od 200 zł mają darmową wysyłkę."}},
+        {"@type":"Question","name":"Jak długo trwa realizacja zamówienia?","acceptedAnswer":{"@type":"Answer","text":"Standardowo 5 dni roboczych, ekspresowo do 2 dni. Wysyłka InPost Paczkomat 1-2 dni."}},
+        {"@type":"Question","name":"Czy wydruk będzie dokładnie jak w pliku?","acceptedAnswer":{"@type":"Answer","text":"Bardzo blisko, ale każdy filament lekko kurczy się w druku — zwykle 0,3-1%, do ~2% dla materiałów technicznych."}}
+      ]
+    }
+    </script>
+    <link rel="icon" href="/asset/logo_3d.svg?v=78" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/asset/print.css?v=92">
 </head>
@@ -19,15 +74,16 @@
           <img src="/logo.png?v=82" alt="3DFILE.link" class="logo" width="34" height="34" loading="lazy">
         </a>
         <nav class="nav-print" id="printNav">
-          <a href="/" class="nav-link-print">Wgraj</a>
-          <a href="/#discover" class="nav-link-print">Odkrywaj</a>
-          <a href="/#hiw" class="nav-link-print">Jak to działa</a>
-          <a href="/drukuje" class="nav-link-print active">Zleć nam wydruk</a>
-          <a href="/#faq" class="nav-link-print">FAQ</a>
+          <a href="/" class="nav-link-print" data-i18n="navHome">Wgraj</a>
+          <a href="/#discover" class="nav-link-print" data-i18n="navHosting">Odkrywaj</a>
+          <a href="/#hiw" class="nav-link-print" data-i18n="navHow">Jak to działa</a>
+          <a href="/drukuje" class="nav-link-print active" data-i18n="navPrint">Zleć nam wydruk</a>
+          <a href="/#faq" class="nav-link-print" data-i18n="navFAQ">FAQ</a>
           <span style="display:inline-flex;align-items:center;gap:4px;margin-left:4px">
-            <a href="/" class="btn-nav-print">Zaloguj</a>
-            <a href="/" class="btn-nav-print primary">Załóż konto</a>
-          </span>
+                      <a href="/" class="btn-nav-print">Zaloguj</a>
+                      <a href="/" class="btn-nav-print primary">Załóż konto</a>
+                      <button id="langToggle" onclick="window.__pi18n.setLang(window.__pi18n.lang==='pl'?'en':'pl')" class="btn-nav-print" style="background:var(--card);border:1px solid var(--border);cursor:pointer;border-radius:8px;padding:7px 12px;font-weight:700;font-size:13px">EN</button>
+                    </span>
           <!-- admin hidden — only via /drukuje#admin -->
           <a href="#admin" style="display:none" onclick="openAdminPanel();return false">Admin</a>
         </nav>
@@ -38,9 +94,9 @@
     <!-- Hero -->
     <section class="hero-print reveal">
       <div class="hero-text">
-        <h1>Druk 3D <span class="grad">On&nbsp;Demand</span></h1>
-        <p class="hero-desc">Polski hub druku 3D. Automatyczna wycena w czasie rzeczywistym, zamówienie w dwa kliknięcia i dostawa na cały świat.</p>
-        <div class="hero-cta" onclick="location.href='/zamow'" role="button" tabindex="0">Zamów druk → wejdź w formularz</div>
+        <h1 data-i18n="heroTitle">Druk 3D <span class="grad">On&nbsp;Demand</span></h1>
+        <p class="hero-desc" data-i18n="heroSub">Polski hub druku 3D. Automatyczna wycena w czasie rzeczywistym, zamówienie w dwa kliknięcia i dostawa na cały świat.</p>
+        <div class="hero-cta" onclick="location.href='/zamow'" role="button" tabindex="0" data-i18n="heroCta">Zamów druk → wejdź w formularz</div>
       </div>
       <div class="hero-image">
         <img src="/asset/hero_printer.png?v=1" alt="Druk 3D na życzenie" loading="lazy" style="width:100%;max-width:380px;object-fit:contain;filter:drop-shadow(0 10px 22px rgba(15,23,42,.18))">
@@ -49,20 +105,20 @@
     <!-- About / kim jesteśmy -->
 <section class="about-print reveal" id="about" style="padding:56px 0;background:var(--bg-alt);border-radius:18px">
   <div class="section-head">
-    <span class="section-kicker">O nas</span>
-    <h2>Niezależna pracownia druku 3D z Gdańska</h2>
-    <p class="section-sub">3DFILE.link to pracownia, w której Twój cyfrowy model zamienia się w konkretny, trwały wydruk — od pojedynczego prototypu po gotowy element do użytku. Łączymy własny sprzęt, kontrolę jakości i przejrzyste ceny.</p>
+    <span class="section-kicker" data-i18n="aboutKicker">O nas</span>
+    <h2 data-i18n="aboutTitle">Niezależna pracownia druku 3D z Gdańska</h2>
+    <p class="section-sub" data-i18n="aboutSub">3DFILE.link to pracownia, w której Twój cyfrowy model zamienia się w konkretny, trwały wydruk — od pojedynczego prototypu po gotowy element do użytku. Łączymy własny sprzęt, kontrolę jakości i przejrzyste ceny.</p>
   </div>
 
   <!-- O nas: sprzęt + hosting -->
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:28px">
     <div class="step-card" style="border-top:4px solid var(--accent)">
-      <h3 style="font-size:15px;font-weight:700">🖨 Drukujemy na własnym sprzęcie</h3>
+      <h3 style="font-size:15px;font-weight:700" data-i18n="equipTitle">🖨 Drukujemy na własnym sprzęcie</h3>
       <p style="margin-top:8px">Pracujemy m.in. na <strong>Bambu Lab P1S</strong> — precyzyjnej drukarce z automatycznym poziomowaniem stolu i zaawansowaną kontrolą jakości wydruku. Rozwijamy nasze maszyny i procesy na bieżąco: kalibrujemy skurcz materiałów, testujemy nowe filamenty i optymalizujemy czas druku, żeby wydruki wychodziły dokładne i powtarzalne.</p>
       <p style="margin-top:8px">Dzięki temu Twoje ogniwo, obudowa czy prototyp nie tylko wygląda jak projekt, ale też trzyma wymiary i realnie nadaje się do użytku.</p>
     </div>
     <div class="step-card" style="border-top:4px solid var(--accent)">
-      <h3 style="font-size:15px;font-weight:700">☁ Własny hosting modeli 3D</h3>
+      <h3 style="font-size:15px;font-weight:700" data-i18n="hostTitle">☁ Własny hosting modeli 3D</h3>
       <p style="margin-top:8px">3DFILE.link to nie tylko drukarnia — to także <strong>darmowy hosting modeli 3D</strong>. Wgraj STL / 3MF / OBJ, podejrzyj model w przeglądarce, przekonwertuj do STEP i udostępnij jednym linkiem.</p>
       <p style="margin-top:8px">Własna infrastruktura, brak pośredników. Twoje pliki — Twoja kontrola: prywatne, unlisted lub publiczne z linkiem gotowym do wklejenia na Printables, MakerWorld i Thingiverse.</p>
     </div>
@@ -70,77 +126,106 @@
 
   <!-- Statystyki zaufania -->
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:26px">
-    <div class="step-card" style="text-align:center"><div style="font-size:26px;font-weight:800;color:var(--accent)">13+</div><div style="font-size:12.5px;color:var(--muted)">sprawdzonych materiałów</div></div>
-    <div class="step-card" style="text-align:center"><div style="font-size:26px;font-weight:800;color:var(--accent)">od 5 zł</div><div style="font-size:12.5px;color:var(--muted)">minimalne zamówienie</div></div>
-    <div class="step-card" style="text-align:center"><div style="font-size:26px;font-weight:800;color:var(--accent)">wysyłka od 200 zł gratis</div><div style="font-size:12.5px;color:var(--muted)">na terenie Polski (InPost)</div></div>
-    <div class="step-card" style="text-align:center"><div style="font-size:26px;font-weight:800;color:var(--accent)">PL + EN</div><div style="font-size:12.5px;color:var(--muted)">strona i płatność w 2 językach</div></div>
+    <div class="step-card" style="text-align:center"><div style="font-size:26px;font-weight:800;color:var(--accent)">13+</div><div style="font-size:12.5px;color:var(--muted)" data-i18n="statMaterial">sprawdzonych materiałów</div></div>
+    <div class="step-card" style="text-align:center"><div style="font-size:26px;font-weight:800;color:var(--accent)">od 5 zł</div><div style="font-size:12.5px;color:var(--muted)" data-i18n="statMin">minimalne zamówienie</div></div>
+    <div class="step-card" style="text-align:center"><div style="font-size:26px;font-weight:800;color:var(--accent)">wysyłka od 200 zł gratis</div><div style="font-size:12.5px;color:var(--muted)" data-i18n="statShip">na terenie Polski (InPost)</div></div>
+    <div class="step-card" style="text-align:center"><div style="font-size:26px;font-weight:800;color:var(--accent)">PL + EN</div><div style="font-size:12.5px;color:var(--muted)" data-i18n="statLang">strona i płatność w 2 językach</div></div>
   </div>
 
   <!-- Dlaczego nam zaufać -->
   <div class="section-head" style="margin-top:32px">
-    <span class="section-kicker">Dlaczego my</span>
-    <h3 style="font-size:22px">Zaufanie budujemy procesem, nie obietnicami</h3>
+    <span class="section-kicker" data-i18n="whyKicker">Dlaczego my</span>
+    <h3 style="font-size:22px" data-i18n="whyTitle">Zaufanie budujemy procesem, nie obietnicami</h3>
   </div>
   <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">
-    <div class="step-card"><div class="step-num">✓</div><h3>Przejrzysta wycena w real-time</h3><p>Cena liczy się od razu: filament + prąd + czas + marża + wysyłka, w PLN / USD / EUR. Bez ukrytych kosztów.</p></div>
-    <div class="step-card"><div class="step-num">①</div><h3>Uczciwa informacja o tolerancji</h3><p>Każdy filament lekko kurczy się w druku (0,3–1%, do ~2% dla technicznych). Mówimy o tym wprost — zamiast obiecować nierealną idealność.</p></div>
-    <div class="step-card"><div class="step-num">🖨</div><h3>Kontrola jakości przed wysyłką</h3><p>Sprawdzamy każdy wydruk — strukturę, wymiary, warstwy — zanim zapakujemy go i wyślemy.</p></div>
-    <div class="step-card"><div class="step-num">☑</div><h3>Pełny wgląd w status</h3><p>Od zamówienia, przez druk, po dostawę. Zawsze wiesz, na jakim etapie jest Twój model.</p></div>
+    <div class="step-card"><div class="step-num">✓</div><h3 data-i18n="why1t">Przejrzysta wycena w real-time</h3><p data-i18n="why1d">Cena liczy się od razu: filament + prąd + czas + marża + wysyłka, w PLN / USD / EUR. Bez ukrytych kosztów.</p></div>
+    <div class="step-card"><div class="step-num">①</div><h3 data-i18n="why2t">Uczciwa informacja o tolerancji</h3><p>Każdy filament lekko kurczy się w druku (0,3–1%, do ~2% dla technicznych). Mówimy o tym wprost — zamiast obiecować nierealną idealność.</p></div>
+    <div class="step-card"><div class="step-num">🖨</div><h3 data-i18n="why3t">Kontrola jakości przed wysyłką</h3><p data-i18n="why3d">Sprawdzamy każdy wydruk — strukturę, wymiary, warstwy — zanim zapakujemy go i wyślemy.</p></div>
+    <div class="step-card"><div class="step-num">☑</div><h3 data-i18n="why4t">Pełny wgląd w status</h3><p data-i18n="why4d">Od zamówienia, przez druk, po dostawę. Zawsze wiesz, na jakim etapie jest Twój model.</p></div>
   </div>
 
   <!-- CTA-rząd wiarygodności -->
   <div style="text-align:center;margin-top:26px;padding:18px;border:1px solid var(--border);border-radius:12px;background:var(--card)">
-    <div style="font-size:16px;font-weight:600;color:var(--fg)">Masz pytania o materiał, wycenę albo plik?</div>
-    <div style="font-size:13.5px;color:var(--muted);margin-top:6px">Napisz — pomożemy dobrać najlepszy filament do Twojego projektu: <a href="mailto:hallo@3dfile.link" style="color:var(--accent);font-weight:600">hallo@3dfile.link</a></div>
+    <div style="font-size:16px;font-weight:600;color:var(--fg)" data-i18n="contactAsk">Masz pytania o materiał, wycenę albo plik?</div>
+    <div style="font-size:13.5px;color:var(--muted);margin-top:6px" data-i18n="contactSub">Napisz — pomożemy dobrać najlepszy filament do Twojego projektu: <a href="mailto:hallo@3dfile.link" style="color:var(--accent);font-weight:600">hallo@3dfile.link</a></div>
   </div>
 </section>
 
 <!-- How it works -->
     <section class="how-print reveal" id="how">
       <div class="section-head">
-        <span class="section-kicker">Proces</span>
-        <h2>Jak to działa</h2>
+        <span class="section-kicker" data-i18n="howKicker">Proces</span>
+        <h2 data-i18n="howTitle">Jak to działa</h2>
         <p class="section-sub">Cztery kroki od pliku do gotowego wydruku — bez rejestracji i zbędnej biurokracji.</p>
       </div>
       <div class="steps-grid">
         <div class="step-card">
           <div class="step-num">1</div>
-          <h3>Wyślij swój model</h3>
-          <p>Wybierz plik STL/OBJ/3MF albo wpisz wymiary i objętość ręcznie.</p>
+          <h3 data-i18n="how1t">Wyślij swój model</h3>
+          <p data-i18n="how1d">Wybierz plik STL/OBJ/3MF albo wpisz wymiary i objętość ręcznie.</p>
         </div>
         <div class="step-card">
           <div class="step-num">2</div>
-          <h3>Pobierz cenę natychmiast</h3>
-          <p>Obliczamy filament + prąd + czas + marża + wysyłka. Bez rejestracji.</p>
+          <h3 data-i18n="how2t">Pobierz cenę natychmiast</h3>
+          <p data-i18n="how2d">Obliczamy filament + prąd + czas + marża + wysyłka. Bez rejestracji.</p>
         </div>
         <div class="step-card">
           <div class="step-num">3</div>
-          <h3>Zamów</h3>
-          <p>Wpisz adres, zapłać BLIKIEM/kartą/przelewem. My drukujemy i wysyłamy.</p>
+          <h3 data-i18n="how3t">Zamów</h3>
+          <p data-i18n="how3d">Wpisz adres, zapłać BLIKIEM/kartą/przelewem. My drukujemy i wysyłamy.</p>
         </div>
         <div class="step-card">
           <div class="step-num">4</div>
-          <h3>Śledź postępy</h3>
-          <p>Status: drukowane → wysłane → dostarczone.</p>
+          <h3 data-i18n="how4t">Śledź postępy</h3>
+          <p data-i18n="how4d">Status: drukowane → wysłane → dostarczone.</p>
         </div>
       </div>
           </section>
           <!-- FAQ -->
           <section class="how-print reveal" id="faq" style="background:var(--bg-alt);border-radius:14px;padding:48px 0">
-            <div class="section-head"><span class="section-kicker">FAQ</span><h2>Częste pytania</h2>
-            <p class="section-sub">Najważniejsze rzeczy, zanim zamówisz — krótko i konkretnie.</p></div>
+            <div class="section-head"><span class="section-kicker" data-i18n="faqKicker">FAQ</span><h2 data-i18n="faqTitle">Częste pytania</h2>
+            <p class="section-sub" data-i18n="faqSub">Najważniejsze rzeczy, zanim zamówisz — krótko i konkretnie.</p></div>
             <div style="max-width:760px;margin:8px auto 0;display:flex;flex-direction:column;gap:10px">
-              <details style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px"><summary style="font-weight:600;cursor:pointer;font-size:15px">Jakie pliki mogę wgrać?</summary><div style="margin-top:8px;color:var(--muted);font-size:14px">STL, OBJ oraz 3MF (wielokolorowe). Wgraj plik, a objętość, wymiary i orientacyjna cena policzą się automatycznie — bez rejestracji.</div></details>
-              <details style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px"><summary style="font-weight:600;cursor:pointer;font-size:15px">Ile kosztuje druk 3D?</summary><div style="margin-top:8px;color:var(--muted);font-size:14px">Od <strong>5 zł</strong>. Końcowa cena = filament + prąd + czas druku + marża + wysyłka. Wszystko widzisz <strong>przed zamówieniem</strong>, w PLN / USD / EUR. Zamówienia od 200 zł mają darmową wysyłkę.</div></details>
-              <details style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px"><summary style="font-weight:600;cursor:pointer;font-size:15px">Jak długo trwa realizacja?</summary><div style="margin-top:8px;color:var(--muted);font-size:14px">Standardowo 5 dni roboczych od potwierdzenia, ekspresowo do 2 dni (drożej, bo musimy też zaplanować kolejkę wydruków). Wysyłka InPost Paczkomat 1–2 dni.</div></details>
-              <details style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px"><summary style="font-weight:600;cursor:pointer;font-size:15px">Czy wydruk będzie idealnie jak w pliku?</summary><div style="margin-top:8px;color:var(--muted);font-size:14px">Bardzo blisko, ale każdy filament lekko kurczy się w druku — zwykle 0,3–1%, do ~2% dla materiałów technicznych. Informujemy o tym zawsze.<br><br>Ile kolorów w modelu? Jeden kolor ekstra: +20 zł, każdy kolejny +10 zł (druk wielokolorowy trwa dłużej).</div></details>
-              <details style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px"><summary style="font-weight:600;cursor:pointer;font-size:15px">Jak zapłacę i czy jest bezpiecznie?</summary><div style="margin-top:8px;color:var(--muted);font-size:14px">Płatność przez <strong>Stripe</strong> (karta, BLIK, przelew) — bezpieczny standard dla e-commerce. Faktura/VAT według kraju dostawy doliczany automatycznie.</div></details>
+              <details style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px"><summary style="font-weight:600;cursor:pointer;font-size:15px" data-i18n="faq1q">Jakie pliki mogę wgrać?</summary><div style="margin-top:8px;color:var(--muted);font-size:14px">STL, OBJ oraz 3MF (wielokolorowe). Wgraj plik, a objętość, wymiary i orientacyjna cena policzą się automatycznie — bez rejestracji.</div></details>
+              <details style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px"><summary style="font-weight:600;cursor:pointer;font-size:15px" data-i18n="faq2q">Ile kosztuje druk 3D?</summary><div style="margin-top:8px;color:var(--muted);font-size:14px">Od <strong>5 zł</strong>. Końcowa cena = filament + prąd + czas druku + marża + wysyłka. Wszystko widzisz <strong>przed zamówieniem</strong>, w PLN / USD / EUR. Zamówienia od 200 zł mają darmową wysyłkę.</div></details>
+              <details style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px"><summary style="font-weight:600;cursor:pointer;font-size:15px" data-i18n="faq3q">Jak długo trwa realizacja?</summary><div style="margin-top:8px;color:var(--muted);font-size:14px">Standardowo 5 dni roboczych od potwierdzenia, ekspresowo do 2 dni (drożej, bo musimy też zaplanować kolejkę wydruków). Wysyłka InPost Paczkomat 1–2 dni.</div></details>
+              <details style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px"><summary style="font-weight:600;cursor:pointer;font-size:15px" data-i18n="faq4q">Czy wydruk będzie idealnie jak w pliku?</summary><div style="margin-top:8px;color:var(--muted);font-size:14px">Bardzo blisko, ale każdy filament lekko kurczy się w druku — zwykle 0,3–1%, do ~2% dla materiałów technicznych. Informujemy o tym zawsze.<br><br>Ile kolorów w modelu? Jeden kolor ekstra: +20 zł, każdy kolejny +10 zł (druk wielokolorowy trwa dłużej).</div></details>
+              <details style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px"><summary style="font-weight:600;cursor:pointer;font-size:15px" data-i18n="faq5q">Jak zapłacę i czy jest bezpiecznie?</summary><div style="margin-top:8px;color:var(--muted);font-size:14px">Płatność przez <strong>Stripe</strong> (karta, BLIK, przelew) — bezpieczny standard dla e-commerce. Faktura/VAT według kraju dostawy doliczany automatycznie.</div></details>
             </div>
           </section>
-          <!-- Materials -->
+          <!-- Guide / wiedza (SEO) -->
+    <section class="guide-reveal reveal" id="guide" style="padding:44px 0;background:var(--card);border:1px solid var(--border);border-radius:16px">
+      <div class="section-head">
+        <span class="section-kicker" data-i18n="guideKicker">Przewodnik po druku 3D</span>
+        <h2 data-i18n="guideTitle">Druk 3D na życzenie — wszystko, co musisz wiedzieć</h2>
+        <p class="section-sub" data-i18n="guideSub">Krótkie, konkretne poradniki: jak przygotować plik, jaki materiał wybrać i na co uważać. Wiedza, która pomoże Ci zamówić idealny wydruk.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:1080px;margin:14px auto 0;padding:0 16px">
+        <a href="/zamow" style="text-decoration:none;border:1px solid var(--border);border-radius:12px;padding:16px;display:block;background:var(--bg);transition:transform .15s">
+          <div style="font-size:22px">📐</div>
+          <h3 data-i18n="g1t" style="font-size:15px;font-weight:700;margin-top:8px;color:var(--fg)">Jak przygotować plik do druku 3D?</h3>
+          <p data-i18n="g1d" style="color:var(--muted);font-size:13px;margin-top:6px;line-height:1.5">STL, OBJ czy 3MF? Wodoszczelna czy otwarta bryła? Sprawdź, co zwiększa dokładność wydruku, zanim go zamówisz.</p>
+          <span style="color:var(--accent);font-size:13px;font-weight:600;margin-top:8px;display:inline-block">Czytaj →</span>
+        </a>
+        <a href="/zamow" style="text-decoration:none;border:1px solid var(--border);border-radius:12px;padding:16px;display:block;background:var(--bg);transition:transform .15s">
+          <div style="font-size:22px">🧵</div>
+          <h3 data-i18n="g2t" style="font-size:15px;font-weight:700;margin-top:8px;color:var(--fg)">PLA, PETG czy ASA — jaki filament wybrać?</h3>
+          <p data-i18n="g2d" style="color:var(--muted);font-size:13px;margin-top:6px;line-height:1.5">Elegancka powierzchnia, części odporne na UV czy ruchome elementy? Porównujemy materiały, byś wybrał najlepszy.</p>
+          <span style="color:var(--accent);font-size:13px;font-weight:600;margin-top:8px;display:inline-block">Czytaj →</span>
+        </a>
+        <a href="/zamow" style="text-decoration:none;border:1px solid var(--border);border-radius:12px;padding:16px;display:block;background:var(--bg);transition:transform .15s">
+          <div style="font-size:22px">🌈</div>
+          <h3 data-i18n="g3t" style="font-size:15px;font-weight:700;margin-top:8px;color:var(--fg)">Druk wielokolorowy — jak to działa?</h3>
+          <p data-i18n="g3d" style="color:var(--muted);font-size:13px;margin-top:6px;line-height:1.5">Wielokolorowy wydruk wymaga więcej czasu i planowania. Dowiedz się, jak dodać kolory i ile kosztuje ekstra.</p>
+          <span style="color:var(--accent);font-size:13px;font-weight:600;margin-top:8px;display:inline-block">Czytaj →</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Materials -->
         <section class="materials-print reveal" id="materials">
-          <div class="section-head"><span class="section-kicker">Materiały</span><h2>Materiały i kolory</h2>
-          <p class="section-sub">Każdy materiał z opisem właściwości i typowym zastosowaniem — wybierz świadomie.</p></div>
+          <div class="section-head"><span class="section-kicker" data-i18n="matKicker">Materiały</span><h2 data-i18n="matTitle">Materiały i kolory</h2>
+          <p class="section-sub" data-i18n="matSub">Każdy materiał z opisem właściwości i typowym zastosowaniem — wybierz świadomie.</p></div>
           <div class="tolerance-note">
             <strong>⚠ Wymiary a rzeczywisty wydruk:</strong> wymiary Twojego modelu mogą nieznacznie różnić się od podanych w pliku. Każdy filament nieco kurczy się i rozkurcza podczas drukowania i stygnięcia — mimo że staramy się o najwyższą jakość, różnica wynosi zwykle <strong>0,3–1%</strong>, a dla materiałów technicznych (jak nylon PA12) może sięgać <strong>do ok. 2%</strong>. To normalna cecha druku 3D i nie ma wpływu na wytrzymałość czy funkcjonalność elementu.
           </div>
@@ -148,19 +233,19 @@
         </section>
     <!-- Shipping -->
     <section class="shipping-print reveal" id="shipping">
-      <div class="section-head"><span class="section-kicker">Dostawa</span><h2>Metody wysyłki</h2>
-      <p class="section-sub">Wysyłamy na cały świat. Podstawa to ekonomiczna przesyłka — wersje ekspresowe dla zniecierpliwionych.</p></div>
+      <div class="section-head"><span class="section-kicker" data-i18n="shipKicker">Dostawa</span><h2 data-i18n="shipTitle">Metody wysyłki</h2>
+      <p class="section-sub" data-i18n="shipSub">Wysyłamy na cały świat. Podstawa to ekonomiczna przesyłka — wersje ekspresowe dla zniecierpliwionych.</p></div>
       <table class="shipping-table">
         <thead><tr>
-          <th> Opcja </th><th>Polska</th><th>UE</th><th>Świat</th>
+          <th data-i18n="shipOption"> Opcja </th><th data-i18n="shipPoland">Polska</th><th data-i18n="shipEU">UE</th><th data-i18n="shipWorld">Świat</th>
         </tr></thead>
         <tbody id="shippingTable"></tbody>
       </table>
     </section>
         <!-- Gallery / nasze wydruki -->
     <section class="shots-gallery reveal" id="shots" style="padding:40px 0">
-      <div class="section-head"><span class="section-kicker">Nasze wydruki</span><h2>Galeria prac</h2>
-      <p class="section-sub">Kilka realnych wydruków z naszej pracowni — prototypy, modele i elementy funkcjonalne.</p></div>
+      <div class="section-head"><span class="section-kicker" data-i18n="shotsKicker">Nasze wydruki</span><h2 data-i18n="shotsTitle">Galeria prac</h2>
+      <p class="section-sub" data-i18n="shotsSub">Kilka realnych wydruków z naszej pracowni — prototypy, modele i elementy funkcjonalne.</p></div>
       <div class="gallery-grid" id="galleryGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:8px">
         <div style="text-align:center;color:var(--muted);font-size:14px;padding:30px">Wczytywanie galerii…</div>
       </div>
@@ -168,9 +253,9 @@
 
 <!-- Admin panel — hidden by default, accessible via #admin anchor -->
         <div id="adminPanel" style="display:none">
-      <h2>Panel admina</h2>
+      <h2 data-i18n="adminTitle">Panel admina</h2>
       <div id="adminAuth">
-        <p style="margin:8px 0;color:#6b7280">Zaloguj się jako administrator, aby zarządzać zamówieniami.</p>
+        <p style="margin:8px 0;color:#6b7280" data-i18n="adminSub">Zaloguj się jako administrator, aby zarządzać zamówieniami.</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">
           <input type="email" id="adminEmail" placeholder="Email administratora" style="padding:8px;border:1px solid #d1d5db;border-radius:6px;flex:1;min-width:180px">
           <input type="password" id="adminPassword" placeholder="Hasło" onkeydown="if(event.key==='Enter')adminLogin()" style="padding:8px;border:1px solid #d1d5db;border-radius:6px;flex:1;min-width:160px">
@@ -182,11 +267,11 @@
       </div>
       <div id="adminContent" style="display:none">
         <div class="admin-tabs">
-          <button class="admin-tab-btn active" onclick="switchAdminTab('orders')">Zamówienia</button>
-          <button class="admin-tab-btn" onclick="switchAdminTab('stats')">Statystyki</button>
-          <button class="admin-tab-btn" onclick="switchAdminTab('pricing')">Cennik</button>
-          <button class="admin-tab-btn" onclick="switchAdminTab('codes')">Kody rabatowe</button>
-                    <button class="admin-tab-btn" onclick="switchAdminTab('gallery')">Galeria</button>
+          <button class="admin-tab-btn active" onclick="switchAdminTab('orders')" data-i18n="adminTabOrders">Zamówienia</button>
+          <button class="admin-tab-btn" onclick="switchAdminTab('stats')" data-i18n="adminTabStats">Statystyki</button>
+          <button class="admin-tab-btn" onclick="switchAdminTab('pricing')" data-i18n="adminTabPricing">Cennik</button>
+          <button class="admin-tab-btn" onclick="switchAdminTab('codes')" data-i18n="adminTabCodes">Kody rabatowe</button>
+                    <button class="admin-tab-btn" onclick="switchAdminTab('gallery')" data-i18n="adminTabGallery">Galeria</button>
                   </div>
         <div id="adminOrders" class="admin-tab"></div>
         <div id="adminStats" class="admin-tab" style="display:none"></div>
@@ -198,14 +283,14 @@
   </main>
     <div id="toastEl" class="toast-print"></div>
     <footer class="footer-print">
-      <span class="copyright">© 2026 3dfile.link — druk 3D na wymiar.</span>
+      <span class="copyright" data-i18n="footerRights">© 2026 3dfile.link — druk 3D na wymiar.</span>
       <a href="#" onclick="openAdminPanel();return false">Administracja</a>
     </footer>
   <!-- Print Order Modal -->
   <div class="modal-backdrop" id="printOrderModal">
     <div class="modal">
       <button class="close-btn" onclick="closePrintModal()">×</button>
-      <h2 id="printModalTitle">Zamów druk</h2>
+      <h2 id="printModalTitle" data-i18n="ctaTitle">Zamów druk</h2>
       <form id="printOrderForm" onsubmit="submitPrintOrder(event)">
         <input type="hidden" name="job_id" id="printOrderId">
         <input type="hidden" name="job_uuid" id="printOrderUuid">
@@ -268,7 +353,8 @@
       </form>
     </div>
   </div>
-  <script src="/asset/print.js?v=93"></script>
+  <script src="/js/print_i18n.js?v=1"></script>
+  <script src="/asset/print.js?v=94"></script>
   <script>
   // Cache-bust fetch + upload handler + init
   window.addEventListener('load', function() {

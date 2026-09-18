@@ -105,35 +105,38 @@
     var sel = document.getElementById('printMaterial');
     var note = document.getElementById('printMaterialNote');
     if (!sel || !note) return;
+    var lang = (typeof window.__pi18n !== 'undefined') ? window.__pi18n.lang : 'pl';
+    var t = function(k){ if(typeof window.__pi18n !== 'undefined' && window.__pi18n.t) return window.__pi18n.t(k); return k; };
     var map = {
-          'PLA': 'PLA — uniwersalny, tani, sztywny. Do prototypów, osłon, modeli i dekoracji. Unikaj wysokich temperatur (~60°C) i intensywnej eksploatacji.',
-          'PETG': 'PETG — udarny, odporny na uderzenia i chemię, w połowie przezroczysty. Klosze, osłony, elementy przezroczyste.',
-          'ABS': 'ABS — trwały, udarny klasyk przemysłowy. Obudowy, uchwyty, części mechaniczne.',
-          'ASA': 'ASA — odporny na UV i warunki atmosferyczne (nie żółknie na słońcu). Elementy zewnętrzne, ogrodowe, motoryzacyjne.',
-          'TPU': 'TPU — elastyczny, gumowy. Uszczelki, ochraniacze, amortyzatory, części giętkie.',
-          'PLA HT': 'PLA HT — odporny na wyższe temperatury (~90–100°C). Osłony LED, uchwyty, elementy przy cieple.',
-          'PLA CF': 'PLA CF — z włóknem węglowym, sztywniejszy i lżejszy. Części konstrukcyjne, drony.',
-          'PETG HF': 'PETG HF — wysokiej jakości, lepsza przejrzystość i udarność.',
-          'PETG FR': 'PETG FR — niepalny (V-0). Obudowy elektroniczne, normy przeciwpożarowe.',
-          'ASA CF': 'ASA CF — z włóknem węglowym, odporny na UV i sztywny.',
-          'PLA Matte': 'PLA Matte — matowe, eleganckie wykończenie. Modele premium, figury.',
-          'PLA Silk': 'PLA Silk — jedwabisty połysk, gładki w dotyku.',
-          'PLA Glow': 'PLA Glow — świeci w ciemności. Figurki, breloki, dekoracje.'
-        };
-    note.textContent = map[sel.value] || 'Wybierz materiał — pojawi się jego opis i zastosowanie.';
+      'PLA': t('mPLA'),
+      'PETG': t('mPETG'),
+      'ABS': t('mABS'),
+      'ASA': t('mASA'),
+      'TPU': t('mTPU'),
+      'PLA HT': t('mPLAHT'),
+      'PLA CF': t('mPLACF'),
+      'PETG HF': t('mPETGHF'),
+      'PETG FR': t('mPETGFR'),
+      'ASA CF': t('mASACF'),
+      'PLA Matte': t('mPLAMatte'),
+      'PLA Silk': t('mPLASilk'),
+      'PLA Glow': t('mPLAGlow')
+    };
+    note.textContent = map[sel.value] || (typeof window.__pi18n!=='undefined'? window.__pi18n.t('matPick') : 'Wybierz materiał...');
     if (typeof calculatePrintPrice === 'function') calculatePrintPrice();
   };
 
   function loadShipping() {
     var tbody = document.getElementById('shippingTable');
     if (!tbody) return;
+    var t = function(k){ return (typeof window.__pi18n!=='undefined' && window.__pi18n.t) ? window.__pi18n.t(k) : k; };
     var rows = [
-          ["Standard — InPost Paczkomat (5 dni)", 21.49, 40, 60],
-          ["Ekspres — 2 dni (x2)", 38, 75, 115],
-          ["Priorytet — kurier (1 dzień)", 45.99, 100, 165],
-          ["Odbiór osobisty (Gdańsk)", 0, 0, 0]
+          [t('sStand'), 21.49, 40, 60],
+          [t('sExpr'), 38, 75, 115],
+          [t('sPri'), 45.99, 100, 165],
+          [t('sPick'), 0, 0, 0]
         ];
-        tbody.innerHTML = '<tr><td style="padding:8px;color:#6b7280;font-size:11px" colspan="4">Wysyłka: cena przesyłki InPost + 5 zł koszt pakowania (karton, etykieta, folia). Odbiór osobisty — bez opłat.</td></tr>' + rows.map(function(r) {
+        tbody.innerHTML = '<tr><td style="padding:8px;color:#6b7280;font-size:11px" colspan="4">' + t('shipNote') + '</td></tr>' + rows.map(function(r) {
           return '<tr><td style="padding:8px">' + r[0] + '</td><td style="padding:8px">' + r[1] + ' zł</td><td style="padding:8px">' + r[2] + ' zł</td><td style="padding:8px">' + r[3] + ' zł</td></tr>';
         }).join('');
   }
@@ -713,6 +716,13 @@
   }
   window.showToast = showToast;
   window.currencySymbol = currencySymbol;
+  window.addEventListener('languagechange', function(){
+    if (typeof loadShipping === 'function') loadShipping();
+    if (typeof loadMaterials === 'function') loadMaterials();
+    if (typeof window.updateMaterialNote === 'function') updateMaterialNote();
+    if (typeof loadGallery === 'function') loadGallery();
+    if (typeof loadAdminGallery === 'function') loadAdminGallery();
+  });
 
   /* ==== Gallery (landing + admin) ==== */
   window.loadGallery = function() {
