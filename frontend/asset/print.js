@@ -173,16 +173,24 @@
     fetch('/api/estimate?t=' + Date.now(), { method: 'POST', body: fd })
       .then(function(r) { return r.json(); })
       .then(function(d) {
-        if (d.volume_cm3) {
-          document.getElementById('printVolume').value = d.volume_cm3;
-          document.getElementById('printVolumeHidden').value = d.volume_cm3;
-          if (d.dims && document.getElementById('printDims')) document.getElementById('printDims').value = d.dims;
-          status.innerHTML = '✓ ' + f.name + ' — ' + d.volume_cm3 + ' cm³, ' + d.dimensions;
-          calculatePrintPrice();
-        } else {
-          status.textContent = 'Błąd przetwarzania — spróbuj inny format';
-        }
-      })
+              if (d && (d.volume_cm3 || d.volume)) {
+                var vol = d.volume_cm3 || d.volume || 0;
+                document.getElementById('printVolume').value = vol;
+                document.getElementById('printVolumeHidden').value = vol;
+                var dims = d.dimensions || d.dims || '';
+                if (dims && document.getElementById('printDims')) document.getElementById('printDims').value = dims;
+                status.innerHTML = '✓ Model załadowany: ' + f.name + '<br><span style="color:#10b981;font-weight:600">' + vol.toFixed(1) + ' cm³</span>' + (dims ? ' · wymiary ' + dims : '');
+                // show model summary
+                var sum = document.getElementById('printModelSummary');
+                if (sum) {
+                  sum.style.display = 'block';
+                  sum.innerHTML = '<strong>Twój model:</strong> ' + f.name + ' <span style="color:#10b981">(' + vol.toFixed(1) + ' cm³' + (dims ? ', ' + dims : '') + ')</span>';
+                }
+                calculatePrintPrice();
+              } else {
+                status.textContent = 'Błąd przetwarzania — spróbuj inny format';
+              }
+            })
       .catch(function() { status.textContent = 'Błąd sieci — spróbuj ponownie'; });
   };
 
@@ -363,11 +371,17 @@
 
   /* ==== Admin panel ==== */
   window.openAdminPanel = function() {
-    var panel = document.getElementById('adminPanel');
-    if (!panel) return;
-    panel.style.display = 'block';
-    panel.scrollIntoView({behavior: 'smooth'});
-  };
+      var panel = document.getElementById('adminPanel');
+      if (!panel) return;
+      // restricted — only when URL has #admin anchor (przew full auth check dalej)
+      if (location.hash !== '#admin' && !location.hash.startsWith('#admin')) {
+        showToast('Administracja: dostęp ograniczony', 'warning');
+        return;
+      }
+      panel.style.display = 'block';
+      panel.scrollIntoView({behavior: 'smooth'});
+      if (getStoredToken()) setTimeout(checkAdminAuth, 100);
+    };
 
   window.authenticateAdmin = function() {
       var code = document.getElementById('adminTokenInput').value.trim();
@@ -439,7 +453,8 @@
             '<td style="padding:8px"><select onchange="updateOrderStatus(' + o.id + ', this.value)" style="padding:4px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;color:' + (statusColor[st] || '#6b7280') + '">' + opts + '</select></td>' +
             '<td style="padding:8px;text-align:center"><input type="checkbox" ' + (o.is_paid ? 'checked' : '') + ' onchange="toggleOrderPaid(' + o.id + ', this.checked)" title="Zapłacone"></td>' +
             '<td style="padding:8px"><button data-action="exportOrder" data-id="' + o.id + '" style="padding:4px 8px;border:1px solid #d1d5db;border-radius:4px;cursor:pointer">CSV</button><br>' +
-            '<button onclick="showOrderNotes(' + o.id + ')" style="padding:4px 8px;border:1px solid #d1d5db;border-radius:4px;cursor:pointer;margin-top:4px">Uwagi</button></td>' +
+                        (o.job_id ? '<button onclick="window.open(\'/e/' + o.job_id + '\',\'_blank\')" style="padding:4px 8px;border:1px solid #3b82f6;color:#3b82f6;border-radius:4px;background:none;cursor:pointer;margin-top:4px">3D</button><br>' : '') +
+                        '<button onclick="showOrderNotes(' + o.id + ')" style="padding:4px 8px;border:1px solid #d1d5db;border-radius:4px;cursor:pointer;margin-top:4px">Uwagi</button></td>' +
             '</tr>';
         });
         document.getElementById('adminOrders').innerHTML =

@@ -8,7 +8,7 @@
   <meta name="description" content="Polski hub druku 3D. Automatyczna wycena w czasie rzeczywistym. Dostawa na świecie. Prześlij model — natychmiastowa cena i zamówienie.">
   <link rel="icon" href="/asset/logo_3d.svg?v=78" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/asset/print.css?v=81">
+  <link rel="stylesheet" href="/asset/print.css?v=82">
 </head>
 <body>
   <div class="toast-container" id="toastContainer"></div>
@@ -88,8 +88,8 @@
         <tbody id="shippingTable"></tbody>
       </table>
     </section>
-    <!-- Admin panel -->
-    <div id="adminPanel">
+    <!-- Admin panel — hidden by default, accessible via #admin anchor -->
+        <div id="adminPanel" style="display:none">
       <h2>Panel admina</h2>
       <div id="adminAuth">
         <p style="margin:8px 0;color:#6b7280">Zaloguj się jako administrator, aby zarządzać zamówieniami.</p>
@@ -116,7 +116,11 @@
       </div>
     </div>
   </main>
-  <div id="toastEl" class="toast-print"></div>
+    <div id="toastEl" class="toast-print"></div>
+    <footer style="margin-top:48px;padding:20px 0;border-top:1px solid var(--border);color:var(--muted);font-size:13px;display:flex;justify-content:space-between;align-items:center">
+      <span>© 2026 3dfile.link — druk 3D na wymiar.</span>
+      <a href="#" onclick="openAdminPanel();return false" style="color:var(--muted);text-decoration:none;font-size:12px">Administracja</a>
+    </footer>
   <!-- Print Order Modal -->
   <div class="modal-backdrop" id="printOrderModal">
     <div class="modal">
@@ -125,8 +129,14 @@
       <form id="printOrderForm" onsubmit="submitPrintOrder(event)">
         <input type="hidden" name="job_id" id="printOrderId">
         <input type="hidden" name="job_uuid" id="printOrderUuid">
-        <input type="file" id="printFileUpload" accept=".stl,.obj,.ply,.3mf" onchange="onFileUpload()" style="margin-bottom:16px">
-        <p id="printFileStatus" style="font-size:12px;color:#6b7280">Model: brak wybranego</p>
+        <input type="file" id="printFileUpload" accept=".stl,.obj,.ply,.3mf" onchange="onFileUpload()" style="display:none">
+                <label for="printFileUpload" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px 16px;border:2px dashed #bfdbfe;border-radius:12px;background:#eff6ff;cursor:pointer;margin-bottom:12px;text-align:center">
+                  <span style="font-size:22px">📦</span>
+                  <strong style="margin-top:6px">Załaduj swój model (STL / OBJ / 3MF)</strong>
+                  <span style="color:#6b7280;font-size:12px">Kliknij i wybierz plik — objętość i wymiary wypełnią się automatycznie przed wyceną</span>
+                </label>
+                <p id="printFileStatus" style="font-size:12px;color:#6b7280">Model: brak wybranego</p>
+                <div id="printModelSummary" style="display:none;font-size:13px;background:#ecfdf5;border:1px solid #a7f3d0;border-radius:8px;padding:10px 14px;margin:8px 0"></div>
         <div class="form-row">
           <div class="form-group"><input type="text" name="name" id="printOrderName" required placeholder="Imię i nazwisko"></div>
           <div class="form-group"><input type="email" name="email" id="printOrderEmail" required placeholder="Email"></div>
@@ -176,7 +186,7 @@
       </form>
     </div>
   </div>
-  <script src="/asset/print.js?v=81"></script>
+  <script src="/asset/print.js?v=82"></script>
   <script>
   // Cache-bust fetch + upload handler + init
   window.addEventListener('load', function() {
@@ -184,31 +194,7 @@
     if (typeof loadMaterials === 'function') loadMaterials();
     if (typeof loadShipping === 'function') loadShipping();
     if (typeof checkAuth === 'function') checkAuth();
-  });
-  window.onFileUpload = function() {
-    var f = document.getElementById('printFileUpload').files[0];
-    var status = document.getElementById('printFileStatus');
-    if (!f) return;
-    status.textContent = 'Przesyłam ' + f.name + '...';
-    var fd = new FormData();
-    fd.append('file', f);
-    fetch('/api/estimate?t=' + Date.now(), { method: 'POST', body: fd })
-      .then(function(r) { return r.json(); })
-      .then(function(d) {
-        if (d.job_id || d.uuid) {
-          document.getElementById('printOrderId').value = d.job_id || '';
-          document.getElementById('printOrderUuid').value = d.uuid || 'calculator';
-          document.getElementById('printVolume').value = (d.volume_cm3 || 100);
-          document.getElementById('printVolumeHidden').value = d.volume_cm3 || 0;
-          if (d.dims_mm) document.getElementById('printDims').value = d.dims_mm;
-          status.textContent = '✓ ' + f.name + ' (' + (d.volume_cm3||0) + ' cm³)';
-          if (typeof calculatePrintPrice === 'function') calculatePrintPrice();
-        } else {
-          status.textContent = 'Błąd przesyłu — spróbuj ponownie';
-        }
-      })
-      .catch(function() { status.textContent = 'Błąd sieci — spróbuj ponownie'; });
-  };
-  </script>
+      });
+      </script>
 </body>
 </html>
