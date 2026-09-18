@@ -246,13 +246,28 @@ def _trimesh_stats(data: bytes, mode: str = "auto", material: str = "PLA") -> di
     thr = THROUGHPUT_MM3_S.get(material, 100)
     hours = max(0.5, (vol_mm3 / thr) / 3600) + 0.1
 
+    # -- numeric sanitizer: JSONResponse(allow_nan=False) throws 500 on NaN/inf --
+    import math as _m
+    def _clean(v, default=0.0):
+        try:
+            f = float(v)
+        except Exception:
+            return default
+        return f if _m.isfinite(f) else default
+    dims_mm = [_clean(d, 0.0) for d in (dims_mm or [0.0, 0.0, 0.0])]
+    while len(dims_mm) < 3:
+        dims_mm.append(0.0)
+    vol_cm3 = round(_clean(vol_cm3), 3)
+    grams = round(_clean(grams), 2)
+    hours = round(_clean(hours), 2)
+
     return {
         "volume_cm3": vol_cm3,
         "dimensions_mm": dims_mm,
         "dimensions": f"{dims_mm[0]}×{dims_mm[1]}×{dims_mm[2]} mm",
         "grams": grams,
-        "faces": len(obj.faces) if hasattr(obj, "faces") else 0,
-        "print_hours": round(hours, 2),
+        "faces": int(_clean(len(obj.faces) if hasattr(obj, "faces") else 0)),
+        "print_hours": hours,
     }
 
 
