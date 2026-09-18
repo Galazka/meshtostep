@@ -2,7 +2,7 @@
 GET /api/contact-info  — dane kontaktowe (adres odbioru, email) do renderu
 POST /api/contact      — wyślij zapytanie (name, email, subject, message) → mail
 """
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from .database import get_db
 from .mail import send_mail
