@@ -86,17 +86,36 @@
     try {
       var res = await fetch('/api/admin/materials?' + Date.now());
       var data = res.ok ? await res.json() : { materials: { "PLA": 79, "PETG": 95, "ABS": 89, "ASA": 159, "PA12 CF": 349, "TPU": 130 }, colors: {} };
-      var html = Object.keys(data.materials || {}).map(function(m) {
-        var p = data.materials[m];
-        var price = typeof p === 'number' ? p : (p.price_kg || 0);
-        return '<div style="padding:12px;border:1px solid #e5e7eb;border-radius:8px"><strong>' + m +
-               '</strong><br><span style="color:#6b7280">' + price + ' zł/kg</span></div>';
-      }).join('');
-      box.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px">' + html + '</div>';
+            var html = Object.keys(data.materials || {}).map(function(m) {
+              var p = data.materials[m];
+              var price = typeof p === 'number' ? p : (p.price_kg || 0);
+              var desc = (typeof p === 'object' && p.desc) ? p.desc : '';
+              return '<div class="material-card" style="padding:12px;border:1px solid #e5e7eb;border-radius:8px;background:#fff"><strong>' + m +
+                     '<\/strong><br><span style="color:#6b7280">' + price + ' zł/kg<\/span>' +
+                     (desc ? '<p style="color:#4b5563;font-size:12px;margin-top:6px;line-height:1.4">' + desc + '<\/p>' : '') +
+                     '<\/div>';
+            }).join('');
+      box.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">' + html + '</div>';
     } catch (e) {
       box.innerHTML = '<p style="color:#6b7280">Materials list unavailable</p>';
     }
   }
+
+  window.updateMaterialNote = function() {
+    var sel = document.getElementById('printMaterial');
+    var note = document.getElementById('printMaterialNote');
+    if (!sel || !note) return;
+    var map = {
+      'PLA': 'PLA — uniwersalny, tani, sztywny. Do prototypów, osłon, modeli i dekoracji. Unikaj wysokich temperatur (~60°C) i intensywnej eksploatacji.',
+      'PETG': 'PETG — udarny, odporny na uderzenia i chemię, w połowie przezroczysty. Klosze, osłony, elementy przezroczyste.',
+      'ABS': 'ABS — trwały, udarny klasyk przemysłowy. Obudowy, uchwyty, części mechaniczne.',
+      'ASA': 'ASA — odporny na UV i warunki atmosferyczne (nie żółknie na słońcu). Elementy zewnętrzne, ogrodowe, motoryzacyjne.',
+      'PA12 CF': 'PA12 CF — najwyższa wytrzymałość: nylon z włóknem węglowym. Części funkcjonalne pod obciążeniem, koła zębate, wsporniki.',
+      'TPU': 'TPU — elastyczny, gumowy. Uszczelki, ochraniacze, amortyzatory, części giętkie.'
+    };
+    note.textContent = map[sel.value] || 'Wybierz materiał — pojawi się jego opis i zastosowanie.';
+    if (typeof calculatePrintPrice === 'function') calculatePrintPrice();
+  };
 
   function loadShipping() {
     var tbody = document.getElementById('shippingTable');
@@ -442,10 +461,11 @@
   });
 
   document.addEventListener('DOMContentLoaded', function() {
-    loadCurrencies();
-    loadMaterials();
-    loadShipping();
-    checkAuth();
+      loadCurrencies();
+      loadMaterials();
+      loadShipping();
+      updateMaterialNote();
+      checkAuth();
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closePrintModal(); });
     window.addEventListener('click', function(e) {
       if (e.target && e.target.classList && e.target.classList.contains('modal-backdrop')) closePrintModal();

@@ -112,11 +112,62 @@ for name, path in [("vanity", d.get("vanity", "").replace(BASE, "")),
 s, d = api("GET", f"/api/share/{share_tok}/status", token=tok)
 check("expiry", s == 200 and d.get("expires_at"), f"status={s}")
 
-# 6. health
+# 6. print price calculate (public)
+import urllib.parse as _up
+calc_fields = {"material": "PLA", "color": "natural", "quantity": "1",
+               "shipping": "standard", "shipping_region": "PL",
+               "volume_cm3": "10", "estimated_hours": "1", "dims": "20 20 25",
+               "currency": "PLN"}
+calc_body = _up.urlencode(calc_fields).encode()
+req = urllib.request.Request(BASE + "/api/calculate", data=calc_body,
+                             headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) 3dfile-e2e/1.0",
+                                      "Content-Type": "application/x-www-form-urlencoded"},
+                             method="POST")
+try:
+    with urllib.request.urlopen(req, timeout=30) as r:
+        d = json.loads(r.read()); s = r.status
+except Exception as e:
+    s, d = getattr(e, "code", "?"), {}
+check("calculate", s == 200 and d.get("ok") and d.get("total", 0) > 0,
+      f"status={s} total={d.get('total')}")
+
+# 7. create order (anonymous — print checkout)
+order_fields = dict(calc_fields, **{
+    "name": "E2E Test", "email": EMAIL, "phone": "123456789",
+    "address": "Testowa 1", "city": "Gdańsk", "postal_code": "80-000",
+    "country": "PL", "payment_method": "blik", "job_uuid": "calculator",
+    "notes": "smoke test order"})
+order_body = _up.urlencode(order_fields).encode()
+req = urllib.request.Request(BASE + "/api/orders", data=order_body,
+                             headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) 3dfile-e2e/1.0",
+                                      "Content-Type": "application/x-www-form-urlencoded"},
+                             method="POST")
+try:
+    with urllib.request.urlopen(req, timeout=30) as r:
+        d = json.loads(r.read()); s = r.status
+except Exception as e:
+    s, d = getattr(e, "code", "?"), {}
+check("order-create", s == 200 and d.get("order_id"), f"status={s} order={d.get('order_id')}")
+order_id = d.get("order_id")
+
+# 8. admin sees the order (admin login + list_orders)
+s, d = api("POST", "/api/auth/login", data={"email": "admin@meshtostep.pl", "password": "MeshToStep2026!"})
+check("admin-login", s == 200 and d.get("token") and d.get("user", {}).get("is_admin"),
+      f"status={s}")
+admin_tok = d.get("token", "")
+s, d = api("GET", f"/api/orders?limit=5", token=admin_tok)
+if not isinstance(d, dict) or "orders" not in d:
+    d = {"orders": []}
+ids = [o.get("id") for o in d.get("orders", [])]
+check("admin-sees-order", s == 200 and order_id in ids, f"status={s} order={order_id} in {ids[:5]}")
+s, d = api("GET", "/api/orders/stats", token=admin_tok)
+check("admin-stats", s == 200 and d.get("stats", {}).get("total_orders", 0) >= 1, f"status={s}")
+
+# 9. health
 s, d = api("GET", "/api/health")
 check("health", s == 200 and d.get("ok"), f"status={s}")
 
-# 7. cleanup account
+# 10. cleanup account
 s, d = api("DELETE", "/api/account", token=tok)
 check("cleanup", s == 200, f"status={s}")
 

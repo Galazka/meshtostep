@@ -83,6 +83,35 @@ DENSITIES = {
     "Iglidur I150PF": 1.42,
 }
 
+# — Material descriptions: properties + typical use (shown to customer before ordering) —
+MATERIAL_DESCRIPTIONS = {
+    "PLA": "Uniwersalny, tani, sztywny. Do prototypów, modeli, osłon i dekoracji. Nie do wysokich temperatur (ugina się ~60°C) ani intensywnej eksploatacji.",
+    "PLA HT": "PLA odporny na wyższe temperatury (~90–100°C). Elementy w pobliżu ciepła, osłony LED, uchwyty, prototypy o lepszej wytrzymałości termicznej.",
+    "PLA CF": "PLA z włóknem węglowym — sztywniejszy i lżejszy. Części konstrukcyjne, drony, elementy wymagające sztywności bez ciężaru.",
+    "PLA Matte": "PLA o matowym, eleganckim wykończeniu. Modele premium, figurki, obudowy, elementy dekoracyjne i prezentowe.",
+    "PLA Silk": "PLA o jedwabistym połysku, gładki w dotyku. Bryły, elementy dotykane, dekoracje, prototypy o estetycznym wyglądzie.",
+    "PLA Glow": "PLA świecący w ciemności. Figurki, nakładki, breloki, elementy nocne i ozdobne.",
+    "PETG": "W połowie przezroczysty, udarny, odporny na uderzenia i chemię. Klosze, osłony, prototypy przezroczyste, elementy narażone na uderzenia.",
+    "PETG HF": "PETG wysokiej jakości — lepsza przejrzystość i udarność. Klosze, obudowy, elementy optyczne, modele o dużych powierzchniach przezroczystych.",
+    "PETG FR": "PETG niepalny (klasa V-0). Obudowy elektroniczne, elementy w pobliżu źródeł ciepła, zastosowania wymagające norm przeciwpożarowych.",
+    "ABS": "Trwały, udarny, klasyk dla przemysłu. Obudowy, uchwyty, prototypy funkcjonalne, elementy mechaniczne wymagające wytrzymałości.",
+    "ASA": "Odporny na UV i warunki atmosferyczne (nie żółknie na słońcu). Elementy zewnętrzne, ogrodowe, motoryzacyjne, części narażone na słońce.",
+    "ASA CF": "ASA z włóknem węglowym — odporny na UV i sztywny. Elementy zewnętrzne i konstrukcyjne, części motoryzacyjne premium.",
+    "TPU": "Elastyczny, gumowy. Uszczelki, ochraniacze, amortyzatory, części giętkie i odporne na ścieranie.",
+    "TPU 75D": "TPU twardy (twardość 75D), na pograniczu twardego plastiku i gumy. Sprężyste części, zawiasy klipsowe, elementy wymagające elastyczności i wytrzymałości.",
+    "PA12 CF": "Najmocniejszy: nylon z włóknem węglowym. Elementy funkcjonalne pod obciążeniem, części mechaniczne, koła zębate, haki, wsporniki. Najwyższa wytrzymałość i odporność na ścieranie.",
+    "PA12": "Nylon — mocny, odporny na ścieranie i chemię. Koła zębate, elementy mechaniczne, części pracujące, łożyska ślizgowe.",
+    "PCTG": "Bardzo przezroczysty, odporny na uderzenia, do kontaktu z żywnością. Elementy optyczne, przezroczyste obudowy, pojemniki.",
+    "Iglidur I150PF": "Łożyskowy Iglidur — samosmarujący, cichy i odporny na ścieranie. Łożyska ślizgowe, prowadnice, zawiasy, części ruchome pracujące bez smarowania.",
+    "Iglidur I180PF": "Iglidur o podwyższonej wytrzymałości mechanicznej. Łożyska i części ruchome o większym obciążeniu.",
+    "Iglidur I190PF": "Iglidur najwyższej wytrzymałości — do wymagających zastosowań technicznych, łożysk i elementów obciążonych.",
+    "BAMBU PLA Basic": "PLA Bambu Lab — uniwersalny, do prototypów, modeli i codziennych części.",
+    "BAMBU PETG HF": "PETG Bambu Lab o wysokiej jakości, przejrzysty i udarny.",
+    "BAMBU ASA": "ASA Bambu Lab — odporny na UV, do elementów zewnętrznych i motoryzacyjnych.",
+    "BAMBU PA12-CF": "Nylon z włóknem węglowym Bambu Lab — najwyższa wytrzymałość do części funkcjonalnych.",
+    "BAMBU PLA Matte": "Matowy PLA Bambu Lab — estetyczne wykończenie do modeli i dekoracji.",
+}
+
 
 def _cfg(db, key, default):
     """Read a PricingConfig row; fall back to hardcoded default."""
@@ -692,6 +721,7 @@ def get_materials(db: Session = Depends(get_db)):
             "price_kg": float(_cfg(db, f"material:{m}", DEFAULT_MATERIAL_PRICES.get(m, 110.0))),
             "density": DENSITIES.get(m, 1.24),
             "display": m,
+            "desc": MATERIAL_DESCRIPTIONS.get(m, ""),
         }
     colors = {c: float(_cfg(db, f"color:{c}", DEFAULT_COLOR_PREMIUM.get(c, 0.0))) for c in DEFAULT_COLOR_PREMIUM}
     return {
