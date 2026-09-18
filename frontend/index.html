@@ -28,16 +28,28 @@
     if(!window.showModal) {
         window.showModal = function(mode) {
           // Safety-net: open the auth modal directly without waiting for ES modules.
-          // The real ES module implementation overrides this once loaded.
           var m = document.getElementById('authModal');
           if (m) {
             m.classList.add('show');
             var t = document.getElementById('modalTitle');
-            if (t) t.textContent = (mode === 'register') ? 'Załóż konto' : 'Zaloguj się';
+            var isReg = (mode === 'register');
+            if (t) t.textContent = isReg ? 'Załóż konto' : 'Zaloguj się';
             var s = document.getElementById('authSubmit');
-            if (s) s.textContent = (mode === 'register') ? 'Załóż konto' : 'Zaloguj';
+            if (s) s.textContent = isReg ? 'Załóż konto' : 'Zaloguj';
+            var re = document.getElementById('registerExtra');
+            if (re) { if (isReg) re.classList.add('show'); else re.classList.remove('show'); }
+            var fl = document.getElementById('forgotLink');
+            if (fl) fl.style.display = isReg ? 'none' : 'block';
           }
         };
+        // close on backdrop click
+        setTimeout(function(){
+          var ov = document.getElementById('authModal');
+          if (ov && !ov.dataset.fallbackClose) {
+            ov.addEventListener('click', function(ev){ if(ev.target===ov){ ov.classList.remove('show'); } });
+            ov.dataset.fallbackClose = '1';
+          }
+        }, 0);
       }
     if(!window.toggleLang) window.toggleLang = function(){};
     if(!window.doDiscover) window.doDiscover = function(){};
@@ -975,7 +987,7 @@
     import './js/auth.js?v=81';
     import './js/convert.js?v=81';
     import './js/discover.js?v=81';
-    import './js/myfiles.js?v=82';
+    import './js/myfiles.js?v=83';
     import './js/account.js?v=81';
     import './js/main.js?v=81';
 </script>

@@ -8,7 +8,7 @@
   <meta name="description" content="Polski hub druku 3D. Automatyczna wycena w czasie rzeczywistym. Dostawa na świecie. Prześlij model — natychmiastowa cena i zamówienie.">
   <link rel="icon" href="/asset/logo_3d.svg?v=78" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/asset/print.css?v=86">
+  <link rel="stylesheet" href="/asset/print.css?v=87">
 </head>
 <body>
   <div class="toast-container" id="toastContainer"></div>
@@ -16,7 +16,7 @@
     <div class="container-print">
       <div class="header-inner">
         <a href="/" class="logo-link">
-          <img src="/logo.png?v=81" alt="3DFILE.link" height="32">
+          <img src="/logo.png?v=81" alt="3DFILE.link" class="logo" width="34" height="34" loading="lazy">
           <span>3DFILE.link</span>
         </a>
         <nav class="nav-print">
@@ -36,12 +36,23 @@
       <div class="hero-text">
         <h1>Druk 3D <span class="grad">On&nbsp;Demand</span></h1>
         <p class="hero-desc">Polski hub druku 3D. Automatyczna wycena w czasie rzeczywistym, zamówienie w dwa kliknięcia i dostawa na cały świat.</p>
-        <button class="hero-cta" onclick="openPrintOrderModal({job_uuid:'calculator',title:'Kalkulator cen'})">
-          Oblicz cenę
-        </button>
+        <div class="hero-cta" onclick="location.href='/zamow'" role="button" tabindex="0">Zamów druk → wejdź w formularz</div>
       </div>
       <div class="hero-image">
         <img src="/asset/hero_print.svg?v=78" alt="Druki 3D" loading="lazy">
+      </div>
+    </section>
+    <!-- About / kim jesteśmy -->
+    <section class="about-print" id="about" style="padding:48px 0;background:var(--bg-alt);border-radius:14px">
+      <div class="section-head" style="text-align:center">
+        <span class="section-kicker">O nas</span>
+        <h2 style="font-size:26px">Niezależna pracownia druku 3D</h2>
+        <p class="section-sub" style="max-width:680px">3DFILE.link to pracownia z Gdańska: Twój model przelewamy w trwały, funkcjonalny wydruk — od prototypu po gotowy element. Każdy model sprawdzamy, każdy materiał dobieramy do przeznaczenia. Tak staramy się być tym miejscem, gdzie 3D zamienia się w rzeczywistość.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px">
+        <div class="step-card"><div class="step-num">▲</div><h3>Twoj model</h3><p>Wgraj STL / OBJ / 3MF, wybierz materiał i kolor — my zajmiemy się resztą.</p></div>
+        <div class="step-card"><div class="step-num">▣</div><h3>Realny wydruk</h3><p>Drukujemy z trwałych, sprawdzonych materiałów i wysyłamy na cały świat.</p></div>
+        <div class="step-card"><div class="step-num">✓</div><h3>Pełna kontrola</h3><p>Widzisz cenę przed zamówieniem, śledzisz status od druku do dostawy.</p></div>
       </div>
     </section>
     <!-- How it works -->
@@ -168,7 +179,7 @@
                 <div class="material-note" id="printMaterialNote">PLA — uniwersalny, tani, sztywny.</div>
                 <div class="tolerance-note-inline">Rzeczywisty wydruk może różnić się od modelu o 0,3–1% (do ~2% dla materiałów technicznych).</div>
         <div class="form-group"><input type="text" name="dims" id="printDims" placeholder="Wymiary mm (X Y Z)" onchange="calculatePrintPrice()"></div>
-        <div class="form-group"><input type="number" id="printVolume" min="0" step="0.1" value="100" onchange="calculatePrintPrice()"></div>
+        <div class="form-group"><input type="number" id="printVolume" min="0" step="0.1" value="0" onchange="calculatePrintPrice()"></div>
         <div class="form-group">
           <label>Waluta</label>
           <div id="currencyToggle"><button onclick="setCurrency('PLN')">PLN</button><button onclick="setCurrency('USD')">USD</button><button onclick="setCurrency('EUR')">EUR</button></div>
@@ -194,7 +205,7 @@
       </form>
     </div>
   </div>
-  <script src="/asset/print.js?v=86"></script>
+  <script src="/asset/print.js?v=87"></script>
   <script>
   // Cache-bust fetch + upload handler + init
   window.addEventListener('load', function() {

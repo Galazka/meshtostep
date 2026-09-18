@@ -173,6 +173,19 @@ def favicon():
     from fastapi.responses import FileResponse
     return FileResponse(str(FRONTEND_DIR / "logo.png"), media_type="image/png")
 
+# ── Clean-URL aliases (no .html): /drukuje + /print → landing, /zamow → order page ──
+@app.get("/drukuje", response_class=HTMLResponse, include_in_schema=False)
+def drukuje_landing():
+    return FileResponse(str(FRONTEND_DIR / "print.html"))
+
+@app.get("/print", response_class=HTMLResponse, include_in_schema=False)
+def print_landing():
+    return FileResponse(str(FRONTEND_DIR / "print.html"))
+
+@app.get("/zamow", response_class=HTMLResponse, include_in_schema=False)
+def zamow_order():
+    return FileResponse(str(FRONTEND_DIR / "order.html"))
+
 if FRONTEND_DIR.exists():
     app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
 
