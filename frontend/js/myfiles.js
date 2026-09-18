@@ -1151,9 +1151,11 @@ window.addEventListener('click', function(e){
     var j = null;
     for (var i=0;i<jobs.length;i++){ if ((jobs[i].id===id)||(jobs[i].id+''===btn.dataset.id)){ j=jobs[i]; break; } }
     if (typeof window.openPrintOrderModal === 'function') {
-      window.openPrintOrderModal({ job_id: j ? j.id : id, uuid: j ? j.uuid : '', title: j ? (j.original_filename || j.title || j.filename || '') : '' });
-    } else {
-      alert('Formularz zamówienia niedostępny na tej stronie — wejdź na /print.html');
-    }
+          window.openPrintOrderModal({ job_id: j ? j.id : id, uuid: j ? j.uuid : '', title: j ? (j.original_filename || j.title || j.filename || '') : '' });
+        } else {
+          // redirect to /zamow with the job's uuid so order.html loads it into the cart
+          var target = '/zamow?job=' + encodeURIComponent(j ? j.uuid : btn.dataset.id);
+          window.location.href = target;
+        }
   }
 });

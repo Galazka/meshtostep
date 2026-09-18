@@ -406,6 +406,19 @@ function submitOrder(){
 }
 
 buildCur(); loadMats(); drawCart(); calc(); autofillShipping();
+loadJobFromUrl();
+function loadJobFromUrl(){
+  var m=location.search.match(/job=([^&]+)/); if(!m) return;
+  var uuid=decodeURIComponent(m[1]); if(!uuid) return;
+  fetch('/api/job/'+uuid+'/info?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
+    if(!(d&&d.ok)) return;
+    var item={job_id:d.id,job_uuid:d.uuid,model_name:d.name||'Model',material:'PLA',color:'black',qty:1,vol:+(d.volume_cm3||0),dims:d.dimensions||'',desc:'',price:(d.volume_cm3?0:0),_bytes:null,fromFile:d.id?true:false};
+    CART.push(item); selIdx=CART.length-1; drawCart(); refreshMatSel(); calc();
+    toast('Załadowano model: '+(d.name||'Model'));
+    history.replaceState(null,'','/zamow');
+  }).catch(function(){});
+}
+
 var ppEl=document.getElementById('fPaczkomat');
 if(ppEl){ ppEl.addEventListener('input',function(){ var v=ppEl.value.trim(); if(v.length>=2){ clearTimeout(window.__ppe); window.__ppe=setTimeout(function(){searchPaczkomat(v);},450); } }); }
 if(document.getElementById('fShipping').value!=='pickup') toggleShipUI();
