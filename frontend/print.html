@@ -8,7 +8,7 @@
   <meta name="description" content="Polski hub druku 3D. Automatyczna wycena w czasie rzeczywistym. Dostawa na świecie. Prześlij model — natychmiastowa cena i zamówienie.">
   <link rel="icon" href="/asset/logo_3d.svg?v=78" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/asset/print.css?v=91">
+  <link rel="stylesheet" href="/asset/print.css?v=92">
 </head>
 <body>
   <div class="toast-container" id="toastContainer"></div>
@@ -47,19 +47,55 @@
       </div>
     </section>
     <!-- About / kim jesteśmy -->
-    <section class="about-print reveal" id="about" style="padding:48px 0;background:var(--bg-alt);border-radius:14px">
-      <div class="section-head" style="text-align:center">
-        <span class="section-kicker">O nas</span>
-        <h2 style="font-size:26px">Niezależna pracownia druku 3D</h2>
-        <p class="section-sub" style="max-width:680px">3DFILE.link to pracownia z Gdańska: Twój model przelewamy w trwały, funkcjonalny wydruk — od prototypu po gotowy element. Każdy model sprawdzamy, każdy materiał dobieramy do przeznaczenia. Tak staramy się być tym miejscem, gdzie 3D zamienia się w rzeczywistość.</p>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px">
-        <div class="step-card"><div class="step-num">▲</div><h3>Twoj model</h3><p>Wgraj STL / OBJ / 3MF, wybierz materiał i kolor — my zajmiemy się resztą.</p></div>
-        <div class="step-card"><div class="step-num">▣</div><h3>Realny wydruk</h3><p>Drukujemy z trwałych, sprawdzonych materiałów i wysyłamy na cały świat.</p></div>
-        <div class="step-card"><div class="step-num">✓</div><h3>Pełna kontrola</h3><p>Widzisz cenę przed zamówieniem, śledzisz status od druku do dostawy.</p></div>
-      </div>
-    </section>
-    <!-- How it works -->
+<section class="about-print reveal" id="about" style="padding:56px 0;background:var(--bg-alt);border-radius:18px">
+  <div class="section-head">
+    <span class="section-kicker">O nas</span>
+    <h2>Niezależna pracownia druku 3D z Gdańska</h2>
+    <p class="section-sub">3DFILE.link to pracownia, w której Twój cyfrowy model zamienia się w konkretny, trwały wydruk — od pojedynczego prototypu po gotowy element do użytku. Łączymy własny sprzęt, kontrolę jakości i przejrzyste ceny.</p>
+  </div>
+
+  <!-- O nas: sprzęt + hosting -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:28px">
+    <div class="step-card" style="border-top:4px solid var(--accent)">
+      <h3 style="font-size:15px;font-weight:700">🖨 Drukujemy na własnym sprzęcie</h3>
+      <p style="margin-top:8px">Pracujemy m.in. na <strong>Bambu Lab P1S</strong> — precyzyjnej drukarce z automatycznym poziomowaniem stolu i zaawansowaną kontrolą jakości wydruku. Rozwijamy nasze maszyny i procesy na bieżąco: kalibrujemy skurcz materiałów, testujemy nowe filamenty i optymalizujemy czas druku, żeby wydruki wychodziły dokładne i powtarzalne.</p>
+      <p style="margin-top:8px">Dzięki temu Twoje ogniwo, obudowa czy prototyp nie tylko wygląda jak projekt, ale też trzyma wymiary i realnie nadaje się do użytku.</p>
+    </div>
+    <div class="step-card" style="border-top:4px solid var(--accent)">
+      <h3 style="font-size:15px;font-weight:700">☁ Własny hosting modeli 3D</h3>
+      <p style="margin-top:8px">3DFILE.link to nie tylko drukarnia — to także <strong>darmowy hosting modeli 3D</strong>. Wgraj STL / 3MF / OBJ, podejrzyj model w przeglądarce, przekonwertuj do STEP i udostępnij jednym linkiem.</p>
+      <p style="margin-top:8px">Własna infrastruktura, brak pośredników. Twoje pliki — Twoja kontrola: prywatne, unlisted lub publiczne z linkiem gotowym do wklejenia na Printables, MakerWorld i Thingiverse.</p>
+    </div>
+  </div>
+
+  <!-- Statystyki zaufania -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:26px">
+    <div class="step-card" style="text-align:center"><div style="font-size:26px;font-weight:800;color:var(--accent)">13+</div><div style="font-size:12.5px;color:var(--muted)">sprawdzonych materiałów</div></div>
+    <div class="step-card" style="text-align:center"><div style="font-size:26px;font-weight:800;color:var(--accent)">od 5 zł</div><div style="font-size:12.5px;color:var(--muted)">minimalne zamówienie</div></div>
+    <div class="step-card" style="text-align:center"><div style="font-size:26px;font-weight:800;color:var(--accent)">wysyłka od 200 zł gratis</div><div style="font-size:12.5px;color:var(--muted)">na terenie Polski (InPost)</div></div>
+    <div class="step-card" style="text-align:center"><div style="font-size:26px;font-weight:800;color:var(--accent)">PL + EN</div><div style="font-size:12.5px;color:var(--muted)">strona i płatność w 2 językach</div></div>
+  </div>
+
+  <!-- Dlaczego nam zaufać -->
+  <div class="section-head" style="margin-top:32px">
+    <span class="section-kicker">Dlaczego my</span>
+    <h3 style="font-size:22px">Zaufanie budujemy procesem, nie obietnicami</h3>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">
+    <div class="step-card"><div class="step-num">✓</div><h3>Przejrzysta wycena w real-time</h3><p>Cena liczy się od razu: filament + prąd + czas + marża + wysyłka, w PLN / USD / EUR. Bez ukrytych kosztów.</p></div>
+    <div class="step-card"><div class="step-num">①</div><h3>Uczciwa informacja o tolerancji</h3><p>Każdy filament lekko kurczy się w druku (0,3–1%, do ~2% dla technicznych). Mówimy o tym wprost — zamiast obiecować nierealną idealność.</p></div>
+    <div class="step-card"><div class="step-num">🖨</div><h3>Kontrola jakości przed wysyłką</h3><p>Sprawdzamy każdy wydruk — strukturę, wymiary, warstwy — zanim zapakujemy go i wyślemy.</p></div>
+    <div class="step-card"><div class="step-num">☑</div><h3>Pełny wgląd w status</h3><p>Od zamówienia, przez druk, po dostawę. Zawsze wiesz, na jakim etapie jest Twój model.</p></div>
+  </div>
+
+  <!-- CTA-rząd wiarygodności -->
+  <div style="text-align:center;margin-top:26px;padding:18px;border:1px solid var(--border);border-radius:12px;background:var(--card)">
+    <div style="font-size:16px;font-weight:600;color:var(--fg)">Masz pytania o materiał, wycenę albo plik?</div>
+    <div style="font-size:13.5px;color:var(--muted);margin-top:6px">Napisz — pomożemy dobrać najlepszy filament do Twojego projektu: <a href="mailto:hallo@3dfile.link" style="color:var(--accent);font-weight:600">hallo@3dfile.link</a></div>
+  </div>
+</section>
+
+<!-- How it works -->
     <section class="how-print reveal" id="how">
       <div class="section-head">
         <span class="section-kicker">Proces</span>
@@ -88,8 +124,20 @@
           <p>Status: drukowane → wysłane → dostarczone.</p>
         </div>
       </div>
-    </section>
-    <!-- Materials -->
+          </section>
+          <!-- FAQ -->
+          <section class="how-print reveal" id="faq" style="background:var(--bg-alt);border-radius:14px;padding:48px 0">
+            <div class="section-head"><span class="section-kicker">FAQ</span><h2>Częste pytania</h2>
+            <p class="section-sub">Najważniejsze rzeczy, zanim zamówisz — krótko i konkretnie.</p></div>
+            <div style="max-width:760px;margin:8px auto 0;display:flex;flex-direction:column;gap:10px">
+              <details style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px"><summary style="font-weight:600;cursor:pointer;font-size:15px">Jakie pliki mogę wgrać?</summary><div style="margin-top:8px;color:var(--muted);font-size:14px">STL, OBJ, PLY oraz 3MF (wielokolorowe). Wgraj plik, a objętość, wymiary i orientacyjna cena policzą się automatycznie — bez rejestracji.</div></details>
+              <details style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px"><summary style="font-weight:600;cursor:pointer;font-size:15px">Ile kosztuje druk 3D?</summary><div style="margin-top:8px;color:var(--muted);font-size:14px">Od <strong>5 zł</strong>. Końcowa cena = filament + prąd + czas druku + marża + wysyłka. Wszystko widzisz <strong>przed zamówieniem</strong>, w PLN / USD / EUR. Zamówienia od 200 zł mają darmową wysyłkę.</div></details>
+              <details style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px"><summary style="font-weight:600;cursor:pointer;font-size:15px">Jak długo trwa realizacja?</summary><div style="margin-top:8px;color:var(--muted);font-size:14px">Standardowo 5 dni roboczych od potwierdzenia, ekspresowo do 2 dni (drożej, bo musimy też zaplanować kolejkę wydruków). Wysyłka InPost Paczkomat 1–2 dni.</div></details>
+              <details style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px"><summary style="font-weight:600;cursor:pointer;font-size:15px">Czy wydruk będzie idealnie jak w pliku?</summary><div style="margin-top:8px;color:var(--muted);font-size:14px">Bardzo blisko, ale każdy filament lekko kurczy się w druku — zwykle 0,3–1%, do ~2% dla materiałów technicznych. Informujemy o tym zawsze.<br><br>Ile kolorów w modelu? Jeden kolor ekstra: +20 zł, każdy kolejny +10 zł (druk wielokolorowy trwa dłużej).</div></details>
+              <details style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px"><summary style="font-weight:600;cursor:pointer;font-size:15px">Jak zapłacę i czy jest bezpiecznie?</summary><div style="margin-top:8px;color:var(--muted);font-size:14px">Płatność przez <strong>Stripe</strong> (karta, BLIK, przelew) — bezpieczny standard dla e-commerce. Faktura/VAT według kraju dostawy doliczany automatycznie.</div></details>
+            </div>
+          </section>
+          <!-- Materials -->
         <section class="materials-print reveal" id="materials">
           <div class="section-head"><span class="section-kicker">Materiały</span><h2>Materiały i kolory</h2>
           <p class="section-sub">Każdy materiał z opisem właściwości i typowym zastosowaniem — wybierz świadomie.</p></div>
