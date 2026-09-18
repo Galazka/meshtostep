@@ -29,6 +29,12 @@ class Settings(BaseSettings):
     currency_rate_usd: float = 4.20  # 1 USD = 4.20 PLN
     currency_rate_eur: float = 4.55  # 1 EUR = 4.55 PLN
 
+
+    # --- Stripe ---
+    STRIPE_SECRET_KEY: str = ""   # sk_...; empty = BLIK fallback
+    STRIPE_WEBHOOK_SECRET: str = ""   # whsec_...
+    STRIPE_PUBLIC_KEY: str = ""   # pk_...
+
     class Config:
         env_file = ".env"
 

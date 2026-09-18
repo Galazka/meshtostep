@@ -318,16 +318,48 @@
     })
     .then(function(r) { return r.json(); })
     .then(function(data) {
-      if (data.ok) {
-        var sym = currencySymbol();
-        showToast('Zamówienie #' + data.order_id + '! Cena: ' + data.total.toFixed(2) + ' ' + sym + '. Skontaktujemy się w celu potwierdzenia płatności.', 'success');
-        closePrintModal();
-      } else {
-        showToast(data.detail || 'Błąd zamówienia', 'error');
-      }
-    })
-    .catch(function() { showToast('Błąd sieci', 'error'); });
-  };
+          if (data.ok) {
+            var orderId = data.order_id;
+            var sym = currencySymbol();
+            // 1. try Stripe checkout
+            fetch('/api/orders/' + orderId + '/checkout?t=' + Date.now(), {
+              method: 'POST'
+            }).then(function(r) { return r.json(); }).then(function(c) {
+              if (c.ok && c.checkout_url) {
+                showToast('Przekierowuję do płatności...', 'info');
+                window.location.href = c.checkout_url;
+              } else if (c.ok && c.blik_fallback) {
+                // BLIK fallback — pokaz w modalu
+                closePrintModal();
+                showToast('Zamówienie #' + orderId + '! Cena: ' + data.total.toFixed(2) + ' ' + sym + '.', 'success');
+                setTimeout(function() {
+                  var t = document.getElementById('printModalTitle');
+                  var old = t ? t.textContent : '';
+                  var body = document.getElementById('printOrderForm');
+                  if (body) body.style.display = 'none';
+                  var box = document.createElement('div');
+                  box.style.padding = '16px'; box.style.textAlign = 'center';
+                  box.innerHTML = '<h3 style="margin:0 0 12px">Płatność BLIK</h3>' +
+                    '<p style="color:#6b7280;margin:4px 0">Zamówienie #' + orderId + ', do zapłaty: <strong>' + data.total.toFixed(2) + ' ' + sym + '</strong></p>' +
+                    '<p style="margin:8px 0">Kod BLIK: <strong style="font-size:22px;color:#2563eb">' + (c.blik_code || '—') + '</strong></p>' +
+                    '<p style="font-size:13px;color:#6b7280">Tytuł: ' + (c.titled || '') + '<br>Skontaktujemy się do potwierdzenia płatności.</p>' +
+                    '<button onclick="closePrintModal()" style="margin-top:14px;padding:10px 20px;background:#2563eb;color:#fff;border:none;border-radius:8px;cursor:pointer">OK</button>';
+                  document.querySelector('.modal').appendChild(box);
+                  if (t) t.textContent = 'Zamówienie #' + orderId;
+                  document.getElementById('printOrderModal').style.display = 'flex';
+                }, 600);
+              } else {
+                showToast('Zamówienie #' + orderId + '. ' + (c.detail || 'Błąd płatności'), 'warning');
+              }
+            }).catch(function() {
+              showToast('Zamówienie #' + orderId + ' — skontaktujemy się w celu płatności.', 'success');
+              closePrintModal();
+            });
+          } else {
+                      showToast(data.detail || 'Błąd zamówienia', 'error');
+                    }
+                  });
+            };
 
   /* ==== Admin panel ==== */
   window.openAdminPanel = function() {

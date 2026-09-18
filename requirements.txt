@@ -18,3 +18,5 @@ lxml>=5.0
 matplotlib>=3.8
 Pillow>=11.0
 openpyxl>=3.1.0
+
+stripe>=9.0.0

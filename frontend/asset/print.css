@@ -1,14 +1,15 @@
 /* ===== print.css — marketplace druku 3D ===== */
 :root {
-  --bg: #ffffff;
-  --fg: #111827;
-  --muted: #6b7280;
-  --accent: #2563eb;
-  --accent-hover: #1d4ed8;
-  --card-bg: #f9fafb;
-  --border: #e5e7eb;
-  --shadow: 0 1px 3px rgba(0,0,0,0.05);
-  --shadow-lg: 0 4px 12px rgba(0,0,0,0.08);
+  --bg: #f6f8fb;
+    --fg: #111827;
+    --muted: #6b7280;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --card-bg: #ffffff;
+    --border: #e5e7eb;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.10);
+    --radius: 12px;
 }
 
 * { box-sizing: border-box; }
@@ -27,7 +28,7 @@ body {
   padding: 0 16px;
 }
 
-@app-header {
+.app-header {
   background: var(--bg);
   border-bottom: 1px solid var(--border);
   box-shadow: var(--shadow);
@@ -98,7 +99,7 @@ body {
 .btn-block { width: 100%; }
 
 .print-hero {
-  padding: 32px 0;
+  padding: 32px 0 28px;
   text-align: center;
 }
 
@@ -115,8 +116,8 @@ body {
 .request-card {
   background: var(--card-bg);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px;
+  border-radius: var(--radius);
+  padding: 18px;
   box-shadow: var(--shadow);
   transition: all 0.15s;
 }
