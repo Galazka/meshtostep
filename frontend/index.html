@@ -51,6 +51,30 @@
           }
         }, 0);
       }
+    if(!window.doAuth) window.doAuth = function(){
+        var em = (document.getElementById('authEmail')||{}).value||'';
+        var pw = (document.getElementById('authPass')||{}).value||'';
+        var ae = document.getElementById('authError');
+        var reg = !!document.getElementById('registerExtra') && document.getElementById('registerExtra').classList.contains('show');
+        if(!em || !pw){ if(ae){ae.style.display='block'; ae.textContent='Podaj email i hasło';} return; }
+        var ep = reg ? '/api/auth/register' : '/api/auth/login';
+        var body = reg
+          ? { email:em, password:pw, password_confirm:(document.getElementById('authPassConfirm')||{}).value||pw, terms_accepted:true, privacy_accepted:true }
+          : { email:em, password:pw };
+        fetch(ep, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+          .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};});})
+          .then(function(res){
+            if(res.ok && res.d.token){
+              localStorage.setItem('token', res.d.token);
+              localStorage.setItem('mt_token', res.d.token);
+              var ov=document.getElementById('authModal'); if(ov) ov.classList.remove('show');
+              if(window.location && window.location.pathname==='/') window.location.reload();
+            } else {
+              if(ae){ae.style.display='block'; ae.textContent=(res.d&&res.d.detail)?String(res.d.detail):'Błąd logowania';}
+            }
+          })
+          .catch(function(){ if(ae){ae.style.display='block'; ae.textContent='Błąd sieci';} });
+      };
     if(!window.toggleLang) window.toggleLang = function(){};
     if(!window.doDiscover) window.doDiscover = function(){};
     if(!window.go) window.go = function(){};
@@ -1033,7 +1057,7 @@ window.toggleFaq = toggleFaq;
 
 <!-- ═══ PWA SW ═══ -->
 <script>
-if('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js?v=81').catch(()=>{}); }
+if('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js?v=82').catch(()=>{}); }
 var _deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', function(e) { e.preventDefault(); _deferredPrompt = e; document.getElementById('pwaBanner').style.display = 'flex'; });
 document.getElementById('pwaInstallBtn').addEventListener('click', async function() { if (!_deferredPrompt) return; _deferredPrompt.prompt(); await _deferredPrompt.userChoice; _deferredPrompt = null; document.getElementById('pwaBanner').style.display = 'none'; });
