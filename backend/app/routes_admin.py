@@ -723,6 +723,25 @@ def export_users(
     return {"ok": True, "format": "json", "data": data, "count": len(data)}
 
 
+class RoleReq(BaseModel):
+    is_admin: bool = True
+
+
+@router.post("/api/admin/users/{user_id}/role")
+def set_user_role(user_id: int, req: RoleReq,
+                  admin: models.User = Depends(require_admin),
+                  db: Session = Depends(get_db)):
+        """Set admin role for a user (e.g. colleague handling orders)."""
+        if not admin or not getattr(admin, "is_admin", False):
+            raise HTTPException(403, detail="Admin only")
+        u = db.get(models.User, user_id)
+        if not u:
+            raise HTTPException(404, detail="User not found")
+        u.is_admin = bool(req.is_admin)
+        db.commit()
+        return {"ok": True, "user_id": u.id, "email": u.email, "is_admin": bool(u.is_admin)}
+
+
 # ── Bulk email to marketing ──────────────────────────────────────
 class BulkEmailReq(BaseModel):
     user_ids: list[int] | None = None

@@ -121,14 +121,14 @@
     var tbody = document.getElementById('shippingTable');
     if (!tbody) return;
     var rows = [
-      ["Standard (5 dni)", 15, 35, 55],
-      ["Ekspres (2 dni)", 25, 55, 85],
-      ["Priorytet (1 dzień)", 40, 80, 130],
-      ["Odbiór osobisty", 0, 0, 0]
-    ];
-    tbody.innerHTML = rows.map(function(r) {
-      return '<tr><td style="padding:8px">' + r[0] + '</td><td style="padding:8px">' + r[1] + ' zł</td><td style="padding:8px">' + r[2] + ' zł</td><td style="padding:8px">' + r[3] + ' zł</td></tr>';
-    }).join('');
+          ["Standard — InPost Paczkomat (2-3 dni)", 21.49, 40, 60],
+          ["Ekspres — kurier InPost (1 dzień)", 24.49, 60, 90],
+          ["Priorytet — kurier (następny dzień)", 30.49, 85, 135],
+          ["Odbiór osobisty (Gdańsk)", 0, 0, 0]
+        ];
+        tbody.innerHTML = '<tr><td style="padding:8px;color:#6b7280;font-size:11px" colspan="4">Wysyłka: cena przesyłki InPost + 5 zł koszt pakowania (karton, etykieta, folia). Odbiór osobisty — bez opłat.</td></tr>' + rows.map(function(r) {
+          return '<tr><td style="padding:8px">' + r[0] + '</td><td style="padding:8px">' + r[1] + ' zł</td><td style="padding:8px">' + r[2] + ' zł</td><td style="padding:8px">' + r[3] + ' zł</td></tr>';
+        }).join('');
   }
 
   /* ==== Print order modal ==== */

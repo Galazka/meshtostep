@@ -59,15 +59,18 @@ DEFAULT_COLOR_PREMIUM = {
     "carbon": 20.0, "wood": 15.0, "brass": 25.0,
 }
 
+# InPost 2026: Paczkomat gabaryt A 16,49 zł / kurier standard ~19,49 zł. Pakowanie (+5 zł)
+# dolicza calculate_price — osobny wiersz, pomijany przy pickup.
 DEFAULT_SHIPPING = {
-    "standard":  {"PL": 15.0, "EU": 35.0, "GLOBAL": 55.0},
-    "express":   {"PL": 25.0, "EU": 55.0, "GLOBAL": 85.0},
-    "priority":  {"PL": 40.0, "EU": 80.0, "GLOBAL": 130.0},
-    "pickup":    {"PL": 0.0,  "EU": 0.0, "GLOBAL": 0.0},
+    "standard":  {"PL": 16.49, "EU": 35.0, "GLOBAL": 55.0},
+    "express":   {"PL": 19.49, "EU": 55.0, "GLOBAL": 85.0},
+    "priority":  {"PL": 25.49, "EU": 80.0, "GLOBAL": 130.0},
+    "pickup":    {"PL": 0.0,   "EU": 0.0,  "GLOBAL": 0.0},
 }
 
 DEFAULT_WATTS = 150
 DEFAULT_KWH = getattr(settings, "kwh_price", 1.50)  # Bamboo P1S ~1.5 zł/kWh
+PACKING_FEE_PLN = 5.0  # karton + etykieta + folia na przesyłkę (InPost Paczkomat)
 MARGIN_PERCENT = getattr(settings, "print_margin_percent", 68)
 MAX_PART_AREA_MM2 = 65536  # 256×256 mm build (Bamboo P1S)
 DENSITIES = {
@@ -290,6 +293,10 @@ def calculate_price(
     product_total = round(subtotal + margin_pln, 2)  # what customer pays for printing
 
     shipping_cost = round(_cfg_value(db, shipping, shipping_region), 2)
+    # Packing fee (karton, etykieta, folia) — dodawany tylko gdy paczka jest wysyłana,
+    # NIE przy odbiorze osobistym. Konfigurowalne: packing_pln (default 5.00).
+    packing_fee = 0.0 if shipping == "pickup" else float(_cfg(db, "packing_pln", PACKING_FEE_PLN))
+    shipping_cost = round(shipping_cost + packing_fee, 2)
     discount_pln = 0.0
     discount_info = None
     if discount_code and db:

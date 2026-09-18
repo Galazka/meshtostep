@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Cache-Control" content="no-store, max-age=0">
-  <title>3DFILE.link — Druk 3D On Demand</title>
+  <title>3DFILE.link — Zleć nam wydruk 3D</title>
   <meta name="description" content="Polski hub druku 3D. Automatyczna wycena w czasie rzeczywistym. Dostawa na świecie. Prześlij model — natychmiastowa cena i zamówienie.">
   <link rel="icon" href="/asset/logo_3d.svg?v=78" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/asset/print.css?v=84">
+  <link rel="stylesheet" href="/asset/print.css?v=85">
 </head>
 <body>
   <div class="toast-container" id="toastContainer"></div>
@@ -20,13 +20,13 @@
           3DFILE.link
         </a>
         <nav class="nav-print">
-          <a href="/print.html" class="nav-link active">Druk 3D</a>
-          <a href="/printing/pricing" class="nav-link">Cennik</a>
-          <a href="/printing/how" class="nav-link">Jak to działa</a>
-          <a href="/printing/contact" class="nav-link">Kontakt</a>
-          <span id="adminLink" style="display:none">
-                      <a href="#" onclick="openAdminPanel();return false" class="nav-link">Admin</a>
-                    </span>
+                  <a href="/print.html" class="nav-link active">Zleć nam wydruk</a>
+                  <a href="/print.html#materials" class="nav-link">Materiały</a>
+                  <a href="/print.html#how" class="nav-link">Jak to działa</a>
+                  <a href="/print.html#shipping" class="nav-link">Wysyłka</a>
+                  <span id="adminLink" style="display:none">
+                              <a href="#" onclick="openAdminPanel();return false" class="nav-link">Admin</a>
+                            </span>
       </div>
     </div>
   </header>
@@ -45,7 +45,7 @@
       </div>
     </section>
     <!-- How it works -->
-    <section class="how-print">
+    <section class="how-print" id="how">
       <div class="section-head">
         <span class="section-kicker">Proces</span>
         <h2>Jak to działa</h2>
@@ -75,7 +75,7 @@
       </div>
     </section>
     <!-- Materials -->
-        <section class="materials-print">
+        <section class="materials-print" id="materials">
           <div class="section-head"><span class="section-kicker">Materiały</span><h2>Materiały i kolory</h2>
           <p class="section-sub">Każdy materiał z opisem właściwości i typowym zastosowaniem — wybierz świadomie.</p></div>
           <div class="tolerance-note">
@@ -84,7 +84,7 @@
           <div class="material-grid" id="materialList"></div>
         </section>
     <!-- Shipping -->
-    <section class="shipping-print">
+    <section class="shipping-print" id="shipping">
       <div class="section-head"><span class="section-kicker">Dostawa</span><h2>Metody wysyłki</h2>
       <p class="section-sub">Wysyłamy na cały świat. Podstawa to ekonomiczna przesyłka — wersje ekspresowe dla zniecierpliwionych.</p></div>
       <table class="shipping-table">
@@ -194,7 +194,7 @@
       </form>
     </div>
   </div>
-  <script src="/asset/print.js?v=84"></script>
+  <script src="/asset/print.js?v=85"></script>
   <script>
   // Cache-bust fetch + upload handler + init
   window.addEventListener('load', function() {

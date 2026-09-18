@@ -25,7 +25,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
     // Early stubs for inline onclick handlers — replaced by ES modules once they load
-    if(!window.showModal) window.showModal = function(m){ console.warn('showModal not ready:', m); };
+    if(!window.showModal) window.showModal = function(m){ console.warn && console.warn('showModal not ready:', m); if(console.warn===undefined)console.log('showModal not ready:', m); };
     if(!window.toggleLang) window.toggleLang = function(){};
     if(!window.doDiscover) window.doDiscover = function(){};
     if(!window.go) window.go = function(){};
@@ -381,7 +381,7 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
                 Jak to działa
             </button>
-            <a href="/print.html" class="nav-link" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border:none;background:none;font-size:14px;font-weight:500;color:var(--text-secondary);border-radius:var(--radius-sm);transition:all var(--transition);cursor:pointer;text-decoration:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 14h12v8H6zM14 14h2v6h-2zM8 14h2v6H8z"/></svg>Druk 3D</a>
+            <a href="/print.html" class="nav-link" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border:none;background:none;font-size:14px;font-weight:500;color:var(--text-secondary);border-radius:var(--radius-sm);transition:all var(--transition);cursor:pointer;text-decoration:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 14h12v8H6zM14 14h2v6h-2zM8 14h2v6H8z"/></svg>Zleć nam wydruk</a>
             <button class="nav-link" onclick="go('faq')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r=".5"/></svg>
                 FAQ
@@ -680,7 +680,7 @@
                 <h4 data-i18n="footerProduct">Produkt</h4>
 <a href="#" onclick="go('home')" data-i18n="navConverter">Wgraj</a>
                 <a href="#" onclick="go('discover')" data-i18n="navDiscover">Odkrywaj</a>
-                <a href="/print.html" data-i18n="navPrint">Druk 3D</a>
+                <a href="/print.html" data-i18n="navPrint">Zleć nam wydruk</a>
                 <a href="#" onclick="go('faq')" data-i18n="navFAQ">FAQ</a>
             </div>
             <div class="footer-col">
