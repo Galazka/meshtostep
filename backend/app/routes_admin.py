@@ -885,7 +885,7 @@ def download_backup(name: str, admin: models.User = Depends(require_admin)):
         raise HTTPException(404, "Brak backupu")
     return FileResponse(str(path), filename=safe)
 
-@router.get("/api/admin/report")
+@router.get("/report")
 def admin_report(kind: str = "week", admin: models.User = Depends(require_admin),
                  db: Session = Depends(get_db)):
     """Report: sprzedaż/orders/reviews/nowi użytkownicy per day (last N=14) or per month (last 6)."""
@@ -922,7 +922,7 @@ def admin_report(kind: str = "week", admin: models.User = Depends(require_admin)
             "rows": rows, "totals": totals}
 
 
-@router.get("/api/admin/report/export")
+@router.get("/report/export")
 def admin_report_export(kind: str = "week", fmt: str = "csv",
                         admin: models.User = Depends(require_admin), db: Session = Depends(get_db)):
     """Export report CSV — do Excela / analizy. Kluczowe dla Toma: pełna tabela z mocami/dekoltami."""
@@ -944,7 +944,7 @@ def admin_report_export(kind: str = "week", fmt: str = "csv",
     return Response(content=out.getvalue(), media_type="text/csv; charset=utf-8",
                     headers={"Content-Disposition": "attachment; filename=3dfile-report-%s.csv" % kind})
 
-@router.post("/api/admin/users/{uid}/bonus")
+@router.post("/users/{uid}/bonus")
 def admin_set_bonus(uid: int, mb: int = 0, admin: models.User = Depends(require_admin), db: Session = Depends(get_db)):
     """Hosting admin: przydziel/zmień darmowe MB bonusowe dla użytkownika (Hormozi value: nagroda za aktywność)."""
     if not admin or not getattr(admin, "is_admin", False):
@@ -957,7 +957,7 @@ def admin_set_bonus(uid: int, mb: int = 0, admin: models.User = Depends(require_
     return {"ok": True, "user_id": uid, "bonus_mb": u.bonus_mb}
 
 
-@router.get("/api/admin/emails")
+@router.get("/emails")
 def admin_emails_export(admin: models.User = Depends(require_admin), db: Session = Depends(get_db)):
     """Eksport bazy kontaktów (klienci zamówień) — email + imię + telefon + miasto. Marketing/Warstwa RODO."""
     import csv as _csv, io as _io
@@ -977,7 +977,7 @@ def admin_emails_export(admin: models.User = Depends(require_admin), db: Session
                     headers={"Content-Disposition": "attachment; filename=3dfile-klienci-emails.csv"})
 
 
-@router.delete("/api/admin/orders/{oid}")
+@router.delete("/orders/{oid}")
 def admin_delete_order(oid: int, admin: models.User = Depends(require_admin), db: Session = Depends(get_db)):
     """Usuń zamówienie (RODO 'prawo do bycia zapomnianym' / sprzątanie)."""
     if not admin or not getattr(admin, "is_admin", False):
