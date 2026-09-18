@@ -21,9 +21,15 @@ def _stripe_enabled() -> bool:
 
 def _stripe_session_url(order, db) -> str | None:
     try:
-        import stripe
-    except ImportError:
+        return _stripe_build_session(order)
+    except Exception as e:
+        db.rollback()
+        print(f"[stripe] session create error: {e}")
         return None
+
+
+def _stripe_build_session(order):
+    import stripe
     stripe.api_key = settings.STRIPE_SECRET_KEY
     currency = (order.currency or "PLN").lower()
     amount = int(round(order.total or 0) * 100)  # cent
@@ -68,7 +74,16 @@ def create_checkout(order_id: int, request: Request, db: Session = Depends(get_d
         }
     url = _stripe_session_url(o, db)
     if not url:
-        raise HTTPException(status_code=502, detail="Stripe session creation failed")
+        return {
+            "ok": True,
+            "checkout_url": None,
+            "blik_fallback": True,
+            "total": o.total,
+            "currency": o.currency or "PLN",
+            "blik_code": "123456789",
+            "titled": f"3dfile.link #{o.id}",
+            "error": "stripe_session_failed",
+        }
     return {"ok": True, "checkout_url": url, "blik_fallback": False, "order_id": o.id}
 
 
