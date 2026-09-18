@@ -311,6 +311,22 @@ class OrderItem(Base):
 
 
 
+
+class Gallery(Base):
+    """Galeria wydruków na landingu — zdjęcia prac, tytuły, materiały (dodawane z admina)."""
+    __tablename__ = "gallery"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    title = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    material = Column(String(60), nullable=True)
+    color = Column(String(40), nullable=True)
+    image_base64 = Column(Text, nullable=False)   # data:image/...;base64,...
+    sort_order = Column(Integer, default=0)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 class PricingConfig(Base):
     """Dynamic pricing config — editable from admin panel. One row per key."""
     __tablename__ = "pricing_config"

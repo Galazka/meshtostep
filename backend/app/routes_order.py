@@ -667,6 +667,21 @@ def export_orders(admin=Depends(require_admin), db: Session = Depends(get_db)):
             o.subtotal, o.margin_pln, o.shipping_cost, o.discount_pln,
             o.total, o.currency, o.status, "Tak" if o.is_paid else "Nie", o.notes
         ])
+    # Sheet2: wszystkie modele (itemy) w zamówieniach — co drukować, ile razy
+    ws_m = wb.create_sheet("Modele")
+    ws_m.append(["Zamówienie", "Data", "Klient", "Email", "Model", "Ilość (szt)", "Materiał", "Kolor", "Ile kolorów/Druk kol.", "Objętość cm³", "Wymiary", "Filament g", "Koszt filamentu", "Subtotal", "Marża", "Status", "Zapłacony"])
+    for o in db.query(models.Order).order_by(models.Order.id.desc()).all():
+        items = list(o.items or [])
+        if items:
+            for it in items:
+                ws_m.append([o.id, o.created_at.strftime("%Y-%m-%d"), o.customer_name, o.customer_email,
+                    it.model_name, it.quantity, it.material, it.color, "", it.volume_cm3 or "", it.dims_mm or "",
+                    it.filament_grams, it.filament_cost, it.subtotal, it.margin_pln, o.status, "Tak" if o.is_paid else "Nie"])
+        else:
+            ws_m.append([o.id, o.created_at.strftime("%Y-%m-%d"), o.customer_name, o.customer_email,
+                o.job_uuid or "—", o.quantity, o.material, o.color, "", o.volume_cm3 or "", "",
+                o.filament_grams, o.filament_cost, o.subtotal, o.margin_pln, o.status, "Tak" if o.is_paid else "Nie"])
+
     ws2 = wb.create_sheet("Statystyki")
     total_orders = db.query(models.Order).count()
     paid = db.query(models.Order).filter(models.Order.is_paid == True).count()
