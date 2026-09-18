@@ -15,7 +15,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Request, Form, status
 from fastapi.responses import JSONResponse, HTMLResponse, Response
 from sqlalchemy.orm import Session
-from sqlalchemy import func, text
+from sqlalchemy import func, text, or_
 
 from . import models
 from pydantic import BaseModel
@@ -488,7 +488,7 @@ def list_orders(
         q = q.filter(models.Order.material == material)
     if search and search.strip():
         like = f"%{search.strip()}%"
-        q = q.filter(db.or_(
+        q = q.filter(or_(
             models.Order.customer_name.ilike(like),
             models.Order.customer_email.ilike(like),
             models.Order.customer_phone.ilike(like),
