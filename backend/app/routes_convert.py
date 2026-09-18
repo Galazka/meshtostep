@@ -370,6 +370,24 @@ def conv_status(job_uuid: str, db: Session = Depends(get_db)):
             "time_s": job.processing_time_s}
 
 
+@router.get("/job/{job_uuid}/info")
+def public_job_info(job_uuid: str, db: Session = Depends(get_db)):
+    """Publiczny meta-info pliku (do formularza zamówienia). Zwraca: uuid/id/nazwa/objętość/wymiary."""
+    job = db.query(models.Job).filter(models.Job.uuid == job_uuid).first()
+    if not job:
+        raise HTTPException(404, detail="Brak pliku")
+    return {
+        "ok": True,
+        "id": job.id,
+        "uuid": job.uuid,
+        "name": job.original_filename or job.title or f"model-{job.id}",
+        "volume_cm3": job.volume_cm3,
+                "dimensions": job.dims_mm,
+        "material": "PLA",
+        "status": job.status,
+    }
+
+
 @router.get("/download/{job_uuid}")
 def download(job_uuid: str, format: str = "step", db: Session = Depends(get_db)):
     job = db.query(models.Job).filter(models.Job.uuid == job_uuid).first()
