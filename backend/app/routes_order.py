@@ -67,12 +67,12 @@ DEFAULT_SHIPPING = {
 
 DEFAULT_WATTS = 150
 DEFAULT_KWH = getattr(settings, "kwh_price", 1.50)  # Bamboo P1S ~1.5 zł/kWh
-PACKING_FEE_PLN = 5.0  # karton + etykieta + folia na przesyłkę (InPost Paczkomat)
+PACKING_FEE_PLN = 3.0  # karton + etykieta + folia na przesyłkę (InPost Paczkomat)
 FREE_SHIPPING_MIN_PLN = 200.0  # zamówienia >=200 zł → wysyłka gratis (Tom pokrywa koszt)
 
 # ── Małe zamówienia: promocyjna wysyłka (Tom dopłaca różnicę z marży — konkurencyjny pricing) ──
-SMALL_ORDER_MAX_PRODUCT = 25.0   # poniżej tej kwoty PRODUKTU obowiązuje flat
-SMALL_ORDER_SHIP_FLAT = 11.90    # wysyłka+pakowanie ŁĄCZNIE (normalnie InPost 16.49 + packing 5.00 = 21.49)
+SMALL_ORDER_MAX_PRODUCT = 40.0   # poniżej tej kwoty PRODUKTU obowiązuje flat
+SMALL_ORDER_SHIP_FLAT = 9.90     # wysyłka+pakowanie ŁĄCZNIE (normalnie InPost 16.49 + packing 3.00 = 19.49)
 
 def _apply_small_order_shipping(product_pln: float, shipping_cost: float, shipping: str) -> float:
     """Małe zamówienia (<25 zł produktu, nie pickup): wysyłka+pakowanie flat 11.90 zł.
@@ -294,9 +294,9 @@ def calculate_price(
     if discount_code and db:
         discount_pln, discount_info = _apply_discount(db, discount_code, product_total)
 
-    # minimum order: product must be >= 5 zł
-    if product_total < 5.0:
-        product_total = 5.0
+    # minimum order: product must be >= 3 zł
+    if product_total < 3.0:
+        product_total = 3.0
     # MAŁE ZAMÓWIENIE: flat wysyłka (zanim free-shipping check)
     small_order = shipping_cost > 0 and product_total < SMALL_ORDER_MAX_PRODUCT and shipping != "pickup"
     if small_order:
@@ -939,12 +939,12 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db)):
 
     # discount across whole order (apply once on product total)
     if req.discount_code and db:
-        d, info = _apply_discount(db, req.discount_code, max(subtotal_sum, 5.0))
+        d, info = _apply_discount(db, req.discount_code, max(subtotal_sum, 3.0))
         discount_pln = d
         total -= d
 
-    if total < 5.0:
-        total = subtotal_sum if subtotal_sum > 5.0 else 5.0
+    if total < 3.0:
+        total = subtotal_sum if subtotal_sum > 3.0 else 3.0
     total = _ceil05(total)
 
     cur = (req.currency or "PLN").upper()

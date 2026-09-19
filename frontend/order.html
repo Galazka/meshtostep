@@ -393,18 +393,18 @@ function calc(){
   var shipBase={standard:{PL:16.49,EU:35,GLOBAL:55},express:{PL:33,EU:70,GLOBAL:110},pickup:{PL:0,EU:0,GLOBAL:0}};
   var reg=document.getElementById('fRegion').value, ship=document.getElementById('fShipping').value;
   var base=(shipBase[ship]||{})[reg]||0;
-  shippingPLN = ship==='pickup'?0:(base+5);
+  shippingPLN = ship==='pickup'?0:(base+3);
   // MAŁE ZAMÓWIENIE: flat 11,90 zł (spójne z backendem _apply_small_order_shipping)
-  var productEst = Math.max(5, productsPLN + colorExt);
-  var smallOrder = shippingPLN>0 && productEst<25;
-  if(smallOrder) shippingPLN = Math.min(shippingPLN, 11.90);
+  var productEst = Math.max(3, productsPLN + colorExt);
+  var smallOrder = shippingPLN>0 && productEst<40;
+  if(smallOrder) shippingPLN = Math.min(shippingPLN, 9.90);
   // multi-color premium (client-side estimate): 1st extra color +20, next +10
   var colorExt=0; CART.forEach(function(it){ var c=it.colors||1; if(c>1) colorExt += 20+(c-2)*10; });
-  var totalPLN=Math.max(5,productsPLN+colorExt)+shippingPLN;
+  var totalPLN=Math.max(3,productsPLN+colorExt)+shippingPLN;
   // FREE shipping on orders >= 200 PLN
   var freeShip = (productsPLN+colorExt)>=200 && shippingPLN>0;
   if(freeShip) shippingPLN=0;
-  totalPLN=Math.max(5,productsPLN+colorExt)+shippingPLN;
+  totalPLN=Math.max(3,productsPLN+colorExt)+shippingPLN;
   if(freeShip) totalPLN-=shippingPLN;
   var total=cx(totalPLN/rate);
   var freeLine = freeShip ? '<div class="summary-row" style="color:#059669"><span>✅ Darmowa wysyłka (zamówienie ≥ 200 zł)</span><span>0,00 zł</span></div>' : '';
