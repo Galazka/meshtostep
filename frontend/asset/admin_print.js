@@ -52,6 +52,7 @@ window.adminSetSearch = function(v, f){ if(f) __adminQ.search=v; __adminQ.page=1
       var token = getStoredToken();
       var headers = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/json' };
       try {
+        var _ao = document.getElementById('adminOrders'); if (_ao) _ao.innerHTML = '<div style="padding:18px;color:#64748b">⏳ Ładowanie zamówień…</div>';
         var q = '/api/orders?t=' + Date.now() + '&page=' + __adminQ.page + '&sort=' + __adminQ.sort;
         if (__adminQ.search) q += '&search=' + encodeURIComponent(__adminQ.search);
         var res = await fetch(q, { headers: headers });
@@ -113,7 +114,7 @@ window.adminSetSearch = function(v, f){ if(f) __adminQ.search=v; __adminQ.page=1
         document.getElementById('adminOrders').innerHTML = '<p style="color:#ef4444">Brak dostępu lub brak zamówień</p>';
       }
     } catch (e) {
-      document.getElementById('adminOrders').innerHTML = '<p style="color:#ef4444">Błąd ładowania</p>';
+      document.getElementById('adminOrders').innerHTML = '<p style="color:#ef4444;padding:12px">Błąd: '+ (e && e.message ? e.message : e) +'</p>';
     }
   }
 
@@ -449,6 +450,7 @@ window.loadAdminGallery = function() {
     if (tgt) tgt.classList.add('active');
     var btn = document.querySelector('[data-tabs="print"][data-tab="' + tab + '"]');
     if (btn) btn.classList.add('active');
+    try { document.title = 'PT:' + tab; } catch(e) {}
     var lazy = { 'orders': loadAdminOrders, 'stats': loadAdminStats, 'pricing': loadAdminPricing,
                  'codes': loadAdminCodes, 'gallery': loadAdminGallery, 'reviews': loadAdminReviews,
                  'reports': loadAdminReports };
