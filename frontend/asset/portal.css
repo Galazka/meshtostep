@@ -225,3 +225,8 @@ body { font-family: var(--font); -webkit-font-smoothing: antialiased; text-rende
 
 /* puste sloty reklam — niewidoczne, bez placeholderów tekstowych */
 .ad-slot:empty{ display:none !important; }
+
+/* puste sloty reklam — zero wysokości, bez placeholdera tekstowego (nawet z whitespace) */
+.ad-slot{ min-height:0; margin:0; }
+.ad-slot:empty::before{ content:none !important; display:none !important; }
+.ad-slot:not(:has(iframe)):not(:has(ins)):not(:has(img)):not(:has(div)){ display:none !important; }
