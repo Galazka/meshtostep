@@ -167,3 +167,44 @@ h1,h2,h3,h4{font-family:var(--font-display);letter-spacing:-.025em}
 .ad-slot:not(:has(iframe)):not(:has(ins)):not(:has(img)):not(:has(div)){display:none!important}
 
 .prt-muted{color:var(--muted)}.prt-center{text-align:center}
+
+/* ═══════════ DARK MODE ═══════════ */
+html[data-theme="dark"]{
+  --ink:#E8ECF4; --ink-2:#C3CBDB; --muted:#8B93A9;
+  --bg:#0D1017; --bg-soft:#141926; --bg-navy:#0A1020; --bg-navy-2:#0F1830;
+  --line:#232A3A; --line-dark:rgba(255,255,255,.08);
+  --accent:#5B84F5; --accent-hov:#4A73E0;
+  color-scheme:dark;
+}
+html[data-theme="dark"] body{background:var(--bg);color:var(--ink)}
+html[data-theme="dark"] .hgrid{background:var(--bg);border-color:var(--line)}
+html[data-theme="dark"] .hgrid .hcell{border-color:var(--line)}
+html[data-theme="dark"] .hgrid .hcell:hover{background:var(--bg-soft)}
+html[data-theme="dark"] .hgrid .hicon{background:var(--bg-soft);border-color:var(--line)}
+html[data-theme="dark"] .hgrid h3{color:var(--ink)}
+html[data-theme="dark"] .hgrid p,html[data-theme="dark"] .prt-section-head p{color:var(--muted)}
+html[data-theme="dark"] .prt-section-head h2{color:var(--ink)}
+html[data-theme="dark"] .statline{background:var(--bg)}
+html[data-theme="dark"] .statline .st{border-color:var(--line)}
+html[data-theme="dark"] .statline .st b{color:var(--ink)}
+html[data-theme="dark"] .statline .st span{color:var(--muted)}
+
+/* scroll-reveal */
+.rv{opacity:0;transform:translateY(16px);transition:opacity .55s ease,transform .55s ease}
+.rv.rv-in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+
+/* dark — podstrony z własnymi stylami (blog/order/kontakt/legal) */
+html[data-theme="dark"] .bcard,html[data-theme="dark"] .card{background:#141926;border-color:var(--line);color:var(--ink)}
+html[data-theme="dark"] .bcard h2,html[data-theme="dark"] .card h2,html[data-theme="dark"] .bb h2{color:var(--ink)}
+html[data-theme="dark"] .bcard p,html[data-theme="dark"] .card p{color:var(--muted)}
+html[data-theme="dark"] .bmeta{border-color:var(--line);color:var(--muted)}
+html[data-theme="dark"] .btag{background:var(--bg-soft);color:var(--accent);border:1px solid var(--line)}
+html[data-theme="dark"] .blog-cta-in{background:linear-gradient(135deg,#101F3C,#1F49C0)}
+html[data-theme="dark"] .pay-card{background:#141926;border-color:var(--line)}
+html[data-theme="dark"] .pay-card h1{color:var(--ink)}
+html[data-theme="dark"] .pay-card .psub{color:var(--muted)}
+html[data-theme="dark"] .prow{border-color:var(--line)}
+html[data-theme="dark"] .prow .k{color:var(--muted)}
+html[data-theme="dark"] .prow .v{color:var(--ink)}
+html[data-theme="dark"] .pbtn.ghost{background:var(--bg-soft);border-color:var(--line);color:var(--ink)}

@@ -438,6 +438,7 @@
             .nav-inner { position:relative; }
         }
     </style>
+    <script>try{var _t=localStorage.getItem("mt_theme")||"light";if(_t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}</script>
     <link href="/asset/portal.css?v=31" rel="stylesheet">
 </head>
 <body class="portal">
@@ -497,12 +498,13 @@
       <div class="prt-visual">
         <div class="vhead"><span>wycena-druku</span><span class="live">live</span></div>
         <div class="vbody">
-          <div class="vrow"><span class="k">plik</span><span class="v">bracket_v2.stl</span></div>
+          <div class="vrow"><span class="k">plik</span><span class="v" id="lvFile">bracket_v2.stl</span></div>
           <div class="vrow"><span class="k">objetosc</span><span class="v">6.60 cm³</span></div>
           <div class="vrow"><span class="k">wymiary</span><span class="v">42 × 31 × 18 mm</span></div>
-          <div class="vrow"><span class="k">material</span><span class="v">PLA · 8.2 g</span></div>
-          <div class="vrow"><span class="k">czas druku</span><span class="v">0.35 h</span></div>
-          <div class="vrow"><span class="k">cena</span><span class="v hl">od 3.00 zł</span></div>
+          <div class="vrow"><span class="k">material</span><span class="v" id="lvMat">PLA · 8.2 g</span></div>
+          <div class="vrow"><span class="k">czas druku</span><span class="v" id="lvHours">—</span></div>
+          <div class="vrow"><span class="k">cena</span><span class="v hl" id="lvCena">—</span></div>
+          <div class="vrow"><span class="k">ostatnio na odkrywaj</span><span class="v" id="lvLast">—</span></div>
           <div class="vbars"><i style="height:30%"></i><i style="height:44%"></i><i style="height:38%"></i><i style="height:62%"></i><i style="height:55%"></i><i style="height:78%"></i><i style="height:100%"></i><i style="height:84%"></i><i style="height:66%"></i><i style="height:92%"></i></div>
         </div>
       </div>
@@ -1212,5 +1214,27 @@ function cookieConsent(accept) {
 </div>
 
 <script>document.addEventListener('click',function(ev){var nl=document.getElementById('navLinks');if(nl&&nl.classList.contains('open')&&ev.target.closest('#navLinks a,#navLinks button')){nl.classList.remove('open');}});</script>
+
+<script>
+/* HERO LIVE — prawdziwe API */
+(function(){
+  function set(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; }
+  fetch('/api/calculate?t='+Date.now(),{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},
+    body:'material=PLA&color=natural&quantity=1&shipping=pickup&shipping_region=PL&volume_cm3=6.6&currency=PLN'})
+    .then(function(r){return r.json();}).then(function(d){
+      if(!d||!d.ok) return;
+      set('lvCena', d.total.toFixed(2)+' zł');
+      set('lvHours',(d.print_hours||0).toFixed(2)+' h');
+      set('lvMat','PLA · '+((d.internal&&d.internal.filament_g)||8.2)+' g');
+    }).catch(function(){});
+  fetch('/api/models?limit=1&sort=latest&t='+Date.now()).then(function(r){return r.json();}).then(function(d){
+    var it=d&&d.items&&d.items[0];
+    if(it&&it.title){ set('lvLast',(it.title.length>18?it.title.slice(0,17)+'…':it.title)); }
+    else { set('lvLast','—'); }
+  }).catch(function(){ set('lvLast','—'); });
+})();
+</script>
+<script src="/asset/theme.js?v=1"></script>
+<script src="/asset/reveal.js?v=1"></script>
 </body>
 </html>
