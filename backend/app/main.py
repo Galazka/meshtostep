@@ -173,6 +173,12 @@ def health():
 # ── Serve frontend ──────────────────────────────────────────────────
 FRONTEND_DIR = Path(__file__).parent.parent.parent / "frontend"
 
+@app.get("/platnosc", include_in_schema=False)
+def payment_page():
+    """Status płatności: success / pending / cancel / error (?status=&order=)."""
+    from fastapi.responses import FileResponse
+    return FileResponse(str(FRONTEND_DIR / "payment.html"))
+
 @app.get("/admin", include_in_schema=False)
 def admin_page():
     # JEDEN spójny panel: /admin serwuje admin.html = hosting (użytkownicy/pliki/stats/ads/geo/...)

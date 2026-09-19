@@ -51,8 +51,8 @@ def _stripe_build_session(order):
         customer_email=order.customer_email or None,
         client_reference_id=str(order.id),
         metadata={"order_id": str(order.id)},
-        success_url=success_url + f"/api/orders/{order.id}/pay/ok?session_id={{CHECKOUT_SESSION_ID}}",
-        cancel_url=success_url + f"/print.html?order={order.id}&cancelled=1",
+        success_url=success_url + f"/platnosc?status=success&order={order.id}",
+        cancel_url=success_url + f"/platnosc?status=cancel&order={order.id}",
     )
     session = stripe.checkout.Session.create(**checkout_params)
     return session["url"] or None

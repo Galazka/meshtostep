@@ -247,6 +247,25 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
   </div>
 </div>
 
+<div class="thanks" id="pageBlik" style="display:none">
+  <div class="ico" style="background:#eff6ff;color:#2563eb">🏦</div>
+  <h1>Dokończ płatność</h1>
+  <p>Zamówienie <b class="ord" id="blikOrder">#—</b> jest zapisane. Zapłać przez <b>BLIK</b> w aplikacji banku albo zwykłym przelewem — druk startuje po zaksięgowaniu.</p>
+
+  <div style="max-width:460px;margin:26px auto 0;background:#0B1730;border-radius:14px;padding:24px 26px;color:#C9D4EA;text-align:left">
+    <div style="font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:#7E93BE;margin-bottom:14px">Dane do płatności</div>
+    <div style="display:flex;justify-content:space-between;gap:14px;padding:7px 0;font-size:14px"><span>Tytuł przelewu</span><b style="font-family:var(--font-mono);color:#fff" id="blikTitle">—</b></div>
+    <div style="display:flex;justify-content:space-between;gap:14px;padding:7px 0;font-size:14px"><span>Kod BLIK</span><b style="font-family:var(--font-mono);color:#8FB4FF;font-size:17px" id="blikCode">—</b></div>
+    <div style="display:flex;justify-content:space-between;gap:14px;padding:7px 0;font-size:14px"><span>Do zapłaty</span><b style="font-family:var(--font-mono);color:#fff;font-size:16px" id="blikTotal">—</b></div>
+    <div style="margin-top:12px;font-size:12.5px;color:#8FA3C8;line-height:1.6">Potwierdzenie i status realizacji wyślemy na Twój e-mail.</div>
+  </div>
+
+  <div style="margin-top:24px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+    <a id="blikStatus" class="pbtn primary" href="#" style="display:inline-flex;align-items:center;gap:7px;padding:11px 20px;border-radius:9px;background:#2B5CE6;color:#fff;font-weight:600;font-size:14px;text-decoration:none">Sprawdź status płatności</a>
+    <a class="pbtn ghost" href="/kontakt" style="display:inline-flex;align-items:center;gap:7px;padding:11px 20px;border-radius:9px;border:1px solid #E6E9EF;color:#3A4356;font-weight:600;font-size:14px;text-decoration:none">Napisz do nas</a>
+  </div>
+</div>
+
 <div class="thanks" id="pageThanks" style="display:none">
   <div class="ico">✅</div>
   <h1 data-i18n="thanksTitle">Dziękujemy za zamówienie!</h1>
@@ -507,8 +526,39 @@ function submitOrder(){
   fetch('/api/orders/multi?t='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};});})
     .then(function(res){
-      if(res.ok&&res.d.ok){ document.getElementById('thanksOrder').textContent='#'+res.d.order_id; if(typeof saveProfileShip==='function') saveProfileShip(); document.getElementById('pageOrder').style.display='none'; document.getElementById('pageThanks').style.display='block'; window.scrollTo(0,0); }
-      else { toast((res.d&&res.d.detail)||'Błąd zamówienia',''); btn.disabled=false; btn.textContent='Zamawiam — pełne podsumowanie poniżej'; }
+      if(!(res.ok&&res.d.ok)){ toast((res.d&&res.d.detail)||'Błąd zamówienia',''); btn.disabled=false; btn.textContent='Zamawiam — pełne podsumowanie poniżej'; return; }
+      var orderId=res.d.order_id;
+      if(typeof saveProfileShip==='function') saveProfileShip();
+      btn.textContent='Przygotowuję płatność…';
+      // CHECKOUT: Stripe (redirect) albo BLIK — thank-you dopiero po potwierdzonej płatności
+      fetch('/api/orders/'+orderId+'/checkout?t='+Date.now(),{method:'POST'})
+        .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};});})
+        .then(function(c){
+          if(c.ok&&c.d&&c.d.checkout_url){
+            window.location.href=c.d.checkout_url;  // Stripe hosted checkout
+            return;
+          }
+          if(c.ok&&c.d&&c.d.blik_fallback){
+            // BLIK / przelew — ekran z danymi do wpłaty
+            try{ sessionStorage.setItem('blik_info',JSON.stringify({titled:c.d.titled,blik_code:c.d.blik_code,total:c.d.total})); }catch(e){}
+            document.getElementById('blikOrder').textContent='#'+orderId;
+            document.getElementById('blikTotal').textContent=(c.d.total!=null?(+c.d.total).toFixed(2)+' '+(c.d.currency||'PLN'):'—');
+            document.getElementById('blikCode').textContent=c.d.blik_code||'—';
+            document.getElementById('blikTitle').textContent=c.d.titled||('3dfile.link #'+orderId);
+            document.getElementById('blikStatus').href='/platnosc?status=pending&order='+orderId;
+            document.getElementById('pageOrder').style.display='none';
+            document.getElementById('pageBlik').style.display='block';
+            window.scrollTo(0,0);
+            return;
+          }
+          // checkout padł — strona błędu płatności
+          toast((c.d&&c.d.detail)||'Błąd przygotowania płatności','error');
+          window.location.href='/platnosc?status=error&order='+orderId;
+        })
+        .catch(function(){
+          toast('Błąd połączenia z płatnościami','error');
+          window.location.href='/platnosc?status=error&order='+orderId;
+        });
     })
     .catch(function(){toast('Błąd sieci','');btn.disabled=false;btn.textContent='Zamawiam — pełne podsumowanie poniżej';});
 }
