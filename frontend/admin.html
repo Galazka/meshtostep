@@ -1787,7 +1787,14 @@ const I18N = {
     function highlightAdMap(slots){ const counts={}; slots.forEach(s=>{const p=s.position||s.slot_key; counts[p]=(counts[p]||0)+1}); document.querySelectorAll('.admap-cell').forEach(b=>{const c=counts[b.dataset.pos]||0; b.textContent = b.textContent.split(' —')[0] + (c?` — ${c} slotów`:''); b.style.borderStyle=c?'solid':'dashed';}); }
     const _origLoadAdSlots=loadAdSlots; loadAdSlots=async function(){ await _origLoadAdSlots(); highlightAdMap(_allAdSlots); }
     if (window.location.search.includes('tab=ads')) switchAdminTab('ads');
+    // DEBUG/UX: token i zakładka z URL (?tok=...&tab=orders)
+    try {
+      var _q = new URLSearchParams(window.location.search);
+      if (_q.get('tok')) { localStorage.setItem('mt_token', _q.get('tok')); }
+      var _pt = _q.get('ptab');
+      if (_pt && typeof switchPrintTab === 'function') { setTimeout(function(){ try{ switchPrintTab(_pt); }catch(e){ console.error('ptab',e); document.title='PTAB-ERR:'+e.message; } }, 800); }
+    } catch(e) {}
     </script>
-<script src="/asset/admin_print.js?v=21"></script>
+<script src="/asset/admin_print.js?v=22"></script>
 </body>
 </html>
