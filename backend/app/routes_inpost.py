@@ -57,6 +57,10 @@ def inpost_points(q: str = "Gdańsk", limit: int = 12):
         nq = _norm(q)
         # poprawna forma dla API (diakrytyki) — z mapy lub oryginalnej pisowni
         api_city = _PL_CITIES.get(nq)
+        if not api_city and nq:
+            # miasta dwuwyrazowe bez diakrytyk ("starogard gdanski") — mapa ma klucz jednowyrazowy
+            first = nq.split()[0]
+            api_city = _PL_CITIES.get(first)
         if not api_city and q:
             # user mógł podać z diakrytykami (np. "Gdańsk") — użyj wprost
             api_city = q
