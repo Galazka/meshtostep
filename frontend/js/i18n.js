@@ -282,7 +282,7 @@ const I18N = {
     }
 };
 
-let currentLang = localStorage.getItem('mt_lang') || 'en';
+let currentLang = localStorage.getItem('mt_lang') || 'pl';
 
 function t(key, replacements) {
     let val = (I18N[currentLang] && I18N[currentLang][key]) || (I18N.en && I18N.en[key]) || key;
