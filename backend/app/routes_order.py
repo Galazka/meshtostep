@@ -1003,3 +1003,15 @@ def save_shipping(req: SaveShippingReq, db: Session = Depends(get_db),
     user.ship_country = (req.ship_country or "PL")[:30]
     db.commit()
     return {"ok": True}
+
+# —— Admin: usuń zamówienie (wraz z itemami) ——
+@router.delete("/api/orders/{order_id}")
+def delete_order(order_id: int, admin=Depends(require_admin), db: Session = Depends(get_db)):
+    """Delete order + its items (admin)."""
+    o = db.query(models.Order).filter(models.Order.id == order_id).first()
+    if not o:
+        raise HTTPException(status_code=404, detail="Zamówienie nie istnieje")
+    db.query(models.OrderItem).filter(models.OrderItem.order_id == order_id).delete(synchronize_session=False)
+    db.delete(o)
+    db.commit()
+    return {"ok": True, "deleted": order_id}

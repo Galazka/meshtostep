@@ -93,7 +93,7 @@ footer a{color:#cbd5e1;text-decoration:none}
     </div>
     <div class="info-card">
       <h2>Dane kontaktowe</h2>
-      <div class="info-row"><div class="ic">📧</div><div><strong>Email</strong><p><a href="mailto:tomekgalazka@gmail.com" id="infoEmail">tomekgalazka@gmail.com</a></p></div></div>
+      <div class="info-row"><div class="ic">📧</div><div><strong>Email</strong><p><a href="mailto:hello@3dfile.link" id="infoEmail">hello@3dfile.link</a></p></div></div>
       <div class="info-row"><div class="ic">📞</div><div><strong>Telefon — Tomasz Gałązka</strong><p><a href="tel:+48790824762">+48 790 824 762</a></p></div></div>
       <div class="info-row"><div class="ic">📍</div><div><strong>Pracownia / odbiór osobisty</strong><p id="infoStreet">ul. Międzygwiezdna 31/2</p><p>80-299 Gdańsk Osowa</p></div></div>
       <div class="info-row"><div class="ic">🖨</div><div><strong>Druk 3D na życzenie</strong><p>Zamówienia i wyceny: <a href="/drukuje">3dfile.link/drukuje</a></p><p>Hosting modeli: <a href="/">3dfile.link</a></p></div></div>
@@ -124,11 +124,11 @@ function sendContact(ev){
         st.className='status ok'; st.textContent='✓ Dziękujemy! Twoja wiadomość została wysłana — odezwiemy się wkrótce.';
         ['cName','cEmail','cSubject','cMessage'].forEach(function(id){document.getElementById(id).value='';});
       } else {
-        st.className='status err'; st.textContent=(res.d&&res.d.detail)||'Błąd wysyłania. Napisz bezpośrednio: tomekgalazka@gmail.com';
+        st.className='status err'; st.textContent=(res.d&&res.d.detail)||'Błąd wysyłania. Napisz bezpośrednio: hello@3dfile.link';
       }
       btn.disabled=false; btn.textContent='Wyślij wiadomość';
     })
-    .catch(function(){st.className='status err';st.textContent='Błąd sieci. Napisz bezpośrednio: tomekgalazka@gmail.com';btn.disabled=false;btn.textContent='Wyślij wiadomość';});
+    .catch(function(){st.className='status err';st.textContent='Błąd sieci. Napisz bezpośrednio: hello@3dfile.link';btn.disabled=false;btn.textContent='Wyślij wiadomość';});
 }
 </script>
 <footer class="site-footer">
@@ -153,7 +153,7 @@ function sendContact(ev){
     </div>
     <div class="sf-col">
       <h4>Kontakt</h4>
-      <span>Mail: <a href="mailto:tomekgalazka@gmail.com">tomekgalazka@gmail.com</a></span>
+      <span>Mail: <a href="mailto:hello@3dfile.link">hello@3dfile.link</a></span>
       <span>Tel (Tomasz Gałązka): <a href="tel:+48790824762">+48 790 824 762</a></span>
       <span>ul. Międzygwiezdna 31/2<br>80-299 Gdańsk Osowa</span>
     </div>

@@ -206,7 +206,8 @@
             .stats-grid { grid-template-columns: 1fr; }
         }
     </style>
-</head>
+
+<style>.print-panel{min-height:60px}.print-panel h2{font-size:16px;color:var(--text)}.print-panel .admin-orders-table{width:100%}</style></head>
 <body>
 
     <!-- AUTH GATE (shown before login) -->
@@ -301,6 +302,14 @@
                                     <button class="admin-tab" onclick="switchAdminTab('export')" data-tab="export" data-i18n="tabExport">Eksport</button>
                                     <button class="admin-tab" onclick="switchAdminTab('ads')" data-tab="ads">Reklamy</button>
                                     <button class="admin-tab" onclick="switchAdminTab('comments')" data-tab="comments">Komentarze</button>
+                                    <span style="color:var(--text-muted);padding:0 6px;font-size:12px;opacity:.6">| Drukarnia</span>
+                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('orders')" data-tabs="print" data-tab="orders" data-i18n="tabPrintOrders">Zamówienia</button>
+                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('stats')" data-tabs="print" data-tab="stats" data-i18n="tabPrintStats">Statystyki</button>
+                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('pricing')" data-tabs="print" data-tab="pricing" data-i18n="tabPrintPricing">Cennik</button>
+                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('codes')" data-tabs="print" data-tab="codes" data-i18n="tabPrintCodes">Kody</button>
+                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('gallery')" data-tabs="print" data-tab="gallery" data-i18n="tabPrintGallery">Galeria</button>
+                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('reviews')" data-tabs="print" data-tab="reviews" data-i18n="tabPrintReviews">Recenzje</button>
+                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('reports')" data-tabs="print" data-tab="reports" data-i18n="tabPrintReports">Raporty</button>
                                 </div>
 
                 <!-- USERS TAB -->
@@ -584,6 +593,15 @@
                             </div>
                         </div>
                     </div>
+
+                <!-- DRUKARNIA ZAKLADKI (print shop) -->
+                <div class="tab-content" id="tab-orders"><div id="adminOrders" class="print-panel"></div></div>
+                <div class="tab-content" id="tab-pstats"><div id="adminStats" class="print-panel"></div></div>
+                <div class="tab-content" id="tab-pricing"><div id="adminPricing" class="print-panel"></div></div>
+                <div class="tab-content" id="tab-codes"><div id="adminCodes" class="print-panel"></div></div>
+                <div class="tab-content" id="tab-gallery"><div id="adminGallery" class="print-panel"></div></div>
+                <div class="tab-content" id="tab-reviews"><div id="adminReviews" class="print-panel"></div></div>
+                <div class="tab-content" id="tab-reports"><div id="adminReports" class="print-panel"></div></div>
                 </div>
 
             </div>
@@ -877,6 +895,8 @@ const I18N = {
         if (name === 'queue' && !_queueLoaded) { loadQueue(); _queueLoaded = true; }
         if (name === 'export' && !_exportLoaded) { loadExport(); loadBackups(); _exportLoaded = true; }
         if (name === 'comments' && !_commentsLoaded) { loadComments(); _commentsLoaded = true; }
+        // Drukarnia version B — taby w admin_print.js via switchPrintTab (nie lazy tutaj)
+        if (['orders','pstats','pricing','codes','gallery','reviews','reports'].includes(name)) { switchPrintTab(name); return; }
     }
     let _commentsLoaded = false;
 
@@ -1768,5 +1788,6 @@ const I18N = {
     const _origLoadAdSlots=loadAdSlots; loadAdSlots=async function(){ await _origLoadAdSlots(); highlightAdMap(_allAdSlots); }
     if (window.location.search.includes('tab=ads')) switchAdminTab('ads');
     </script>
+<script src="/asset/admin_print.js?v=20260919"></script>
 </body>
 </html>

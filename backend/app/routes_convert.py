@@ -17,6 +17,8 @@ from .auth import get_current_user, require_user
 from .config import settings
 from .database import get_db
 from .engine import convert
+# admin may download client's private models to fulfil print orders
+from fastapi.security import HTTPAuthorizationCredentials
 import re
 
 def _slugify(s: str) -> str:
@@ -389,12 +391,29 @@ def public_job_info(job_uuid: str, db: Session = Depends(get_db)):
 
 
 @router.get("/download/{job_uuid}")
-def download(job_uuid: str, format: str = "step", db: Session = Depends(get_db)):
+def download(
+    job_uuid: str,
+    format: str = "step",
+    token: str = "",
+    creds: "models.User" = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     job = db.query(models.Job).filter(models.Job.uuid == job_uuid).first()
     if not job:
         raise HTTPException(404, "Job nie znaleziony")
     if job.visibility == "private":
-        raise HTTPException(403, "Prywatny model")
+        # admin can grab private models to fulfil print orders (drukarnia); token= JWT fallback
+        # (frontend admin_print.js nie wysyla naglowka przez <a href>)
+        admin_ok = bool(creds and getattr(creds, "is_admin", False))
+        if not admin_ok and token:
+            try:
+                from .auth import _decode_token
+                u = _decode_token(token)
+                admin_ok = bool(u and getattr(u, "is_admin", False))
+            except Exception:
+                admin_ok = False
+        if not admin_ok:
+            raise HTTPException(403, "Prywatny model")
     # hosting-first: oryginał dostępny od razu niezależnie od statusu
     fmt = format.lower()
     if fmt == "3mf" or fmt == "obj":

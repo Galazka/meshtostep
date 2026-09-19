@@ -67,6 +67,25 @@ def get_current_user(
     return user
 
 
+def _decode_token(token: str):
+    """Decode JWT -> User or None (sprawdzajacy tez token_version; bez HTTPBearer). Uzyj zamiast get_current_user gdy token idzie query stringiem (np. /download?token=)."""
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
+        uid = int(payload.get("sub"))
+    except (JWTError, ValueError, TypeError):
+        return None
+    from .database import get_db
+    db = next(get_db())
+    try:
+        user = db.query(models.User).filter(models.User.id == uid).first()
+        if not user:
+            return None
+        if payload.get("v", 0) != getattr(user, "token_version", 0):
+            return None
+        return user
+    finally:
+        db.close()
+
 def require_user(
     user: Optional[models.User] = Depends(get_current_user),
 ) -> models.User:

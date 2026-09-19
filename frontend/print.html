@@ -306,41 +306,7 @@
       <div style="margin-top:22px;font-size:13px;color:#94a3b8" data-i18n="finNote">✓ Płatność Stripe (karta / BLIK / przelew) · ✓ Gwarancja zwrotu · ✓ Wsparcie PL/EN</div>
     </section>
 
-<!-- Admin panel — hidden by default, accessible via #admin anchor -->
-        <div id="adminPanel" style="display:none">
-      <h2 data-i18n="adminTitle">Panel admina</h2>
-      <div id="adminAuth">
-        <p style="margin:8px 0;color:#6b7280" data-i18n="adminSub">Zaloguj się jako administrator, aby zarządzać zamówieniami.</p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">
-          <input type="email" id="adminEmail" placeholder="Email administratora" style="padding:8px;border:1px solid #d1d5db;border-radius:6px;flex:1;min-width:180px">
-          <input type="password" id="adminPassword" placeholder="Hasło" onkeydown="if(event.key==='Enter')adminLogin()" style="padding:8px;border:1px solid #d1d5db;border-radius:6px;flex:1;min-width:160px">
-          <button onclick="adminLogin()" style="padding:8px 16px;background:#1d4ed8;color:#fff;border:none;border-radius:6px;cursor:pointer">Zaloguj</button>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;margin:12px 0"><span style="color:#9ca3af;font-size:12px">lub podaj token:</span>
-          <input type="password" id="adminTokenInput" placeholder="JWT token" style="padding:6px;border:1px solid #d1d5db;border-radius:6px;flex:1"><button onclick="authenticateAdmin()" style="padding:6px 12px;border:1px solid #d1d5db;border-radius:6px">Odblokuj</button>
-        </div>
-      </div>
-      <div id="adminContent" style="display:none">
-        <div class="admin-tabs">
-          <button class="admin-tab-btn active" onclick="switchAdminTab('orders')" data-i18n="adminTabOrders">Zamówienia</button>
-          <button class="admin-tab-btn" onclick="switchAdminTab('stats')" data-i18n="adminTabStats">Statystyki</button>
-          <button class="admin-tab-btn" onclick="switchAdminTab('pricing')" data-i18n="adminTabPricing">Cennik</button>
-          <button class="admin-tab-btn" onclick="switchAdminTab('codes')" data-i18n="adminTabCodes">Kody rabatowe</button>
-                    <button class="admin-tab-btn" onclick="switchAdminTab('gallery')" data-i18n="adminTabGallery">Galeria</button>
-                    <button class="admin-tab-btn" onclick="switchAdminTab('reviews')" data-i18n="adminTabReviews">Recenzje</button>
-                    <button class="admin-tab-btn" onclick="switchAdminTab('reports')" data-i18n="adminTabReports">Raporty</button>
-                  </div>
-        <div id="adminOrders" class="admin-tab"></div>
-        <div id="adminStats" class="admin-tab" style="display:none"></div>
-        <div id="adminPricing" class="admin-tab" style="display:none"></div>
-        <div id="adminCodes" class="admin-tab" style="display:none"></div>
-        <div id="adminGallery" class="admin-tab" style="display:none"></div>
-        <div id="adminReviews" class="admin-tab" style="display:none"></div>
-        <div id="adminReports" class="admin-tab" style="display:none"></div>
-      </div>
-    </div>
-  
-        <!-- Reviews / social proof (Hormozi) -->
+<!-- Reviews / social proof (Hormozi) -->
     <section class="reviews-print reveal" id="reviews" style="padding:40px 0;background:var(--bg-alt);border-radius:16px">
       <div class="section-head">
         <span class="section-kicker" data-i18n="revKicker">Opinie klientów</span>
@@ -393,7 +359,7 @@
           </div>
           <div class="sf-col">
             <h4 data-i18n="sfContact">Kontakt</h4>
-            <span>📧 <a href="mailto:tomekgalazka@gmail.com">tomekgalazka@gmail.com</a></span>
+            <span>📧 <a href="mailto:hello@3dfile.link">hello@3dfile.link</a></span>
             <span>📞 <a href="tel:+48790824762">+48 790 824 762</a> <span style="opacity:.7">(Tomasz Gałązka)</span></span>
             <span>📍 ul. Międzygwiezdna 31/2<br>80-299 Gdańsk Osowa</span>
           </div>
