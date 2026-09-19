@@ -445,8 +445,7 @@
 <!-- ═══ NAVIGATION ═══ -->
 <nav class="prt-topbar" id="siteNav">
   <a class="prt-brand" href="/">
-    <span class="prt-logo">3D</span>
-    <span>3DFile</span>
+    <span class="prt-logo-chip"><img src="/logo.png?v=83" alt="3DFILE.link"></span>
   </a>
   <nav class="prt-nav" id="navLinks">
     <a href="/" data-i18n="navHome" class="active">Hosting 3D</a>
@@ -481,64 +480,113 @@
 
 <!-- ═══ HOME ═══ -->
 <div class="page active" id="page-home">
-    <div class="prt-hero" id="homeHero">
-    <div class="prt-hero-inner">
-        <div class="prt-hero-text">
-            <span class="prt-eyebrow">✦ Darmowy hosting · STL → STEP · Podgląd 3D w przeglądarce</span>
-            <h1>Hosting modeli <span>3D</span> — wgraj, podglądaj, udostępniaj</h1>
-            <p>Wgraj <strong>STL / 3MF / OBJ</strong>, zobacz model w 3D, przekonwertuj do STEP i udostępnij jednym linkiem. Bez instalacji, bez rejestracji do 24 h.</p>
-            <div class="prt-hero-actions">
-                <a href="#upload" class="prt-hero-cta" onclick="scrollToUpload();return false">⬆ Wgraj model</a>
-                <button class="prt-hero-cta ghost" onclick="showModal('register')">Załóż konto — 100 MB za darmo</button>
-            </div>
-            <div class="prt-hero-stats">
-                <span class="prt-badge">100 MB</span>
-                <span class="prt-badge">✓ RODO</span>
-                <span class="prt-badge">✓ PL + EN</span>
-                <span class="prt-badge">✓ Bez limitu plików</span>
-            </div>
+    <div class="prt-slider" id="heroSlider">
+  <div class="prt-slides">
+
+    <!-- SLAJD 1: Hosting 3D -->
+    <div class="prt-slide on">
+      <div class="prt-hero-text">
+        <span class="prt-eyebrow">✦ Darmowy hosting · 100 MB · RODO</span>
+        <h1>Hosting modeli <em>3D</em> —<br>wgraj, podglądaj, udostępniaj</h1>
+        <p class="prt-sub">Wgraj <strong>STL / 3MF / OBJ</strong>, zobacz model w 3D w przeglądarce i udostępnij jednym linkiem. Bez instalacji, bez rejestracji.</p>
+        <div class="prt-cta-row">
+          <a href="#upload" class="prt-cta" onclick="scrollToUpload();return false">⬆ Wgraj model — za darmo</a>
+          <a href="/#discover" class="prt-cta ghost">Odkrywaj modele</a>
         </div>
-        <div class="prt-hero-visual">
-            <!-- Ilustracja SVG: model 3D + podgląd + drukarka -->
-            <svg viewBox="0 0 420 260" role="img" aria-label="Podgląd modelu 3D i drukarka" style="width:100%;height:auto">
-                <defs>
-                    <linearGradient id="hgrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2563eb"/><stop offset="1" stop-color="#1d4ed8"/></linearGradient>
-                    <linearGradient id="glassh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef3fb"/><stop offset="1" stop-color="#dbeafe"/></linearGradient>
-                </defs>
-                <!-- tło karty podglądu -->
-                <rect x="28" y="18" width="230" height="170" rx="16" fill="url(#glassh)"/>
-                <rect x="28" y="18" width="230" height="170" rx="16" fill="none" stroke="#c7d5ee" stroke-width="1.5"/>
-                <!-- pasek narzędzi podglądu -->
-                <circle cx="52" cy="40" r="5" fill="#dc2626"/><circle cx="68" cy="40" r="5" fill="#d97706"/><circle cx="84" cy="40" r="5" fill="#16a34a"/>
-                <!-- model 3D: izometryczny sześcian (filtr/wazon) -->
-                <g stroke="#1d4ed8" stroke-width="2" fill="none">
-                    <polygon points="150,52 204,84 150,118 96,84" fill="rgba(37,99,235,.14)"/>
-                    <polygon points="150,52 204,84 220,120 166,152" fill="rgba(37,99,235,.12)"/>
-                    <polygon points="96,84 150,118 166,152 120,180" fill="rgba(37,99,235,.1)"/>
-                </g>
-                <!-- strzałka udostępnij -->
-                <line x1="120" y1="188" x2="120" y2="214" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arr)"/>
-                <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="4" refY="6" orient="auto"><path d="M0 0L2 5L4 0" fill="#2563eb"/></marker></defs>
-                <!-- krótki link -->
-                <rect x="60" y="216" width="120" height="20" rx="10" fill="#fff" stroke="#2563eb"/>
-                <text x="120" y="231" text-anchor="middle" font-size="10" fill="#2563eb" font-weight="700" font-family="Inter">3dfile → link</text>
-                <!-- drukarka (schemat) -->
-                <g transform="translate(272,90)">
-                    <rect x="0" y="0" width="150" height="96" rx="10" fill="url(#hgrad)" opacity=".9"/>
-                    <rect x="8" y="10" width="134" height="40" rx="6" fill="#eef3fb"/>  <!-- szkło -->
-                    <rect x="20" y="22" width="30" height="20" rx="4" fill="#fff" opacity=".95"/>  <!-- model -->
-                    <rect x="18" y="58" width="114" height="9" rx="4" fill="#1a3c70"/>  <!-- platforma -->
-                    <circle cx="30" cy="74" r="6" fill="#14325c"/><circle cx="126" cy="74" r="6" fill="#14325c"/>
-                    <text x="75" y="90" text-anchor="middle" font-size="9.5" fill="#fff" font-family="Inter">Druk 3D na zamówienie</text>
-                </g>
-            </svg>
-            <div class="prt-hero-cap" style="margin-top:8px;"><strong style="color:#fff">Wgraj dziś →</strong> <span style="opacity:.75">automatyczna wycena wydruku i hosting STL → STEP</span></div>
+      </div>
+      <div class="prt-visual">
+        <svg viewBox="0 0 420 260" role="img" aria-label="Podgląd modelu 3D" style="width:100%;height:auto">
+          <defs><linearGradient id="hg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#1d4ed8"/></linearGradient></defs>
+          <rect x="28" y="18" width="230" height="170" rx="16" fill="rgba(255,255,255,.94)"/>
+          <circle cx="52" cy="40" r="5" fill="#ef4444"/><circle cx="68" cy="40" r="5" fill="#f59e0b"/><circle cx="84" cy="40" r="5" fill="#22c55e"/>
+          <g stroke="#1d4ed8" stroke-width="2.5" fill="rgba(37,99,235,.12)">
+            <polygon points="150,56 206,88 150,122 94,88"/>
+            <polygon points="150,56 206,88 224,124 168,156"/>
+            <polygon points="94,88 150,122 168,156 118,182"/>
+          </g>
+          <rect x="60" y="214" width="130" height="24" rx="12" fill="#14284b" stroke="#3b82f6"/>
+          <text x="125" y="231" text-anchor="middle" font-size="11" fill="#93c5fd" font-weight="700" font-family="Inter">3dfile → jeden link</text>
+          <g transform="translate(276,92)">
+            <rect x="0" y="0" width="140" height="92" rx="12" fill="url(#hg1)"/>
+            <rect x="10" y="12" width="120" height="38" rx="8" fill="#eef3fb"/>
+            <rect x="24" y="22" width="34" height="22" rx="5" fill="#93c5fd"/>
+            <rect x="18" y="58" width="104" height="8" rx="4" fill="#0e1f3d"/>
+            <text x="70" y="86" text-anchor="middle" font-size="10" fill="#dbeafe" font-family="Inter">podgląd 3D live</text>
+          </g>
+        </svg>
+        <div class="cap"><strong style="color:#fff">24 h bez konta</strong> · potem darmowe konto 100 MB</div>
+      </div>
+    </div>
+
+    <!-- SLAJD 2: Druk 3D -->
+    <div class="prt-slide">
+      <div class="prt-hero-text">
+        <span class="prt-eyebrow">🖨 Pracownia druku 3D · Gdańsk · Bambu Lab P1S</span>
+        <h1>Druk 3D <em>na zamówienie</em> —<br>wycena w 30 sekund</h1>
+        <p class="prt-sub">Wgraj plik, zapłać online (<strong>BLIK / karta</strong>), odbierz wydruk. Od <strong>5 zł</strong>, ekspres w 2 dni, wysyłka na cały świat. Gwarancja zwrotu.</p>
+        <div class="prt-cta-row">
+          <a href="/zamow" class="prt-cta">Zamów wydruk → wycena w 30 s</a>
+          <a href="/drukuje" class="prt-cta ghost">Jak to działa</a>
         </div>
+      </div>
+      <div class="prt-visual">
+        <img src="/asset/hero_printer.png?v=2" alt="Drukarka 3D Bambu Lab P1S w pracowni 3DFILE.link" loading="lazy">
+        <div class="cap"><strong style="color:#fff">13+ materiałów</strong> · PLA / PETG / ASA / TPU · wielokolor</div>
+      </div>
     </div>
-    <div class="prt-hero-retention" style="margin:22px auto 0;max-width:1180px;padding:12px 18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);border-radius:14px;font-size:13.5px;color:#dbe7f7;line-height:1.6">
-        <strong>Bez logowania:</strong> pliki dostępne 24 h, potem usuwane. <strong style="color:#fff">Załóż darmowe konto</strong> — foldery, 100 MB, stale linki i dostęp w każdym momencie.
+
+    <!-- SLAJD 3: STL → STEP -->
+    <div class="prt-slide">
+      <div class="prt-hero-text">
+        <span class="prt-eyebrow">⚙ Konwersja w chmurze · 5 trybów precyzji</span>
+        <h1>STL → <em>STEP</em> —<br>mesh gotowy do CAD</h1>
+        <p class="prt-sub">Konwertuj siatkę na <strong>edytowalną bryłę STEP</strong> prosto w przeglądarce. Fusion 360, SolidWorks, FreeCAD — import bez poprawek.</p>
+        <div class="prt-cta-row">
+          <a href="#upload" class="prt-cta" onclick="scrollToUpload();return false">Konwertuj teraz — bez instalacji</a>
+          <a href="/#hiw" class="prt-cta ghost">Zobacz jak działa</a>
+        </div>
+      </div>
+      <div class="prt-visual">
+        <svg viewBox="0 0 420 260" role="img" aria-label="Konwersja STL do STEP" style="width:100%;height:auto">
+          <defs><linearGradient id="hg2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#7fb0ff"/></linearGradient></defs>
+          <rect x="30" y="46" width="150" height="120" rx="14" fill="rgba(255,255,255,.95)"/>
+          <text x="105" y="84" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a" font-family="Sora">STL</text>
+          <g stroke="#64748b" stroke-width="1.6" fill="none"><path d="M60 130 L92 110 L124 128 L110 156 L70 154 Z"/><path d="M92 110 L110 156 M60 130 L110 156"/></g>
+          <path d="M195 106 L245 106 M235 94 L249 106 L235 118" stroke="url(#hg2)" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="262" y="46" width="150" height="120" rx="14" fill="rgba(255,255,255,.95)"/>
+          <text x="337" y="84" text-anchor="middle" font-size="15" font-weight="800" fill="#1d4ed8" font-family="Sora">STEP</text>
+          <g stroke="#1d4ed8" stroke-width="2.2" fill="rgba(37,99,235,.08)"><path d="M292 132 L326 110 L360 130 L346 158 L304 156 Z"/><path d="M326 110 L346 158 M292 132 L346 158"/></g>
+          <text x="210" y="215" text-anchor="middle" font-size="11.5" fill="#b8c8e2" font-family="Inter">mesh → bryła CAD · 5 trybów (light → ultra)</text>
+        </svg>
+        <div class="cap"><strong style="color:#fff">Import do CAD</strong> · Fusion / SolidWorks / FreeCAD</div>
+      </div>
     </div>
+
+  </div>
+  <button class="prt-arrow prev" onclick="prtSlide(-1)" aria-label="Poprzedni">‹</button>
+  <button class="prt-arrow next" onclick="prtSlide(1)" aria-label="Następny">›</button>
+  <div class="prt-dots">
+    <button class="prt-dot on" onclick="prtGo(0)" aria-label="Slajd 1"></button>
+    <button class="prt-dot" onclick="prtGo(1)" aria-label="Slajd 2"></button>
+    <button class="prt-dot" onclick="prtGo(2)" aria-label="Slajd 3"></button>
+  </div>
 </div>
+<script>
+(function(){
+  var cur=0, N=3, timer;
+  window.prtGo=function(n){
+    var slides=document.querySelectorAll('#heroSlider .prt-slide');
+    var dots=document.querySelectorAll('#heroSlider .prt-dot');
+    if(!slides.length) return;
+    slides[cur].classList.remove('on'); dots[cur]&&dots[cur].classList.remove('on');
+    cur=(n+N)%N;
+    slides[cur].classList.add('on'); dots[cur]&&dots[cur].classList.add('on');
+  };
+  window.prtSlide=function(d){ prtGo(cur+d); restart(); };
+  function restart(){ clearInterval(timer); timer=setInterval(function(){ prtGo(cur+1); },6500); }
+  restart();
+})();
+</script>
 
 <div class="trust">
         <div class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Za darmo</div>
@@ -779,7 +827,7 @@
 <footer class="prt-footer" id="siteFooter">
   <div class="prt-footer-inner">
     <div class="prt-f-brand-col">
-      <div class="prt-f-brand">⬡ 3DFile.link</div>
+      <div class="prt-f-logo"><img src="/logo.png?v=83" alt="3DFILE.link"></div>
       <p style="font-size:13.5px;line-height:1.65;color:#bcc9de;margin-top:10px">Hosting modeli 3D, konwersja STL → STEP i druk 3D na zamówienie. Wgraj, podglądaj, dziel się jednym linkiem — za darmo.</p>
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
         <span style="background:rgba(255,255,255,.1);color:#dbe4f2;font-size:11.5px;padding:4px 10px;border-radius:999px">🇵🇱 Polski projekt</span>

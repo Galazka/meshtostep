@@ -69,7 +69,7 @@
 <body>
   <div class="toast-container" id="toastContainer"></div>
             <nav class="prt-topbar" id="printNav">
-  <a class="prt-brand" href="/"><span class="prt-logo">3D</span><span>3DFile</span></a>
+  <a class="prt-brand" href="/"><span class="prt-logo-chip"><img src="/logo.png?v=83" alt="3DFILE.link"></span></a>
   <nav class="prt-nav" id="printNavLinks">
     <a href="/">Hosting 3D</a>
     <a href="/#discover">Odkrywaj</a>
@@ -89,14 +89,28 @@
       
   <main class="container-print" id="mainContent">
     <!-- Hero -->
-    <section class="hero-print reveal">
-      <div class="hero-text">
-        <h1 data-i18n="heroTitle">Druk 3D <span class="grad">On&nbsp;Demand</span></h1>
-        <p class="hero-desc" data-i18n="heroSub">Polski hub druku 3D. Automatyczna wycena w czasie rzeczywistym, zamówienie w dwa kliknięcia i dostawa na cały świat.</p>
-        <div class="hero-cta" onclick="location.href='/zamow'" role="button" tabindex="0" data-i18n="heroCta">Zamów druk → wejdź w formularz</div>
-      </div>
-      <div class="hero-image">
-        <img src="/asset/hero_printer.png?v=1" alt="Druk 3D na życzenie" loading="lazy" style="width:100%;max-width:380px;object-fit:contain;filter:drop-shadow(0 10px 22px rgba(15,23,42,.18))">
+    <section class="prt-slider" style="min-height:0">
+      <div class="prt-slides">
+        <div class="prt-slide on" style="grid-template-columns:1.1fr .9fr;padding:52px 40px 48px">
+          <div class="prt-hero-text">
+            <span class="prt-eyebrow">🖨 Pracownia druku 3D · Gdańsk · Bambu Lab P1S</span>
+            <h1 style="font-family:var(--font-display)">Druk 3D <em style="font-style:normal;color:#7fb0ff">On&nbsp;Demand</em></h1>
+            <p class="prt-sub">Polski hub druku 3D. <strong>Automatyczna wycena w 30 sekund</strong>, płatność BLIK/karta, wysyłka na cały świat. Od 5 zł — bez rejestracji.</p>
+            <div class="prt-cta-row">
+              <a href="/zamow" class="prt-cta">Zamów druk → wycena w 30 s</a>
+              <a href="/drukuje#materialy" class="prt-cta ghost">Materiały i ceny</a>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:22px;flex-wrap:wrap">
+              <span class="prt-badge" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:#dbeafe">✓ Ekspres 48 h</span>
+              <span class="prt-badge" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:#dbeafe">✓ Wielokolor</span>
+              <span class="prt-badge" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:#dbeafe">✓ Gwarancja zwrotu</span>
+            </div>
+          </div>
+          <div class="prt-visual">
+            <img src="/asset/hero_printer.png?v=2" alt="Drukarka 3D Bambu Lab P1S" loading="lazy">
+            <div class="cap"><strong style="color:#fff">13+ materiałów</strong> · InPost · PL + EN</div>
+          </div>
+        </div>
       </div>
     </section>
     <!-- Grand Slam Offer / gwarancja — Hormozi style -->
@@ -334,7 +348,7 @@
       <footer class="prt-footer" id="siteFooter">
   <div class="prt-footer-inner">
     <div class="prt-f-brand-col">
-      <div class="prt-f-brand">⬡ 3DFile.link</div>
+      <div class="prt-f-logo"><img src="/logo.png?v=83" alt="3DFILE.link"></div>
       <p style="font-size:13.5px;line-height:1.65;color:#bcc9de;margin-top:10px">Hosting modeli 3D, konwersja STL → STEP i druk 3D na zamówienie. Wgraj, podglądaj, dziel się jednym linkiem — za darmo.</p>
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
         <span style="background:rgba(255,255,255,.1);color:#dbe4f2;font-size:11.5px;padding:4px 10px;border-radius:999px">🇵🇱 Polski projekt</span>
