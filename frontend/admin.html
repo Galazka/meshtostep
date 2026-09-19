@@ -220,9 +220,11 @@
                 </div>
                 <h2 style="font-size:20px;font-weight:700;margin-bottom:8px" data-i18n="authGateTitle">Admin Panel</h2>
                 <p style="color:var(--text-secondary);font-size:14px;margin-bottom:20px" data-i18n="authGateDesc">Zaloguj sie jako administrator, aby kontynuowac.</p>
-                <input id="authEmail" type="email" placeholder="email" data-i18n-placeholder="authEmailPh" style="width:100%;padding:10px 14px;background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:10px;font-size:14px;font-family:inherit;">
-                <input id="authPass" type="password" placeholder="haslo" data-i18n-placeholder="authPassPh" style="width:100%;padding:10px 14px;background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:16px;font-size:14px;font-family:inherit;">
-                <button class="btn-sm primary" onclick="doLogin()" style="width:100%;padding:12px;font-size:15px" data-i18n="authLoginBtn">Zaloguj</button>
+                <form onsubmit="doLogin();return false" autocomplete="on">
+                <input id="authEmail" type="email" name="email" autocomplete="username" placeholder="email" data-i18n-placeholder="authEmailPh" style="width:100%;padding:10px 14px;background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:10px;font-size:14px;font-family:inherit;">
+                <input id="authPass" type="password" name="password" autocomplete="current-password" placeholder="haslo" data-i18n-placeholder="authPassPh" style="width:100%;padding:10px 14px;background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:16px;font-size:14px;font-family:inherit;">
+                <button type="submit" class="btn-sm primary" style="width:100%;padding:12px;font-size:15px" data-i18n="authLoginBtn">Zaloguj</button>
+                </form>
                 <div style="margin-top:12px"><a href="/" style="font-size:13px;color:var(--text-muted)" data-i18n="authGateBack">Powrot do glownej strony</a></div>
             </div>
         </div>

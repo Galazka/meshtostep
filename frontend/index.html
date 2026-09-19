@@ -853,8 +853,9 @@
     <div class="modal-box">
         <h2 id="modalTitle" data-i18n="authLoginTitle">Zaloguj się</h2>
         <div class="auth-error" id="authError"></div>
-        <input id="authEmail" type="email" data-i18n-placeholder="authEmailPh" placeholder="email">
-        <input id="authPass" type="password" data-i18n-placeholder="authPassPh" placeholder="hasło">
+        <form onsubmit="doAuth();return false" autocomplete="on">
+        <input id="authEmail" type="email" name="email" autocomplete="username" data-i18n-placeholder="authEmailPh" placeholder="email">
+        <input id="authPass" type="password" name="password" autocomplete="current-password" data-i18n-placeholder="authPassPh" placeholder="hasło">
         <div class="register-extra" id="registerExtra">
             <div class="pw-strength" id="pwStrength">
                 <div class="pw-strength-bar"><div class="pw-strength-fill" id="pwStrengthFill"></div></div>
@@ -874,7 +875,8 @@
                 <label for="authMarketing"><span data-i18n="authMarketing">Chcę otrzymywać informacje o nowościach (opcjonalne)</span></label>
             </div>
         </div>
-        <button class="btn-full" id="authSubmit" onclick="doAuth()" data-i18n="authLoginBtn">Zaloguj</button>
+        <button type="submit" class="btn-full" id="authSubmit" data-i18n="authLoginBtn">Zaloguj</button>
+        </form>
         <div class="forgot-link" id="forgotLink"><a onclick="openForgotModal()" data-i18n="authForgot">Zapomniałeś hasła?</a></div>
         <div class="modal-footer">
             <span data-i18n="authNoAccount">Nie masz konta?</span> <a onclick="toggleAuth()" data-i18n="authFreeSignup">Załóż za darmo</a>
