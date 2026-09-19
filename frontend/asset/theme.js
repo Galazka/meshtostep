@@ -27,7 +27,7 @@
     var acts = document.querySelectorAll('.prt-actions');
     if (!acts.length) return;
     var host = acts[acts.length - 1];
-    if (document.getElementById('themeToggleAuto')) return;
+    if (document.getElementById('themeToggleAuto') || document.getElementById('themeToggle')) return;
     var b = document.createElement('button');
     b.id = 'themeToggleAuto';
     b.className = 'prt-btn ghost';
