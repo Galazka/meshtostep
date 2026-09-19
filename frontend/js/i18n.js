@@ -2,7 +2,7 @@
 
 const I18N = {
     pl: {
-        navConverter: 'Konwerter', navPricing: 'Cennik', navMyFiles: 'Moje pliki',
+        navHome: 'Hosting 3D', navHosting: 'Odkrywaj', navPrint: 'Druk 3D', navHow: 'Jak to działa', navBlog: 'Blog', navContact: 'Kontakt', navConverter: 'Konwerter', navPricing: 'Cennik', navMyFiles: 'Moje pliki',
         navHowItWorks: 'Jak to dziala', navFAQ: 'Pomoc FAQ',
         navLogin: 'Zaloguj', navSignup: 'Zaloz konto',
         navMyConversions: 'Moje konwersje', navLogout: 'Wyloguj',
@@ -139,6 +139,7 @@ const I18N = {
         authForgotTitle: 'Resetowanie hasla'
     },
     en: {
+        navHome: '3D Hosting', navHosting: 'Discover', navPrint: '3D Printing', navHow: 'How it works', navBlog: 'Blog', navContact: 'Contact',
         kontoProfile: 'Profile', kontoQuota: 'Storage', kontoTitle: 'My Account', navMyAccount: 'Account',
         navConverter: 'Converter', navPricing: 'Pricing', navMyFiles: 'My Files',
         navHowItWorks: 'How it works', navFAQ: 'Help FAQ',

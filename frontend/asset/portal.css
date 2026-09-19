@@ -222,3 +222,6 @@ body { font-family: var(--font); -webkit-font-smoothing: antialiased; text-rende
   padding:8px 14px; border-radius:999px; cursor:pointer; transition:background .15s, color .15s; white-space:nowrap; }
 .prt-nav-link:hover{ background:rgba(255,255,255,.12); color:#fff; }
 .prt-usr .prt-btn{ min-width:40px; }
+
+/* puste sloty reklam — niewidoczne, bez placeholderów tekstowych */
+.ad-slot:empty{ display:none !important; }
