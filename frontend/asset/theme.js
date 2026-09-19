@@ -10,7 +10,10 @@
     if (b) b.textContent = t === 'dark' ? '☀' : '◐';
   }
   var saved = 'light';
-  try { saved = localStorage.getItem('mt_theme') || 'light'; } catch (e) {}
+  try {
+    var qp = new URLSearchParams(window.location.search).get('theme');
+    saved = (qp === 'dark' || qp === 'light') ? qp : (localStorage.getItem('mt_theme') || 'light');
+  } catch (e) {}
   apply(saved);
 
   window.toggleTheme = function () {
