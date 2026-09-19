@@ -79,7 +79,7 @@ h1,h2,h3,h4{font-family:var(--font-display);letter-spacing:-.025em}
     linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
   background-size:44px 44px;mask-image:radial-gradient(900px 500px at 70% 10%,#000 30%,transparent 75%)}
 .prt-slides{position:relative;max-width:1200px;margin:0 auto}
-.prt-slide{display:none;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center;padding:72px 32px 64px}
+.prt-slide{display:none;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center;padding:96px 32px 88px;min-height:520px}
 .prt-slide.on{display:grid;animation:prtIn .45s ease}
 @keyframes prtIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .prt-eyebrow{display:inline-flex;align-items:center;gap:9px;font-family:var(--font-mono);font-size:11px;
@@ -116,7 +116,7 @@ h1,h2,h3,h4{font-family:var(--font-display);letter-spacing:-.025em}
   border:1px solid var(--line-dark);background:rgba(16,31,60,.7);color:#C9D4EA;font-size:15px;cursor:pointer;transition:all .15s}
 .prt-arrow:hover{border-color:rgba(255,255,255,.4);color:#fff}
 .prt-arrow.prev{left:14px}.prt-arrow.next{right:14px}
-@media(max-width:920px){.prt-slide{grid-template-columns:1fr;padding:48px 22px 40px}.prt-visual{display:none}.prt-arrow{display:none}}
+@media(max-width:920px){.prt-slide{grid-template-columns:1fr;padding:64px 22px 48px;min-height:0}.prt-visual{display:none}.prt-arrow{display:none}}
 
 /* ═══ SEKCJE jasne — hairline, zero kart-cieni ═══ */
 .prt-section{max-width:1200px;margin:0 auto;padding:88px 32px}

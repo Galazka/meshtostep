@@ -318,18 +318,27 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
       '<span style="font-size:11px;color:var(--muted)"> — klikaj swatche aby dodać/odznaczyć. Ekstra kolor: +20 zł, każdy kolejny +10 zł.</span>';
   }
   function pickColor(c){
-    if(selIdx<0){toast('Kliknij model w koszyku','');return;}
-    var it=CART[selIdx]; var n=it.colors||1;
-    if(!it._multi||!it._multi.length){ it._multi=[it.color||'black']; }
-    if(n>1){
-      var i=it._multi.indexOf(c);
-      if(i>=0){ if(it._multi.length>1){ it._multi.splice(i,1); } else { toast('Przynajmniej 1 kolor zostaje',''); return; } }
-      else { if(it._multi.length>=n){ toast('Limit '+n+' kolory — podnieś „Ilość kolorów” albo odznacz jeden','error'); return; } it._multi.push(c); }
-      it.color=colPl(it._multi);
-    } else {
-      it._multi=[c]; it.color=COL_PL[c]||c;
+    if(selIdx<0){
+      if(CART.length===1){ selIdx=0; } else { toast('Kliknij model w koszyku',''); return; }
     }
-    drawCart(); calc(); refreshCol(); renderMulti(); toast('Kolory: '+(it.color||''),true);
+    var it=CART[selIdx]; var n=it.colors||1;
+    if(!it._multi||!it._multi.length){
+      var seed=Object.keys(COL_PL).find(function(k){return COL_PL[k]===it.color;})||it.color||'black';
+      it._multi=[seed];
+    }
+    var i=it._multi.indexOf(c);
+    if(i>=0){
+      if(it._multi.length>1){ it._multi.splice(i,1); } else { toast('Przynajmniej 1 kolor zostaje',''); return; }
+    } else if(it._multi.length>=n){
+      // chcesz więcej kolorów niż ustawione → automatycznie podnieś liczbę (cena: +20 zł za 1. ekstra)
+      it.colors=it._multi.length+1;
+      var cc=document.getElementById('colCount'); if(cc) cc.value=String(it.colors);
+      var extra=(it.colors===2)?20:10;
+      toast('Ilość kolorów → '+it.colors+' (+'+extra+' zł)');
+    }
+    if(it._multi.indexOf(c)<0) it._multi.push(c);
+    it.color=colPl(it._multi);
+    drawCart(); calc(); refreshCol(); renderMulti(); toast('Kolory: '+it.color,true);
   }
   function setCustType(t){
     var p=document.getElementById('custTypePerson'),f=document.getElementById('custTypeFirm'),fr=document.getElementById('firmRow');
@@ -464,6 +473,7 @@ function calc(){
   // multi-color premium (client-side estimate): 1st extra color +20, next +10
   var colorExt=0; CART.forEach(function(it){ var c=it.colors||1; if(c>1) colorExt += 20+(c-2)*10; });
   var totalPLN=Math.max(3,productsPLN+colorExt)+shippingPLN;
+  var colorLine = colorExt>0 ? '<div class="summary-row"><span>Kolory ekstra ('+CART.filter(function(x){return (x.colors||1)>1;}).length+' modele)</span><span style="color:#B45309">+'+fmt(colorExt/rate)+'</span></div>' : '';
   // FREE shipping on orders >= 200 PLN
   var freeShip = (productsPLN+colorExt)>=200 && shippingPLN>0;
   if(freeShip) shippingPLN=0;
@@ -481,6 +491,7 @@ function calc(){
   box.innerHTML=rowsHTML+
     '<div class="summary-row"><span>Druk ('+CART.length+' model'+(CART.length>1?'i':'')+')</span><span>'+fmt(cx(productsPLN/rate))+'</span></div>'+
     '<div class="summary-row"><span>Wysyłka'+(ship==='pickup'?' (odbiór)':(smallOrder?' — PROMOCJA małe zamówienie':' + pakowanie'))+'</span><span>'+(shippingPLN===0?'0,00 zł':fmt(shippingPLN/rate))+'</span></div>'+
+    colorLine +
     freeLine +
     netTotalLine + vatLine;
   empty.style.display='none'; box.style.display='block'; btn.disabled=false;
