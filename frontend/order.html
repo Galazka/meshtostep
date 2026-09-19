@@ -175,6 +175,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
           </div>
         </div>
         <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:9px 12px;margin:10px 0;font-size:12.5px;color:#1e40af" id="colPriceNote">Wydruk wielokolorowy (jako jeden model) jest droższy ze względu na dłuższy czas druku: 1. kolor ekstra +20 zł, każdy kolejny +10 zł.</div>
+        <div id="multiInfo" style="margin:8px 0 4px"></div>
         <button onclick="applyColor()" style="margin-top:8px;padding:10px 18px;background:var(--accent);color:#fff;border:none;border-radius:9px;cursor:pointer" data-i18n="applyColor">Zastosuj kolor do modelu</button>
       </div>
 
@@ -276,9 +277,41 @@ function loadMats(){
 }
 function selectMat(k){ if(selIdx<0){toast('Najpierw kliknij model w koszyku','');return;} CART[selIdx].material=k; drawCart(); refreshMatSel(); calc(); }
 function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document.querySelectorAll('.mat').forEach(function(x){x.classList.toggle('sel',x.dataset.mat===m);}); document.getElementById('matFor').textContent=(selIdx>=0)?('#'+(selIdx+1)+' · '+(CART[selIdx].model_name||'Model')):'—'; }
-  function refreshCol(){ var cnt=document.getElementById('colCount'); if(cnt&&selIdx>=0){ cnt.value=String(CART[selIdx].colors||1); } document.querySelectorAll('.swatch').forEach(function(x){x.classList.toggle('sel',x.dataset.color===(selIdx>=0?(CART[selIdx].color||'black'):''));}); document.getElementById('colFor').textContent=(selIdx>=0)?('#'+(selIdx+1)+' · '+(CART[selIdx].model_name||'Model')):'—'; }
-  function applyColor(){ if(selIdx<0){toast('Kliknij model w koszyku','');return;} var cnt=document.getElementById('colCount'); var n=parseInt(cnt?cnt.value:'1'); CART[selIdx].colors=(n>1)?n:1; drawCart(); calc(); refreshCol(); toast('Kolory: '+CART[selIdx].colors+'x',true); }
-  function pickColor(c){ if(selIdx<0){toast('Kliknij model w koszyku','');return;} CART[selIdx].color=c; drawCart(); calc(); refreshCol(); toast('Kolor: '+c,true); }
+  function refreshCol(){ var cnt=document.getElementById('colCount'); if(cnt&&selIdx>=0){ cnt.value=String(CART[selIdx].colors||1); } document.querySelectorAll('.swatch').forEach(function(x){var sel=(selIdx>=0)?(CART[selIdx]._multi||[]).indexOf(x.dataset.color)>=0:false;x.classList.toggle('sel',sel);}); document.getElementById('colFor').textContent=(selIdx>=0)?('#'+(selIdx+1)+' · '+(CART[selIdx].model_name||'Model')):'—'; if(typeof renderMulti==='function')renderMulti(); }
+  function applyColor(){ if(selIdx<0){toast('Kliknij model w koszyku','');return;} var cnt=document.getElementById('colCount'); var n=parseInt(cnt?cnt.value:'1'); var it=CART[selIdx]; it.colors=(n>1)?n:1;
+    if(!it._multi||!it._multi.length){ it._multi=[it.color? Object.keys(COL_PL).find(function(k){return COL_PL[k]===it.color;})||'black' : 'black']; }
+    while(it._multi.length>it.colors){ it._multi.pop(); }
+    it.color=colPl(it._multi);
+    drawCart(); calc(); refreshCol(); renderMulti(); toast('Kolory: '+it.colors+'x',true); }
+  var COL_PL={};
+  document.querySelectorAll('#colSwatches .swatch').forEach(function(b){
+    var code=b.dataset.color; var txt=b.textContent||'';
+    var pl=txt.replace(/\s*\(\+?\d+\)\s*$/,'').trim().toLowerCase();
+    COL_PL[code]=pl||code; COL_PL['natural']='naturalny';
+  });
+  function colPl(list){ return list.map(function(c){return COL_PL[c]||c;}).join(' + '); }
+  function renderMulti(){
+    var box=document.getElementById('multiInfo'); if(!box) return;
+    if(selIdx<0){ box.innerHTML=''; return; }
+    var it=CART[selIdx]; var n=it.colors||1; var list=it._multi||[];
+    if(n<2){ box.innerHTML='<span style="font-size:12px;color:var(--muted)">Jeden kolor — kliknij swatch aby wybrać.</span>'; return; }
+    box.innerHTML='<span style="font-size:12.5px">Wybrane kolory ('+list.length+'/'+n+'): <b>'+colPl(list)+'</b></span>'+
+      '<span style="font-size:11px;color:var(--muted)"> — klikaj swatche aby dodać/odznaczyć. Ekstra kolor: +20 zł, każdy kolejny +10 zł.</span>';
+  }
+  function pickColor(c){
+    if(selIdx<0){toast('Kliknij model w koszyku','');return;}
+    var it=CART[selIdx]; var n=it.colors||1;
+    if(!it._multi||!it._multi.length){ it._multi=[it.color||'black']; }
+    if(n>1){
+      var i=it._multi.indexOf(c);
+      if(i>=0){ if(it._multi.length>1){ it._multi.splice(i,1); } else { toast('Przynajmniej 1 kolor zostaje',''); return; } }
+      else { if(it._multi.length>=n){ toast('Limit '+n+' kolory — podnieś „Ilość kolorów” albo odznacz jeden','error'); return; } it._multi.push(c); }
+      it.color=colPl(it._multi);
+    } else {
+      it._multi=[c]; it.color=COL_PL[c]||c;
+    }
+    drawCart(); calc(); refreshCol(); renderMulti(); toast('Kolory: '+(it.color||''),true);
+  }
   function setCustType(t){
     var p=document.getElementById('custTypePerson'),f=document.getElementById('custTypeFirm'),fr=document.getElementById('firmRow');
     if(t==='firm'){

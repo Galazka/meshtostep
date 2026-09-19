@@ -426,7 +426,7 @@ def create_order(
         customer_postal=postal_code[:20] if postal_code else None,
         customer_country=country[:30],
         material=material[:30],
-        color=color[:20],
+        color=color[:140],
         quantity=quantity,
         shipping_method=shipping[:20],
         shipping_region=shipping_region[:20],
@@ -909,7 +909,7 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db)):
         row = models.OrderItem(
             job_id=it.job_id, job_uuid=it.job_uuid,
             model_name=(it.model_name or it.job_uuid or "Model"),
-            material=it.material[:30], color=it.color[:20], quantity=it.quantity,
+            material=it.material[:30], color=it.color[:140], quantity=it.quantity,
             volume_cm3=round(it.volume_cm3 or 0, 2), dims_mm=it.dims,
             filament_grams=internal["filament_g"],
             filament_cost=internal["filament_cost"],

@@ -30,6 +30,16 @@ def _migrate_columns():
             conn.execute(text(f'ALTER TABLE {table} ADD COLUMN {col} {dtype}'))
             print(f"[3dfile] Added {table}.{col}")
 
+    # poszerz color na listę kolorów (multi-color: 'czarny + biały')
+    try:
+        with engine.connect() as conn:
+            if is_pg:
+                conn.execute(text('ALTER TABLE order_items ALTER COLUMN color TYPE VARCHAR(140)'))
+                conn.execute(text('ALTER TABLE orders ALTER COLUMN color TYPE VARCHAR(140)'))
+                conn.commit()
+    except Exception as _e:
+        print('[3dfile] color widen skip:', _e)
+
     with engine.connect() as conn:
         insp = inspect(engine)
         # users
