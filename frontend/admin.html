@@ -303,13 +303,13 @@
                                     <button class="admin-tab" onclick="switchAdminTab('ads')" data-tab="ads">Reklamy</button>
                                     <button class="admin-tab" onclick="switchAdminTab('comments')" data-tab="comments">Komentarze</button>
                                     <span style="color:var(--text-muted);padding:0 6px;font-size:12px;opacity:.6">| Drukarnia</span>
-                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('orders')" data-tabs="print" data-tab="orders" data-i18n="tabPrintOrders">Zamówienia</button>
-                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('stats')" data-tabs="print" data-tab="stats" data-i18n="tabPrintStats">Statystyki</button>
-                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('pricing')" data-tabs="print" data-tab="pricing" data-i18n="tabPrintPricing">Cennik</button>
-                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('codes')" data-tabs="print" data-tab="codes" data-i18n="tabPrintCodes">Kody</button>
-                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('gallery')" data-tabs="print" data-tab="gallery" data-i18n="tabPrintGallery">Galeria</button>
-                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('reviews')" data-tabs="print" data-tab="reviews" data-i18n="tabPrintReviews">Recenzje</button>
-                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('reports')" data-tabs="print" data-tab="reports" data-i18n="tabPrintReports">Raporty</button>
+                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('orders')" data-tabs="print" data-tab="orders">Zamówienia</button>
+                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('stats')" data-tabs="print" data-tab="stats">Statystyki</button>
+                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('pricing')" data-tabs="print" data-tab="pricing">Cennik</button>
+                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('codes')" data-tabs="print" data-tab="codes">Kody</button>
+                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('gallery')" data-tabs="print" data-tab="gallery">Galeria</button>
+                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('reviews')" data-tabs="print" data-tab="reviews">Recenzje</button>
+                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('reports')" data-tabs="print" data-tab="reports">Raporty</button>
                                 </div>
 
                 <!-- USERS TAB -->
@@ -1788,6 +1788,6 @@ const I18N = {
     const _origLoadAdSlots=loadAdSlots; loadAdSlots=async function(){ await _origLoadAdSlots(); highlightAdMap(_allAdSlots); }
     if (window.location.search.includes('tab=ads')) switchAdminTab('ads');
     </script>
-<script src="/asset/admin_print.js?v=20260919"></script>
+<script src="/asset/admin_print.js?v=21"></script>
 </body>
 </html>

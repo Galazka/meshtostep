@@ -452,8 +452,7 @@ window.loadAdminGallery = function() {
     var lazy = { 'orders': loadAdminOrders, 'stats': loadAdminStats, 'pricing': loadAdminPricing,
                  'codes': loadAdminCodes, 'gallery': loadAdminGallery, 'reviews': loadAdminReviews,
                  'reports': loadAdminReports };
-    if (tab === 'orders' && !window._apBuilt) { setTimeout(lazy[tab], 50); }
-    else if (tab !== 'orders' && lazy[tab]) setTimeout(lazy[tab], 50);
+    if (lazy[tab]) { setTimeout(function(){ try { lazy[tab](); } catch(e) { console.error('print-tab loader', tab, e); } }, 60); }
   }
   window.switchPrintTab = switchPrintTab;
 
