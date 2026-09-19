@@ -27,8 +27,27 @@ th{background:var(--bg-alt);font-weight:600}
 .lang-sec{display:none}.lang-sec.active{display:block}
 footer{border-top:1px solid var(--border);text-align:center;padding:24px;color:var(--muted);font-size:12px}
 </style>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="/asset/portal.css?v=21" rel="stylesheet">
 </head>
 <body>
+<nav class="prt-topbar" id="siteNav">
+  <a class="prt-brand" href="/"><span class="prt-logo-chip"><img src="/logo.png?v=83" alt="3DFILE.link"></span></a>
+  <nav class="prt-nav" id="navLinks">
+    <a href="/">Hosting 3D</a>
+    <a href="/#discover">Odkrywaj</a>
+    <a href="/drukuje">Druk 3D</a>
+    <a href="/#hiw">Jak to działa</a>
+    <a href="/#faq">Pomoc FAQ</a>
+    <a href="/blog.html">Blog</a>
+    <a href="/kontakt">Kontakt</a>
+  </nav>
+  <div class="prt-actions nav-right" style="margin-left:auto">
+    <a class="prt-btn ghost" href="/">Zaloguj</a>
+    <a class="prt-btn primary" href="/">Załóż konto</a>
+    <button class="prt-burger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">☰</button>
+  </div>
+</nav>
 <nav class="nav"><a class="logo" href="index.html">3dfile.link</a><a class="back" href="index.html">&larr; Back / Powrot</a></nav>
 <main>
 <h1>Polityka prywatnosci / Privacy Policy</h1>
@@ -172,7 +191,39 @@ footer{border-top:1px solid var(--border);text-align:center;padding:24px;color:v
 <p>hello@3dfile.link (GDPR matters), hello@3dfile.link (support PL/EN, reply within 24h).</p>
 </div>
 </main>
-<footer>&copy; 2026 3dfile.link &middot; <a href="index.html">3dfile.link</a> &middot; <a href="regulamin.html">Regulamin / Terms</a></footer>
+<footer class="prt-footer" id="siteFooter">
+  <div class="prt-footer-inner">
+    <div class="prt-f-brand-col">
+      <div class="prt-f-logo"><img src="/logo.png?v=83" alt="3DFILE.link"></div>
+      <p style="font-size:13.5px;line-height:1.65;color:#bcc9de;margin-top:10px">Hosting modeli 3D, konwersja STL → STEP i druk 3D na zamówienie. Wgraj, podglądaj, dziel się jednym linkiem — za darmo.</p>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+        <span style="background:rgba(255,255,255,.1);color:#dbe4f2;font-size:11.5px;padding:4px 10px;border-radius:999px">🇵🇱 Polski projekt</span>
+        <span style="background:rgba(255,255,255,.1);color:#dbe4f2;font-size:11.5px;padding:4px 10px;border-radius:999px">✓ RODO</span>
+      </div>
+    </div>
+    <div class="prt-f-col">
+      <h4>Produkt</h4>
+      <a href="/">Hosting 3D</a>
+      <a href="/#discover">Odkrywaj</a>
+      <a href="/drukuje">Druk 3D na zamówienie</a>
+      <a href="/blog.html">Blog</a>
+    </div>
+    <div class="prt-f-col">
+      <h4>Pomoc</h4>
+      <a href="/#hiw">Jak to działa</a>
+      <a href="/#faq">FAQ</a>
+      <a href="/kontakt">Kontakt</a>
+    </div>
+    <div class="prt-f-col">
+      <h4>Kontakt</h4>
+      <a href="mailto:hello@3dfile.link">hello@3dfile.link</a>
+      <h4 style="margin-top:14px">Prawne</h4>
+      <a href="/regulamin.html">Regulamin</a>
+      <a href="/prywatnosc.html">Polityka prywatności</a>
+    </div>
+  </div>
+  <div class="prt-f-bottom"><span>© 2026 3dfile.link · Hosting & druk 3D</span><span>🇵🇱 Polski projekt · Gdańsk</span></div>
+</footer>
 <script>
 function showLang(l){
   document.getElementById('sec-pl').classList.toggle('active', l==='pl');
