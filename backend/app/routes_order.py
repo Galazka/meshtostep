@@ -69,6 +69,17 @@ DEFAULT_WATTS = 150
 DEFAULT_KWH = getattr(settings, "kwh_price", 1.50)  # Bamboo P1S ~1.5 zł/kWh
 PACKING_FEE_PLN = 5.0  # karton + etykieta + folia na przesyłkę (InPost Paczkomat)
 FREE_SHIPPING_MIN_PLN = 200.0  # zamówienia >=200 zł → wysyłka gratis (Tom pokrywa koszt)
+
+# ── Małe zamówienia: promocyjna wysyłka (Tom dopłaca różnicę z marży — konkurencyjny pricing) ──
+SMALL_ORDER_MAX_PRODUCT = 25.0   # poniżej tej kwoty PRODUKTU obowiązuje flat
+SMALL_ORDER_SHIP_FLAT = 11.90    # wysyłka+pakowanie ŁĄCZNIE (normalnie InPost 16.49 + packing 5.00 = 21.49)
+
+def _apply_small_order_shipping(product_pln: float, shipping_cost: float, shipping: str) -> float:
+    """Małe zamówienia (<25 zł produktu, nie pickup): wysyłka+pakowanie flat 11.90 zł.
+    Bez tego mały model 6 cm³ kosztowałby 26 zł (wysyłka zjada 80% ceny)."""
+    if shipping_cost > 0 and shipping != "pickup" and product_pln < SMALL_ORDER_MAX_PRODUCT:
+        return min(shipping_cost, SMALL_ORDER_SHIP_FLAT)
+    return shipping_cost
 MARGIN_PERCENT = getattr(settings, "print_margin_percent", 68)
 MAX_PART_AREA_MM2 = 65536  # 256×256 mm build (Bamboo P1S)
 DENSITIES = {
@@ -286,6 +297,10 @@ def calculate_price(
     # minimum order: product must be >= 5 zł
     if product_total < 5.0:
         product_total = 5.0
+    # MAŁE ZAMÓWIENIE: flat wysyłka (zanim free-shipping check)
+    small_order = shipping_cost > 0 and product_total < SMALL_ORDER_MAX_PRODUCT and shipping != "pickup"
+    if small_order:
+        shipping_cost = min(shipping_cost, SMALL_ORDER_SHIP_FLAT)
     # FREE SHIPPING: zamówienia >=200 zł (produkt) → wysyłka gratis, Tom pokrywa koszt
     free_shipping = False
     if shipping_cost > 0 and product_total >= float(_cfg(db, "free_shipping_min_pln", FREE_SHIPPING_MIN_PLN)):
@@ -310,6 +325,7 @@ def calculate_price(
         "shipping_cost": shipping_cur,
         "shipping_cost_pln": shipping_cost,
         "free_shipping": free_shipping,
+        "small_order_shipping": bool(small_order),
         "discount_pln": round(discount_pln, 2),
         "total": total,
         "currency": cur,
@@ -910,8 +926,13 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db)):
         total += (calc["total"] - calc["shipping_cost"]) + color_mult   # product per item (PLN, no shipping)
         items_rows.append(row)
 
+    # MAŁE ZAMÓWIENIE: flat wysyłka (spójne z /api/calculate)
+    product_pln = total - shipping_cost  # sama produkcja
+    _new_ship = _apply_small_order_shipping(product_pln, shipping_cost, req.shipping)
+    if _new_ship != shipping_cost:
+        total = product_pln + _new_ship
+        shipping_cost = _new_ship
     # FREE SHIPPING: product >= 200 PLN -> shipping gratis (Tom covers cost)
-    product_pln = total - shipping_cost  # przed rabatem, sama produkcja
     if shipping_cost > 0 and product_pln >= float(_cfg(db, "free_shipping_min_pln", FREE_SHIPPING_MIN_PLN)):
         total -= shipping_cost
         shipping_cost = 0.0

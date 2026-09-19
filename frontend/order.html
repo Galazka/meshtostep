@@ -394,6 +394,10 @@ function calc(){
   var reg=document.getElementById('fRegion').value, ship=document.getElementById('fShipping').value;
   var base=(shipBase[ship]||{})[reg]||0;
   shippingPLN = ship==='pickup'?0:(base+5);
+  // MAŁE ZAMÓWIENIE: flat 11,90 zł (spójne z backendem _apply_small_order_shipping)
+  var productEst = Math.max(5, productsPLN + colorExt);
+  var smallOrder = shippingPLN>0 && productEst<25;
+  if(smallOrder) shippingPLN = Math.min(shippingPLN, 11.90);
   // multi-color premium (client-side estimate): 1st extra color +20, next +10
   var colorExt=0; CART.forEach(function(it){ var c=it.colors||1; if(c>1) colorExt += 20+(c-2)*10; });
   var totalPLN=Math.max(5,productsPLN+colorExt)+shippingPLN;
@@ -413,7 +417,7 @@ function calc(){
   var netTotalLine='<div class="summary-total"><span>Razem (netto)</span><span>'+fmt(total)+'</span></div>';
   box.innerHTML=rowsHTML+
     '<div class="summary-row"><span>Druk ('+CART.length+' model'+(CART.length>1?'i':'')+')</span><span>'+fmt(cx(productsPLN/rate))+'</span></div>'+
-    '<div class="summary-row"><span>Wysyłka'+(ship==='pickup'?' (odbiór)':' + pakowanie')+'</span><span>'+(shippingPLN===0?'0,00 zł':fmt(shippingPLN/rate))+'</span></div>'+
+    '<div class="summary-row"><span>Wysyłka'+(ship==='pickup'?' (odbiór)':(smallOrder?' — PROMOCJA małe zamówienie':' + pakowanie'))+'</span><span>'+(shippingPLN===0?'0,00 zł':fmt(shippingPLN/rate))+'</span></div>'+
     freeLine +
     netTotalLine + vatLine;
   empty.style.display='none'; box.style.display='block'; btn.disabled=false;
