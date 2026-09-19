@@ -100,15 +100,26 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 </head>
 <body>
 <div class="loading" id="loading">Przeliczam…</div>
-  <nav class="prt-topbar" id="orderNav">
+  <nav class="prt-topbar" id="siteNav">
   <a class="prt-brand" href="/"><span class="prt-logo-chip"><img src="/logo.png?v=83" alt="3DFILE.link"></span></a>
-  <nav class="prt-nav" id="orderNavLinks">
+  <nav class="prt-nav" id="navLinks">
     <a href="/">Hosting 3D</a>
     <a href="/#discover">Odkrywaj</a>
     <a href="/drukuje">Druk 3D</a>
+    <a href="/#hiw">Jak to działa</a>
+    <a href="/#faq">Pomoc FAQ</a>
     <a href="/blog.html">Blog</a>
     <a href="/kontakt">Kontakt</a>
   </nav>
+  <div class="prt-actions nav-right" style="margin-left:auto">
+    <button class="prt-lang" onclick="if(typeof toggleLang==='function')toggleLang();else if(window.__pi18n)window.__pi18n.setLang(window.__pi18n.lang==='pl'?'en':'pl')">EN</button>
+    <span id="authBtns" style="display:inline-flex">
+      <a class="prt-btn ghost" href="/">Zaloguj</a>
+      <a class="prt-btn primary" href="/">Załóż konto</a>
+    </span>
+    <button class="prt-burger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">☰</button>
+  </div>
+</nav>
   <div class="prt-actions nav-right" style="margin-left:auto">
     <button class="prt-lang" id="langToggle" onclick="window.__pi18n.setLang(window.__pi18n.lang==='pl'?'en':'pl')">EN</button>
     <button class="prt-burger" onclick="document.getElementById('orderNavLinks').classList.toggle('open')" aria-label="Menu">☰</button>
