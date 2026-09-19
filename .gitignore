@@ -14,3 +14,9 @@ build/
 .venv/
 venv/
 _backup_*/
+
+# jsdom test (lokalny)
+node_modules/
+package.json
+package-lock.json
+_test_admin.js
