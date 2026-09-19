@@ -246,36 +246,6 @@ __JSON_LD__
   <div id="meshSwatches"></div>
   <button id="wireBtn" style="border:none;background:#f1f5f9;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;margin-left:4px" onclick="(function(){var m=window._shareMesh;if(!m)return;m.material.wireframe=!m.material.wireframe;this.textContent=m.material.wireframe?'__WIRE_ON__':'__WIRE_OFF__';}).call(this)">__WIRE_OFF__</button>
 </div>
-<div id="materialCalc" style="display:none;position:fixed;bottom:12px;left:16px;z-index:20;background:rgba(255,255,255,.95);border:1px solid #e2e8f0;border-radius:10px;padding:12px 16px;font-size:12px;min-width:220px;box-shadow:0 2px 12px rgba(0,0,0,.08)">
-  <div style="font-weight:600;margin-bottom:8px;color:#1e293b">Estymacja druku 3D</div>
-  <div style="display:flex;gap:6px;margin-bottom:6px">
-    <select id="matSelect" style="flex:1;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;font-size:11px">
-      <option value="PLA">PLA (1.24 g/cm&sup3;)</option>
-      <option value="PETG">PETG (1.27 g/cm&sup3;)</option>
-      <option value="ABS">ABS (1.04 g/cm&sup3;)</option>
-      <option value="TPU">TPU (1.21 g/cm&sup3;)</option>
-      <option value="ASA">ASA (1.07 g/cm&sup3;)</option>
-    </select>
-    <select id="infillSelect" style="width:60px;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;font-size:11px">
-      <option value="10">10%</option>
-      <option value="20" selected>20%</option>
-      <option value="50">50%</option>
-      <option value="100">100%</option>
-    </select>
-  </div>
-  <div id="matResult" style="color:#475569">
-    <span id="matWeight">--</span> g
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
-    <label style="font-size:10px;color:#94a3b8">Filament zł/kg<input id="matPriceKg" type="number" min="0" step="1" value="89" style="width:100%;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;font-size:11px"></label>
-    <label style="font-size:10px;color:#94a3b8">Prąd zł/kWh<input id="matKwhPrice" type="number" min="0" step="0.01" value="1.15" style="width:100%;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;font-size:11px"></label>
-    <label style="font-size:10px;color:#94a3b8">Drukarka W<input id="matWatts" type="number" min="0" step="10" value="150" style="width:100%;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;font-size:11px"></label>
-    <label style="font-size:10px;color:#94a3b8">Czas druku h<input id="matHours" type="number" min="0" step="0.5" value="2" style="width:100%;padding:4px 6px;border:1px solid #d1d5db;border-radius:4px;font-size:11px"></label>
-  </div>
-  <div id="matTotal" style="margin-top:8px;font-size:13px;color:#1e293b"></div>
-  <div id="matVolume" style="color:#94a3b8;font-size:10px;margin-top:4px"></div>
-  <div id="matAffiliates" style="margin-top:6px;font-size:10px;color:#94a3b8"></div>
-</div>
 <div id="descriptionPanel" style="display:none;position:fixed;bottom:48px;left:0;right:0;z-index:15;background:rgba(255,255,255,0.95);border-top:1px solid #e5e7eb;max-height:45vh;overflow-y:auto;padding:24px 32px;font-size:14px;line-height:1.7">
   <div style="max-width:800px;margin:0 auto">
     <div id="descTitle" style="font-size:20px;font-weight:700;margin-bottom:12px"></div>
@@ -545,47 +515,6 @@ async function loadComments() {
   } catch(e) {}
 };
 
-// Material / filament calculator
-(function(){
-  var uuid = '__UUID__';
-  fetch('/api/material/' + uuid).then(function(r){return r.ok?r.json():null}).then(function(d){
-    if(!d||!d.estimates) return;
-    var el = document.getElementById('materialCalc');
-    if(el) el.style.display = 'block';
-    var volEl = document.getElementById('matVolume');
-    if(volEl) volEl.textContent = 'Objetosc: ' + d.volume_cm3 + ' cm3' + (d.dims_mm ? ' | ' + d.dims_mm : '');
-    function updateCalc(){
-      var matEl = document.getElementById('matSelect');
-      var infillEl = document.getElementById('infillSelect');
-      if(!matEl || !infillEl) return;
-      var mat = matEl.value;
-      var infill = infillEl.value;
-      var key = mat + '_' + infill;
-      var e = d.estimates[key];
-      var num = function(id, def){ var el = document.getElementById(id); var v = el ? parseFloat(el.value) : NaN; return isNaN(v) ? def : v; };
-      if(e){
-        document.getElementById('matWeight').textContent = e.weight_g;
-        var filCost = e.weight_g / 1000 * num('matPriceKg', 89);
-        var powCost = num('matWatts', 150) / 1000 * num('matHours', 2) * num('matKwhPrice', 1.15);
-        var total = filCost + powCost;
-        document.getElementById('matTotal').innerHTML =
-          'Filament: <b>' + filCost.toFixed(2) + ' zł</b> + prąd: <b>' + powCost.toFixed(2) + ' zł</b><br>' +
-          '<span style="font-size:15px">Razem: <b>' + total.toFixed(2) + ' zł</b></span>';
-      }
-      var aff = document.getElementById('matAffiliates');
-      if(aff){
-        aff.innerHTML = 'Kup filament: <a href="https://allegro.pl/listing?string=' + encodeURIComponent(mat+' filament') + '" target="_blank" rel="nofollow sponsored noopener" style="color:#1a56db">Allegro</a> &middot; <a href="https://www.amazon.pl/s?k=' + encodeURIComponent(mat+' filament 1.75') + '" target="_blank" rel="nofollow sponsored noopener" style="color:#1a56db">Amazon</a>';
-      }
-    }
-    document.getElementById('matSelect').onchange = updateCalc;
-    document.getElementById('infillSelect').onchange = updateCalc;
-    ['matPriceKg','matKwhPrice','matWatts','matHours'].forEach(function(id){
-      var el = document.getElementById(id);
-      if(el) el.oninput = updateCalc;
-    });
-    updateCalc();
-  }).catch(function(){});
-})();
 async function postComment() {
   const body = document.getElementById('commentBody').value.trim();
   if (!body) return;

@@ -1,0 +1,26 @@
+{
+  "name": "meshtostep",
+  "version": "1.0.0",
+  "description": "STL/3MF/OBJ → STEP converter SaaS powered by FreeCAD headless + OpenCASCADE.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Galazka/meshtostep.git"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Galazka/meshtostep/issues"
+  },
+  "homepage": "https://github.com/Galazka/meshtostep#readme",
+  "dependencies": {
+    "jsdom": "^30.1.0"
+  }
+}

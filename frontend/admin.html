@@ -1,13 +1,7 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <script>
-    // DEBUG/UX: token i zakładka z URL (?tok=...&ptab=orders) — PRZED auth init
-    try {
-      var _q = new URLSearchParams(window.location.search);
-      if (_q.get('tok')) { localStorage.setItem('mt_token', _q.get('tok')); }
-    } catch(e) {}
-  </script>
+
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; worker-src 'self' blob:;">
@@ -1796,7 +1790,7 @@ const I18N = {
     if (window.location.search.includes('tab=ads')) switchAdminTab('ads');
 
     </script>
-<script src="/asset/admin_print.js?v=24"></script>
+<script src="/asset/admin_print.js?v=25"></script>
 <script>
   try {
     var _qp = new URLSearchParams(window.location.search).get('ptab');

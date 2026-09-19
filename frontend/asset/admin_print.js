@@ -450,17 +450,15 @@ window.loadAdminGallery = function() {
     if (tgt) tgt.classList.add('active');
     var btn = document.querySelector('[data-tabs="print"][data-tab="' + tab + '"]');
     if (btn) btn.classList.add('active');
-    try { document.title = 'PT:' + tab; } catch(e) {}
     var lazy = { 'orders': loadAdminOrders, 'stats': loadAdminStats, 'pricing': loadAdminPricing,
                  'codes': loadAdminCodes, 'gallery': loadAdminGallery, 'reviews': loadAdminReviews,
                  'reports': loadAdminReports };
     if (lazy[tab]) {
-      try { document.title = 'PTF:' + tab + (typeof lazy[tab]); } catch(e) {}
       setTimeout(function(){
-        try { document.title = 'LOADER-FIRED:' + tab; lazy[tab](); }
-        catch(e) { try { document.title = 'LOADER-ERR: ' + (e && e.message ? e.message : e); } catch(e2) {} console.error('print-tab loader', tab, e); }
+        try { lazy[tab](); }
+        catch(e) { console.error('print-tab loader', tab, e); }
       }, 60);
-    } else { try { document.title = 'NO-LAZY:' + tab; } catch(e) {} }
+    }
   }
   window.switchPrintTab = switchPrintTab;
 
