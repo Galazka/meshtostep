@@ -462,7 +462,7 @@
     <button class="prt-btn ghost" id="themeToggle" onclick="toggleTheme()" title="Tryb ciemny" aria-label="Motyw">◐</button>
     <button class="prt-btn ghost" id="langToggle" onclick="toggleLang()">EN</button>
     <span id="userPanel" style="display:none;position:relative" class="prt-usr">
-      <button class="prt-btn" onclick="toggleDropdown(event)" id="avatarBtn">👤</button>
+      <button class="prt-btn" onclick="toggleDropdown(event)" id="avatarBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="display:block"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg></button>
       <div class="nav-dropdown" id="accountDropdown">
         <button class="nav-dropdown-item" onclick="go('files');closeDropdown()" data-i18n="navMyFiles">Moje pliki</button>
         <button class="nav-dropdown-item" onclick="go('konto');closeDropdown()" data-i18n="navMyAccount">Konto</button>
@@ -483,116 +483,93 @@
     <div class="prt-slider" id="heroSlider">
   <div class="prt-slides">
 
-    <!-- SLAJD 1: Hosting 3D -->
+    <!-- SLAJD 01 · HOSTING -->
     <div class="prt-slide on">
-      <div class="prt-hero-text">
-        <span class="prt-eyebrow">✦ Darmowy hosting · 100 MB · RODO</span>
-        <h1>Hosting modeli <em>3D</em> —<br>wgraj, podglądaj, udostępniaj</h1>
-        <p class="prt-sub">Wgraj <strong>STL / 3MF / OBJ</strong>, zobacz model w 3D w przeglądarce i udostępnij jednym linkiem. Bez instalacji, bez rejestracji.</p>
+      <div>
+        <span class="prt-eyebrow">3DFile · Hosting modeli 3D</span>
+        <h1>Wgraj model 3D.<br>Podziel się <em>jednym linkiem</em>.</h1>
+        <p class="prt-sub">STL · 3MF · OBJ — do <strong>200 MB</strong>. Podgląd 3D w przeglądarce, konwersja do STEP, linki na Printables i MakerWorld. Bez instalacji. <strong>100 MB za darmo</strong>.</p>
         <div class="prt-cta-row">
-          <a href="#upload" class="prt-cta" onclick="scrollToUpload();return false">⬆ Wgraj model — za darmo</a>
-          <a href="/#discover" class="prt-cta ghost">Odkrywaj modele</a>
+          <a href="#upload" class="prt-cta" onclick="scrollToUpload();return false">Wgraj model — bezpłatnie</a>
+          <a href="/#discover" class="prt-cta ghost">Przeglądaj modele</a>
         </div>
       </div>
       <div class="prt-visual">
-        <svg viewBox="0 0 420 260" role="img" aria-label="Podgląd modelu 3D" style="width:100%;height:auto">
-          <defs><linearGradient id="hg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#1d4ed8"/></linearGradient></defs>
-          <rect x="28" y="18" width="230" height="170" rx="16" fill="rgba(255,255,255,.94)"/>
-          <circle cx="52" cy="40" r="5" fill="#ef4444"/><circle cx="68" cy="40" r="5" fill="#f59e0b"/><circle cx="84" cy="40" r="5" fill="#22c55e"/>
-          <g stroke="#1d4ed8" stroke-width="2.5" fill="rgba(37,99,235,.12)">
-            <polygon points="150,56 206,88 150,122 94,88"/>
-            <polygon points="150,56 206,88 224,124 168,156"/>
-            <polygon points="94,88 150,122 168,156 118,182"/>
-          </g>
-          <rect x="60" y="214" width="130" height="24" rx="12" fill="#14284b" stroke="#3b82f6"/>
-          <text x="125" y="231" text-anchor="middle" font-size="11" fill="#93c5fd" font-weight="700" font-family="Inter">3dfile → jeden link</text>
-          <g transform="translate(276,92)">
-            <rect x="0" y="0" width="140" height="92" rx="12" fill="url(#hg1)"/>
-            <rect x="10" y="12" width="120" height="38" rx="8" fill="#eef3fb"/>
-            <rect x="24" y="22" width="34" height="22" rx="5" fill="#93c5fd"/>
-            <rect x="18" y="58" width="104" height="8" rx="4" fill="#0e1f3d"/>
-            <text x="70" y="86" text-anchor="middle" font-size="10" fill="#dbeafe" font-family="Inter">podgląd 3D live</text>
-          </g>
-        </svg>
-        <div class="cap"><strong style="color:#fff">24 h bez konta</strong> · potem darmowe konto 100 MB</div>
+        <div class="vhead"><span>wycena-druku</span><span class="live">live</span></div>
+        <div class="vbody">
+          <div class="vrow"><span class="k">plik</span><span class="v">bracket_v2.stl</span></div>
+          <div class="vrow"><span class="k">objetosc</span><span class="v">6.60 cm³</span></div>
+          <div class="vrow"><span class="k">wymiary</span><span class="v">42 × 31 × 18 mm</span></div>
+          <div class="vrow"><span class="k">material</span><span class="v">PLA · 8.2 g</span></div>
+          <div class="vrow"><span class="k">czas druku</span><span class="v">0.35 h</span></div>
+          <div class="vrow"><span class="k">cena</span><span class="v hl">od 3.00 zł</span></div>
+          <div class="vbars"><i style="height:30%"></i><i style="height:44%"></i><i style="height:38%"></i><i style="height:62%"></i><i style="height:55%"></i><i style="height:78%"></i><i style="height:100%"></i><i style="height:84%"></i><i style="height:66%"></i><i style="height:92%"></i></div>
+        </div>
       </div>
     </div>
 
-    <!-- SLAJD 2: Druk 3D -->
+    <!-- SLAJD 02 · DRUK -->
     <div class="prt-slide">
-      <div class="prt-hero-text">
-        <span class="prt-eyebrow">🖨 Pracownia druku 3D · Gdańsk · Bambu Lab P1S</span>
-        <h1>Druk 3D <em>na zamówienie</em> —<br>wycena w 30 sekund</h1>
-        <p class="prt-sub">Wgraj plik, zapłać online (<strong>BLIK / karta</strong>), odbierz wydruk. Od <strong>3 zł</strong>, ekspres w 2 dni, wysyłka na cały świat. Gwarancja zwrotu.</p>
+      <div>
+        <span class="prt-eyebrow">3DFile · Pracownia · Gdańsk</span>
+        <h1>Druk 3D <em>na zamówienie</em>.<br>Wycena w 30 sekund.</h1>
+        <p class="prt-sub">Własny park maszyn — <strong>Bambu Lab P1S</strong>. Płatność BLIK-iem lub kartą, realizacja od <strong>3 zł</strong>, ekspres 48 h, wysyłka na cały świat. Gwarancja zwrotu.</p>
         <div class="prt-cta-row">
-          <a href="/zamow" class="prt-cta">Zamów wydruk → wycena w 30 s</a>
-          <a href="/drukuje" class="prt-cta ghost">Jak to działa</a>
+          <a href="/zamow" class="prt-cta">Zamów wydruk</a>
+          <a href="/drukuje" class="prt-cta ghost">Specyfikacja</a>
         </div>
       </div>
       <div class="prt-visual">
-        <img src="/asset/hero_printer.png?v=2" alt="Drukarka 3D Bambu Lab P1S w pracowni 3DFILE.link" loading="lazy">
-        <div class="cap"><strong style="color:#fff">13+ materiałów</strong> · PLA / PETG / ASA / TPU · wielokolor</div>
+        <div class="vhead"><span>park-maszyn</span><span class="live">online</span></div>
+        <div class="vbody">
+          <div class="vrow"><span class="k">drukarka</span><span class="v">Bambu Lab P1S</span></div>
+          <div class="vrow"><span class="k">materialy</span><span class="v">13 · PLA→PA12-CF</span></div>
+          <div class="vrow"><span class="k">kolejka</span><span class="v">realizacja 5 dni</span></div>
+          <div class="vrow"><span class="k">ekspres</span><span class="v">48 h</span></div>
+          <div class="vrow"><span class="k">wysylka</span><span class="v">InPost · UE · World</span></div>
+          <div class="vrow"><span class="k">minimalne zamowienie</span><span class="v hl">3.00 zł</span></div>
+        </div>
       </div>
     </div>
 
-    <!-- SLAJD 3: STL → STEP -->
+    <!-- SLAJD 03 · STEP -->
     <div class="prt-slide">
-      <div class="prt-hero-text">
-        <span class="prt-eyebrow">⚙ Konwersja w chmurze · 5 trybów precyzji</span>
-        <h1>STL → <em>STEP</em> —<br>mesh gotowy do CAD</h1>
-        <p class="prt-sub">Konwertuj siatkę na <strong>edytowalną bryłę STEP</strong> prosto w przeglądarce. Fusion 360, SolidWorks, FreeCAD — import bez poprawek.</p>
+      <div>
+        <span class="prt-eyebrow">3DFile · Konwersja mesh → CAD</span>
+        <h1>STL → <em>STEP</em>.<br>Gotowe do CAD.</h1>
+        <p class="prt-sub">Pięć trybów konwersji — od szybkiego podglądu po <strong>ultra-precyzyjny</strong> mesh-to-BRep. Import do Fusion 360, SolidWorks, FreeCAD bez poprawek.</p>
         <div class="prt-cta-row">
-          <a href="#upload" class="prt-cta" onclick="scrollToUpload();return false">Konwertuj teraz — bez instalacji</a>
-          <a href="/#hiw" class="prt-cta ghost">Zobacz jak działa</a>
+          <a href="#upload" class="prt-cta" onclick="scrollToUpload();return false">Konwertuj teraz</a>
+          <a href="/#hiw" class="prt-cta ghost">Jak to działa</a>
         </div>
       </div>
       <div class="prt-visual">
-        <svg viewBox="0 0 420 260" role="img" aria-label="Konwersja STL do STEP" style="width:100%;height:auto">
-          <defs><linearGradient id="hg2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#7fb0ff"/></linearGradient></defs>
-          <rect x="30" y="46" width="150" height="120" rx="14" fill="rgba(255,255,255,.95)"/>
-          <text x="105" y="84" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a" font-family="Sora">STL</text>
-          <g stroke="#64748b" stroke-width="1.6" fill="none"><path d="M60 130 L92 110 L124 128 L110 156 L70 154 Z"/><path d="M92 110 L110 156 M60 130 L110 156"/></g>
-          <path d="M195 106 L245 106 M235 94 L249 106 L235 118" stroke="url(#hg2)" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-          <rect x="262" y="46" width="150" height="120" rx="14" fill="rgba(255,255,255,.95)"/>
-          <text x="337" y="84" text-anchor="middle" font-size="15" font-weight="800" fill="#1d4ed8" font-family="Sora">STEP</text>
-          <g stroke="#1d4ed8" stroke-width="2.2" fill="rgba(37,99,235,.08)"><path d="M292 132 L326 110 L360 130 L346 158 L304 156 Z"/><path d="M326 110 L346 158 M292 132 L346 158"/></g>
-          <text x="210" y="215" text-anchor="middle" font-size="11.5" fill="#b8c8e2" font-family="Inter">mesh → bryła CAD · 5 trybów (light → ultra)</text>
-        </svg>
-        <div class="cap"><strong style="color:#fff">Import do CAD</strong> · Fusion / SolidWorks / FreeCAD</div>
+        <div class="vhead"><span>konwersja</span><span class="live">silnik</span></div>
+        <div class="vbody">
+          <div class="vrow"><span class="k">wejscie</span><span class="v">mesh STL / 3MF / OBJ</span></div>
+          <div class="vrow"><span class="k">tryby</span><span class="v">light · auto · ultra</span></div>
+          <div class="vrow"><span class="k">scianki</span><span class="v">wykrywane automatycznie</span></div>
+          <div class="vrow"><span class="k">wyjscie</span><span class="v hl">bryła .STEP</span></div>
+          <div class="vrow"><span class="k">cad</span><span class="v">Fusion · SW · FreeCAD</span></div>
+        </div>
       </div>
     </div>
 
   </div>
-  <button class="prt-arrow prev" onclick="prtSlide(-1)" aria-label="Poprzedni">‹</button>
-  <button class="prt-arrow next" onclick="prtSlide(1)" aria-label="Następny">›</button>
+  <button class="prt-arrow prev" onclick="prtSlide(-1)" aria-label="Poprzedni">←</button>
+  <button class="prt-arrow next" onclick="prtSlide(1)" aria-label="Następny">→</button>
   <div class="prt-dots">
     <button class="prt-dot on" onclick="prtGo(0)" aria-label="Slajd 1"></button>
     <button class="prt-dot" onclick="prtGo(1)" aria-label="Slajd 2"></button>
     <button class="prt-dot" onclick="prtGo(2)" aria-label="Slajd 3"></button>
   </div>
 </div>
-<script>
-(function(){
-  var cur=0, N=3, timer;
-  window.prtGo=function(n){
-    var slides=document.querySelectorAll('#heroSlider .prt-slide');
-    var dots=document.querySelectorAll('#heroSlider .prt-dot');
-    if(!slides.length) return;
-    slides[cur].classList.remove('on'); dots[cur]&&dots[cur].classList.remove('on');
-    cur=(n+N)%N;
-    slides[cur].classList.add('on'); dots[cur]&&dots[cur].classList.add('on');
-  };
-  window.prtSlide=function(d){ prtGo(cur+d); restart(); };
-  function restart(){ clearInterval(timer); timer=setInterval(function(){ prtGo(cur+1); },6500); }
-  restart();
-})();
-</script>
 
-<div class="trust">
-        <div class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Za darmo</div>
-        <div class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>100 MB</div>
-        <div class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>RODO</div>
-        <div class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>PL + EN</div>
+<div class="statline">
+        <div class="st"><b>100 MB</b><span>darmowego miejsca</span></div>
+        <div class="st"><b>24 h</b><span>pliki bez konta</span></div>
+        <div class="st"><b>3 zł</b><span>minimum za druk</span></div>
+        <div class="st"><b>48 h</b><span>ekspres realizacji</span></div>
     </div>
 
     <div class="upload-wrap" id="uploadSection">
@@ -636,38 +613,36 @@
     <div class="ad-slot" data-slot="hero_bottom"></div>
     <div class="ad-slot" data-slot="hero_top" style="margin:0 auto 24px"></div>
 
-    <div class="features">
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon" style="background:#eff6ff;color:#2563eb">👁</div>
-                <h3 data-i18n="feat1H">Podgląd 3D w przeglądarce</h3>
-                <p data-i18n="feat1P">Działa na telefonie i laptopie. STL/3MF/OBJ bez instalacji. Obracaj, przybliżaj, sprawdź przed drukiem.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon" style="background:#f0fdf4;color:#16a34a">🔗</div>
-                <h3 data-i18n="feat2H">Jeden link wszędzie</h3>
-                <p><code style="font-size:12px;background:var(--bg-subtle);padding:2px 6px;border-radius:4px">3dfile.link/u/nick/slug</code> do opisu na Printables, MakerWorld, Thingiverse. Embed <code>&lt;iframe&gt;</code> też.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon" style="background:#fef3c7;color:#d97706">⚙️</div>
-                <h3 data-i18n="feat3H">STL → STEP dla CAD</h3>
-                <p data-i18n="feat3P">5 trybów konwersji, siatka → bryła, import do Fusion/SolidWorks/FreeCAD.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon" style="background:#ede9fe;color:#7c3aed">🔒</div>
-                <h3 data-i18n="feat4H">Prywatnie lub publicznie</h3>
-                <p><strong>Publiczny</strong> w Odkrywaj, <strong>Unlisted</strong> tylko link, <strong>Prywatny</strong> tylko Ty.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon" style="background:#dbeafe;color:#2563eb">📂</div>
-                <h3 data-i18n="feat5H">100 MB + foldery</h3>
-                <p data-i18n="feat5P">Każdy zalogowany ma 100 MB. Foldery, zmiana nazw, grupowe usuwanie, JPG podglądy.</p>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon" style="background:#fce7f3;color:#ec4899">🔍</div>
-                <h3 data-i18n="feat6H">Odkrywaj + sprzedaż</h3>
-                <p>Wyszukiwarka, tagi, YouTube, komentarze. <strong>80% dla Ciebie</strong>, 20% prowizji.</p>
-            </div>
+    <div class="hgrid" style="margin-top:8px">
+        <div class="hcell">
+            <div class="hicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/><path d="M11 8v6M8 11h6"/></svg></div>
+            <h3 data-i18n="feat1H">Podgląd 3D w przeglądarce</h3>
+            <p>Działa na telefonie i laptopie. STL/3MF/OBJ bez instalacji. Obracaj, przybliżaj, sprawdź przed drukiem.</p>
+        </div>
+        <div class="hcell">
+            <div class="hicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.5.5l3-3a5 5 0 00-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 00-7.5-.5l-3 3a5 5 0 007 7l1.7-1.7"/></svg></div>
+            <h3 >Jeden link wszędzie</h3>
+            <p><code style="font-family:var(--font-mono);font-size:11.5px;background:var(--bg-soft);border:1px solid var(--line);padding:2px 7px;border-radius:5px">3dfile.link/u/nick/slug</code> do opisu na Printables, MakerWorld, Thingiverse. Embed &lt;iframe&gt; też.</p>
+        </div>
+        <div class="hcell">
+            <div class="hicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg></div>
+            <h3 data-i18n="feat3H">STL → STEP dla CAD</h3>
+            <p>5 trybów konwersji, siatka → bryła, import do Fusion/SolidWorks/FreeCAD.</p>
+        </div>
+        <div class="hcell">
+            <div class="hicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+            <h3 data-i18n="feat4H">Prywatnie lub publicznie</h3>
+            <p><strong>Publiczny</strong> w Odkrywaj, <strong>Unlisted</strong> tylko link, <strong>Prywatny</strong> tylko Ty.</p>
+        </div>
+        <div class="hcell">
+            <div class="hicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg></div>
+            <h3 data-i18n="feat5H">100 MB + foldery</h3>
+            <p>Każdy zalogowany ma 100 MB. Foldery, zmiana nazw, grupowe usuwanie, podglądy JPG.</p>
+        </div>
+        <div class="hcell">
+            <div class="hicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1.6"/><circle cx="19" cy="21" r="1.6"/><path d="M2 3h3l2.6 12.4a2 2 0 002 1.6h8.8a2 2 0 002-1.6L22 7H6"/></svg></div>
+            <h3 data-i18n="feat6H">Odkrywaj + sprzedaż</h3>
+            <p>Wyszukiwarka, tagi, YouTube, komentarze. <strong>80% dla Ciebie</strong>, 20% prowizji.</p>
         </div>
     </div>
 
@@ -677,10 +652,22 @@
         <h2 data-i18n="hiwTitle">Jak to działa</h2>
         <p data-i18n="hiwDesc">Trzy proste kroki.</p>
     </div>
-    <div class="steps">
-        <div class="step"><div class="step-num">1</div><h3 data-i18n="hiwS1Title">Wgraj mesh</h3><p data-i18n="hiwS1Desc">Przeciągnij plik STL, 3MF lub OBJ. Do 200 MB.</p></div>
-        <div class="step"><div class="step-num">2</div><h3 data-i18n="hiwS2Title">Silnik konwertuje</h3><p data-i18n="hiwS2Desc">Nasz autorski silnik przetwarza geometrię. Automatyczna optymalizacja i czyszczenie modelu.</p></div>
-        <div class="step"><div class="step-num">3</div><h3 data-i18n="hiwS3Title">Pobierz STEP</h3><p data-i18n="hiwS3Desc">Gotowy plik STEP do importu w CAD. Porównaj przed i po w podglądzie 3D.</p></div>
+    <div class="hgrid">
+        <div class="hcell">
+            <div class="hnum">01</div>
+            <h3 data-i18n="hiwS1Title">Wgraj mesh</h3>
+            <p data-i18n="hiwS1Desc">Przeciągnij plik STL, 3MF lub OBJ. Do 200 MB. Bez konta też działa.</p>
+        </div>
+        <div class="hcell">
+            <div class="hnum">02</div>
+            <h3 data-i18n="hiwS2Title">Silnik konwertuje</h3>
+            <p data-i18n="hiwS2Desc">Autorski silnik przetwarza geometrię. Automatyczna optymalizacja i czyszczenie modelu.</p>
+        </div>
+        <div class="hcell">
+            <div class="hnum">03</div>
+            <h3 data-i18n="hiwS3Title">Pobierz STEP</h3>
+            <p data-i18n="hiwS3Desc">Gotowy plik STEP do importu w CAD. Porównanie przed/po w podglądzie 3D.</p>
+        </div>
     </div>
     
 
@@ -830,7 +817,7 @@
       <div class="prt-f-logo"><img src="/logo.png?v=83" alt="3DFILE.link"></div>
       <p style="font-size:13.5px;line-height:1.65;color:#bcc9de;margin-top:10px">Hosting modeli 3D, konwersja STL → STEP i druk 3D na zamówienie. Wgraj, podglądaj, dziel się jednym linkiem — za darmo.</p>
       <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-        <span style="background:rgba(255,255,255,.1);color:#dbe4f2;font-size:11.5px;padding:4px 10px;border-radius:999px">🇵🇱 Polski projekt</span>
+        <span style="background:rgba(255,255,255,.1);color:#dbe4f2;font-size:11.5px;padding:4px 10px;border-radius:999px">PL · Polski projekt</span>
         <span style="background:rgba(255,255,255,.1);color:#dbe4f2;font-size:11.5px;padding:4px 10px;border-radius:999px">✓ RODO</span>
         <span style="background:rgba(255,255,255,.1);color:#dbe4f2;font-size:11.5px;padding:4px 10px;border-radius:999px">✓ 100 MB za darmo</span>
       </div>
