@@ -85,8 +85,8 @@ def _parse_3mf_to_stl(data: bytes) -> bytes:
     for t in tris:
         # normal (compute from cross)
         v0 = vertices[t[0]]; v1 = vertices[t[1]]; v2 = vertices[t[2]]
-        ax, ay, az = (v1[0]-v0[0]*unit_scale, v1[1]-v0[1]*unit_scale, v1[2]-v0[2]*unit_scale)
-        bx, by, bz = (v2[0]-v0[0]*unit_scale, v2[1]-v0[1]*unit_scale, v2[2]-v0[2]*unit_scale)
+        ax, ay, az = ((v1[0]-v0[0])*unit_scale, (v1[1]-v0[1])*unit_scale, (v1[2]-v0[2])*unit_scale)
+        bx, by, bz = ((v2[0]-v0[0])*unit_scale, (v2[1]-v0[1])*unit_scale, (v2[2]-v0[2])*unit_scale)
         # scale coords by unit
         va = (v0[0]*unit_scale, v0[1]*unit_scale, v0[2]*unit_scale)
         vb = (v1[0]*unit_scale, v1[1]*unit_scale, v1[2]*unit_scale)
@@ -236,12 +236,15 @@ def _trimesh_stats(data: bytes, mode: str = "auto", material: str = "PLA") -> di
     # Real small PCB models are rare below 1mm. Scale up 25.4x if volume implausibly tiny.
     extents_max = max(dims_mm) if dims_mm else 0
     face_count = len(obj.faces) if hasattr(obj, "faces") else 0
-    if extents_max and extents_max < 5.0 and face_count > 50:
+    if extents_max and extents_max < 0.5 and face_count > 50:
         scale = 25.4  # assume inch-unit file (FreeCAD default exports sometimes inch)
         dims_mm = [round(d * scale, 2) for d in dims_mm]
         vol_mm3 = round(vol_mm3 * (scale**3)) if vol_mm3 else 0.0
     vol_cm3 = round(vol_mm3 / 1000, 3)
-    density = DENSITY_PLA if material == "PLA" else 1.27
+    _DENS = {"PLA": 1.24, "PLA HT": 1.24, "PLA CF": 1.30, "PLA Silk": 1.24, "PLA Matte": 1.24, "PLA Glow": 1.24,
+             "PETG": 1.27, "PETG FR": 1.30, "ABS": 1.04, "ASA": 1.07, "ASA CF": 1.14, "TPU": 1.23, "TPU 75D": 1.20,
+             "PA12": 1.01, "PA12 CF": 1.25, "PCTG": 1.27, "Iglidur I150PF": 1.14, "Iglidur I180PF": 1.15, "Iglidur I190PF": 1.15}
+    density = _DENS.get(material, DENSITY_PLA)
     grams = round(vol_cm3 * density, 2)
     thr = THROUGHPUT_MM3_S.get(material, 100)
     hours = max(0.5, (vol_mm3 / thr) / 3600) + 0.1
