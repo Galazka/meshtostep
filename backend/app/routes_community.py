@@ -100,6 +100,7 @@ def search_models(
         out.append({
             "id": j.id,
             "uuid": j.uuid,
+            "job_id": j.id,
             "slug": j.slug,
             "title": j.title or j.original_filename,
             "description": (j.description or "")[:200],

@@ -1,0 +1,1793 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data:; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; worker-src 'self' blob:;">
+    <title>3dfile.link — Admin Panel</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+        <style>
+        :root {
+            --primary: #1a56db;
+            --primary-hover: #1648b8;
+            --primary-light: #e8eefb;
+            --bg: #ffffff;
+            --bg-alt: #f7f9fc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --ok: #059669;
+            --ok-bg: #ecfdf5;
+            --err: #dc2626;
+            --err-bg: #fef2f2;
+            --warn: #d97706;
+            --warn-bg: #fffbeb;
+            --radius: 10px;
+            --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+            --shadow-md: 0 4px 6px rgba(0,0,0,.05), 0 2px 4px rgba(0,0,0,.04);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg-alt); color: var(--text); line-height: 1.6; min-height: 100vh; }
+        a { color: var(--primary); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* ── NAV ── */
+        .nav { display: flex; align-items: center; justify-content: space-between; padding: 0 32px; height: 64px; border-bottom: 1px solid var(--border); max-width: 1400px; margin: 0 auto; position: sticky; top: 0; background: var(--bg); z-index: 100; }
+        .nav-left { display: flex; align-items: center; gap: 16px; }
+        .nav-logo { font-size: 20px; font-weight: 800; color: var(--primary); letter-spacing: -0.5px; }
+        .nav-back { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 6px 14px; font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; font-family: inherit; transition: all .15s; display: flex; align-items: center; gap: 4px; }
+        .nav-back:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+        .nav-title { font-size: 15px; font-weight: 600; color: var(--text-secondary); }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .lang-toggle { background: var(--bg-alt) !important; border: 1px solid var(--border) !important; border-radius: 6px; padding: 6px 12px !important; font-weight: 600; color: var(--text-secondary) !important; cursor: pointer; font-family: inherit; font-size: 13px; transition: all .15s; }
+        .lang-toggle:hover { border-color: var(--primary) !important; color: var(--primary) !important; }
+        .nav-admin-badge { background: var(--err-bg); color: var(--error); padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; border: 1px solid #fecaca; }
+
+        /* ── LAYOUT ── */
+        .admin-wrap { max-width: 1400px; margin: 0 auto; padding: 24px 32px; }
+
+        /* ── STATS CARDS ── */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; transition: box-shadow .2s; }
+        .stat-card:hover { box-shadow: var(--shadow-md); }
+        .stat-card .stat-label { font-size: 13px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+        .stat-card .stat-value { font-size: 32px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+        .stat-card .stat-sub { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+        .stat-card.primary .stat-value { color: var(--primary); }
+        .stat-card.success .stat-value { color: var(--success); }
+        .stat-card.warning .stat-value { color: var(--warn); }
+        .stat-card.danger .stat-value { color: var(--error); }
+
+        /* ── EXPANDABLE ROWS ── */
+        .expand-row { display: none; }
+        .expand-row.open { display: table-row; }
+        .expand-row td { padding: 0 16px 12px 40px; background: var(--bg-alt); }
+        .expand-inner { padding: 12px 0; }
+        .expand-inner table { width: 100%; font-size: 13px; }
+        .expand-inner th { font-size: 11px; padding: 6px 8px; text-align: left; color: var(--text-muted); text-transform: uppercase; }
+        .expand-inner td { padding: 6px 8px; border-bottom: 1px solid var(--border-light); font-size: 13px; }
+        .toggle-arrow { display: inline-block; width: 16px; text-align: center; transition: transform .15s; }
+        .toggle-arrow.open { transform: rotate(90deg); }
+        .row-actions { display: flex; align-items: center; gap: 8px; padding: 12px 24px 16px; border-top: 1px solid var(--border-light); background: var(--bg-alt); border-radius: 0 0 var(--radius) var(--radius); }
+        .cleanup-bar { display: flex; align-items: center; gap: 10px; padding: 12px 24px; border-top: 1px solid var(--border); background: var(--bg); flex-wrap: wrap; }
+        .cleanup-bar label { font-size: 13px; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+        .cleanup-bar input[type=number] { width: 80px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; font-family: inherit; background: var(--bg-alt); }
+        .cleanup-bar input[type=number]:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+        .btn-danger { background: var(--error); color: #fff; border: none; border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: opacity .15s; }
+        .btn-danger:hover { opacity: .85; }
+        .storage-fmt { font-size: 12px; color: var(--text-secondary); }
+
+        /* ── SECTION PANEL ── */
+        .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 24px; overflow: hidden; }
+        .panel-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 12px; }
+        .panel-header h2 { font-size: 18px; font-weight: 700; }
+        .panel-header .subtitle { font-size: 13px; color: var(--text-muted); }
+        .panel-body { padding: 0; }
+        .panel-body.padded { padding: 24px; }
+
+        /* ── TABS ── */
+        .admin-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); padding: 0 24px; background: var(--bg); overflow-x: auto; }
+        .admin-tab { background: none; border: none; border-bottom: 2px solid transparent; padding: 14px 20px; font-size: 14px; font-weight: 500; color: var(--text-secondary); cursor: pointer; font-family: inherit; transition: all .15s; white-space: nowrap; }
+        .admin-tab:hover { color: var(--text); background: var(--bg-alt); }
+        .admin-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; overflow-x: auto; }
+        .tab-content .admin-table { min-width: 640px; }
+
+        /* ── SEARCH / FILTERS ── */
+        .filter-bar { display: flex; align-items: center; gap: 12px; padding: 16px 24px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+        .filter-bar input, .filter-bar select { background: var(--bg-alt); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; font-size: 14px; font-family: inherit; transition: border-color .15s; }
+        .filter-bar input:focus, .filter-bar select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+        .filter-bar input { min-width: 240px; }
+        .filter-bar select { appearance: auto; cursor: pointer; }
+        .filter-bar .filter-count { font-size: 13px; color: var(--text-muted); margin-left: auto; }
+
+        /* ── TABLES ── */
+        .admin-table { width: 100%; border-collapse: collapse; }
+        .admin-table th, .admin-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border-light); font-size: 14px; }
+        .admin-table th { color: var(--text-muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; background: var(--bg-alt); position: sticky; top: 0; }
+        .admin-table tbody tr { cursor: pointer; transition: background .1s; }
+        .admin-table tbody tr:hover { background: var(--bg-alt); }
+        .admin-table tbody tr:last-child td { border-bottom: none; }
+        .admin-table .cell-ellipsis { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .status-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .status-badge.done { background: var(--ok-bg); color: var(--success); }
+        .status-badge.error { background: var(--err-bg); color: var(--error); }
+        .status-badge.pending { background: var(--warn-bg); color: var(--warn); }
+
+        /* ── MODAL ── */
+        .modal-bg { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.5); backdrop-filter: blur(4px); z-index: 999; justify-content: center; align-items: center; }
+        .modal-bg.show { display: flex; }
+        .modal { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 0; width: 560px; max-width: 92vw; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,.15); }
+        .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--card); z-index: 1; }
+        .modal-head h3 { font-size: 18px; font-weight: 700; }
+        .modal-close { background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: all .15s; }
+        .modal-close:hover { color: var(--text); background: var(--bg-alt); }
+        .modal-body { padding: 24px; }
+
+        /* ── USER DETAIL ── */
+        .user-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        .detail-item { background: var(--bg-alt); border-radius: 8px; padding: 14px 16px; }
+        .detail-item .detail-label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+        .detail-item .detail-value { font-size: 15px; font-weight: 600; color: var(--text); }
+
+        .btn-sm { padding: 8px 18px; border-radius: 8px; font-weight: 600; font-size: 13px; border: none; cursor: pointer; font-family: inherit; transition: all .15s; }
+        .btn-sm.primary { background: var(--primary); color: #fff; }
+        .btn-sm.primary:hover { background: var(--primary-hover); }
+        .btn-sm.danger { background: var(--err-bg); color: var(--error); border: 1px solid #fecaca; }
+        .btn-sm.danger:hover { background: #fecaca; }
+        .btn-sm.success { background: var(--ok-bg); color: var(--success); border: 1px solid #bbf7d0; }
+        .btn-sm.success:hover { background: #d1fae5; }
+        .btn-sm:disabled { opacity: .5; cursor: not-allowed; }
+
+        /* ── GEO STATS ── */
+        .geo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 24px; }
+        .geo-col h3 { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+        .geo-bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .geo-bar-label { min-width: 140px; font-size: 13px; font-weight: 500; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .geo-bar-track { flex: 1; height: 8px; background: var(--bg-alt); border-radius: 4px; overflow: hidden; }
+        .geo-bar-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width .4s; }
+        .geo-bar-count { min-width: 36px; font-size: 12px; font-weight: 600; color: var(--text-muted); text-align: right; }
+
+        /* ── JOB MODAL ── */
+        .job-modal-bg { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.5); backdrop-filter: blur(4px); z-index: 1000; justify-content: center; align-items: center; }
+        .job-modal-bg.show { display: flex; }
+        .job-modal { background: var(--card); border: 1px solid var(--border); border-radius: 16px; width: 800px; max-width: 95vw; max-height: 90vh; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,.2); display: flex; flex-direction: column; }
+        .job-modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border); gap: 12px; }
+        .job-modal-head h3 { font-size: 16px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .job-modal-meta { font-size: 13px; color: var(--text-muted); padding: 10px 24px 0; }
+        .job-preview-wrap { background: var(--bg-alt); border: 1px solid var(--border-light); border-radius: 8px; margin: 12px 24px 0; min-height: 400px; max-height: 55vh; position: relative; overflow: hidden; }
+        .job-preview-canvas { width: 100%; height: 100%; min-height: 400px; }
+        .job-preview-canvas canvas { display: block; }
+        .job-actions { display: flex; gap: 10px; padding: 16px 24px; border-top: 1px solid var(--border); margin-top: 12px; flex-wrap: wrap; }
+        .btn-sm.ghost { background: var(--card); color: var(--primary); border: 1px solid var(--border); }
+        .btn-sm.ghost:hover { border-color: var(--primary); background: var(--primary-light); }
+
+        /* ── TOAST ── */
+        .toast { position: fixed; bottom: 24px; right: 24px; background: var(--text); color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; z-index: 1000; opacity: 0; transform: translateY(10px); transition: all .3s; pointer-events: none; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--error); }
+
+        /* ── EMPTY STATE ── */
+        .empty-state { text-align: center; padding: 48px 24px; color: var(--text-muted); }
+        .empty-state svg { width: 40px; height: 40px; margin-bottom: 12px; color: var(--text-muted); }
+
+        /* ── LOADER ── */
+        .loader { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .6s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── AUTH GATE ── */
+        .auth-gate { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; gap: 16px; }
+        .auth-gate h2 { font-size: 24px; font-weight: 700; }
+        .auth-gate p { color: var(--text-secondary); font-size: 15px; }
+        .auth-gate .modal { display: block; position: static; }
+        .auth-gate .modal .btn-auth { width: 100%; display: block !important; text-align: center; padding: 12px; background: var(--primary); color: #fff; font-weight: 600; font-size: 15px; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; transition: background .15s; }
+        .auth-gate .modal .btn-auth:hover { background: var(--primary-hover); }
+        .auth-gate .modal input { width: 100%; padding: 10px 14px; background: var(--bg-alt); border: 1px solid var(--border); border-radius: 8px; color: var(--text); margin-bottom: 12px; font-size: 14px; font-family: inherit; }
+        .auth-gate .modal input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            .nav { padding: 0 16px; flex-wrap: wrap; height: auto; padding-top: 12px; padding-bottom: 12px; gap: 8px; }
+            .admin-wrap { padding: 16px; }
+            .geo-grid { grid-template-columns: 1fr; }
+            .user-detail-grid { grid-template-columns: 1fr; }
+            .filter-bar input { min-width: 160px; flex: 1; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .admin-table { font-size: 13px; }
+            .admin-table th, .admin-table td { padding: 10px 12px; }
+        }
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+
+<style>.print-panel{min-height:60px}.print-panel h2{font-size:16px;color:var(--text)}.print-panel .admin-orders-table{width:100%}</style></head>
+<body>
+
+    <!-- AUTH GATE (shown before login) -->
+    <div id="authGate" class="auth-gate" style="display:none">
+        <div class="panel" style="width:400px; max-width:90vw;">
+            <div class="panel-body padded" style="text-align:center;">
+                <div style="margin-bottom:16px;">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <h2 style="font-size:20px;font-weight:700;margin-bottom:8px" data-i18n="authGateTitle">Admin Panel</h2>
+                <p style="color:var(--text-secondary);font-size:14px;margin-bottom:20px" data-i18n="authGateDesc">Zaloguj sie jako administrator, aby kontynuowac.</p>
+                <input id="authEmail" type="email" placeholder="email" data-i18n-placeholder="authEmailPh" style="width:100%;padding:10px 14px;background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:10px;font-size:14px;font-family:inherit;">
+                <input id="authPass" type="password" placeholder="haslo" data-i18n-placeholder="authPassPh" style="width:100%;padding:10px 14px;background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:16px;font-size:14px;font-family:inherit;">
+                <button class="btn-sm primary" onclick="doLogin()" style="width:100%;padding:12px;font-size:15px" data-i18n="authLoginBtn">Zaloguj</button>
+                <div style="margin-top:12px"><a href="/" style="font-size:13px;color:var(--text-muted)" data-i18n="authGateBack">Powrot do glownej strony</a></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP (hidden until auth) -->
+    <div id="mainApp" style="display:none">
+        <nav class="nav">
+            <div class="nav-left">
+                <a href="/" class="nav-back">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5m7-7l-7 7 7 7"/></svg>
+                    <span data-i18n="navBack">Powrot</span>
+                </a>
+                <a href="/" class="nav-logo"><img src="/logo.png?v=2" alt="3DFILE" style="height:28px" onerror="this.style.display='none'"></a>
+                <span class="nav-title" data-i18n="navTitle">Admin Panel</span>
+            </div>
+            <div class="nav-right">
+                <span class="nav-admin-badge" data-i18n="navAdminBadge">ADMIN</span>
+                <button class="lang-toggle" id="langToggle" onclick="toggleLang()">EN</button>
+            </div>
+        </nav>
+
+        <div class="admin-wrap">
+            <!-- STATS -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card primary">
+                    <div class="stat-label" data-i18n="statUsers">Uzytkownicy</div>
+                    <div class="stat-value" id="statUsers">—</div>
+                    <div class="stat-sub" data-i18n="statUsersSub">Laczna liczba kont</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label" data-i18n="statJobs">Pliki (aktywne)</div>
+                    <div class="stat-value" id="statJobs">—</div>
+                    <div class="stat-sub" data-i18n="statJobsSub">Praca przetworzenia</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-label">Pamiec</div>
+                    <div class="stat-value" id="statStorage">—</div>
+                    <div class="stat-sub">Suma rozmiarow plikow</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-label" data-i18n="statDownloads">Pobrania</div>
+                    <div class="stat-value" id="statDownloads">—</div>
+                    <div class="stat-sub">Laczne pobrania publiczne</div>
+                </div>
+            </div>
+
+            <!-- CHARTS -->
+            <div class="charts-row" style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin:16px 0">
+                <div class="panel" style="padding:16px">
+                    <h3 style="font-size:14px;margin-bottom:12px" data-i18n="chartUploads">Uploady (30 dni)</h3>
+                    <canvas id="chartUploads" height="120"></canvas>
+                </div>
+                <div class="panel" style="padding:16px">
+                    <h3 style="font-size:14px;margin-bottom:12px" data-i18n="chartTop">Top uploadersi</h3>
+                    <div id="topUploadersList" style="font-size:13px;color:var(--text-muted)"></div>
+                </div>
+            </div>
+            <div class="panel" id="topModelsPanel" style="padding:16px;margin-bottom:16px;display:none">
+                <h3 style="font-size:14px;margin-bottom:12px" data-i18n="chartTopModels">Najpopularniejsze modele</h3>
+                <div id="topModelsList" style="font-size:13px"></div>
+            </div>
+            <div id="userDetail" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <h3 id="userDetailTitle">Użytkownik</h3>
+                    <button class="btn-outline" onclick="closeUserDetail()">✕</button>
+                </div>
+                <div id="userDetailBody" style="font-size:13px;color:var(--text-muted);margin-top:8px"></div>
+            </div>
+            <!-- TABS -->
+            <div class="panel">
+                <div class="admin-tabs">
+                                    <button class="admin-tab active" onclick="switchAdminTab('users')" data-tab="users" data-i18n="tabUsers">Uzytkownicy</button>
+                                    <button class="admin-tab" onclick="switchAdminTab('jobs')" data-tab="jobs" data-i18n="tabJobs">Przetworzenia</button>
+                                    <button class="admin-tab" onclick="switchAdminTab('stats')" data-tab="stats" data-i18n="tabStats">Statystyki</button>
+                                    <button class="admin-tab" onclick="switchAdminTab('queue')" data-tab="queue" data-i18n="tabQueue">Kolejka</button>
+                                    <button class="admin-tab" onclick="switchAdminTab('geo')" data-tab="geo" data-i18n="tabGeo">Geo</button>
+                                    <button class="admin-tab" onclick="switchAdminTab('export')" data-tab="export" data-i18n="tabExport">Eksport</button>
+                                    <button class="admin-tab" onclick="switchAdminTab('ads')" data-tab="ads">Reklamy</button>
+                                    <button class="admin-tab" onclick="switchAdminTab('comments')" data-tab="comments">Komentarze</button>
+                                    <span style="color:var(--text-muted);padding:0 6px;font-size:12px;opacity:.6">| Drukarnia</span>
+                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('orders')" data-tabs="print" data-tab="orders" data-i18n="tabPrintOrders">Zamówienia</button>
+                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('stats')" data-tabs="print" data-tab="stats" data-i18n="tabPrintStats">Statystyki</button>
+                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('pricing')" data-tabs="print" data-tab="pricing" data-i18n="tabPrintPricing">Cennik</button>
+                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('codes')" data-tabs="print" data-tab="codes" data-i18n="tabPrintCodes">Kody</button>
+                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('gallery')" data-tabs="print" data-tab="gallery" data-i18n="tabPrintGallery">Galeria</button>
+                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('reviews')" data-tabs="print" data-tab="reviews" data-i18n="tabPrintReviews">Recenzje</button>
+                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('reports')" data-tabs="print" data-tab="reports" data-i18n="tabPrintReports">Raporty</button>
+                                </div>
+
+                <!-- USERS TAB -->
+                <div class="tab-content active" id="tab-users">
+                    <div class="filter-bar">
+                        <input type="text" id="userSearch" placeholder="Szukaj uzytkownika..." data-i18n-placeholder="userSearchPh" oninput="filterUsers()">
+                        <span class="filter-count" id="userCount"></span>
+                    </div>
+                    <div style="max-height:600px; overflow-y:auto;">
+                        <table class="admin-table" id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th style="width:30px"></th>
+                                    <th><input type="checkbox" id="jobsSelectAll" onchange="toggleJobsAll(this.checked)" style="width:14px;height:14px"></th><th>ID</th>
+                                    <th data-i18n="thEmail">Email</th>
+                                    <th data-i18n="thJobsCount">Pliki</th>
+                                    <th>Rozmiar</th>
+                                    <th data-i18n="thJoined">Ostatnia aktywnosc</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersBody"></tbody>
+                        </table>
+                        <div id="adminBulkBar" style="display:none;align-items:center;gap:12px;padding:12px 16px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;margin-top:12px">
+                            <span style="font-weight:600;font-size:13px">Zaznaczono: <span id="adminBulkCount">0</span></span>
+                            <button onclick="adminBulkDelete()" style="padding:8px 16px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">🗑 Usuń zaznaczone</button>
+                            <button onclick="_adminSelectedJobs.clear();updateBulkBar();renderJobs()" style="padding:8px 16px;background:#fff;border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer">Anuluj</button>
+                        </div>
+                    </div>
+                    <div class="cleanup-bar">
+                        <label for="maxFilesInput">Max plikow na uzytkownika:</label>
+                        <input type="number" id="maxFilesInput" value="10" min="1" max="10000">
+                        <button class="btn-danger" onclick="runCleanup()" id="cleanupBtn">Wyczysc nadmiar plikow</button>
+                        <button class="btn-danger" onclick="runOrphanCleanup()" id="orphanBtn" style="background:#7c3aed">Usun zepsute podglady</button>
+                        <span id="cleanupResult" style="font-size:13px;font-weight:500;"></span>
+                    </div>
+                </div>
+
+                <!-- JOBS TAB -->
+                <div class="tab-content" id="tab-jobs">
+                    <div class="filter-bar">
+                        <input type="text" id="jobSearch" placeholder="Szukaj po nazwie pliku..." data-i18n-placeholder="jobSearchPh" oninput="filterJobs()">
+                        <select id="jobStatusFilter" onchange="filterJobs()">
+                            <option value="" data-i18n="jobFilterAll">Wszystkie statusy</option>
+                            <option value="done" data-i18n="jobFilterDone">Ukonczone</option>
+                            <option value="error" data-i18n="jobFilterError">Bledy</option>
+                            <option value="pending" data-i18n="jobFilterPending">W kolejce</option>
+                        </select>
+                        <span class="filter-count" id="jobCount"></span>
+                    </div>
+                    <div style="max-height:600px; overflow-y:auto;">
+                        <table class="admin-table" id="jobsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th data-i18n="thUser">Uzytkownik</th>
+                                    <th data-i18n="thFile">Plik</th>
+                                    <th data-i18n="thStatus">Status</th>
+                                    <th data-i18n="thMode">Tryb</th>
+                                    <th data-i18n="thFaces">Scianki</th>
+                                    <th data-i18n="thTime">Czas</th>
+                                    <th data-i18n="thDate">Data</th>
+                                </tr>
+                            </thead>
+                            <tbody id="jobsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- GEO TAB -->
+                <div class="tab-content" id="tab-geo">
+                    <div class="geo-grid" id="geoGrid">
+                        <div class="geo-col">
+                            <h3 data-i18n="geoCountries">Kraje</h3>
+                            <div id="geoCountries"></div>
+                        </div>
+                        <div class="geo-col">
+                            <h3 data-i18n="geoCities">Miasta</h3>
+                            <div id="geoCities"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ADS TAB -->
+                <div class="tab-content" id="tab-ads">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Sloty reklamowe</h2>
+                            <p class="subtitle">Zarządzaj miejscami na reklamy i kodem AdSense</p>
+                        </div>
+                        <div class="panel-body padded">
+                            <!-- MAPKA REKLAM — klik zaznacza pozycję -->
+                            <div style="border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px;background:var(--bg-alt)">
+                              <div style="font-weight:700;margin-bottom:8px">🗺️ Mapa pozycji reklam — kliknij gdzie ma się pojawić</div>
+                              <div id="adMap" style="display:grid;grid-template-columns:1fr;gap:8px;max-width:520px">
+                                <button class="admap-cell" data-pos="hero_bottom" onclick="pickAdPos('hero_bottom')">Hero — pod nagłówkiem</button>
+                                <button class="admap-cell" data-pos="after_convert" onclick="pickAdPos('after_convert')">Po konwerterze</button>
+                                <button class="admap-cell" data-pos="viewer_overlay" onclick="pickAdPos('viewer_overlay')">Przy podglądzie 3D</button>
+                                <button class="admap-cell" data-pos="search_top" onclick="pickAdPos('search_top')">Nad wyszukiwarką (Odkrywaj)</button>
+                                <button class="admap-cell" data-pos="sidebar" onclick="pickAdPos('sidebar')">Sidebar / panel boczny</button>
+                                <button class="admap-cell" data-pos="page_bottom" onclick="pickAdPos('page_bottom')">Dół strony</button>
+                              </div>
+                              <div style="font-size:12px;color:var(--text-muted);margin-top:8px">Pozycja zapisuje się w slot.position. Podgląd: slot pojawi się dokładnie w tym miejscu na stronie.</div>
+                              <div id="adMapPreview" style="margin-top:10px;font-size:12px;color:var(--text-secondary)"></div>
+                            </div>
+                            <style>.admap-cell{padding:10px;border:1px dashed var(--border);border-radius:8px;background:#fff;cursor:pointer;text-align:left;font-family:inherit}.admap-cell.active{border-color:var(--primary);background:var(--primary-light);color:var(--primary);font-weight:600}</style>
+                            <button class="btn primary" onclick="openAdSlotModal(null)" style="margin-bottom:16px">+ Dodaj slot</button>
+                            <div style="max-height:500px;overflow-y:auto;">
+                                <table class="admin-table" id="adsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th><th>Nazwa</th><th>Slot key</th><th>Typ</th>
+                                            <th>Pozycja</th><th>Aktywny</th><th>Wyświetlenia</th><th>Kliknięcia</th><th>Akcje</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adsBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COMMENTS TAB -->
+                <div class="tab-content" id="tab-comments">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Komentarze</h2>
+                            <p class="subtitle">Moderacja — ukryj lub usuń komentarze</p>
+                        </div>
+                        <div class="panel-body padded">
+                            <table style="width:100%;border-collapse:collapse">
+                                <thead><tr style="border-bottom:1px solid var(--border)">
+                                    <th align="left">ID</th><th align="left">Użytkownik</th><th align="left">Model</th><th align="left">Treść</th><th align="left">Stan</th><th align="left">Czas</th><th align="left">Akcje</th>
+                                </tr></thead>
+                                <tbody id="commentsBody"></tbody>
+                                    </table>
+                                </div>
+                                </div>
+                                </div>
+                                <style>
+                                #tab-comments table { font-size: 13px; }
+                                #tab-comments tbody tr td { padding: 8px 8px; vertical-align: top; word-break: break-word; max-width: 320px; }
+                                #tab-comments tbody tr:hover td { background: var(--bg-alt, #f8fafc); }
+                                #tab-comments tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
+                                #tab-comments .btn-sm { padding: 4px 10px; font-size: 12px; }
+                                </style>
+
+                <!-- EXPORT TAB -->
+                <div class="tab-content" id="tab-export">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Eksport danych</h2>
+                            <p class="subtitle">Eksportuj dane użytkowników do JSON lub CSV</p>
+                        </div>
+                        <div class="panel-body padded">
+                            <div class="filter-bar">
+                                <input type="text" id="exportSearch" placeholder="Szukaj użytkownika po email..." data-i18n-placeholder="exportSearchPh" oninput="filterExport()">
+                                <select id="exportFormat" onchange="filterExport()">
+                                    <option value="json">JSON</option>
+                                    <option value="csv">CSV</option>
+                                </select>
+                                <button class="btn primary" onclick="exportUsers()">Eksportuj zaznaczonych</button>
+                                <span class="filter-count" id="exportCount"></span>
+                            </div>
+                            <div style="max-height:500px;overflow-y:auto;">
+                                <table class="admin-table" id="exportTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th data-i18n="thEmail">Email</th>
+                                            <th data-i18n="thUsername">Username</th>
+                                            <th data-i18n="thMarketingConsent">Zgoda marketingowa</th>
+                                            <th data-i18n="thCreated">Utworzono</th>
+                                            <th data-i18n="thJobCount">Przetworzenia</th>
+                                            <th data-i18n="thStorage">Użyto miejsca</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="exportBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel" style="margin-top:16px">
+                        <div class="panel-header">
+                            <h2>Backup bazy</h2>
+                            <p class="subtitle">Codzienny pg_dump na volume (7 ostatnich)</p>
+                        </div>
+                        <div class="panel-body padded">
+                            <div class="filter-bar">
+                                <button class="btn primary" onclick="runBackupNow()">Utwórz backup teraz</button>
+                                <button class="btn" onclick="loadBackups()">Odśwież</button>
+                                <span class="filter-count" id="backupStatus"></span>
+                            </div>
+                            <div id="backupList" style="font-size:13px"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QUEUE TAB -->
+                <div class="tab-content" id="tab-queue">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Kolejka zadań</h2>
+                            <p class="subtitle">Monitoruj zadania w trakcie przetwarzania</p>
+                        </div>
+                        <div class="panel-body padded">
+                            <div id="queueStats" style="margin-bottom:24px;padding:16px;background:var(--bg-alt);border-radius:var(--radius);border:1px solid var(--border);">
+                                <!-- Queue stats will appear here -->
+                            </div>
+                            <div class="filter-bar">
+                                <input type="text" id="queueSearch" placeholder="Szukaj po nazwie pliku..." data-i18n-placeholder="queueSearchPh" oninput="filterQueue()">
+                                <select id="queueStatusFilter" onchange="filterQueue()">
+                                    <option value="">Wszystkie statusy</option>
+                                    <option value="pending">W kolejce</option>
+                                    <option value="processing">Przetwarzanie</option>
+                                    <option value="done">Ukończone</option>
+                                    <option value="error">Błędy</option>
+                                </select>
+                                <span class="filter-count" id="queueCount"></span>
+                            </div>
+                            <div style="max-height:500px;overflow-y:auto;">
+                                <table class="admin-table" id="queueTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th data-i18n="thFile">Plik</th>
+                                            <th data-i18n="thStatus">Status</th>
+                                            <th data-i18n="thTime">Czas (s)</th>
+                                            <th data-i18n="thDate">Data</th>
+                                            <th data-i18n="thUser">Użytkownik</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="queueJobsBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STATS TAB -->
+                <div class="tab-content" id="tab-stats">
+                    <div class="panel">
+                        <div class="panel-header">
+                            <h2>Statystyki</h2>
+                            <p class="subtitle">Przegląd kluczowych metryk systemu</p>
+                        </div>
+                        <div class="panel-body padded">
+                            <div class="stats-grid" id="statsGridExport">
+                                <div class="stat-card primary">
+                                    <div class="stat-label" data-i18n="statUsers">Użytkownicy</div>
+                                    <div class="stat-value" id="statUsersExport">—</div>
+                                    <div class="stat-sub" data-i18n="statUsersSub">Liczba kont</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label" data-i18n="statJobs">Przetworzenia</div>
+                                    <div class="stat-value" id="statJobsExport">—</div>
+                                    <div class="stat-sub" data-i18n="statJobsSub">Liczba zadań</div>
+                                </div>
+                                <div class="stat-card success">
+                                    <div class="stat-label">Marketing consent</div>
+                                    <div class="stat-value" id="statMarketingConsent">—</div>
+                                    <div class="stat-sub">Użytkownicy zgody na marketing</div>
+                                </div>
+                                <div class="stat-card warning">
+                                    <div class="stat-label" data-i18n="statStorage">Użycie miejsca</div>
+                                    <div class="stat-value" id="statStorageExport">—</div>
+                                    <div class="stat-sub">Suma rozmiarów plików</div>
+                                </div>
+                                <div class="stat-card danger">
+                                    <div class="stat-label" data-i18n="statDownloads">Pobrania</div>
+                                    <div class="stat-value" id="statDownloadsExport">—</div>
+                                    <div class="stat-sub">Łączne pobrania publiczne</div>
+                                </div>
+                            </div>
+                            <div class="panel" style="margin-top:24px;">
+                                <h3 style="font-size:14px;margin-bottom:12px" data-i18n="chartUploads">Uploady (30 dni)</h3>
+                                <canvas id="chartUploadsExport" height="120"></canvas>
+                            </div>
+                            <div class="panel" style="margin-top:16px;">
+                                <h3 style="font-size:14px;margin-bottom:12px" data-i18n="chartTop">Top uploadersi</h3>
+                                <div id="topUploadersListExport" style="font-size:13px;color:var(--text-muted)"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                <!-- DRUKARNIA ZAKLADKI (print shop) -->
+                <div class="tab-content" id="tab-orders"><div id="adminOrders" class="print-panel"></div></div>
+                <div class="tab-content" id="tab-pstats"><div id="adminStats" class="print-panel"></div></div>
+                <div class="tab-content" id="tab-pricing"><div id="adminPricing" class="print-panel"></div></div>
+                <div class="tab-content" id="tab-codes"><div id="adminCodes" class="print-panel"></div></div>
+                <div class="tab-content" id="tab-gallery"><div id="adminGallery" class="print-panel"></div></div>
+                <div class="tab-content" id="tab-reviews"><div id="adminReviews" class="print-panel"></div></div>
+                <div class="tab-content" id="tab-reports"><div id="adminReports" class="print-panel"></div></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- USER DETAIL MODAL -->
+    <div class="modal-bg" id="userModal">
+        <div class="modal">
+            <div class="modal-head">
+                <h3 data-i18n="modalUserDetail">Szczegoly uzytkownika</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <div id="modalLoading" style="text-align:center;padding:32px"><div class="loader"></div></div>
+                <div id="modalContent" style="display:none">
+                    <div class="user-detail-grid" id="userDetailGrid"></div>
+
+
+                    <h4 style="font-size:14px;font-weight:700;margin:24px 0 8px" data-i18n="userJobsTitle">Ostatnie przetworzenia</h4>
+                    <div style="max-height:240px;overflow-y:auto;">
+                        <table class="admin-table" id="userJobsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th data-i18n="thFile">Plik</th>
+                                    <th data-i18n="thStatus">Status</th>
+                                    <th data-i18n="thFaces">Scianki</th>
+                                    <th data-i18n="thDate">Data</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userJobsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JOB PREVIEW MODAL -->
+    <div class="job-modal-bg" id="jobModal">
+        <div class="job-modal">
+            <div class="job-modal-head">
+                <h3 id="jobModalTitle">Podglad</h3>
+                <button class="modal-close" onclick="closeJobModal()">&times;</button>
+            </div>
+            <div class="job-modal-meta" id="jobModalMeta"></div>
+            <div class="job-preview-wrap">
+                <div class="job-preview-canvas" id="jobPreviewCanvas"></div>
+            </div>
+            <div class="job-actions">
+                <button class="btn-sm primary" id="jobDlStep" data-i18n="jobDlStep">Pobierz STEP</button>
+                <button class="btn-sm success" id="jobDlStl" data-i18n="jobDlStl">Pobierz STL</button>
+                <button class="btn-sm ghost" id="jobShareBtn" data-i18n="jobShare">Udostepnij</button>
+                <button class="btn-sm danger" id="jobDeleteBtn" data-i18n="jobDelete">Usun</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "/vendor/three/three.module.js",
+                "three/addons/controls/OrbitControls.js": "/vendor/three/controls/OrbitControls.js",
+                "three/addons/loaders/STLLoader.js": "/vendor/three/loaders/STLLoader.js"
+            }
+        }
+        </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+        window.THREE = THREE;
+        window._OrbitControls = OrbitControls;
+        window._STLLoader = STLLoader;
+        window.__threeReady = true;
+        window.dispatchEvent(new Event('three-ready'));
+    </script>
+
+    <script>
+/* ═══════════════════════ I18N ═══════════════════════ */
+const I18N = {
+    pl: {
+        navBack: 'Powrót', navTitle: 'Admin Panel', navAdminBadge: 'ADMIN',
+        authGateTitle: 'Panel administracyjny', authGateDesc: 'Zaloguj się jako administrator, aby kontynuować.',
+        authEmailPh: 'email', authPassPh: 'hasło', authLoginBtn: 'Zaloguj', authGateBack: 'Powrót do głównej strony',
+        tabUsers: 'Użytkownicy', tabJobs: 'Pliki', tabStats: 'Statystyki', tabGeo: 'Geolokalizacja',
+        tabQueue: 'Kolejka', tabExport: 'Eksport',
+        statUsers: 'Użytkownicy', statUsersSub: 'Liczba kont',
+        statJobs: 'Przetworzenia', statJobsSub: 'Liczba zadań',
+        statMarketingConsent: 'Zgoda marketingowa',
+        statStorage: 'Użycie miejsca', statStorageSub: 'Suma rozmiarów plików',
+        statDownloads: 'Pobrania', statDownloadsSub: 'Łączne pobrania publiczne',
+        chartUploads: 'Uploady (30 dni)', chartTop: 'Top uploadersi', chartTopModels: 'Najpopularniejsze modele',
+        userSearchPh: 'Szukaj użytkownika...',
+        thEmail: 'Email', thCreditsLeft: 'Kredyty', thJobsCount: 'Pliki',
+        thCountry: 'Kraj', thJoined: 'Data rejestracji',
+        thFile: 'Plik', thStatus: 'Status', thMode: 'Tryb', thFaces: 'Ścianki',
+        thTime: 'Czas', thDate: 'Data', thUser: 'Użytkownik', thUsername: 'Nazwa',
+        thJobCount: 'Przetworzenia', thCreated: 'Utworzono', thStorage: 'Pamięć',
+        thMarketingConsent: 'Marketing',
+        jobSearchPh: 'Szukaj po nazwie pliku...',
+        jobFilterAll: 'Wszystkie statusy', jobFilterDone: 'Gotowe', jobFilterError: 'Błędy', jobFilterPending: 'Oczekujące',
+        geoCountries: 'Kraje', geoCities: 'Miasta',
+        modalUserDetail: 'Szczegóły użytkownika',
+        creditAdjustTitle: 'Regulacja kredytów', creditAdjustDesc: 'Dodaj lub odejmij kredyty. Ujemna wartość = odejmowanie.',
+        creditAdjustBtn: 'Zastosuj',
+        userJobsTitle: 'Ostatnie przetworzenia',
+        userDetailEmail: 'Email', userDetailCredits: 'Kredyty',
+        userDetailJobs: 'Przetworzenia', userDetailCountry: 'Kraj',
+        userDetailCity: 'Miasto', userDetailJoined: 'Rejestracja',
+        userDetailId: 'ID',
+        noData: 'Brak danych', loading: 'Ładowanie...', emptyStats: 'Brak danych statystycznych',
+        creditSuccess: 'Kredyty zaktualizowane', creditError: 'Błąd regulacji kredytów',
+        authError: 'Błąd logowania. Sprawdź dane.', authAdminOnly: 'Dostęp tylko dla administratorów.',
+        emptyUsers: 'Brak użytkowników do wyświetlenia', emptyJobs: 'Brak przetworzeń do wyświetlenia',
+        emptyGeo: 'Brak danych geolokalizacji',
+        jobDlStep: 'Pobierz STEP', jobDlStl: 'Pobierz STL', jobDelete: 'Usuń',
+        jobShare: 'Udostępnij', jobPreview: 'Podgląd 3D',
+        jobStatus: 'Status', jobUser: 'Użytkownik',
+        jobDeleteConfirm: 'Usunąć to przetworzenie? Tej operacji nie można cofnąć.',
+        exportSearchPh: 'Szukaj użytkownika po email...',
+        exportFormat: 'Format', exportUsers: 'Eksportuj zaznaczonych',
+        exportCount: 'zaznaczonych / wszystkich',
+        queueSearchPh: 'Szukaj po nazwie pliku...',
+        queueStatusFilter: 'Filtruj według statusu',
+        queueCount: 'zadań / wszystkich'
+    },
+    en: {
+        navBack: 'Back', navTitle: 'Admin Panel', navAdminBadge: 'ADMIN',
+        authGateTitle: 'Admin Panel', authGateDesc: 'Log in as an administrator to continue.',
+        authEmailPh: 'email', authPassPh: 'password', authLoginBtn: 'Log in', authGateBack: 'Back to main site',
+        tabUsers: 'Users', tabJobs: 'Files', tabStats: 'Statistics', tabGeo: 'Geolocation',
+        tabQueue: 'Queue', tabExport: 'Export',
+        statUsers: 'Users', statUsersSub: 'Total accounts',
+        statJobs: 'Conversions', statJobsSub: 'All jobs',
+        statMarketingConsent: 'Marketing consent',
+        statStorage: 'Storage used', statStorageSub: 'Total file sizes',
+        statDownloads: 'Downloads', statDownloadsSub: 'Total public downloads',
+        chartUploads: 'Uploads (30 days)', chartTop: 'Top uploaders', chartTopModels: 'Most popular models',
+        userSearchPh: 'Search users...',
+        thEmail: 'Email', thCreditsLeft: 'Credits', thJobsCount: 'Files',
+        thCountry: 'Country', thJoined: 'Registered',
+        thFile: 'File', thStatus: 'Status', thMode: 'Mode', thFaces: 'Faces',
+        thTime: 'Time', thDate: 'Date', thUser: 'User', thUsername: 'Username',
+        thJobCount: 'Jobs', thCreated: 'Created', thStorage: 'Storage',
+        thMarketingConsent: 'Marketing',
+        jobSearchPh: 'Search by filename...',
+        jobFilterAll: 'All statuses', jobFilterDone: 'Done', jobFilterError: 'Errors', jobFilterPending: 'Pending',
+        geoCountries: 'Countries', geoCities: 'Cities',
+        modalUserDetail: 'User Details',
+        creditAdjustTitle: 'Credit Adjustment', creditAdjustDesc: 'Add or remove credits. Negative value = deduction.',
+        creditAdjustBtn: 'Apply',
+        userJobsTitle: 'Recent Jobs',
+        userDetailEmail: 'Email', userDetailCredits: 'Credits',
+        userDetailJobs: 'Jobs', userDetailCountry: 'Country',
+        userDetailCity: 'City', userDetailJoined: 'Registered',
+        userDetailId: 'ID',
+        noData: 'No data', loading: 'Loading...', emptyStats: 'No statistics data',
+        creditSuccess: 'Credits updated', creditError: 'Credit adjustment failed',
+        authError: 'Login failed. Check your credentials.', authAdminOnly: 'Admin access required.',
+        emptyUsers: 'No users to display', emptyJobs: 'No jobs to display',
+        emptyGeo: 'No geolocation data',
+        jobDlStep: 'Download STEP', jobDlStl: 'Download STL', jobDelete: 'Delete',
+        jobShare: 'Share', jobPreview: '3D Preview',
+        jobStatus: 'Status', jobUser: 'User',
+        jobDeleteConfirm: 'Delete this conversion? This action cannot be undone.',
+        exportSearchPh: 'Search user by email...',
+        exportFormat: 'Format', exportUsers: 'Export selected',
+        exportCount: 'selected / total',
+        queueSearchPh: 'Search by filename...',
+        queueStatusFilter: 'Filter by status',
+        queueCount: 'jobs / total'
+    }
+};
+
+
+    let currentLang = localStorage.getItem('mt_lang') || (navigator.language.startsWith('pl') ? 'pl' : 'en');
+    let token = localStorage.getItem('mt_token');
+
+    function t(key) {
+        return (I18N[currentLang] && I18N[currentLang][key]) || (I18N.en && I18N.en[key]) || key;
+    }
+
+    function applyI18n() {
+        document.documentElement.lang = currentLang;
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            const val = t(key);
+            if (val) el.innerHTML = val;
+        });
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-i18n-placeholder');
+            const val = t(key);
+            if (val) el.placeholder = val;
+        });
+        const langBtn = document.getElementById('langToggle');
+        if (langBtn) langBtn.textContent = currentLang === 'pl' ? 'EN' : 'PL';
+    }
+
+    function toggleLang() {
+        currentLang = currentLang === 'pl' ? 'en' : 'pl';
+        localStorage.setItem('mt_lang', currentLang);
+        applyI18n();
+        /* Re-render dynamic content that uses language */
+        if (_usersData.length) renderUsers();
+        if (_jobsData.length) renderJobs();
+    }
+
+    /* ═══════════════════════ API HELPERS ═══════════════════════ */
+    const API_BASE = '';
+
+    async function api(path, opts = {}) {
+        const headers = { ...opts.headers };
+        if (token) headers['Authorization'] = 'Bearer ' + token;
+        if (opts.body && !(opts.body instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
+            opts.body = JSON.stringify(opts.body);
+        }
+        const r = await fetch(API_BASE + path, { ...opts, headers });
+        if (r.status === 401) {
+            token = null;
+            localStorage.removeItem('mt_token');
+            showAuthGate();
+            throw new Error('Unauthorized');
+        }
+        if (r.status === 403) throw new Error(t('authAdminOnly'));
+        if (!r.ok) { const e = await r.json().catch(() => ({})); throw new Error(e.detail || 'Request failed'); }
+        return r.json();
+    }
+
+    /* ═══════════════════════ TOAST ═══════════════════════ */
+    let _toastTimer;
+    function toast(msg, type) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.className = 'toast show ' + (type || '');
+        clearTimeout(_toastTimer);
+        _toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    /* ═══════════════════════ AUTH ═══════════════════════ */
+    function showAuthGate() {
+        document.getElementById('authGate').style.display = 'flex';
+        document.getElementById('mainApp').style.display = 'none';
+    }
+    function showMainApp() {
+        document.getElementById('authGate').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+    }
+
+    async function doLogin() {
+        const email = document.getElementById('authEmail').value;
+        const pass = document.getElementById('authPass').value;
+        if (!email || !pass) return;
+        try {
+            const d = await api('/api/auth/login', { method: 'POST', body: { email, password: pass } });
+            token = d.token;
+            localStorage.setItem('mt_token', token);
+            await checkAdmin();
+        } catch (e) {
+            toast(t('authError'), 'error');
+        }
+    }
+
+    async function checkAdmin() {
+        try {
+            const d = await api('/api/auth/me');
+            if (!d.is_admin) { toast(t('authAdminOnly'), 'error'); showAuthGate(); return; }
+            showMainApp();
+            loadAll();
+        } catch (e) {
+            showAuthGate();
+        }
+    }
+
+    /* ═══════════════════════ TABS ═══════════════════════ */
+    let _geoLoaded = false;
+    let _adsLoaded = false;
+    async function switchAdminTab(name) {
+        document.querySelectorAll('.admin-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+        document.querySelectorAll('.tab-content').forEach(p => p.classList.remove('active'));
+        const target = document.getElementById('tab-' + name);
+        if (target) target.classList.add('active');
+        if (name === 'geo' && !_geoLoaded) loadGeoStats();
+        if (name === 'ads' && !_adsLoaded) { loadAdSlots(); _adsLoaded = true; }
+        if (name === 'stats' && !_statsLoaded) { loadStats(); _statsLoaded = true; }
+        if (name === 'queue' && !_queueLoaded) { loadQueue(); _queueLoaded = true; }
+        if (name === 'export' && !_exportLoaded) { loadExport(); loadBackups(); _exportLoaded = true; }
+        if (name === 'comments' && !_commentsLoaded) { loadComments(); _commentsLoaded = true; }
+        // Drukarnia version B — taby w admin_print.js via switchPrintTab (nie lazy tutaj)
+        if (['orders','pstats','pricing','codes','gallery','reviews','reports'].includes(name)) { switchPrintTab(name); return; }
+    }
+    let _commentsLoaded = false;
+
+    let _statsLoaded = false;
+    let _queueLoaded = false;
+    let _exportLoaded = false;
+
+    /* ═══════════════════════ STATS ═══════════════════════ */
+    async function loadStats() {
+        try {
+            const d = await api('/api/admin/stats');
+            const setVal = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+            setVal('statUsers', d.total_users ?? d.users ?? '—');
+            setVal('statUsersExport', d.total_users ?? d.users ?? '—');
+            setVal('statJobs', d.total_jobs ?? d.jobs ?? '—');
+            setVal('statJobsExport', d.total_jobs ?? d.jobs ?? '—');
+            setVal('statMarketingConsent', d.marketing_consent_users ?? '—');
+            setVal('statMarketingConsentExport', d.marketing_consent_users ?? '—');
+            const bytes = d.total_storage_bytes ?? 0;
+            const storageTxt = fmtBytes(bytes) + ' <span class="storage-fmt">' + bytes.toLocaleString() + ' B</span>';
+            ['statStorage','statStorageExport'].forEach(id=>{ const e=document.getElementById(id); if(e) e.innerHTML = storageTxt; });
+            setVal('statDownloads', d.total_downloads ?? '—');
+            setVal('statDownloadsExport', d.total_downloads ?? '—');
+            drawUploadsChart(d.daily_uploads_last_30d || []);
+            renderTopUploaders(d.storage_by_user || []);
+            if(d.top_models) renderTopModels(d.top_models);
+        } catch (e) { /* stats will show dashes */ }
+    }
+    function drawUploadsChart(rows){
+        const cv = document.getElementById('chartUploads');
+        if(!cv || !rows.length) return;
+        const ctx = cv.getContext('2d');
+        const W=cv.width=cv.offsetWidth*2, H=cv.height=120*2;
+        ctx.clearRect(0,0,W,H);
+        const max=Math.max(1,...rows.map(r=>r.count));
+        const pad=12, bw=(W-pad*2)/rows.length;
+        rows.forEach((r,i)=>{
+            const h=Math.round((r.count/max)*(H-pad*2));
+            const x=pad+i*bw+2, y=H-pad-h;
+            ctx.fillStyle='#6366f1';
+            ctx.fillRect(x,y,bw-4,h);
+            if(rows.length<=30 && r.count>0){
+                ctx.fillStyle='#111827'; ctx.font='10px sans-serif'; ctx.fillText(String(r.count),x,y-4);
+            }
+        });
+        const avg=Math.round(rows.reduce((a,r)=>a+r.count,0)/rows.length);
+        ctx.fillStyle='#9ca3af'; ctx.font='11px sans-serif';
+        ctx.fillText((max>0?rows[rows.length-1].date:'')+'  avg/day '+avg, pad, 14);
+    }
+    function renderTopUploaders(list){
+        const el=document.getElementById('topUploadersList');
+        if(!list.length){ el.innerHTML='<span style="color:var(--text-muted)">'+t('emptyUsers')+'</span>'; return; }
+        el.innerHTML=list.slice(0,10).map((u,i)=>'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f3f4f6"><span>'+(i+1)+'. '+(u.email||u.username||'user#'+u.user_id)+'</span><span>'+fmtBytes(u.total_size_bytes)+' ('+u.job_count+')</span></div>').join('');
+    }
+    function renderTopModels(list){
+        const wrap=document.getElementById('topModelsPanel');
+        const el=document.getElementById('topModelsList');
+        if(!list || !list.length) { wrap.style.display='none'; return; }
+        wrap.style.display='block';
+        el.innerHTML=list.map((j,i)=>'<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f3f4f6"><span>'+(i+1)+'. '+(j.title||j.filename||j.uuid).slice(0,40)+'</span><span>'+Number(j.views||0)+' views</span></div>').join('');
+    }
+    async function openUserDetail(uid){
+        const d=document.getElementById('userDetail'), t=document.getElementById('userDetailTitle'), b=document.getElementById('userDetailBody');
+        d.style.display='block'; t.textContent='User #'+uid; b.textContent='Wczytywanie...';
+        try{
+            const j=await api('/api/admin/users/'+uid);
+            const info=j.user||j;
+            const files=j.files||j.recent_jobs||[];
+            t.textContent=(info.username||info.email||'user#'+uid)+' #' + uid;
+            b.innerHTML='<div>email: '+(info.email||'-')+'</div><div>rejestracja: '+(info.created_at||'-')+'</div><div>pliki: '+files.length+'</div>'+files.slice(0,20).map(f=>'<div style="margin:4px 0">'+(f.title||f.original_filename||f.uuid)+' — '+fmtBytes(f.file_size_bytes||0)+'</div>').join('') + (files.length>20?'<div>... +'+(files.length-20)+'</div>':'');
+        }catch(e){ b.textContent='Blad ladowania: '+(e.message||e); }
+        d.scrollIntoView({behavior:'smooth'});
+    }
+    function closeUserDetail(){ document.getElementById('userDetail').style.display='none'; }
+    function fmtBytes(b) {
+        if (!b) return '0 B';
+        if (b < 1024) return b + ' B';
+        if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+        if (b < 1073741824) return (b / 1048576).toFixed(1) + ' MB';
+        return (b / 1073741824).toFixed(2) + ' GB';
+    }
+
+
+
+    async function loadQueue() {
+        try {
+            const d = await api('/api/admin/queue');
+            const el = document.getElementById('queueStats');
+            if (!el) return;
+            el.innerHTML = `
+                <div class="stat-item"><span>Processing (24h):</span> <strong>${d.done_24h ?? 0}</strong></div>
+                <div class="stat-item"><span>Errors (24h):</span> <strong>${d.error_24h ?? 0}</strong></div>
+                <div class="stat-item"><span>Avg time:</span> <strong>${(d.avg_processing_time_s ?? 0).toFixed(1)}s</strong></div>
+                <div class="stat-item"><span>Total processed:</span> <strong>${d.total_processed ?? 0}</strong></div>
+            `;
+            const jobsBody = document.getElementById('queueJobsBody');
+            if (!jobsBody) return;
+            const jobs = d.jobs || [];
+            if (!jobs.length) {
+                jobsBody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">Brak zadań w kolejce</td></tr>';
+                return;
+            }
+            jobsBody.innerHTML = jobs.map(j => {
+                const status = j.status === 'done' ? 'done' : j.status === 'error' ? 'error' : 'pending';
+                return `<tr>
+                    <td>${j.id ?? '—'}</td>
+                    <td class="cell-ellipsis">${j.filename ?? '—'}</td>
+                    <td><span class="status-badge ${status}">${j.status ?? '—'}</span></td>
+                    <td>${(j.processing_time_s ?? 0).toFixed(1)}s</td>
+                    <td>${j.created_at ? new Date(j.created_at).toLocaleString() : '—'}</td>
+                    <td>${j.user_email ?? j.user_id ?? 'anon'}</td>
+                </tr>`;
+            }).join('');
+        } catch (e) {
+            console.error('Queue load error:', e);
+            document.getElementById('queueStats').innerHTML = '<div style="color:var(--error)">Błąd ładowania kolejki</div>';
+            document.getElementById('queueJobsBody').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">Błąd ładowania danych</td></tr>';
+        }
+    }
+
+    async function loadExport() {
+            try {
+                const d = await api('/api/admin/stats');
+                const exportStatsEl = document.getElementById('exportStats');
+                if (exportStatsEl) {
+                    exportStatsEl.innerHTML = `
+                            <div class="stat-item"><span>Total users:</span> <strong>${d.total_users ?? d.users ?? 0}</strong></div>
+                            <div class="stat-item"><span>Total jobs:</span> <strong>${d.total_jobs ?? d.jobs ?? 0}</strong></div>
+                            <div class="stat-item"><span>Marketing consent:</span> <strong>${d.marketing_consent_users ?? 0}</strong></div>
+                            <div class="stat-item"><span>Storage used:</span> <strong>${fmtBytes(d.total_storage_bytes ?? 0)}</strong></div>
+                        `;
+                }
+                try {
+                    _allExportData = await api('/api/admin/users');
+                    _exportData = [..._allExportData];
+                    renderExport();
+                } catch(e) { console.error('Export users load error:', e); }
+            } catch (e) {
+                console.error('Export stats load error:', e);
+                const exportStatsEl = document.getElementById('exportStats');
+                if (exportStatsEl) {
+                    exportStatsEl.innerHTML = '<div style="color:var(--error)">Błąd ładowania statystyk</div>';
+                }
+            }
+        }
+
+        let _exportData = [];
+        let _allExportData = [];
+
+        function renderExport() {
+            const body = document.getElementById('exportBody');
+            if (!body) return;
+            const countEl = document.getElementById('exportCount');
+            if (countEl) countEl.textContent = (_exportData.length || 0) + ' / ' + (_allExportData.length || 0);
+            if (!_exportData.length) {
+                body.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text-muted)">Brak wyników</td></tr>';
+                return;
+            }
+            body.innerHTML = _exportData.map(u =>
+                '<tr><td>' + u.id + '</td>' +
+                '<td class="cell-ellipsis">' + esc(u.email || '—') + '</td>' +
+                '<td>' + (u.job_count ?? '—') + '</td>' +
+                '<td>' + fmtBytes(u.total_size_bytes || 0) + '</td>' +
+                '<td>' + esc(u.created_at ? String(u.created_at).slice(0, 10) : '—') + '</td></tr>'
+            ).join('');
+        }
+
+        async function loadBackups(){
+            const el = document.getElementById('backupList');
+            const st = document.getElementById('backupStatus');
+            try{
+                const items = await api('/api/admin/backups');
+                if(!items.length){ el.innerHTML = '<span style="color:var(--text-muted)">Brak backupów</span>'; return; }
+                el.innerHTML = items.map(function(b){
+                    return '<div style="display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border-light)"><span style="flex:1">' + b.name + ' <span style="color:var(--text-muted">(' + b.size_kb + ' KB)</span></span><button class="btn" onclick="dlBackup(this)" data-name="' + b.name.replace(/"/g, "&quot;") + '">Pobierz</button></div>';
+                }).join('');
+                if(st) st.textContent = items.length + ' backupów';
+            }catch(e){ el.innerHTML = '<span style="color:var(--error)">Błąd: ' + (e.message||e) + '</span>'; }
+        }
+        async function dlBackup(btn){
+            var name = btn.getAttribute('data-name');
+            try{
+                var token = localStorage.getItem('mt_token');
+                var r = await fetch('/api/admin/backups/' + encodeURIComponent(name), {headers:{'Authorization':'Bearer '+token}});
+                if(!r.ok) throw new Error('Error ' + r.status);
+                var blob = await r.blob();
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(blob); a.download = name;
+                document.body.appendChild(a); a.click(); a.remove();
+            }catch(e){ alert('Błąd: ' + (e.message||e)); }
+        }
+        async function runBackupNow(){
+            const st = document.getElementById('backupStatus');
+            if(st) st.textContent = 'Tworzenie...';
+            try{ await api('/api/admin/backups/run', {method:'POST', body:{}}); loadBackups(); }
+            catch(e){ if(st) st.textContent = 'Błąd: ' + (e.message||e); }
+        }
+        async function exportUsers() {
+            try {
+                const format = document.getElementById('exportFormat')?.value || 'json';
+                const search = document.getElementById('exportSearch')?.value?.trim() || '';
+                const btn = document.querySelector('button[onclick="exportUsers()"]');
+                const originalText = btn?.textContent;
+                btn.disabled = true;
+                btn.textContent = 'Eksportowanie...';
+                const body = { format };
+                if (search) body.search = search;
+                const result = await api('/api/admin/users/export', { method: 'POST', body: body });
+                if (!result.ok) throw new Error('Export failed');
+                let filename = `3dfile-link-users-${new Date().toISOString().slice(0,10)}`;
+                if (result.format === 'csv') {
+                    filename += '.csv';
+                    const blob = new Blob([result.data], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url; a.download = filename; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                } else {
+                    filename += '.json';
+                    const blob = new Blob([JSON.stringify(result.data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url; a.download = filename; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                }
+                toast('Eksport zakończony pomyślnie', 'success');
+            } catch (e) {
+                console.error('Export error:', e);
+                toast('Błąd podczas eksportu: ' + e.message, 'error');
+            } finally {
+                const btn = document.querySelector('button[onclick="exportUsers()"]');
+                if (btn) { btn.disabled = false; btn.textContent = 'Eksportuj zaznaczonych'; }
+            }
+        }
+
+        /* ═══════════════════════ USERS ═══════════════════════ */
+    let _usersData = [];
+    let _allUsersData = [];
+
+    async function loadUsers() {
+        try {
+            _allUsersData = await api('/api/admin/users');
+            _usersData = [..._allUsersData];
+            renderUsers();
+        } catch (e) {
+            document.getElementById('usersBody').innerHTML =
+                '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">' + t('emptyUsers') + '</td></tr>';
+        }
+    }
+
+    function filterUsers() {
+        const q = document.getElementById('userSearch').value.toLowerCase().trim();
+        _usersData = q ? _allUsersData.filter(u =>
+            (u.email || '').toLowerCase().includes(q) ||
+            (u.username || '').toLowerCase().includes(q) ||
+            String(u.id).includes(q)
+        ) : [..._allUsersData];
+        renderUsers();
+    }
+
+    function filterExport() {
+        const q = (document.getElementById('exportSearch')?.value || '').toLowerCase().trim();
+        _exportData = q ? _allExportData.filter(u =>
+            (u.email || '').toLowerCase().includes(q) ||
+            (u.username || '').toLowerCase().includes(q) ||
+            String(u.id).includes(q)
+        ) : [..._allExportData];
+        renderExport();
+    }
+
+    function renderUsers() {
+        const body = document.getElementById('usersBody');
+        document.getElementById('userCount').textContent = _usersData.length + ' / ' + _allUsersData.length;
+        if (!_usersData.length) {
+            body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted)">' + t('emptyUsers') + '</td></tr>';
+            return;
+        }
+        body.innerHTML = _usersData.map(u => {
+            const lastActive = u.last_active ? new Date(u.last_active).toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-US') : '—';
+            const sizeStr = fmtBytes(u.total_size_bytes || 0);
+            return '<tr class="user-row" data-id="' + u.id + '">' +
+                '<td><span class="toggle-arrow" id="arrow-' + u.id + '">&#9654;</span></td>' +
+                '<td>' + u.id + '</td>' +
+                '<td class="cell-ellipsis">' + esc(u.email || '—') + '</td>' +
+                '<td>' + (u.job_count ?? '—') + '</td>' +
+                '<td>' + sizeStr + '</td>' +
+                '<td>' + lastActive + '</td>' +
+                '</tr>' +
+                '<tr class="expand-row" id="expand-' + u.id + '"><td colspan="7">' +
+                '<div class="expand-inner" id="files-inner-' + u.id + '"><div style="padding:8px;color:var(--text-muted);font-size:13px">Kliknij strzalke aby zaladowac pliki...</div></div>' +
+                '</td></tr>';
+        }).join('');
+        body.querySelectorAll('.user-row').forEach(tr => {
+            tr.addEventListener('click', function() {
+                toggleUserFiles(parseInt(this.dataset.id));
+            });
+            tr.addEventListener('dblclick', function() {
+                openUser(parseInt(this.dataset.id));
+            });
+        });
+    }
+
+    async function toggleUserFiles(uid) {
+        const row = document.getElementById('expand-' + uid);
+        const arrow = document.getElementById('arrow-' + uid);
+        if (row.classList.contains('open')) {
+            row.classList.remove('open');
+            arrow.classList.remove('open');
+            return;
+        }
+        // close other open rows
+        document.querySelectorAll('.expand-row.open').forEach(r => r.classList.remove('open'));
+        document.querySelectorAll('.toggle-arrow.open').forEach(a => a.classList.remove('open'));
+        row.classList.add('open');
+        arrow.classList.add('open');
+        // load files
+        const inner = document.getElementById('files-inner-' + uid);
+        inner.innerHTML = '<div style="padding:8px;color:var(--text-muted);font-size:13px">Ladowanie...</div>';
+        try {
+            const files = await api('/api/admin/users/' + uid + '/files');
+            if (!files.length) {
+                inner.innerHTML = '<div style="padding:8px;color:var(--text-muted);font-size:13px">Brak plikow</div>';
+                return;
+            }
+            inner.innerHTML = '<table class="admin-table"><thead><tr>' +
+                '<th>ID</th><th>Nazwa pliku</th><th>Rozmiar</th><th>Status</th><th>Widoki</th><th>Data</th>' +
+                '</tr></thead><tbody>' + files.map(f => {
+                    const st = f.status === 'done' ? 'done' : f.status === 'error' ? 'error' : f.status === 'deleted' ? 'error' : 'pending';
+                    const date = f.created_at ? new Date(f.created_at).toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-US') : '—';
+                    return '<tr>' +
+                        '<td>' + f.id + '</td>' +
+                        '<td class="cell-ellipsis">' + esc(f.filename || '—') + '</td>' +
+                        '<td>' + fmtBytes(f.file_size_bytes) + '</td>' +
+                        '<td><span class="status-badge ' + st + '">' + f.status + '</span></td>' +
+                        '<td>' + (f.views || 0) + '</td>' +
+                        '<td>' + date + '</td>' +
+                        '</tr>';
+                }).join('') + '</tbody></table>';
+        } catch (e) {
+            inner.innerHTML = '<div style="padding:8px;color:var(--error);font-size:13px">Blad: ' + esc(e.message) + '</div>';
+        }
+    }
+
+    async function runCleanup() {
+        const btn = document.getElementById('cleanupBtn');
+        const result = document.getElementById('cleanupResult');
+        const maxFiles = parseInt(document.getElementById('maxFilesInput').value, 10);
+        if (isNaN(maxFiles) || maxFiles < 1) { result.textContent = 'Podaj liczbe >= 1'; result.style.color = 'var(--error)'; return; }
+        btn.disabled = true;
+        result.textContent = 'Przetwarzanie...';
+        result.style.color = 'var(--text-secondary)';
+        try {
+            const d = await api('/api/admin/cleanup', { method: 'POST', body: { max_files_per_user: maxFiles } });
+            result.textContent = 'Usunięto ' + d.deleted_count + ' plikow z ' + d.affected_users + ' uzytkownikow (limit: ' + d.max_files_per_user + ')';
+            result.style.color = d.deleted_count > 0 ? 'var(--success)' : 'var(--text-secondary)';
+            loadStats();
+            loadUsers();
+        } catch (e) {
+            result.textContent = 'Blad: ' + e.message;
+            result.style.color = 'var(--error)';
+        }
+        btn.disabled = false;
+    }
+
+    async function runOrphanCleanup() {
+        const btn = document.getElementById('orphanBtn');
+        const result = document.getElementById('cleanupResult');
+        btn.disabled = true;
+        try {
+            const chk = await api('/api/admin/orphans');
+            if (!chk.count) { result.textContent = 'Brak zepsutych podgladow.'; result.style.color = 'var(--text-secondary)'; btn.disabled = false; return; }
+            if (!confirm('Usunac ' + chk.count + ' modeli bez plikow? Tej operacji nie mozna cofnac.')) { btn.disabled = false; return; }
+            result.textContent = 'Usuwanie ' + chk.count + '...';
+            const d = await api('/api/admin/orphans/delete', { method: 'POST', body: {} });
+            result.textContent = 'Usunieto ' + d.deleted + ' zepsutych modeli.';
+            result.style.color = 'var(--success)';
+            loadStats(); loadUsers();
+        } catch (e) {
+            result.textContent = 'Blad: ' + e.message;
+            result.style.color = 'var(--error)';
+        }
+        btn.disabled = false;
+    }
+
+    /* ═══════════════════════ USER DETAIL ═══════════════════════ */
+    let _currentUser = null;
+
+    async function openUser(id) {
+        const modal = document.getElementById('userModal');
+        modal.classList.add('show');
+        document.getElementById('modalLoading').style.display = 'block';
+        document.getElementById('modalContent').style.display = 'none';
+        try {
+            _currentUser = await api('/api/admin/users/' + id);
+            renderUserDetail();
+        } catch (e) {
+            document.getElementById('modalBody').innerHTML = '<div style="text-align:center;padding:32px;color:var(--error)">' + e.message + '</div>';
+        }
+    }
+
+    function renderUserDetail() {
+        const u = _currentUser;
+        document.getElementById('modalLoading').style.display = 'none';
+        document.getElementById('modalContent').style.display = 'block';
+        const joined = u.created_at ? new Date(u.created_at).toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-US') : '—';
+        const grid = document.getElementById('userDetailGrid');
+        grid.innerHTML =
+            '<div class="detail-item"><div class="detail-label">' + t('userDetailId') + '</div><div class="detail-value">' + u.id + '</div></div>' +
+            '<div class="detail-item"><div class="detail-label">' + t('userDetailEmail') + '</div><div class="detail-value">' + esc(u.email || '—') + '</div></div>' +
+            '<div class="detail-item"><div class="detail-label">' + t('userDetailJobs') + '</div><div class="detail-value">' + (u.stats?.total_conversions ?? u.jobs_count ?? u.job_count ?? (u.jobs ? u.jobs.length : '—')) + '</div></div>' +
+            '<div class="detail-item"><div class="detail-label">' + t('userDetailCountry') + '</div><div class="detail-value">' + esc(u.last_country || u.country || '—') + '</div></div>' +
+            '<div class="detail-item"><div class="detail-label">' + t('userDetailCity') + '</div><div class="detail-value">' + esc(u.last_city || u.city || '—') + '</div></div>' +
+            '<div class="detail-item" style="grid-column:span 2"><div class="detail-label">' + t('userDetailJoined') + '</div><div class="detail-value">' + joined + '</div></div>';
+
+        const jobs = u.jobs || u.recent_jobs || [];
+        const tbody = document.getElementById('userJobsBody');
+        if (!jobs.length) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-muted)">' + t('emptyJobs') + '</td></tr>';
+        } else {
+            tbody.innerHTML = jobs.slice(0, 20).map(j => {
+                const st = j.status === 'done' ? 'done' : j.status === 'error' ? 'error' : 'pending';
+                return '<tr>' +
+                    '<td>' + j.id + '</td>' +
+                    '<td class="cell-ellipsis">' + esc(j.filename || '—') + '</td>' +
+                    '<td><span class="status-badge ' + st + '">' + j.status + '</span></td>' +
+                    '<td>' + (j.faces ?? '—') + '</td>' +
+                    '<td>' + (j.created_at ? new Date(j.created_at).toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-US') : '—') + '</td>' +
+                    '</tr>';
+            }).join('');
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('userModal').classList.remove('show');
+        _currentUser = null;
+    }
+
+
+    /* ═══════════════════════ JOB PREVIEW MODAL ═══════════════════════ */
+    let _jobThreeRenderer = null, _jobThreeScene = null, _jobThreeCamera = null,
+        _jobThreeControls = null, _jobThreeAnimId = null;
+    let _currentJob = null;
+
+    function _waitFor(filename_, deps, check, timeout) {
+        return new Promise(function(resolve, reject) {
+            for (const d of deps) { if (!d()) { reject(new Error('Brak: ' + filename_)); return; } }
+            resolve(true);
+        });
+    }
+
+    function openJobModal(jobId) {
+        const j = _allJobsData.find(x => x.id === jobId);
+        if (!j) return;
+        _currentJob = j;
+        const modal = document.getElementById('jobModal');
+        modal.classList.add('show');
+        const title = document.getElementById('jobModalTitle');
+        title.textContent = j.filename || ('Job #' + j.id);
+        const userLbl = j.user_email || (j.user_id != null ? ('#' + j.user_id) : 'anon');
+        const date = j.created_at ? new Date(j.created_at).toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-US') : '—';
+        document.getElementById('jobModalMeta').textContent =
+            t('jobUser') + ': ' + userLbl + '  •  ' + t('jobStatus') + ': ' + j.status +
+            '  •  ' + t('thMode') + ': ' + (j.mode || '—') + '  •  ' + date;
+
+        const dlStep = document.getElementById('jobDlStep');
+        const dlStl = document.getElementById('jobDlStl');
+        const shareBtn = document.getElementById('jobShareBtn');
+        const delBtn = document.getElementById('jobDeleteBtn');
+        const done = j.status === 'done';
+        dlStep.style.display = done ? '' : 'none';
+        dlStl.style.display = done ? '' : 'none';
+        shareBtn.style.display = done ? '' : 'none';
+        dlStep.onclick = () => window.open('/api/download/' + j.uuid + '?format=step', '_blank');
+        dlStl.onclick = () => window.open('/api/download/' + j.uuid + '?format=stl', '_blank');
+        shareBtn.onclick = () => doAdminShare(j.id);
+        delBtn.onclick = () => deleteJob(j.id);
+
+        loadJobSTL('/api/stl-preview/' + j.uuid);
+    }
+
+    function closeJobModal() {
+        document.getElementById('jobModal').classList.remove('show');
+        if (_jobThreeAnimId) cancelAnimationFrame(_jobThreeAnimId);
+        _jobThreeAnimId = null;
+        if (_jobThreeRenderer) { _jobThreeRenderer.dispose(); _jobThreeRenderer = null; }
+        if (_jobThreeControls) { try { _jobThreeControls.dispose(); } catch(e) {} _jobThreeControls = null; }
+        _jobThreeScene = null; _jobThreeCamera = null; _currentJob = null;
+        const canvas = document.getElementById('jobPreviewCanvas');
+        if (canvas) canvas.innerHTML = '';
+    }
+
+    function _threeDeps(cb) {
+        const T = window.THREE;
+        const OC = window._OrbitControls, SL = window._STLLoader;
+        if (T && OC && SL) { cb(T, OC, SL); return; }
+        let tries = 0;
+        const iv = setInterval(() => {
+            const T2 = window.THREE;
+            const OC2 = window._OrbitControls, SL2 = window._STLLoader;
+            tries++;
+            if (T2 && OC2 && SL2) { clearInterval(iv); cb(T2, OC2, SL2); }
+            else if (tries > 50) { clearInterval(iv); showJobPreviewErr(); }
+        }, 200);
+    }
+
+    function showJobPreviewErr() {
+        const container = document.getElementById('jobPreviewCanvas');
+        if (container) container.innerHTML =
+            '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">Podglad niedostepny</div>';
+    }
+
+    function loadJobSTL(url) {
+        const container = document.getElementById('jobPreviewCanvas');
+        container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">' + t('loading') + '</div>';
+        const req = new XMLHttpRequest();
+        req.open('GET', url);
+        if (token) req.setRequestHeader('Authorization', 'Bearer ' + token);
+        req.responseType = 'arraybuffer';
+        req.onload = function() {
+            if (req.status !== 200 || !req.response) { showJobPreviewErr(); return; }
+            const data = req.response;
+            _threeDeps(function(T, OC, SL) {
+                const w = container.clientWidth || 740;
+                const h = Math.min(window.innerHeight * 0.5, 480) || 400;
+                container.innerHTML = '';
+                const scene = new T.Scene();
+                scene.background = new T.Color(0xf7f9fc);
+                const camera = new T.PerspectiveCamera(45, w / h, 0.1, 10000);
+                const renderer = new T.WebGLRenderer({ antialias: true });
+                renderer.setSize(w, h);
+                renderer.setPixelRatio(window.devicePixelRatio || 1);
+                container.appendChild(renderer.domElement);
+                scene.add(new T.AmbientLight(0xffffff, 0.7));
+                const dl = new T.DirectionalLight(0xffffff, 0.9);
+                dl.position.set(1, 1, 1);
+                scene.add(dl);
+                const controls = new OC(camera, renderer.domElement);
+                controls.enableDamping = true;
+                controls.target.set(0, 0, 0);
+                _jobThreeRenderer = renderer;
+                _jobThreeScene = scene;
+                _jobThreeCamera = camera;
+                _jobThreeControls = controls;
+                try {
+                    const loader = new SL();
+                    const geometry = loader.parse(data);
+                    geometry.computeBoundingBox();
+                    const box = geometry.boundingBox;
+                    const center = new T.Vector3();
+                    box.getCenter(center);
+                    geometry.translate(-center.x, -center.y, -center.z);
+                    const size = new T.Vector3();
+                    box.getSize(size);
+                    const maxDim = Math.max(size.x, size.y, size.z) || 1;
+                    const mat = new T.MeshPhongMaterial({ color: 0x1a56db, specular: 0x111111, shininess: 30 });
+                    const mesh = new T.Mesh(geometry, mat);
+                    mesh.scale.setScalar(100 / maxDim);
+                    scene.add(mesh);
+                    camera.position.set(80, 60, 80);
+                    camera.lookAt(0, 0, 0);
+                    controls.update();
+                    function animate() {
+                        _jobThreeAnimId = requestAnimationFrame(animate);
+                        controls.update();
+                        renderer.render(scene, camera);
+                    }
+                    animate();
+                } catch(e) { showJobPreviewErr(); }
+            });
+        };
+        req.onerror = showJobPreviewErr;
+        req.send();
+    }
+
+    async function doAdminShare(jobId) {
+        try {
+            const d = await api('/api/share', { method: 'POST', body: { job_id: jobId, fmt: 'step', expires_days: 7 } });
+            prompt('Link:', d.url);
+        } catch(e) { toast(e.message, 'error'); }
+    }
+
+    async function deleteJob(jobId) {
+        if (!confirm(t('jobDeleteConfirm'))) return;
+        try {
+            await api('/api/admin/jobs/' + jobId, { method: 'DELETE' });
+            toast(t('jobDelete'), 'success');
+            closeJobModal();
+            loadJobs();
+            loadStats();
+        } catch(e) { toast(e.message, 'error'); }
+    }
+
+    /* ═══════════════════════ JOBS ═══════════════════════ */
+    let _jobsData = [];
+    
+    let _adminSelectedJobs = new Set();
+    function toggleJobsAll(checked){
+        _adminSelectedJobs.clear();
+        if(checked) _jobsData.forEach(function(j){ _adminSelectedJobs.add(j.id); });
+        renderJobs();
+        updateBulkBar();
+    }
+    function toggleJobSelect(id){
+        if(_adminSelectedJobs.has(id)) _adminSelectedJobs.delete(id); else _adminSelectedJobs.add(id);
+        updateBulkBar();
+    }
+    function updateBulkBar(){
+        const bar=document.getElementById('adminBulkBar');
+        const cnt=document.getElementById('adminBulkCount');
+        if(bar&&cnt){ cnt.textContent=_adminSelectedJobs.size; bar.style.display=_adminSelectedJobs.size>0?'flex':'none'; }
+    }
+    async function adminBulkDelete(){
+        if(!_adminSelectedJobs.size) return;
+        if(!confirm('Usunac '+_adminSelectedJobs.size+' plikow?')) return;
+        const ids=Array.from(_adminSelectedJobs);
+        try{
+            const r=await api('/api/admin/jobs/bulk-delete', {method:'POST',body:{ids:ids}});
+            toast(r.deleted+' plikow usunietych','success');
+            _adminSelectedJobs.clear();
+            updateBulkBar();
+            loadJobs();
+        }catch(e){ toast(e.message,'error'); }
+    }
+    let _allJobsData = [];
+
+    async function loadJobs() {
+        try {
+            _allJobsData = await api('/api/admin/jobs');
+            _jobsData = [..._allJobsData];
+            renderJobs();
+        } catch (e) {
+            document.getElementById('jobsBody').innerHTML =
+                '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-muted)">' + t('emptyJobs') + '</td></tr>';
+        }
+    }
+
+    function filterJobs() {
+        const q = document.getElementById('jobSearch').value.toLowerCase().trim();
+        const st = document.getElementById('jobStatusFilter').value;
+        _jobsData = _allJobsData.filter(j => {
+            if (q && !(j.filename || '').toLowerCase().includes(q) && !String(j.id).includes(q) && !(j.user_email || '').toLowerCase().includes(q)) return false;
+            if (st && j.status !== st) return false;
+            return true;
+        });
+        renderJobs();
+    }
+
+    function renderJobs() {
+        const body = document.getElementById('jobsBody');
+        document.getElementById('jobCount').textContent = _jobsData.length + ' / ' + _allJobsData.length;
+        if (!_jobsData.length) {
+            body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-muted)">' + t('emptyJobs') + '</td></tr>';
+            return;
+        }
+        body.innerHTML = _jobsData.map(j => {
+            const st = j.status === 'done' ? 'done' : j.status === 'error' ? 'error' : 'pending';
+            const date = j.created_at ? new Date(j.created_at).toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-US') : '—';
+            const time = j.processing_time_s != null ? j.processing_time_s + 's' : '—';
+            return '<tr onclick="openJobModal(' + j.id + ')" title="' + t('jobPreview') + '">' +
+                '<td><input type="checkbox" onclick="event.stopPropagation();toggleJobSelect('+j.id+')" '+( _adminSelectedJobs.has(j.id)?'checked':'')+' style="width:14px;height:14px"></td>' +
+                '<td>' + j.id + '</td>' +
+                '<td class="cell-ellipsis">' + esc(j.user_email || j.user_id || '—') + '</td>' +
+                '<td class="cell-ellipsis">' + esc(j.filename || '—') + '</td>' +
+                '<td><span class="status-badge ' + st + '">' + j.status + '</span></td>' +
+                '<td>' + esc(j.mode || '—') + '</td>' +
+                '<td>' + (j.faces ?? '—') + '</td>' +
+                '<td>' + time + '</td>' +
+                '<td>' + date + '</td>' +
+                '</tr>';
+        }).join('');
+    }
+
+    /* ═══════════════════════ GEO STATS ═══════════════════════ */
+
+    async function loadGeoStats() {
+        _geoLoaded = true;
+        try {
+            const d = await api('/api/admin/geo');
+            renderGeo(d);
+        } catch (e) {
+            document.getElementById('geoCountries').innerHTML = '<div class="empty-state"><p>' + t('emptyGeo') + '</p></div>';
+            document.getElementById('geoCities').innerHTML = '<div class="empty-state"><p>' + t('emptyGeo') + '</p></div>';
+        }
+    }
+
+    function renderGeo(d) {
+        const countries = d.countries || d.by_country || [];
+        const cities = d.cities || d.by_city || [];
+
+        renderGeoBar('geoCountries', countries, 'country', 'count', 'name');
+        renderGeoBar('geoCities', cities, 'city', 'count', 'name');
+    }
+
+    function renderGeoBar(containerId, items, labelKey, countKey, altLabelKey) {
+        const el = document.getElementById(containerId);
+        if (!items.length) { el.innerHTML = '<div class="empty-state" style="padding:24px"><p>' + t('emptyGeo') + '</p></div>'; return; }
+        const max = Math.max(...items.map(i => i[countKey] || i.count || 0));
+        el.innerHTML = items.slice(0, 20).map(i => {
+            const name = i[labelKey] || i[altLabelKey] || i.name || i.country || i.city || '—';
+            const count = i[countKey] || i.count || 0;
+            const pct = max > 0 ? (count / max * 100) : 0;
+            return '<div class="geo-bar-row">' +
+                '<div class="geo-bar-label" title="' + esc(name) + '">' + esc(name) + '</div>' +
+                '<div class="geo-bar-track"><div class="geo-bar-fill" style="width:' + pct + '%"></div></div>' +
+                '<div class="geo-bar-count">' + count + '</div>' +
+                '</div>';
+        }).join('');
+    }
+
+    /* ═══════════════════════ UTIL ═══════════════════════ */
+    function esc(s) {
+        const div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+    }
+
+    /* ═══════════════════════ INIT ═══════════════════════ */
+    applyI18n();
+    if (token) { checkAdmin(); }
+    else { showAuthGate(); }
+
+        function loadAll() {
+        loadStats();
+        loadUsers();
+        loadJobs();
+    }
+
+    /* Close modal on backdrop click */
+    document.getElementById('userModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+    document.getElementById('jobModal').addEventListener('click', function(e) {
+        if (e.target === this) closeJobModal();
+    });
+
+    /* Keyboard shortcuts */
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') { closeModal(); closeJobModal(); }
+    });
+
+    /* Enter key on login form */
+    document.getElementById('authPass').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') doLogin();
+    });
+    document.getElementById('authEmail').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') document.getElementById('authPass').focus();
+    });
+    // (adjustCredits removed — no credits system)
+
+    /* ── ADS MANAGEMENT ─────────────────────────────────────────── */
+    let _allAdSlots = [];
+    async function loadAdSlots(){
+        let d = null;
+        try {
+            const resp = await api('/api/ads/admin/slots');
+            if(Array.isArray(resp)) { d = resp; _allAdSlots = d; try{ localStorage.setItem('_adSlots', JSON.stringify(d)); }catch(e){} }
+        }catch(e){
+            const cached = localStorage.getItem('_adSlots');
+            if(cached){ try{ d=JSON.parse(cached); _allAdSlots=d; }catch(e){} }
+        }
+        if(d===null){ d = _allAdSlots || []; }
+        if(!Array.isArray(d)) d = [];
+        console.log('[ADS] loadAdSlots result:', d.length, 'slots', d.map(function(s){return s.slot_key}));
+        if(!d.length){
+            document.getElementById('adsBody').innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:24px">Brak slotów reklamowych</td></tr>';
+            return;
+        }
+        document.getElementById('adsBody').innerHTML = d.map(function(s){
+            var isActive = s.is_active ? true : false;
+            return '<tr>' +
+                '<td>' + s.id + '</td><td>' + (s.name||'') + '</td><td><code>' + (s.slot_key||s.position||'') + '</code></td>' +
+                '<td>' + (s.ad_type||'') + '</td>' +
+                '<td><span style="color:' + (isActive ? 'var(--success)' : 'var(--error)') + '">' + (isActive ? 'TAK' : 'NIE') + '</span></td>' +
+                '<td>' + (s.impressions||0) + '</td><td>' + (s.clicks||0) + '</td>' +
+                '<td>' +
+                    '<button class="btn-sm" onclick="toggleAdSlot(' + s.id + ')">' + (isActive ? 'Wyłącz' : 'Włącz') + '</button> ' +
+                    '<button class="btn-sm" onclick="openAdSlotModal(_allAdSlots.find(function(x){return x.id===' + s.id + '}))">Edytuj</button> ' +
+                    '<button class="btn-sm danger" onclick="deleteAdSlot(' + s.id + ')">Usuń</button>' +
+                '</td></tr>';
+        }).join('');
+    }
+
+    /* ═══════════════════════ COMMENTS ═══════════════════════ */
+    let _allComments = [];
+    async function loadComments() {
+        try {
+            const d = await api('/api/admin/comments');
+            _allComments = d || [];
+            document.getElementById('commentsBody').innerHTML = _allComments.map(function(c) {
+                return '<tr>' +
+                    '<td>' + c.id + '</td><td>' + esc(c.username || 'anon') + '</td>' +
+                    '<td><a href="#" onclick="openJobModal(' + c.job_id + ');return false">#' + c.job_id + '</a></td>' +
+                    '<td style="max-width:300px;overflow:hidden;text-overflow:ellipsis">' + esc((c.body || '').slice(0,120)) + '</td>' +
+                    '<td><span style="color:' + (c.is_hidden ? 'var(--warning)' : 'var(--success)') + '">' + (c.is_hidden ? 'UKRYTY' : 'WIDOCZNY') + '</span></td>' +
+                    '<td>' + (c.created_at || '').slice(0,16).replace('T',' ') + '</td>' +
+                    '<td>' +
+                        '<button class="btn-sm" onclick="toggleComment(' + c.id + ',' + (c.is_hidden ? 'false' : 'true') + ')">' + (c.is_hidden ? 'Pokaż' : 'Ukryj') + '</button> ' +
+                        '<button class="btn-sm danger" onclick="deleteComment(' + c.id + ')">Usuń</button>' +
+                    '</td></tr>';
+            }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px">Brak komentarzy</td></tr>';
+        } catch (e) { }
+    }
+
+    async function toggleComment(id, hide) {
+        try { await api('/api/admin/comments/' + id + '/hide', {method:'POST', body: JSON.stringify({hide:hide})}); loadComments(); } catch (e) { alert('Błąd: ' + (e.message||e)); }
+    }
+
+    async function deleteComment(id) {
+        if (!confirm('Usunąć komentarz #' + id + '?')) return;
+        try { await api('/api/admin/comments/' + id, {method:'DELETE'}); loadComments(); } catch (e) { alert('Błąd: ' + (e.message||e)); }
+    }
+
+    async function toggleAdSlot(id) {
+        try { await api('/api/ads/admin/slots/' + id + '/toggle', {method:'POST'}); loadAdSlots(); try{ localStorage.setItem('_adSlots', JSON.stringify(_allAdSlots)); }catch(e){} }
+        catch(e) { alert(e.message); }
+    }
+
+    async function deleteAdSlot(id) {
+        if (!confirm('Usunąć slot reklamowy?')) return;
+        try { await api('/api/ads/admin/slots/' + id, {method:'DELETE'}); loadAdSlots(); try{ localStorage.setItem('_adSlots', JSON.stringify(_allAdSlots)); }catch(e){} }
+        catch(e) { alert(e.message); }
+    }
+
+    function openAdSlotModal(slot) {
+        const isNew = !slot;
+        const modal = document.getElementById('userModal');
+        modal.classList.add('show');
+        document.getElementById('modalContent').style.display = 'block';
+        document.getElementById('modalLoading').style.display = 'none';
+        const pos = slot?.position || slot?.slot_key || 'hero_bottom';
+        document.getElementById('modalBody').innerHTML =
+            '<h3 style="margin-bottom:16px">' + (isNew ? 'Nowy slot reklamowy' : 'Edytuj slot') + '</h3>' +
+            '<div style="display:grid;gap:12px;max-width:600px">' +
+            '<label>Nazwa: <input type="text" id="adName" value="' + esc(slot?.name||'') + '" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px"></label>' +
+            '<label>Slot key: <input type="text" id="adSlotKey" value="' + esc(slot?.slot_key||'') + '" placeholder="after_convert" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px"></label>' +
+            '<label>Typ: <select id="adType" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px">' +
+                '<option value="adsense"' + (slot?.ad_type==='adsense'?' selected':'') + '>AdSense</option>' +
+                '<option value="custom"' + (slot?.ad_type==='custom'?' selected':'') + '>Custom HTML</option>' +
+                '<option value="image"' + (slot?.ad_type==='image'?' selected':'') + '>Image</option>' +
+            '</select></label>' +
+            '<label>Pozycja (mapka): <select id="adPosition" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px">' +
+                '<option value="hero_bottom"' + (pos==="hero_bottom"?' selected':'') + '>hero_bottom</option>' +
+                '<option value="after_convert"' + (pos==="after_convert"?' selected':'') + '>after_convert</option>' +
+                '<option value="viewer_overlay"' + (pos==="viewer_overlay"?' selected':'') + '>viewer_overlay</option>' +
+                '<option value="search_top"' + (pos==="search_top"?' selected':'') + '>search_top</option>' +
+                '<option value="sidebar"' + (pos==="sidebar"?' selected':'') + '>sidebar</option>' +
+                '<option value="page_bottom"' + (pos==="page_bottom"?' selected':'') + '>page_bottom</option>' +
+            '</select></label>' +
+            '<label>Kolejność: <input type="number" id="adSort" value="' + (slot?.sort_order||0) + '" style="width:100px;padding:8px;border:1px solid var(--border);border-radius:6px"></label>' +
+            '<label><input type="checkbox" id="adActive"' + (slot?.is_active!==false?' checked':'') + '> Aktywny</label>' +
+            '<label>Kod reklamy (HTML/JS):<textarea id="adCode" rows="8" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-family:monospace;font-size:12px" oninput="previewAdCode(this.value)">' + esc(slot?.ad_code||'') + '</textarea></label>' +
+            '<div style="font-size:11px;color:#64748b;margin:4px 0">Wklej kod AdSense (pionowy 300x250 lub poziomy 728x90) lub wlasny HTML/JS/IMG</div>' +
+            '<div style="border:1px dashed #d1d5db;border-radius:6px;padding:8px;min-height:90px;background:#fafbfc;margin-bottom:8px"><div id="adPreviewBox" style="text-align:center">' + (esc(slot?.ad_code||'') || '<span style="color:#94a3b8">Tutaj pojawi sie podglad</span>') + '</div></div>' +
+            '<div style="display:flex;gap:8px">' +
+                '<button class="btn primary" onclick="saveAdSlot(' + (slot?.id||'') + ')">' + (isNew ? 'Dodaj' : 'Zapisz') + '</button>' +
+                '<button class="btn" onclick="document.getElementById(\'userModal\').classList.remove(\'show\')">Anuluj</button>' +
+            '</div></div>';
+    }
+
+    function previewAdCode(code) {
+        const box = document.getElementById('adPreviewBox');
+        if (box) box.innerHTML = code || '<span style="color:#94a3b8">Tutaj pojawi sie podglad</span>';
+    }
+
+    async function saveAdSlot(id) {
+        const body = {
+            name: document.getElementById('adName').value,
+            slot_key: document.getElementById('adSlotKey').value,
+            ad_code: document.getElementById('adCode').value,
+            ad_type: document.getElementById('adType').value,
+            position: document.getElementById('adPosition')?.value || document.getElementById('adSlotKey').value,
+            sort_order: parseInt(document.getElementById('adSort').value) || 0,
+            is_active: document.getElementById('adActive').checked,
+        };
+        if(!body.name || !body.slot_key || !body.ad_code){ alert('Wypelnij: Nazwa, Slot key, Kod reklamy'); return; }
+        try {
+            if (id) { await api('/api/ads/admin/slots/' + id, {method:'PUT', body}); }
+            else { await api('/api/ads/admin/slots', {method:'POST', body}); }
+            const d = await api('/api/ads/admin/slots');
+            _allAdSlots = d; try{ localStorage.setItem('_adSlots', JSON.stringify(d)); }catch(e){}
+            document.getElementById('userModal').classList.remove('show');
+            await loadAdSlots();
+            toast('Slot zapisany','success');
+        } catch(e) { alert('Blad zapisu: ' + e.message); console.error('[ADS] save error:', e); }
+    }
+
+    let pickedPos=null;
+    function pickAdPos(pos){ pickedPos=pos; document.querySelectorAll('.admap-cell').forEach(b=>b.classList.toggle('active', b.dataset.pos===pos)); document.getElementById('adMapPreview').textContent='Wybrano: '+pos+' — użyj przy tworzeniu slota (pole Pozycja).'; }
+    // highlight map by active slots
+    function highlightAdMap(slots){ const counts={}; slots.forEach(s=>{const p=s.position||s.slot_key; counts[p]=(counts[p]||0)+1}); document.querySelectorAll('.admap-cell').forEach(b=>{const c=counts[b.dataset.pos]||0; b.textContent = b.textContent.split(' —')[0] + (c?` — ${c} slotów`:''); b.style.borderStyle=c?'solid':'dashed';}); }
+    const _origLoadAdSlots=loadAdSlots; loadAdSlots=async function(){ await _origLoadAdSlots(); highlightAdMap(_allAdSlots); }
+    if (window.location.search.includes('tab=ads')) switchAdminTab('ads');
+    </script>
+<script src="/asset/admin_print.js?v=20260919"></script>
+</body>
+</html>
