@@ -1123,10 +1123,12 @@ def save_shipping(req: SaveShippingReq, db: Session = Depends(get_db),
 
 # —— Admin: usuń zamówienie (wraz z itemami) ——
 @router.get("/api/account/orders")
-def account_orders(user=Depends(get_current_user), db: Session = Depends(get_db)):
+def account_orders(user=Depends(require_user), db: Session = Depends(get_db)):
     """Historia zamówień zalogowanego użytkownika: po user_id LUB po zweryfikowanym emailu
     (zamówienia składane przed założeniem konta / jako gość)."""
     from sqlalchemy import or_
+    if not user:
+        raise HTTPException(401, detail="Zaloguj się")
     q = (db.query(models.Order)
          .filter(or_(models.Order.user_id == user.id,
                      models.Order.customer_email == user.email))

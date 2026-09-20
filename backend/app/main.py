@@ -270,7 +270,8 @@ async def _friendly_404(request, exc):
                 "<p><code>" + path.replace("<", "&lt;")[:80] + "</code></p>"
                 "<a href='/'>← 3dfile.link — hosting i druk 3D</a></div></body></html>",
                 status_code=404)
-    raise exc
+    from fastapi.exception_handlers import http_exception_handler
+    return await http_exception_handler(request, exc)
 
 
 if FRONTEND_DIR.exists():
