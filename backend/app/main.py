@@ -239,6 +239,35 @@ def kontakt_page():
     from fastapi.responses import FileResponse
     return FileResponse(str(FRONTEND_DIR / "kontakt.html"))
 
+# ── Przyjazny 404 dla ludzi (JSON zostaje dla /api/*) ───────────────
+from starlette.exceptions import HTTPException as _StarHTTP
+from fastapi.responses import HTMLResponse as _HTML
+
+@app.exception_handler(_StarHTTP)
+async def _friendly_404(request, exc):
+    path = request.url.path
+    if exc.status_code == 404 and not path.startswith(("/api/", "/js/", "/asset/", "/vendor/", "/blog/")):
+        accept = request.headers.get("accept", "")
+        if "text/html" in accept:
+            return _HTML(
+                "<!doctype html><html lang=pl><head><meta charset=utf-8>"
+                "<meta name=viewport content='width=device-width,initial-scale=1'>"
+                "<title>404 — nie znaleziono | 3dfile.link</title><style>"
+                "body{font-family:Inter,system-ui,sans-serif;background:#0B1730;color:#fff;display:flex;"
+                "align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center}"
+                ".box{max-width:440px;padding:32px}h1{font-size:64px;margin:0;color:#2B5CE6}"
+                "p{color:#9fb3d1;line-height:1.6}a{display:inline-block;margin-top:18px;padding:12px 22px;"
+                "background:#2B5CE6;color:#fff;border-radius:10px;text-decoration:none;font-weight:600}"
+                "code{background:#16294a;padding:2px 8px;border-radius:6px;font-size:12px}</style></head><body>"
+                "<div class=box><h1>404</h1><h2 style='margin:6px 0'>Nic tu nie ma</h2>"
+                "<p>Ten adres nie istnieje albo model był prywatny i wygasł.<br>"
+                "Sprawdź link lub wróć na stronę główną.</p>"
+                "<p><code>" + path.replace("<", "&lt;")[:80] + "</code></p>"
+                "<a href='/'>← 3dfile.link — hosting i druk 3D</a></div></body></html>",
+                status_code=404)
+    raise exc
+
+
 if FRONTEND_DIR.exists():
     app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
 

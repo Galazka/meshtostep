@@ -625,8 +625,15 @@ def update_order(
 
 @router.get("/api/orders/{order_id}/export")
 def export_order(order_id: int, admin=Depends(require_admin), db: Session = Depends(get_db)):
-    if not admin or not getattr(admin, "is_admin", False):
-        raise HTTPException(403, detail="Admin only")
+    import traceback as _tb
+    try:
+        return _export_order_impl(order_id, admin, db)
+    except HTTPException:
+        raise
+    except Exception as _e:
+        return JSONResponse({"ok": False, "debug": str(_e), "tb": _tb.format_exc()[-1200:]}, status_code=501)
+
+def _export_order_impl(order_id, admin, db):
     o = db.get(models.Order, order_id)
     if not o:
         raise HTTPException(status_code=404, detail="Order not found")
