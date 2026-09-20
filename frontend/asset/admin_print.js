@@ -624,13 +624,12 @@ window.loadAdminGallery = function() {
 
 
   // Eksport loaderView dla lazy-load z admin.html switchAdminTab
+  // UWAGA: loadAdminGallery/Reviews/Reports są już przypisane do window
+  // (anonymous function expressions) — NIE re-eksportować (ReferenceError).
   window.loadAdminOrders = loadAdminOrders;
   window.loadAdminStats = loadAdminStats;
   window.loadAdminPricing = loadAdminPricing;
   window.loadAdminCodes = loadAdminCodes;
-  window.loadAdminGallery = loadAdminGallery;
-  window.loadAdminReviews = loadAdminReviews;
-  window.loadAdminReports = loadAdminReports;
 
   // ── init: (przez switchPrintTab) ─────────────────────────────────
 })();

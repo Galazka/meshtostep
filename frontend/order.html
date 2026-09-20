@@ -536,12 +536,13 @@ function calc(){
   var isPickup = ship==='pickup', isPkExp = ship==='pickup_express';
   var base=(shipBase[ship]||shipBase.standard)[reg]||0;
   var shippingPLN = isPickup ? 0 : isPkExp ? 19 : (base+3);
-  var productEst = Math.max(3, productsPLN + colorExt);
-  var smallOrder = shippingPLN>0 && !isPkExp && productEst<40;
-  if(smallOrder) shippingPLN = Math.min(shippingPLN, 9.90);
-  var freeShip = !isPickup && !isPkExp && (productsPLN+colorExt)>=200 && shippingPLN>0;
-  if(freeShip) shippingPLN=0;
-  var totalPLN = Math.max(3, productsPLN+colorExt) + shippingPLN;
+  var basePrint = Math.max(10, productsPLN); // minimum 10 zł (backend)
+    var adjPLN = basePrint + colorExt;
+    var smallOrder = shippingPLN>0 && !isPkExp && adjPLN<40;
+    if(smallOrder) shippingPLN = Math.min(shippingPLN, 9.90);
+    var freeShip = !isPickup && !isPkExp && adjPLN>=200 && shippingPLN>0;
+    if(freeShip) shippingPLN=0;
+    var totalPLN = adjPLN + shippingPLN;
   var colorLine = colorExt>0 ? '<div class="summary-row"><span>Kolory ekstra</span><span style="color:#B45309">+'+fmt(colorExt/rate)+'</span></div>' : '';
   var shipLabel = isPickup ? 'Odbiór osobisty' : isPkExp ? 'Ekspres przy odbiorze (2 dni)' : freeShip ? 'Wysyłka — GRATIS (≥200 zł)' : smallOrder ? 'Wysyłka + pakowanie — PROMOCJA' : 'Wysyłka + pakowanie';
   var freeLine='';
@@ -551,7 +552,7 @@ function calc(){
   var brutto=cx(totalPLN/rate); var netto=+(brutto/1.23).toFixed(2); var vat=+(brutto-netto).toFixed(2);
   vatLine='<div class="summary-row" style="border-top:1px dashed var(--border);color:var(--muted)"><span>Cena netto</span><span>'+fmt(netto)+'</span></div><div class="summary-row" style="color:var(--muted)"><span>VAT 23%</span><span>'+fmt(vat)+'</span></div>';
   box.innerHTML=rowsHTML+
-    '<div class="summary-row"><span>Druk ('+CART.length+' model'+(CART.length>1?'i':'')+')</span><span>'+fmt(cx(productsPLN/rate))+'</span></div>'+
+      '<div class="summary-row"><span>Druk ('+CART.length+' model'+(CART.length>1?'i':'')+')</span><span>'+fmt(cx(basePrint/rate))+'</span></div>'+
     '<div class="summary-row"><span>'+shipLabel+'</span><span>'+(shippingPLN===0?'0,00 zł':fmt(shippingPLN/rate))+'</span></div>'+
     colorLine+freeLine+
     '<div class="summary-total"><span>Do zapłaty (brutto)</span><span>'+fmt(brutto)+'</span></div>'+vatLine;

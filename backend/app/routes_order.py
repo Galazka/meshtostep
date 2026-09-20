@@ -68,7 +68,7 @@ DEFAULT_SHIPPING = {
 
 DEFAULT_WATTS = 150
 DEFAULT_KWH = getattr(settings, "kwh_price", 1.50)  # Bamboo P1S ~1.5 zł/kWh
-PACKING_FEE_PLN = 3.0  # karton + etykieta + folia na przesyłkę (InPost Paczkomat)
+PACKING_FEE_PLN = 3.0  # karton + etykieta + folia na przesyłkę (InPost Paczkomat), stałe niezależnie od liczby produktów
 PICKUP_EXPRESS_FEE_PLN = 19.00  # odbiór osobisty ekspres: priorytet w kolejce, gotowe do 2 dni roboczych (opłata all-inclusive)
 FREE_SHIPPING_MIN_PLN = 200.0  # zamówienia >=200 zł → wysyłka gratis (Tom pokrywa koszt)
 
@@ -301,9 +301,9 @@ def calculate_price(
     if discount_code and db:
         discount_pln, discount_info = _apply_discount(db, discount_code, product_total)
 
-    # minimum order: product must be >= 3 zł
-    if product_total < 3.0:
-        product_total = 3.0
+    # minimum order: product must be >= 10 zł
+        if product_total < 10.0:
+            product_total = 10.0
     # MAŁE ZAMÓWIENIE: flat wysyłka (zanim free-shipping check)
     small_order = shipping_cost > 0 and product_total < SMALL_ORDER_MAX_PRODUCT and shipping not in ("pickup", "pickup_express")
     if small_order:
@@ -1035,12 +1035,12 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db)):
 
     # discount across whole order (apply once on product total)
     if req.discount_code and db:
-        d, info = _apply_discount(db, req.discount_code, max(subtotal_sum, 3.0))
+        d, info = _apply_discount(db, req.discount_code, max(subtotal_sum, 10.0))
         discount_pln = d
         total -= d
 
-    if total < 3.0:
-        total = subtotal_sum if subtotal_sum > 3.0 else 3.0
+    if total < 10.0:
+        total = subtotal_sum if subtotal_sum > 10.0 else 10.0
     total = _ceil05(total)
 
     cur = (req.currency or "PLN").upper()
