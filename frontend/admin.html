@@ -1002,23 +1002,43 @@ const I18N = {
                 jobsBody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">Brak zadań w kolejce</td></tr>';
                 return;
             }
-            jobsBody.innerHTML = jobs.map(j => {
-                const status = j.status === 'done' ? 'done' : j.status === 'error' ? 'error' : 'pending';
-                return `<tr>
-                    <td>${j.id ?? '—'}</td>
-                    <td class="cell-ellipsis">${j.filename ?? '—'}</td>
-                    <td><span class="status-badge ${status}">${j.status ?? '—'}</span></td>
-                    <td>${(j.processing_time_s ?? 0).toFixed(1)}s</td>
-                    <td>${j.created_at ? new Date(j.created_at).toLocaleString() : '—'}</td>
-                    <td>${j.user_email ?? j.user_id ?? 'anon'}</td>
-                </tr>`;
-            }).join('');
+            window._queueJobs = jobs;
+            filterQueue();
         } catch (e) {
             console.error('Queue load error:', e);
             document.getElementById('queueStats').innerHTML = '<div style="color:var(--error)">Błąd ładowania kolejki</div>';
             document.getElementById('queueJobsBody').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">Błąd ładowania danych</td></tr>';
         }
     }
+
+    function filterQueue() {
+        const jobsBody = document.getElementById('queueJobsBody');
+        if (!jobsBody) return;
+        const jobs = window._queueJobs || [];
+        const q = (document.getElementById('queueSearch')?.value || '').toLowerCase().trim();
+        const sf = document.getElementById('queueStatusFilter')?.value || '';
+        const rows = jobs.filter(j => {
+            if (sf && j.status !== sf) return false;
+            if (q && !((j.filename || '') + ' ' + (j.user_email || '')).toLowerCase().includes(q)) return false;
+            return true;
+        });
+        if (!rows.length) {
+            jobsBody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">' + (jobs.length ? 'Brak wyników dla filtra' : 'Brak zadań w kolejce') + '</td></tr>';
+            return;
+        }
+        jobsBody.innerHTML = rows.map(j => {
+            const status = j.status === 'done' ? 'done' : j.status === 'error' ? 'error' : 'pending';
+            return `<tr>
+                <td>${j.id ?? '—'}</td>
+                <td class="cell-ellipsis">${j.filename ?? '—'}</td>
+                <td><span class="status-badge ${status}">${j.status ?? '—'}</span></td>
+                <td>${(j.processing_time_s ?? 0).toFixed(1)}s</td>
+                <td>${j.created_at ? new Date(j.created_at).toLocaleString() : '—'}</td>
+                <td>${j.user_email ?? j.user_id ?? 'anon'}</td>
+            </tr>`;
+        }).join('');
+    }
+    window.filterQueue = filterQueue;
 
     async function loadExport() {
             try {
