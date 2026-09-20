@@ -447,25 +447,9 @@ window.loadAdminGallery = function() {
   // auto-open admin panel when URL has #admin (np. /admin -> /drukuje#admin)
   
   // ── Drukarnia: przełącznik zakładek (VERSION B / tab-p*) ─────────
-  function switchPrintTab(tab) {
-    document.querySelectorAll('.tab-content').forEach(function (p_) { p_.classList.remove('active'); });
-    document.querySelectorAll('.admin-tab').forEach(function (b_) { b_.classList.remove('active'); });
-    document.querySelectorAll('.print-tab-btn').forEach(function (b_) { b_.classList.remove('active'); });
-    var tgt = document.getElementById((tab === 'stats' ? 'p' : '') + 'tab-' + tab);
-    if (tgt) tgt.classList.add('active');
-    var btn = document.querySelector('[data-tabs="print"][data-tab="' + tab + '"]');
-    if (btn) btn.classList.add('active');
-    var lazy = { 'orders': loadAdminOrders, 'stats': loadAdminStats, 'pricing': loadAdminPricing,
-                 'codes': loadAdminCodes, 'gallery': loadAdminGallery, 'reviews': loadAdminReviews,
-                 'reports': loadAdminReports };
-    if (lazy[tab]) {
-      setTimeout(function(){
-        try { lazy[tab](); }
-        catch(e) { console.error('print-tab loader', tab, e); }
-      }, 60);
-    }
-  }
-  window.switchPrintTab = switchPrintTab;
+  /* stary debug-wrapper usuniety */
+  
+  /* alias usuniety — okno ma dobra wersje z WRAP */
 
   // ── DELETE order (backend: DELETE /api/orders/{id}) ──────────────
   window.deleteOrder = function (id) {
