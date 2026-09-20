@@ -633,9 +633,9 @@ def update_order(
     db: Session = Depends(get_db),
 ):
     o = db.get(models.Order, order_id)
-    old_status = o.status
     if not o:
         raise HTTPException(status_code=404, detail="Order not found")
+    old_status = o.status
     if not admin or not getattr(admin, "is_admin", False):
         raise HTTPException(403, detail="Admin only")
     if status:
