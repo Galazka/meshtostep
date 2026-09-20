@@ -439,7 +439,7 @@
         }
     </style>
     <script>try{var _t=localStorage.getItem("mt_theme")||"light";if(_t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}</script>
-    <link href="/asset/portal.css?v=32" rel="stylesheet">
+    <link href="/asset/portal.css?v=33" rel="stylesheet">
 </head>
 <body class="portal">
 
@@ -1082,7 +1082,7 @@
     import './js/auth.js?v=81';
     import './js/convert.js?v=81';
     import './js/discover.js?v=81';
-    import './js/myfiles.js?v=86';
+    import './js/myfiles.js?v=87';
     import './js/account.js?v=82';
     import './js/main.js?v=81';
 </script>
@@ -1215,6 +1215,24 @@ function cookieConsent(accept) {
 
 <script>document.addEventListener('click',function(ev){var nl=document.getElementById('navLinks');if(nl&&nl.classList.contains('open')&&ev.target.closest('#navLinks a,#navLinks button')){nl.classList.remove('open');}});</script>
 
+
+<script>
+/* HERO SLIDER — definicje prtGo/prtSlide (były zgubione przy przebudowie hero v3) */
+(function(){
+  var cur=0, N=3, timer;
+  window.prtGo=function(n){
+    var slides=document.querySelectorAll('#heroSlider .prt-slide');
+    var dots=document.querySelectorAll('#heroSlider .prt-dot');
+    if(!slides||!slides.length) return;
+    slides[cur].classList.remove('on'); if(dots&&dots[cur]) dots[cur].classList.remove('on');
+    cur=((n+N)%N);
+    slides[cur].classList.add('on'); if(dots&&dots[cur]) dots[cur].classList.add('on');
+  };
+  window.prtSlide=function(d){ window.prtGo(cur+d); restart(); };
+  function restart(){ if(timer) clearInterval(timer); timer=setInterval(function(){ window.prtGo(cur+1); }, 6500); }
+  restart();
+})();
+</script>
 <script>
 /* HERO LIVE — prawdziwe API */
 (function(){

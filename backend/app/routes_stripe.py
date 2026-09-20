@@ -21,33 +21,59 @@ def _stripe_enabled() -> bool:
 
 def _stripe_session_url(order, db) -> str | None:
     try:
-        return _stripe_build_session(order)
+        return _stripe_build_session(order, db)
     except Exception as e:
         db.rollback()
         print(f"[stripe] session create error: {e}")
         return None
 
 
-def _stripe_build_session(order):
+def _stripe_build_session(order, db=None):
     import stripe
     stripe.api_key = settings.STRIPE_SECRET_KEY
     currency = (order.currency or "PLN").lower()
-    amount = int(round(order.total or 0) * 100)  # cent
-    if amount < 50:  # Stripe min 0.50
-        amount = 50
+    total_pln = float(order.total or 0)
+    ship_pln = float(order.shipping_cost or 0)
+    amount_total = int(round(total_pln * 100))
+    if amount_total < 50:  # Stripe min 0.50
+        amount_total = 50
+    prod_amount = max(0, int(round((total_pln - ship_pln) * 100)))
+    ship_amount = amount_total - prod_amount
     success_url = settings.APP_URL or "https://3dfile.link"
-    checkout_params = dict(
-        mode="payment",
-        automatic_tax={"enabled": True},
-        tax_id_collection={"enabled": True},
-        line_items=[{
+    line_items = []
+    if prod_amount > 0:
+        line_items.append({
+            "price_data": {
+                "currency": currency,
+                "product_data": {
+                    "name": "Wydruk modeli 3D (material, kolory, uslugi) — ceny brutto z VAT",
+                    "description": f"Zamowienie #{order.id} — 3dfile.link",
+                },
+                "unit_amount": prod_amount,
+            },
+            "quantity": 1,
+        })
+    if ship_amount > 0:
+        line_items.append({
+            "price_data": {
+                "currency": currency,
+                "product_data": {"name": "Wysylka + pakowanie"},
+                "unit_amount": ship_amount,
+            },
+            "quantity": 1,
+        })
+    if not line_items:
+        line_items = [{
             "price_data": {
                 "currency": currency,
                 "product_data": {"name": f"3dfile.link print order #{order.id}"},
-                "unit_amount": amount,
+                "unit_amount": amount_total,
             },
             "quantity": 1,
-        }],
+        }]
+    checkout_params = dict(
+        mode="payment",
+        line_items=line_items,
         customer_email=order.customer_email or None,
         client_reference_id=str(order.id),
         metadata={"order_id": str(order.id)},

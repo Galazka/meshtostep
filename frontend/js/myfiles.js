@@ -478,7 +478,7 @@ function openJobModal(jobId) {
     var printBtn = document.getElementById('jobPrintOrderBtn');
     if (printBtn) {
         printBtn.style.display = '';
-        printBtn.onclick = () => openPrintOrderModal({ job_id: j.id, uuid: j.uuid, title: j.original_filename || j.filename });
+        printBtn.onclick = () => { if (typeof openPrintOrderModal === 'function') { openPrintOrderModal({ job_id: j.id, uuid: j.uuid, title: j.original_filename || j.filename }); } else { window.open('/zamow?job=' + encodeURIComponent(j.uuid), '_blank'); } };
     }
     shareBtn.onclick = () => doShare(j.id);
     delBtn.onclick = () => deleteMyJob(j.id);

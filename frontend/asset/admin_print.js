@@ -278,8 +278,13 @@ window.adminSetSearch = function(v, f){ if(f) __adminQ.search=v; __adminQ.page=1
   };
 
   window.switchPrintTab = function(tab) {
-    document.querySelectorAll('.admin-tab').forEach(function(e) { e.style.display = 'none'; });
-    document.querySelectorAll('.admin-tab-btn').forEach(function(e) { e.classList.remove('active'); e.style.borderBottom = 'none'; });
+    var WRAP = { orders:'tab-orders', stats:'tab-pstats', pricing:'tab-pricing', codes:'tab-codes', gallery:'tab-gallery', reviews:'tab-reviews', reports:'tab-reports' };
+    document.querySelectorAll('.tab-content').forEach(function(e) { e.classList.remove('active'); });
+    var w = document.getElementById(WRAP[tab] || ('tab-' + tab));
+    if (w) w.classList.add('active');
+    document.querySelectorAll('.admin-tab').forEach(function(e) { e.classList.remove('active'); });
+    var b = document.querySelector('.print-tab-btn[data-tab="' + tab + '"]');
+    if (b) b.classList.add('active');
     var t = document.getElementById('admin' + tab.charAt(0).toUpperCase() + tab.slice(1));
     if (t) t.style.display = 'block';
     if (tab === 'orders') setTimeout(loadAdminOrders, 50);

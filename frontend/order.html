@@ -97,7 +97,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 {"imports":{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js","three/addons/loaders/OBJLoader.js":"/vendor/three/loaders/OBJLoader.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js"}}
 </script>
 
-    <link href="/asset/portal.css?v=32" rel="stylesheet">
+    <link href="/asset/portal.css?v=33" rel="stylesheet">
 </head>
 <body>
 <div class="loading" id="loading">Przeliczam…</div>
@@ -329,15 +329,22 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
     }
     var i=it._multi.indexOf(c);
     if(i>=0){
-      if(it._multi.length>1){ it._multi.splice(i,1); } else { toast('Przynajmniej 1 kolor zostaje',''); return; }
-    } else if(it._multi.length>=n){
+      if(it._multi.length>1){
+        it._multi.splice(i,1);
+        if(it.colors>it._multi.length){ it.colors=Math.max(1,it._multi.length); var cc0=document.getElementById('colCount'); if(cc0) cc0.value=String(it.colors); }
+        it.color=colPl(it._multi);
+        drawCart(); calc(); refreshCol(); renderMulti(); toast('Odznaczono: '+colPl([c]),true);
+        return;
+      } else { toast('Przynajmniej 1 kolor zostaje',''); return; }
+    }
+    if(it._multi.length>=n){
       // chcesz więcej kolorów niż ustawione → automatycznie podnieś liczbę (cena: +20 zł za 1. ekstra)
       it.colors=it._multi.length+1;
       var cc=document.getElementById('colCount'); if(cc) cc.value=String(it.colors);
       var extra=(it.colors===2)?20:10;
       toast('Ilość kolorów → '+it.colors+' (+'+extra+' zł)');
     }
-    if(it._multi.indexOf(c)<0) it._multi.push(c);
+    it._multi.push(c);
     it.color=colPl(it._multi);
     drawCart(); calc(); refreshCol(); renderMulti(); toast('Kolory: '+it.color,true);
   }
