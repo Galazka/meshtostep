@@ -269,6 +269,7 @@ class Order(Base):
     printing_hours = Column(Float, nullable=True)
     notes = Column(Text, nullable=True)
     admin_notes = Column(Text, nullable=True)
+    stripe_receipt_url = Column(String(500), nullable=True)
     payment_method = Column(String(20), default="blik")
     subtotal = Column(Float, default=0.0)  # filament + electricity + color premium (internal cost)
     margin_pln = Column(Float, default=0.0)  # Tom's markup (hidden)

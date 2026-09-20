@@ -162,20 +162,25 @@ def get_material_price(material: str, db=None) -> float:
     return _cfg(db, f"material:{material}", DEFAULT_MATERIAL_PRICES.get(material, 110.0))
 
 
-def estimate_print_time_hours(volume_cm3: float, material: str = "PLA", parts: int = 1) -> float:
-    """Very rough: speed ~60 mm/s, layer 0.2 mm, ~100 mm³/s throughput (PLA/PETG)."""
+THROUGHPUTS = {"PLA": 280, "PLA HT": 200, "PLA CF": 220, "PLA Matte": 260, "PLA Silk": 260, "PLA Glow": 260,
+               "PETG": 240, "PETG HF": 260, "PETG FR": 220, "PCTG": 200, "ASA": 220, "ASA CF": 200,
+               "ABS": 250, "TPU": 150}
+
+
+def estimate_print_time_hours(volume_cm3: float, material: str = "PLA", parts: int = 1, db=None) -> float:
+    """mm³/s throughput per material — konfigurowalne w DB: klucz throughput:{MATERIAL}."""
     if not volume_cm3 or volume_cm3 <= 0:
         return 2.0
     mm3 = volume_cm3 * 1000  # całkowita objętość modelu (parts drukowane równolegle)
-    throughput = {"PLA": 280, "PETG": 240, "PCTG": 200, "ASA": 220, "ABS": 250}.get(material, 200)
+    throughput = float(_cfg(db, f"throughput:{material}", THROUGHPUTS.get(material, 200)))
     base = max(0.25, mm3 / (throughput * 3600))
     # fixed per-model setup overhead (not per-part) — Bamboo P1S auto-leveling ~2min
     return base + 0.1
 
 
-def estimate_filament_grams(volume_cm3: float, material: str = "PLA") -> float:
-    """Density in g/cm³: PLA 1.24, PETG 1.27, ABS 1.04, PA12 1.14, TPU 1.2."""
-    density = DENSITIES.get(material, 1.24)
+def estimate_filament_grams(volume_cm3: float, material: str = "PLA", db=None) -> float:
+    """Density in g/cm³ — konfigurowalna w DB: klucz density:{MATERIAL}."""
+    density = float(_cfg(db, f"density:{material}", DENSITIES.get(material, 1.24)))
     return volume_cm3 * density if volume_cm3 else 0
 
 
@@ -274,11 +279,11 @@ def calculate_price(
 
     # per-part filament (volume / parts, then grams via density)
     vol_per_part = volume_cm3 / parts if parts > 0 else 0
-    filament_g_per = estimate_filament_grams(vol_per_part, material)
+    filament_g_per = estimate_filament_grams(vol_per_part, material, db)
     total_filament_g = filament_g_per * parts * quantity
     filament_cost = (total_filament_g / 1000) * mat_price_kg
 
-    hours = max(estimated_hours, estimate_print_time_hours(volume_cm3, material, parts)) if volume_cm3 else max(estimated_hours, 2.0)
+    hours = max(estimated_hours, estimate_print_time_hours(volume_cm3, material, parts, db)) if volume_cm3 else max(estimated_hours, 2.0)
     power_cost = (watts / 1000) * hours * kwh
     color_premium = float(_cfg(db, f"color:{color}", DEFAULT_COLOR_PREMIUM.get(color, 0.0))) * quantity
 
@@ -596,6 +601,22 @@ _STATUS_MAIL = {
                   "Zamówienie #%s zostało anulowane. Ewentualna wpłata wróci na konto płatności do 14 dni."),
 }
 
+def _notify_paid(o):
+    try:
+        html = ("<div style='font-family:Inter,system-ui,sans-serif;max-width:520px;margin:0 auto;padding:24px;"
+                "border:1px solid #e5e7eb;border-radius:12px'>"
+                "<h2 style='margin:0 0 12px;color:#0B1730;font-size:18px'>3dfile.link — płatność przyjęta ✅</h2>"
+                "<p style='color:#334155;line-height:1.6;font-size:14px'>Dziękujemy! Zamówienie <b>#%s</b> na kwotę <b>%s %s</b> "
+                "jest opłacone i weszło do kolejki druku. Powiadomimy Cię o każdej zmianie statusu.</p>"
+                "<p style='color:#334155;font-size:14px'>Rachunek/potwierdzenie: <a href='https://3dfile.link/api/orders/%s/receipt'>pobierz online</a>%s</p>"
+                "<p style='color:#64748b;font-size:12px;margin-top:20px'>hello@3dfile.link · 3dfile.link — hosting i druk 3D</p></div>") % (
+                    o.id, (o.total or 0), (o.currency or "PLN"), o.id,
+                    " · <a href='" + o.stripe_receipt_url + "'>potwierdzenie Stripe</a>" if getattr(o, "stripe_receipt_url", None) else "")
+        from .mail import send_mail
+        send_mail(o.customer_email, f"Zamówienie #{o.id} opłacone — 3dfile.link", html)
+    except Exception as e:
+        print(f"[order-notify] paid failed: {e}")
+
 def _notify_order_status(o, old_status: str, new_status: str):
     try:
         if not o or not o.customer_email or new_status == old_status:
@@ -787,6 +808,12 @@ def get_pricing(db: Session = Depends(get_db), admin=Depends(require_admin)):
     _emit("max_part_area_mm2", MAX_PART_AREA_MM2)
     for mat, price in sorted(DEFAULT_MATERIAL_PRICES.items()):
         _emit(f"material:{mat}", price)
+    for mat, dens in sorted(DENSITIES.items()):
+        _emit(f"density:{mat}", dens)
+    for mat, th in sorted(THROUGHPUTS.items()):
+        _emit(f"throughput:{mat}", th)
+    for col, prem in sorted(DEFAULT_COLOR_PREMIUM.items()):
+        _emit(f"color:{col}", prem)
     for tier, regions in DEFAULT_SHIPPING.items():
         for region, val in regions.items():
             _emit(f"shipping_{tier}:{region}", val)
@@ -1095,6 +1122,81 @@ def save_shipping(req: SaveShippingReq, db: Session = Depends(get_db),
     return {"ok": True}
 
 # —— Admin: usuń zamówienie (wraz z itemami) ——
+@router.get("/api/account/orders")
+def account_orders(user=Depends(get_current_user), db: Session = Depends(get_db)):
+    """Historia zamówień zalogowanego użytkownika: po user_id LUB po zweryfikowanym emailu
+    (zamówienia składane przed założeniem konta / jako gość)."""
+    from sqlalchemy import or_
+    q = (db.query(models.Order)
+         .filter(or_(models.Order.user_id == user.id,
+                     models.Order.customer_email == user.email))
+         .order_by(models.Order.id.desc()).limit(100))
+    out = []
+    for o in q.all():
+        out.append({"id": o.id, "created_at": o.created_at.isoformat() if o.created_at else None,
+                    "status": o.status, "is_paid": bool(o.is_paid),
+                    "total": o.total, "currency": o.currency or "PLN",
+                    "shipping_method": o.shipping_method,
+                    "items": [{"model_name": it.model_name, "material": it.material, "color": it.color,
+                               "quantity": it.quantity, "volume_cm3": it.volume_cm3} for it in (o.items or [])],
+                    "receipt_url": f"/api/orders/{o.id}/receipt",
+                    "stripe_receipt": o.stripe_receipt_url if getattr(o, "stripe_receipt_url", None) else None})
+    return {"ok": True, "orders": out}
+
+
+@router.get("/api/orders/{order_id}/receipt")
+def order_receipt(order_id: int, request: Request, token: str = None, db: Session = Depends(get_db)):
+    """Rachunek (HTML, przyjazny do druku/PDF). Właściciel (user_id lub email) albo admin."""
+    from .auth import _decode_token
+    o = db.get(models.Order, order_id)
+    if not o:
+        raise HTTPException(404, detail="Order not found")
+    me = None
+    auth = request.headers.get("authorization", "")
+    raw = auth[7:] if auth.startswith("Bearer ") else (token or request.query_params.get("token") or "")
+    if raw:
+        me = _decode_token(raw)
+    if not me:
+        raise HTTPException(401, detail="Zaloguj się aby pobrać rachunek")
+    if not getattr(me, "is_admin", False) and o.user_id != me.id and (o.customer_email or "").lower() != (me.email or "").lower():
+        raise HTTPException(403, detail="To nie Twoje zamówienie")
+    items = list(o.items or [])
+    if not items and o.job_uuid:
+        items = [SimpleNamespace(model_name=o.material or "Model", material=o.material, color=o.color,
+                                 quantity=o.quantity or 1, volume_cm3=o.volume_cm3, subtotal=None, margin_pln=None)]
+    rows = "".join(f"<tr><td>{getattr(it,'model_name','')}</td><td>{getattr(it,'material','') or ''}</td>"
+                   f"<td>{getattr(it,'color','') or ''}</td><td style='text-align:center'>{getattr(it,'quantity',1)}</td></tr>" for it in items)
+    ship_txt = {"pickup": "odbiór osobisty (Gdańsk, ul. Międzygwiezdna 31/2)",
+                "pickup_express": "odbiór osobisty — EKSPRES",
+                "standard": "InPost Paczkomat (standard)", "express": "InPost (ekspres)",
+                "address": "kurier pod adres"}.get(o.shipping_method or "", o.shipping_method or "")
+    html = f"""<!doctype html><html lang=pl><head><meta charset=utf-8><title>Rachunek #{o.id} — 3dfile.link</title>
+<style>body{{font-family:Inter,system-ui,sans-serif;color:#0f172a;max-width:640px;margin:32px auto;padding:0 20px}}
+h1{{font-size:20px;border-bottom:2px solid #0B1730;padding-bottom:8px}}table{{width:100%;border-collapse:collapse;margin:14px 0}}
+td,th{{padding:6px 8px;border-bottom:1px solid #e2e8f0;font-size:14px;text-align:left}}.sum{{font-size:15px}}
+.tot{{font-weight:700;font-size:17px;border-top:2px solid #0B1730}}.muted{{color:#64748b;font-size:12px}}
+@media print{{.noprint{{display:none}}}}</style></head><body>
+<h1>RACHUNEK nr {o.id}/{o.created_at.strftime('%Y') if o.created_at else ''}</h1>
+<p><b>Sprzedawca:</b> 3dfile.link (sprzedaż okazjonalna) · Gdańsk · hello@3dfile.link<br>
+<b>Data wystawienia:</b> {o.created_at.strftime('%Y-%m-%d %H:%M') if o.created_at else ''}<br>
+<b>Nabywca:</b> {o.customer_name or ''} · {o.customer_email or ''}{(' · ' + o.customer_phone) if o.customer_phone else ''}<br>
+{('<b>Adres:</b> ' + (o.customer_address or '') + ', ' + (o.customer_city or '')) if o.customer_address else '<b>Odbiór:</b> osobisty / wg wyboru'}</p>
+<table><tr><th>Model</th><th>Materiał</th><th>Kolor</th><th>Ilość</th></tr>{rows}</table>
+<table class=sum>
+<tr><td>Wysyłka / dostawa</td><td style=text-align:right>{ship_txt}</td></tr>
+<tr><td>Koszt wysyłki i pakowania</td><td style=text-align:right>{(o.shipping_cost or 0):.2f} {o.currency or 'PLN'}</td></tr>
+{(f"<tr><td>Rabat</td><td style=text-align:right>-{(o.discount_pln or 0):.2f} {o.currency or 'PLN'}</td></tr>") if (o.discount_pln or 0) else ''}
+<tr class=tot><td>RAZEM</td><td style=text-align:right>{(o.total or 0):.2f} {o.currency or 'PLN'}</td></tr></table>
+<p class=muted>Płatność: {('opłacona (' + (o.payment_method or '—') + ')') if o.is_paid else 'oczekuje na płatność'} · kwota ostateczna.
+Status zamówienia: <b>{o.status}</b></p>
+{('<p><a href="' + o.stripe_receipt_url + '">🧾 Potwierdzenie płatności Stripe</a></p>') if getattr(o, 'stripe_receipt_url', None) else ''}
+<p class=muted>Dokument nie jest fakturą VAT w rozumieniu przepisów — sprzedaż okazjonalna osoby fizycznej.
+Dla firm: dane NIP w zamówieniu: {('NIP w uwagach' if (o.notes and 'NIP' in (o.notes or '')) else 'brak')}.</p>
+<div class=noprint><a href=/zamow>← Nowe zamówienie</a> · <button onclick=print()>Drukuj / zapisz PDF</button></div>
+</body></html>"""
+    return HTMLResponse(html)
+
+
 @router.delete("/api/orders/{order_id}")
 def delete_order(order_id: int, admin=Depends(require_admin), db: Session = Depends(get_db)):
     """Delete order + its items (admin)."""

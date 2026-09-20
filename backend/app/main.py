@@ -239,6 +239,11 @@ def kontakt_page():
     from fastapi.responses import FileResponse
     return FileResponse(str(FRONTEND_DIR / "kontakt.html"))
 
+@app.get("/konto", response_class=HTMLResponse, include_in_schema=False)
+def konto_page():
+    from fastapi.responses import FileResponse
+    return FileResponse(str(FRONTEND_DIR / "konto.html"))
+
 # ── Przyjazny 404 dla ludzi (JSON zostaje dla /api/*) ───────────────
 from starlette.exceptions import HTTPException as _StarHTTP
 from fastapi.responses import HTMLResponse as _HTML

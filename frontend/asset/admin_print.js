@@ -278,7 +278,7 @@ window.adminSetSearch = function(v, f){ if(f) __adminQ.search=v; __adminQ.page=1
   };
 
   window.switchPrintTab = function(tab) {
-    var WRAP = { orders:'tab-orders', stats:'tab-pstats', pricing:'tab-pricing', codes:'tab-codes', gallery:'tab-gallery', reviews:'tab-reviews', reports:'tab-reports' };
+    var WRAP = { orders:'tab-orders', stats:'tab-pstats', pricing:'tab-pricing', codes:'tab-codes', gallery:'tab-gallery', reviews:'tab-reviews', reports:'tab-reports', materials:'tab-materials' };
     document.querySelectorAll('.tab-content').forEach(function(e) { e.classList.remove('active'); });
     var w = document.getElementById(WRAP[tab] || ('tab-' + tab));
     if (w) w.classList.add('active');
@@ -294,6 +294,7 @@ window.adminSetSearch = function(v, f){ if(f) __adminQ.search=v; __adminQ.page=1
     if (tab === 'gallery') setTimeout(loadAdminGallery, 50);
     if (tab === 'reviews') setTimeout(loadAdminReviews, 50);
     if (tab === 'reports') setTimeout(loadAdminReports, 50);
+    if (tab === 'materials') setTimeout(loadAdminMaterials, 50);
   };
 
   /* ==== Init ==== */
@@ -308,7 +309,158 @@ document.addEventListener('click', function(e) {
 
   
 
-window.renderStars = function(n) {
+  /* ── MATERIAŁY + SYMULATOR KOSZTÓW (admin) ───────────────────────── */
+  var _matState = null;
+  function _pf(rows, key, dflt) {
+    var r = rows.filter(function(x){ return x.key === key; })[0];
+    return r ? parseFloat(r.value) : dflt;
+  }
+  window.loadAdminMaterials = function() {
+    var box = document.getElementById('adminMaterials'); if (!box) return;
+    box.innerHTML = '<div style="padding:18px;color:#64748b">⏳ Ładowanie cennika materiałów…</div>';
+    fetch('/api/admin/pricing?t=' + Date.now(), { headers: { 'Authorization': 'Bearer ' + getStoredToken() } })
+      .then(function(r){ return r.json(); })
+      .then(function(rows){
+        _matState = rows;
+        var mats = rows.filter(function(r){ return r.key.indexOf('material:') === 0; }).map(function(r){ return r.key.slice(9); });
+        var margin = _pf(rows, 'margin_percent', 68), kwh = _pf(rows, 'kwh_pln', 1.5), watts = _pf(rows, 'watts', 150);
+        var head = '<div style="font-size:12px;color:#6b7280;margin-bottom:10px">Silnik wyceny: <b>cena klienta = (koszt materiału + prąd + premium koloru) × (1 + marża/100)</b>. Marża globalna teraz: <b>' + margin + '% narzutu</b> (efektywna marża od ceny: ' + (margin/(1+margin/100)*1).toFixed(1) + '%). Wszystkie pola edytowalne — zapis trafia do bazy i natychmiast zmienia ceny dla klientów.</div>';
+        var tbl = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="border-bottom:2px solid #e5e7eb;text-align:left">' +
+          '<th style="padding:8px">Materiał</th><th style="padding:8px">Cena szpuli (zł/kg)</th><th style="padding:8px">Gęstość (g/cm³)</th>' +
+          '<th style="padding:8px">Przepust. (mm³/s)</th><th style="padding:8px">g na 10 cm³</th><th style="padding:8px">Koszt / 10 cm³</th>' +
+          '<th style="padding:8px">Cena klienta 10 cm³*</th><th style="padding:8px">Cena 50 cm³*</th><th style="padding:8px">Zapisz</th></tr></thead><tbody>';
+        mats.forEach(function(m){
+          var price = _pf(rows, 'material:' + m, 100), dens = _pf(rows, 'density:' + m, 1.24), th = _pf(rows, 'throughput:' + m, 200);
+          tbl += '<tr style="border-bottom:1px solid #f1f5f9" data-mat="' + esc(m) + '">' +
+            '<td style="padding:8px;font-weight:600">' + esc(m) + '</td>' +
+            '<td><input data-k="material:' + esc(m) + '" type="number" step="0.01" value="' + price + '" style="width:90px;padding:5px;border:1px solid #d1d5db;border-radius:6px"></td>' +
+            '<td><input data-k="density:' + esc(m) + '" type="number" step="0.01" value="' + dens + '" style="width:70px;padding:5px;border:1px solid #d1d5db;border-radius:6px"></td>' +
+            '<td><input data-k="throughput:' + esc(m) + '" type="number" step="1" value="' + th + '" style="width:80px;padding:5px;border:1px solid #d1d5db;border-radius:6px"></td>' +
+            '<td style="padding:8px" class="mc-g10"></td><td style="padding:8px" class="mc-cost"></td>' +
+            '<td style="padding:8px;font-weight:600" class="mc-p10"></td><td style="padding:8px;font-weight:600" class="mc-p50"></td>' +
+            '<td><button data-action="saveMat" data-mat="' + esc(m) + '" style="padding:5px 12px;background:#1d4ed8;color:#fff;border:none;border-radius:6px;cursor:pointer">Zapisz</button></td></tr>';
+        });
+        tbl += '</tbody></table></div><div style="font-size:11px;color:#9ca3af;margin-top:6px">* przy marży ' + margin + '%, prąd z ' + watts + 'W × ' + kwh + ' zł/kWh, bez wysyłki i bez minimum 3 zł (cena samego wydruku).</div>';
+        box.innerHTML = head + tbl + _simHTML(mats);
+        _recalcMatRows();
+      })
+      .catch(function(e){ box.innerHTML = '<p style="color:#ef4444">Błąd: ' + e.message + '</p>'; });
+  };
+  function _simHTML(mats) {
+    var opts = mats.map(function(m){ return '<option>' + esc(m) + '</option>'; }).join('');
+    return '<div style="margin-top:22px;padding:16px;border:1px solid #e5e7eb;border-radius:12px">' +
+      '<h3 style="margin:0 0 10px;font-size:15px">🧮 Symulator kosztów i zysków (co-ifla bez zapisu)</h3>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;font-size:13px">' +
+      '<label>Obj. cm³<br><input id="simVol" type="number" value="50" style="width:80px;padding:6px;border:1px solid #d1d5db;border-radius:6px"></label>' +
+      '<label>Ilość szt<br><input id="simQty" type="number" value="1" style="width:60px;padding:6px;border:1px solid #d1d5db;border-radius:6px"></label>' +
+      '<label>Materiał<br><select id="simMat" style="padding:6px;border:1px solid #d1d5db;border-radius:6px">' + opts + '</select></label>' +
+      '<label>Kolory<br><input id="simCol" type="number" value="1" min="1" style="width:56px;padding:6px;border:1px solid #d1d5db;border-radius:6px"></label>' +
+      '<label>Wysyłka<br><select id="simShip" style="padding:6px;border:1px solid #d1d5db;border-radius:6px"><option value="pickup">odbiór 0 zł</option><option value="pickup_express">odbiór ekspres 19</option><option value="standard" selected>paczkomat PL</option></select></label>' +
+      '<label>💰 REALNA cena szpuli zł/kg (co-if)<br><input id="simSpool" type="number" step="0.01" placeholder="z tabeli" style="width:110px;padding:6px;border:1px dashed #b45309;border-radius:6px"></label>' +
+      '<label>Marża narzut % (co-if)<br><input id="simMargin" type="number" step="0.1" placeholder="globalna" style="width:100px;padding:6px;border:1px dashed #b45309;border-radius:6px"></label>' +
+      '<button onclick="runSim()" style="padding:8px 16px;background:#0B1730;color:#fff;border:none;border-radius:8px;cursor:pointer">Licz</button>' +
+      '<button onclick="verifySim()" style="padding:8px 16px;background:#fff;color:#1d4ed8;border:1px solid #1d4ed8;border-radius:8px;cursor:pointer">Zweryfikuj z silnikiem API</button>' +
+      '</div><div id="simOut" style="margin-top:12px"></div></div>';
+  }
+  function _matVals(m) {
+    var rows = _matState || [];
+    return { price: _pf(rows, 'material:' + m, 100), dens: _pf(rows, 'density:' + m, 1.24), th: _pf(rows, 'throughput:' + m, 200) };
+  }
+  function _recalcMatRows() {
+    var rows = _matState || [];
+    var margin = _pf(rows, 'margin_percent', 68), kwh = _pf(rows, 'kwh_pln', 1.5), watts = _pf(rows, 'watts', 150);
+    document.querySelectorAll('#adminMaterials tbody tr[data-mat]').forEach(function(tr){
+      var m = tr.getAttribute('data-mat');
+      var price = parseFloat(tr.querySelector('[data-k^="material:"]').value) || 0;
+      var dens = parseFloat(tr.querySelector('[data-k^="density:"]').value) || 1.24;
+      var th = parseFloat(tr.querySelector('[data-k^="throughput:"]').value) || 200;
+      function priceFor(vol) {
+        var g = vol * dens;
+        var fcost = g / 1000 * price;
+        var hours = Math.max(0.25, vol * 1000 / (th * 3600)) + 0.1;
+        var ecost = watts / 1000 * hours * kwh;
+        var sub = fcost + ecost;
+        return { g: g, cost: sub, price: Math.max(3, sub * (1 + margin / 100)) };
+      }
+      var p10 = priceFor(10), p50 = priceFor(50);
+      tr.querySelector('.mc-g10').textContent = p10.g.toFixed(1) + ' g';
+      tr.querySelector('.mc-cost').textContent = p10.cost.toFixed(2) + ' zł';
+      tr.querySelector('.mc-p10').textContent = p10.price.toFixed(2) + ' zł';
+      tr.querySelector('.mc-p50').textContent = p50.price.toFixed(2) + ' zł';
+    });
+  }
+  window.runSim = function() {
+    if (!_matState) return;
+    var vol = parseFloat(document.getElementById('simVol').value) || 0;
+    var qty = parseInt(document.getElementById('simQty').value) || 1;
+    var m = document.getElementById('simMat').value;
+    var ncol = parseInt(document.getElementById('simCol').value) || 1;
+    var ship = document.getElementById('simShip').value;
+    var v = _matVals(m);
+    var price = parseFloat(document.getElementById('simSpool').value); if (isNaN(price)) price = v.price;
+    var margin = parseFloat(document.getElementById('simMargin').value); if (isNaN(margin)) margin = _pf(_matState, 'margin_percent', 68);
+    var kwh = _pf(_matState, 'kwh_pln', 1.5), watts = _pf(_matState, 'watts', 150);
+    var g = vol * v.dens * qty;
+    var fcost = g / 1000 * price;
+    var hours = (Math.max(0.25, vol * 1000 / (v.th * 3600)) + 0.1) * qty;
+    var ecost = watts / 1000 * hours * kwh;
+    var cprem = ncol > 1 ? (20 + (ncol - 2) * 10) * qty : 0;
+    var cost = fcost + ecost + cprem;
+    var product = Math.max(3 * qty, cost * (1 + margin / 100));
+    var pack = _pf(_matState, 'packing_pln', 3);
+    var shipCost = ship === 'pickup' ? 0 : ship === 'pickup_express' ? 19 : 16.49 + pack;
+    if (shipCost > 0 && product < 40 && ship === 'standard') shipCost = Math.min(shipCost, 9.90);
+    if (shipCost > 0 && product >= 200 && ship === 'standard') shipCost = 0;
+    var total = product + shipCost;
+    var profit = product - cost; // wysyłka po kosztach (flat/promocja może dopłacać — liczona osobno)
+    var eff = total > 0 ? (profit / total * 100) : 0;
+    var netto = total / 1.23;
+    document.getElementById('simOut').innerHTML =
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;font-size:13px">' +
+      '<div style="padding:10px;background:#f8fafc;border-radius:8px">Filtrament<br><b>' + g.toFixed(1) + ' g</b> · ' + fcost.toFixed(2) + ' zł</div>' +
+      '<div style="padding:10px;background:#f8fafc;border-radius:8px">Prąd (' + hours.toFixed(1) + ' h)<br><b>' + ecost.toFixed(2) + ' zł</b></div>' +
+      '<div style="padding:10px;background:#f8fafc;border-radius:8px">Premium kolory<br><b>' + cprem.toFixed(2) + ' zł</b></div>' +
+      '<div style="padding:10px;background:#fef3c7;border-radius:8px">Koszt własny SUMA<br><b>' + cost.toFixed(2) + ' zł</b></div>' +
+      '<div style="padding:10px;background:#dcfce7;border-radius:8px">Cena klienta (druk)<br><b>' + product.toFixed(2) + ' zł</b></div>' +
+      '<div style="padding:10px;background:#e0e7ff;border-radius:8px">Wysyłka<br><b>' + shipCost.toFixed(2) + ' zł</b></div>' +
+      '<div style="padding:10px;background:#0B1730;color:#fff;border-radius:8px">DO ZAPŁATY<br><b>' + total.toFixed(2) + ' zł</b> <span style="font-size:11px">netto ' + netto.toFixed(2) + '</span></div>' +
+      '<div style="padding:10px;background:' + (profit > 0 ? '#dcfce7' : '#fee2e2') + ';border-radius:8px">Zysk na zamówieniu<br><b>' + profit.toFixed(2) + ' zł</b> · ' + eff.toFixed(1) + '% ceny</div>' +
+      '</div><div style="font-size:12px;color:#6b7280;margin-top:8px">Break-even: przy tym koszcie (' + cost.toFixed(2) + ' zł) minimalna cena bez straty = <b>' + cost.toFixed(2) + ' zł</b> (narzut 0%). Przy marży docelowej X% ze sprzedaży: cena = koszt/(1−X). Np. 30% marży od ceny → ' + (cost / 0.7).toFixed(2) + ' zł.</div>';
+  };
+  window.verifySim = function() {
+    var vol = parseFloat(document.getElementById('simVol').value) || 0;
+    var m = document.getElementById('simMat').value;
+    var fd = new FormData();
+    fd.append('material', m); fd.append('color', 'black'); fd.append('quantity', document.getElementById('simQty').value || '1');
+    fd.append('volume_cm3', vol); fd.append('estimated_hours', '0'); fd.append('shipping', document.getElementById('simShip').value);
+    fd.append('shipping_region', 'PL'); fd.append('currency', 'PLN');
+    fetch('/api/calculate?t=' + Date.now(), { method: 'POST', body: fd })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        var el = document.getElementById('simOut');
+        el.innerHTML += '<div style="margin-top:8px;padding:10px;border:1px solid #1d4ed8;border-radius:8px;font-size:13px">🔌 Silnik API dla tych samych danych (bez co-ifli): <b>cena ' + (d.total != null ? d.total.toFixed(2) : '?') + ' ' + (d.currency || 'PLN') + '</b>, koszt filamentu ' + (d.internal ? d.internal.filament_cost : '?') + ' zł, ' + (d.internal ? d.internal.filament_g : '?') + ' g · ' + (d.internal ? d.internal.printing_hours : '?') + ' h. Różnica z symulatorem = twoje co-ifle (realna szpula / marża).</div>';
+      }).catch(function(e){ alert('Błąd weryfikacji: ' + e.message); });
+  };
+  document.addEventListener('click', function(e) {
+    var b = e.target.closest('[data-action="saveMat"]');
+    if (!b) return;
+    var tr = b.closest('tr');
+    var inputs = tr.querySelectorAll('input[data-k]');
+    var jobs = [];
+    inputs.forEach(function(inp){
+      jobs.push(fetch('/api/admin/pricing', { method: 'POST', headers: { 'Authorization': 'Bearer ' + getStoredToken(), 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'key=' + encodeURIComponent(inp.getAttribute('data-k')) + '&value=' + encodeURIComponent(inp.value) + '&kind=float' }));
+    });
+    Promise.all(jobs).then(function(rs){
+      var ok = rs.every(function(r){ return r.ok; });
+      showToast(ok ? 'Zapisano — ceny klientów przeliczone' : 'Część zapisu nie powiodła się', ok ? 'success' : 'error');
+      if (ok) loadAdminMaterials();
+    });
+  });
+  document.addEventListener('input', function(e){ if (e.target.closest('#adminMaterials tbody')) _recalcMatRows(); });
+
+
+  window.renderStars = function(n) {
     var out = '';
     for (var i = 1; i <= 5; i++) out += i <= n ? '★' : '☆';
     return out;

@@ -313,6 +313,7 @@
                                     <button class="print-tab-btn admin-tab" onclick="switchPrintTab('gallery')" data-tabs="print" data-tab="gallery">Galeria</button>
                                     <button class="print-tab-btn admin-tab" onclick="switchPrintTab('reviews')" data-tabs="print" data-tab="reviews">Recenzje</button>
                                     <button class="print-tab-btn admin-tab" onclick="switchPrintTab('reports')" data-tabs="print" data-tab="reports">Raporty</button>
+                                    <button class="print-tab-btn admin-tab" onclick="switchPrintTab('materials')" data-tabs="print" data-tab="materials">Materiały</button>
                                 </div>
 
                 <!-- USERS TAB -->
@@ -604,6 +605,7 @@
                 <div class="tab-content" id="tab-codes"><div id="adminCodes" class="print-panel"></div></div>
                 <div class="tab-content" id="tab-gallery"><div id="adminGallery" class="print-panel"></div></div>
                 <div class="tab-content" id="tab-reviews"><div id="adminReviews" class="print-panel"></div></div>
+                <div class="tab-content" id="tab-materials"><div id="adminMaterials" class="print-panel"></div></div>
                 <div class="tab-content" id="tab-reports"><div id="adminReports" class="print-panel"></div></div>
                 </div>
 
@@ -1812,7 +1814,7 @@ const I18N = {
     if (window.location.search.includes('tab=ads')) switchAdminTab('ads');
 
     </script>
-<script src="/asset/admin_print.js?v=28"></script>
+<script src="/asset/admin_print.js?v=29"></script>
 <script>
   try {
     var _qp = new URLSearchParams(window.location.search).get('ptab');

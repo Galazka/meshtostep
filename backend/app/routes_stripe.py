@@ -152,11 +152,28 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
         if order_id:
             o = db.get(models.Order, order_id)
             if o:
+                was_unpaid = not o.is_paid
                 o.is_paid = True
-                if o.status == "nowy" and not o.status:
+                if o.status == "nowy":
                     o.status = "realizacja"
                 o.payment_method = "stripe"
+                # hosted Stripe receipt link (best effort — used on /konto + rachunek)
+                try:
+                    pi = session.get("payment_intent")
+                    if pi:
+                        intent = stripe.PaymentIntent.retrieve(pi, expand=["charges.data"])
+                        chs = (intent.get("charges") or {}).get("data") or []
+                        if chs and chs[0].get("receipt_url"):
+                            o.stripe_receipt_url = chs[0]["receipt_url"]
+                except Exception as e:
+                    print(f"[stripe] receipt_url fetch failed: {e}")
                 db.commit()
+                if was_unpaid and o.customer_email:
+                    try:
+                        from .routes_order import _notify_paid
+                        _notify_paid(o)
+                    except Exception as e:
+                        print(f"[stripe] paid mail failed: {e}")
     return {"ok": True}
 
 

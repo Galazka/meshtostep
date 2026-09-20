@@ -113,7 +113,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#F6F7F9;color:#0A0F1E;min
     meta.style.display='block'; }
 
   if(st==='success'){
-    show('ok','Płatność przyjęta','Twoje zamówienie jest opłacone i trafiło do realizacji. Potwierdzenie wysłaliśmy na e-mail.');
+    show('ok','Płatność przyjęta','Twoje zamówienie jest opłacone i trafiło do realizacji. Potwierdzenie wysłaliśmy na e-mail.<br><a href="/konto" style="color:#2B5CE6;font-weight:600">📦 Historia zamówień i rachunki →</a> · <a href="/api/orders/' + order + '/receipt" style="color:#2B5CE6" target="_blank">Pobierz rachunek</a>');
     document.getElementById('mStatus').textContent='opłacone';
   } else if(st==='cancel'){
     show('warn','Płatność anulowana','Zamówienie zostało zapisane — możesz je opłacić ponownie albo wybrać przelew BLIK.');

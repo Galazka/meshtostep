@@ -2,6 +2,7 @@
 
 const I18N = {
     pl: {
+        navMyOrders: 'Moje zamówienia',
         authGateBack: 'Powrót do głównej strony',
         authGateDesc: 'Zaloguj się jako administrator, aby kontynuować.',
         authGateTitle: 'Panel administratora',
@@ -182,6 +183,7 @@ const I18N = {
         authForgotTitle: 'Resetowanie hasla'
     },
     en: {
+        navMyOrders: 'My orders',
         authGateBack: 'Back to home',
         authGateDesc: 'Sign in as administrator to continue.',
         authGateTitle: 'Admin Panel',

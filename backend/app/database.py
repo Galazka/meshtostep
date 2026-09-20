@@ -129,6 +129,7 @@ def _migrate_columns():
             add_col(conn, "orders", "discount_pln", "FLOAT DEFAULT 0", existing_orders)
             add_col(conn, "orders", "print_parts", "INTEGER DEFAULT 1", existing_orders)
             add_col(conn, "orders", "admin_notes", "TEXT", existing_orders)
+            add_col(conn, "orders", "stripe_receipt_url", "VARCHAR(500)", existing_orders)
             add_col(conn, "orders", "customer_phone", "VARCHAR(30)", existing_orders)
             add_col(conn, "orders", "filament_cost", "FLOAT DEFAULT 0", existing_orders)
             add_col(conn, "orders", "electricity_cost", "FLOAT DEFAULT 0", existing_orders)
