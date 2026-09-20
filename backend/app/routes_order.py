@@ -63,11 +63,13 @@ DEFAULT_SHIPPING = {
     "express":   {"PL": 33.00, "EU": 70.0, "GLOBAL": 110.0},
     "priority":  {"PL": 40.99, "EU": 95.0, "GLOBAL": 160.0},
     "pickup":    {"PL": 0.0,   "EU": 0.0,  "GLOBAL": 0.0},
+    "pickup_express": {"PL": 19.00, "EU": 19.00, "GLOBAL": 19.00},
 }
 
 DEFAULT_WATTS = 150
 DEFAULT_KWH = getattr(settings, "kwh_price", 1.50)  # Bamboo P1S ~1.5 zł/kWh
 PACKING_FEE_PLN = 3.0  # karton + etykieta + folia na przesyłkę (InPost Paczkomat)
+PICKUP_EXPRESS_FEE_PLN = 19.00  # odbiór osobisty ekspres: priorytet w kolejce, gotowe do 2 dni roboczych (opłata all-inclusive)
 FREE_SHIPPING_MIN_PLN = 200.0  # zamówienia >=200 zł → wysyłka gratis (Tom pokrywa koszt)
 
 # ── Małe zamówienia: promocyjna wysyłka (Tom dopłaca różnicę z marży — konkurencyjny pricing) ──
@@ -77,7 +79,7 @@ SMALL_ORDER_SHIP_FLAT = 9.90     # wysyłka+pakowanie ŁĄCZNIE (normalnie InPos
 def _apply_small_order_shipping(product_pln: float, shipping_cost: float, shipping: str) -> float:
     """Małe zamówienia (<25 zł produktu, nie pickup): wysyłka+pakowanie flat 11.90 zł.
     Bez tego mały model 6 cm³ kosztowałby 26 zł (wysyłka zjada 80% ceny)."""
-    if shipping_cost > 0 and shipping != "pickup" and product_pln < SMALL_ORDER_MAX_PRODUCT:
+    if shipping_cost > 0 and shipping not in ("pickup", "pickup_express") and product_pln < SMALL_ORDER_MAX_PRODUCT:
         return min(shipping_cost, SMALL_ORDER_SHIP_FLAT)
     return shipping_cost
 MARGIN_PERCENT = getattr(settings, "print_margin_percent", 68)
@@ -287,7 +289,7 @@ def calculate_price(
     shipping_cost = round(_cfg_value(db, shipping, shipping_region), 2)
     # Packing fee (karton, etykieta, folia) — dodawany tylko gdy paczka jest wysyłana,
     # NIE przy odbiorze osobistym. Konfigurowalne: packing_pln (default 5.00).
-    packing_fee = 0.0 if shipping == "pickup" else float(_cfg(db, "packing_pln", PACKING_FEE_PLN))
+    packing_fee = 0.0 if shipping in ("pickup", "pickup_express") else float(_cfg(db, "packing_pln", PACKING_FEE_PLN))
     shipping_cost = round(shipping_cost + packing_fee, 2)
     discount_pln = 0.0
     discount_info = None
@@ -303,7 +305,7 @@ def calculate_price(
         shipping_cost = min(shipping_cost, SMALL_ORDER_SHIP_FLAT)
     # FREE SHIPPING: zamówienia >=200 zł (produkt) → wysyłka gratis, Tom pokrywa koszt
     free_shipping = False
-    if shipping_cost > 0 and product_total >= float(_cfg(db, "free_shipping_min_pln", FREE_SHIPPING_MIN_PLN)):
+    if shipping_cost > 0 and shipping not in ("pickup", "pickup_express") and product_total >= float(_cfg(db, "free_shipping_min_pln", FREE_SHIPPING_MIN_PLN)):
         shipping_cost = 0.0
         free_shipping = True
     pln_total = round(product_total + shipping_cost - discount_pln, 2)
@@ -884,7 +886,7 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db)):
     if not req.items:
         raise HTTPException(400, detail="Brak modeli w zamówieniu")
     shipping_cost = round(_cfg_value(db, req.shipping, req.shipping_region), 2)
-    packing_fee = 0.0 if req.shipping == "pickup" else float(_cfg(db, "packing_pln", PACKING_FEE_PLN))
+    packing_fee = 0.0 if req.shipping in ("pickup", "pickup_express") else float(_cfg(db, "packing_pln", PACKING_FEE_PLN))
     shipping_cost = round(shipping_cost + packing_fee, 2)
 
     total = shipping_cost
@@ -933,7 +935,7 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db)):
         total = product_pln + _new_ship
         shipping_cost = _new_ship
     # FREE SHIPPING: product >= 200 PLN -> shipping gratis (Tom covers cost)
-    if shipping_cost > 0 and product_pln >= float(_cfg(db, "free_shipping_min_pln", FREE_SHIPPING_MIN_PLN)):
+    if shipping_cost > 0 and req.shipping not in ("pickup", "pickup_express") and product_pln >= float(_cfg(db, "free_shipping_min_pln", FREE_SHIPPING_MIN_PLN)):
         total -= shipping_cost
         shipping_cost = 0.0
 

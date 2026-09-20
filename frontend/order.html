@@ -58,6 +58,10 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);line-he
 .preview-box{background:#f1f5f9;border:1px solid var(--border);border-radius:12px;min-height:320px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;}
 .preview-iframe{width:100%;height:340px;border:none}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fulfill-opt{padding:12px 14px;border:2px solid var(--border);border-radius:12px;background:var(--bg);cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:3px;font-family:inherit;transition:border-color .15s}
+.fulfill-opt strong{font-size:13.5px}
+.fulfill-opt span{font-size:11.5px;color:var(--muted);line-height:1.35}
+.fulfill-opt.sel{border-color:var(--accent);background:#eff6ff;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
 @media(max-width:600px){.form-row{grid-template-columns:1fr}}
 label{display:block;font-size:12.5px;font-weight:500;margin:0 0 4px;color:var(--muted)}
 input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:9px;font-size:14px;background:#fff;color:var(--fg)}
@@ -182,22 +186,53 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 
       <div class="card">
         <h2><span class="n">4</span> Dane i dostawa</h2>
+        <div id="fulfillStep">
+          <label style="font-weight:600;margin-bottom:6px;display:block" data-i18n="fulfillQ">Jak chcesz otrzymać zamówienie?</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <button type="button" id="fulPickupBtn" class="fulfill-opt" onclick="pickFulfillment('pickup')">
+              <strong>🏠 Odbiór osobisty</strong>
+              <span data-i18n="fulPickD">Gdańsk Osowa · wysyłka 0 zł · SMS gdy gotowe</span>
+            </button>
+            <button type="button" id="fulShipBtn" class="fulfill-opt" onclick="pickFulfillment('ship')">
+              <strong>📦 Wysyłka</strong>
+              <span data-i18n="fulShipD">Paczkomat InPost lub kurier pod adres</span>
+            </button>
+          </div>
+        </div>
+        <div id="pickupBlock" style="display:none;margin-top:12px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <button type="button" id="pkStdBtn" class="fulfill-opt sel" onclick="setPickupSpeed('std')">
+              <strong data-i18n="pkStdT">Standard</strong>
+              <span data-i18n="pkStdD">gotowe do 5 dni roboczych · 0 zł</span>
+            </button>
+            <button type="button" id="pkExpBtn" class="fulfill-opt" onclick="setPickupSpeed('express')">
+              <strong>⚡ Ekspres</strong>
+              <span data-i18n="pkExpD">priorytet w kolejce, gotowe do 2 dni roboczych · +19 zł</span>
+            </button>
+          </div>
+          <div id="pickupInfo" style="margin-top:10px;padding:10px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;font-size:12.5px;color:#14532d">
+            <b data-i18n="pkInfoT">Jak to działa:</b> <span data-i18n="pkInfoD">Wyślemy SMS + email, gdy wydruk będzie gotowy i spakowany. Odbierasz: Gdańsk, ul. Międzygwiezdna 31/2 (Osowa), po uzgodnieniu godziny. Potrzebujemy Twojego numeru telefonu.</span>
+          </div>
+        </div>
         <div class="form-row">
           <div><label data-i18n="fName">Imię i nazwisko *</label><input id="fName" data-i18n-ph="fName" placeholder="Jan Kowalski"></div>
                     <div><label data-i18n="fEmail">Email *</label><input id="fEmail" type="email" data-i18n-ph="fEmail" placeholder="jan@przyklad.pl"></div>
         </div>
         <div class="form-row" style="margin-top:10px">
-          <div><label data-i18n="fPhone">Telefon</label><input id="fPhone" data-i18n-ph="fPhone" placeholder="+48 600 000 000"></div>
-                    <div><label data-i18n="fCity">Kod pocztowy / Miasto</label><input id="fCity" data-i18n-ph="fCity" placeholder="80-000 Gdańsk"></div>
+          <div><label data-i18n="fPhone">Telefon *</label><input id="fPhone" data-i18n-ph="fPhone" placeholder="+48 600 000 000"></div>
+          <div></div>
         </div>
-        <div><label data-i18n="fAddr">Adres</label><textarea id="fAddr" rows="2" data-i18n-ph="fAddr" placeholder="Ulica i numer"></textarea></div>
+        <div id="shipFields" style="display:none">
+        <div class="form-row" style="margin-top:10px">
+                    <div><label data-i18n="fCity">Kod pocztowy / Miasto *</label><input id="fCity" data-i18n-ph="fCity" placeholder="80-000 Gdańsk"></div>
+        </div>
+        <div><label data-i18n="fAddr">Adres *</label><textarea id="fAddr" rows="2" data-i18n-ph="fAddr" placeholder="Ulica i numer"></textarea></div>
         <div class="form-row" style="margin-top:10px">
           <div><label data-i18n="fRegion">Kraj</label><select id="fRegion" data-i18n-ph="fRegion"><option value="PL">Polska</option><option value="EU">UE</option><option value="GLOBAL">Świat</option></select></div>
                     <div><label data-i18n="fShipping">Wysyłka</label><select id="fShipping" data-i18n-ph="fShipping" onchange="calc();toggleShipUI()">
                                 <option value="standard">Standard · 5 dni (InPost Paczkomat)</option>
                                                                 <option value="express">Ekspres · 2 dni (x2)</option>
                                                                 <option value="address">Dostawa kurierem na adres (firma/osoba)</option>
-                                <option value="pickup">Odbiór osobisty (Gdańsk)</option>
                               </select></div>
                             </div>
                             <div id="pickupRow" style="display:none;margin-top:10px">
@@ -211,6 +246,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
                                       <label>🏢 Wysyłka na adres firmy</label>
                                       <input id="fCompanyShip" placeholder="Ulica, numer, kod, miasto" style="padding:9px 12px;border:1px solid var(--border);border-radius:9px;width:100%;margin-top:6px">
                                     </div>
+        </div><!-- /shipFields -->
                             <div style="margin-top:12px;display:flex;gap:8px">
                               <button type="button" id="custTypePerson" onclick="setCustType('person')" style="flex:1;padding:9px;border:2px solid var(--accent);background:#eff6ff;color:var(--accent);border-radius:9px;font-weight:600;font-size:13px">👤 Osoba fizyczna</button>
                               <button type="button" id="custTypeFirm" onclick="setCustType('firm')" style="flex:1;padding:9px;border:2px solid var(--border);background:var(--bg);color:var(--muted);border-radius:9px;font-weight:600;font-size:13px">🏢 Firma</button>
@@ -219,6 +255,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
                               <label>NIP / firmowa nazwa</label>
                               <input id="fNip" placeholder="NIP, np. 521-345-12-90" style="padding:9px 12px;border:1px solid var(--border);border-radius:9px;width:100%;margin-top:6px">
                               <input id="fCompany" placeholder="Pełna nazwa firmy" style="padding:9px 12px;border:1px solid var(--border);border-radius:9px;width:100%;margin-top:6px">
+                              <input id="fFirmAddr" placeholder="Adres firmy (do faktury): ulica, kod, miasto" style="padding:9px 12px;border:1px solid var(--border);border-radius:9px;width:100%;margin-top:6px">
                             </div>
         <div class="form-row" style="margin-top:10px">
           <div><label data-i18n="fCode">Kod rabatowy</label><input id="fCode" data-i18n-ph="fCode" placeholder="opcjonalnie"></div>
@@ -227,7 +264,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
         <div><label style="margin-top:10px" data-i18n="fNotes">Uwagi dla drukarza (opcjonalnie)</label>
                   <textarea id="fNotes" class="note-field" rows="2" data-i18n-ph="fNotes" placeholder="np. podkreśl nacięcia, kolor docelowy itp."></textarea></div>
                 <button class="btn-main" id="submitBtn" onclick="submitOrder()" data-i18n="fSubmit">Zamawiam — pełne podsumowanie poniżej</button>
-        <div style="font-size:11.5px;color:var(--muted);margin-top:10px">Płatność: Stripe (karta / BLIK) po potwierdzeniu · VAT wg kraju dostawy doliczy Stripe.</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:10px">Płatność: Stripe (karta / BLIK). Podana cena jest ceną brutto (z VAT 23%) — nie doliczamy nic później.</div>
       </div>
     </div>
 
@@ -360,10 +397,32 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
       fr.style.display='none';
     }
   }
+  var FULFILL=''; var PK_SPEED='std'; var LAST_SHIP_TIER='standard';
+  function pickFulfillment(mode){
+    FULFILL=mode;
+    document.getElementById('fulPickupBtn').classList.toggle('sel', mode==='pickup');
+    document.getElementById('fulShipBtn').classList.toggle('sel', mode==='ship');
+    document.getElementById('pickupBlock').style.display = mode==='pickup'?'block':'none';
+    document.getElementById('shipFields').style.display = mode==='ship'?'block':'none';
+    var fs=document.getElementById('fShipping');
+    if(mode==='pickup'){ fs.value = PK_SPEED==='express'?'pickup_express':'pickup'; }
+    else { fs.value = LAST_SHIP_TIER; toggleShipUI(); }
+    calc();
+  }
+  function setPickupSpeed(v){
+    PK_SPEED=v;
+    document.getElementById('pkStdBtn').classList.toggle('sel', v==='std');
+    document.getElementById('pkExpBtn').classList.toggle('sel', v==='express');
+    var fs=document.getElementById('fShipping');
+    fs.value = v==='express'?'pickup_express':'pickup';
+    calc();
+  }
   function toggleShipUI(){
-      var ship=document.getElementById('fShipping').value, row=document.getElementById('pickupRow'), csr=document.getElementById('companyShipRow');
-      if(ship==='standard'||ship==='express'){ row.style.display='block'; csr.style.display='none'; if(!document.getElementById('fPaczkomat').value) searchPaczkomat('Gda%C5%84sk'); }
-      else if(ship==='address'){ row.style.display='none'; csr.style.display='block'; }
+      var sel=document.getElementById('fShipping');
+      if(FULFILL==='pickup'){ sel.value = PK_SPEED==='express'?'pickup_express':'pickup'; return; }
+      var ship=sel.value, row=document.getElementById('pickupRow'), csr=document.getElementById('companyShipRow');
+      if(ship==='standard'||ship==='express'){ LAST_SHIP_TIER=ship; row.style.display='block'; csr.style.display='none'; if(!document.getElementById('fPaczkomat').value) searchPaczkomat('Gda%C5%84sk'); }
+      else if(ship==='address'){ LAST_SHIP_TIER='address'; row.style.display='none'; csr.style.display='block'; }
       else { row.style.display='none'; csr.style.display='none'; }
     }
   function searchPaczkomat(q){
@@ -461,50 +520,44 @@ document.getElementById('fileInput').addEventListener('change',function(){ var f
 function calc(){
   var box=document.getElementById('sumBody'), empty=document.getElementById('sumEmpty'), btn=document.getElementById('submitBtn');
   if(!CART.length){ box.style.display='none'; empty.style.display='block'; btn.disabled=true; return; }
-  var rate=RATES[cur]||1; var productsPLN=0; var shippingPLN=0; var rowsHTML='';
-  CART.forEach(function(it){
+  var rate=RATES[cur]||1;
+  var productsPLN=0, colorExt=0, rowsHTML='';
+  CART.forEach(function(it, idx){
     var colP=_colP(it.color);
-    var prn = ((+it.price)||0) + colP;
-    productsPLN += prn * it.qty;
-    var colTag=(it.colors&&it.colors>1)?' · '+it.colors+' kol.':'';
-    rowsHTML+='<div class="summary-row" style="cursor:pointer" onclick="preview('+CART.indexOf(it)+');refreshCol()"><span style="font-weight:600">'+esc(it.model_name||('Model '+i))+' ×'+it.qty+'</span><span>'+fmt(cx(prn*it.qty/rate))+'</span></div>';
-    rowsHTML+='<div class="summary-row" style="font-size:12px;color:var(--muted);cursor:pointer" onclick="preview('+CART.indexOf(it)+');refreshCol()"><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:50%;background:'+_colHex(it.color)+';border:1px solid rgba(0,0,0,.15);display:inline-block"></span>'+esc(it.material||'PLA')+' · '+esc(it.color||'—')+colTag+'</span><span style="color:var(--accent);font-size:11px">edytuj</span></div>';
+    var prn=((+it.price)||0)+colP;
+    productsPLN += prn*it.qty;
+    var c=it.colors||1; if(c>1) colorExt += 20+(c-2)*10;
+    var colTag=(c>1)?' · '+c+' kol.':'';
+    rowsHTML+='<div class="summary-row" style="cursor:pointer" onclick="preview('+idx+');refreshCol()"><span style="font-weight:600">'+esc(it.model_name||('Model '+(idx+1)))+' ×'+it.qty+'</span><span>'+fmt(cx(prn*it.qty/rate))+'</span></div>';
+    rowsHTML+='<div class="summary-row" style="font-size:12px;color:var(--muted);cursor:pointer" onclick="preview('+idx+');refreshCol()"><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:50%;background:'+_colHex(it.color)+';border:1px solid rgba(0,0,0,.15);display:inline-block"></span>'+esc(it.material||'PLA')+' · '+esc(it.color||'—')+colTag+'</span><span style="color:var(--accent);font-size:11px">edytuj</span></div>';
   });
-  var shipBase={standard:{PL:16.49,EU:35,GLOBAL:55},express:{PL:33,EU:70,GLOBAL:110},pickup:{PL:0,EU:0,GLOBAL:0}};
+  var shipBase={standard:{PL:16.49,EU:35,GLOBAL:55},express:{PL:33,EU:70,GLOBAL:110},pickup:{PL:0,EU:0,GLOBAL:0},pickup_express:{PL:19,EU:19,GLOBAL:19}};
   var reg=document.getElementById('fRegion').value, ship=document.getElementById('fShipping').value;
-  var base=(shipBase[ship]||{})[reg]||0;
-  shippingPLN = ship==='pickup'?0:(base+3);
-  // MAŁE ZAMÓWIENIE: flat 11,90 zł (spójne z backendem _apply_small_order_shipping)
+  var isPickup = ship==='pickup', isPkExp = ship==='pickup_express';
+  var base=(shipBase[ship]||shipBase.standard)[reg]||0;
+  var shippingPLN = isPickup ? 0 : isPkExp ? 19 : (base+3);
   var productEst = Math.max(3, productsPLN + colorExt);
-  var smallOrder = shippingPLN>0 && productEst<40;
+  var smallOrder = shippingPLN>0 && !isPkExp && productEst<40;
   if(smallOrder) shippingPLN = Math.min(shippingPLN, 9.90);
-  // multi-color premium (client-side estimate): 1st extra color +20, next +10
-  var colorExt=0; CART.forEach(function(it){ var c=it.colors||1; if(c>1) colorExt += 20+(c-2)*10; });
-  var totalPLN=Math.max(3,productsPLN+colorExt)+shippingPLN;
-  var colorLine = colorExt>0 ? '<div class="summary-row"><span>Kolory ekstra ('+CART.filter(function(x){return (x.colors||1)>1;}).length+' modele)</span><span style="color:#B45309">+'+fmt(colorExt/rate)+'</span></div>' : '';
-  // FREE shipping on orders >= 200 PLN
-  var freeShip = (productsPLN+colorExt)>=200 && shippingPLN>0;
+  var freeShip = !isPickup && !isPkExp && (productsPLN+colorExt)>=200 && shippingPLN>0;
   if(freeShip) shippingPLN=0;
-  totalPLN=Math.max(3,productsPLN+colorExt)+shippingPLN;
-  if(freeShip) totalPLN-=shippingPLN;
-  var total=cx(totalPLN/rate);
-  var freeLine = freeShip ? '<div class="summary-row" style="color:#059669"><span>✅ Darmowa wysyłka (zamówienie ≥ 200 zł)</span><span>0,00 zł</span></div>' : '';
-  var total=cx(totalPLN/rate);
-  // VAT — PL: netto + 23% VAT brutto (transparentne dla klienta)
-  var isPL=(document.getElementById('fRegion').value==='PL');
+  var totalPLN = Math.max(3, productsPLN+colorExt) + shippingPLN;
+  var colorLine = colorExt>0 ? '<div class="summary-row"><span>Kolory ekstra</span><span style="color:#B45309">+'+fmt(colorExt/rate)+'</span></div>' : '';
+  var shipLabel = isPickup ? 'Odbiór osobisty' : isPkExp ? 'Ekspres przy odbiorze (2 dni)' : freeShip ? 'Wysyłka — GRATIS (≥200 zł)' : smallOrder ? 'Wysyłka + pakowanie — PROMOCJA' : 'Wysyłka + pakowanie';
+  var freeLine='';
+  // cena całkowita jest BRUTTO (z VAT 23%) — rozbijamy wstecz dla przejrzystości
   var vatLine='';
-  if(isPL){ var netto=+(cx(totalPLN/rate)); var vat=Math.round(netto*23)/100; var brutto=cx(netto+vat); vatLine='<div class="summary-row" style="border-top:1px dashed var(--border);color:var(--muted)"><span>Netto</span><span>'+fmt(netto)+'</span></div><div class="summary-row" style="color:var(--muted)"><span>VAT 23%</span><span>'+fmt(vat)+'</span></div><div class="summary-total"><span>Brutto (z VAT)</span><span>'+fmt(brutto)+'</span></div>'; }
-
-  var netTotalLine='<div class="summary-total"><span>Razem (netto)</span><span>'+fmt(total)+'</span></div>';
+  var total=cx(totalPLN/rate);
+  var brutto=cx(totalPLN/rate); var netto=+(brutto/1.23).toFixed(2); var vat=+(brutto-netto).toFixed(2);
+  vatLine='<div class="summary-row" style="border-top:1px dashed var(--border);color:var(--muted)"><span>Cena netto</span><span>'+fmt(netto)+'</span></div><div class="summary-row" style="color:var(--muted)"><span>VAT 23%</span><span>'+fmt(vat)+'</span></div>';
   box.innerHTML=rowsHTML+
     '<div class="summary-row"><span>Druk ('+CART.length+' model'+(CART.length>1?'i':'')+')</span><span>'+fmt(cx(productsPLN/rate))+'</span></div>'+
-    '<div class="summary-row"><span>Wysyłka'+(ship==='pickup'?' (odbiór)':(smallOrder?' — PROMOCJA małe zamówienie':' + pakowanie'))+'</span><span>'+(shippingPLN===0?'0,00 zł':fmt(shippingPLN/rate))+'</span></div>'+
-    colorLine +
-    freeLine +
-    netTotalLine + vatLine;
+    '<div class="summary-row"><span>'+shipLabel+'</span><span>'+(shippingPLN===0?'0,00 zł':fmt(shippingPLN/rate))+'</span></div>'+
+    colorLine+freeLine+
+    '<div class="summary-total"><span>Do zapłaty (brutto)</span><span>'+fmt(brutto)+'</span></div>'+vatLine;
   empty.style.display='none'; box.style.display='block'; btn.disabled=false;
-  document.getElementById('vatNote').textContent = reg==='PL'?'① Do ceny doliczony zostanie VAT 23% (Polska) — Stripe naliczy go przy płatności.':'① Do ceny doliczony zostanie VAT wg kraju dostawy — Stripe naliczy go przy płatności.';
-  document.getElementById('fxNote').textContent = cur==='PLN'?'Waluta: PLN (konto własne)':'Waluta: '+cur+' · kurs 1 '+cur+' = '+(1/rate).toFixed(4)+' PLN';
+  var vn=document.getElementById('vatNote'); if(vn) vn.textContent='① Cena „do zapłaty" jest ostateczna — zawiera VAT 23%. Tyle obciąży Stripe, tyle zobaczysz na fakturze.';
+  var fn=document.getElementById('fxNote'); if(fn) fn.textContent = cur==='PLN'?'Waluta: PLN':'Waluta: '+cur+' · kurs 1 '+cur+' = '+(1/rate).toFixed(4)+' PLN';
 }
 
 function preview(i){
@@ -525,8 +578,12 @@ function buildCur(){
 
 function submitOrder(){
   var nm=document.getElementById('fName').value.trim(), em=document.getElementById('fEmail').value.trim();
-  if(!nm||!em){ toast('Wpisz imię i email',''); return; }
+  if(!FULFILL){ toast('Najpierw wybierz: odbiór osobisty czy wysyłka',''); document.getElementById('fulfillStep').scrollIntoView({behavior:'smooth'}); return; }
+  if(!nm||!em){ toast('Wpisz imię i nazwisko oraz email',''); return; }
+  var ph=document.getElementById('fPhone').value.trim();
+  if(!ph){ toast(FULFILL==='pickup'?'Do odbioru osobistego potrzebny jest numer telefonu (SMS o gotowości)':'Podaj numer telefonu — kurier/InPost wyśle kod',''); document.getElementById('fPhone').focus(); return; }
   if(!CART.length){ toast('Dodaj co najmniej jeden model',''); return; }
+  if(FULFILL==='ship' && (!document.getElementById('fAddr').value.trim() || !document.getElementById('fCity').value.trim())){ toast('Podaj adres i miasto dostawy',''); document.getElementById('fAddr').focus(); return; }
   var shipSel=document.getElementById('fShipping').value;
     var nip=(document.getElementById('fNip')||{}).value||'';
     var comp=(document.getElementById('fCompany')||{}).value||'';
@@ -540,7 +597,9 @@ function submitOrder(){
       if(pczk){ shipAddr=(shipAddr?shipAddr+', ':'')+'Paczkomat: '+pczk; }
     }
     if(nip){ shipAddr=(shipAddr?shipAddr+', ':'')+'NIP: '+nip; if(comp) shipAddr+=', ' + comp; }
-  var body={name:nm,email:em,phone:document.getElementById('fPhone').value.trim(),address:shipAddr,city:document.getElementById('fCity').value.trim(),country:document.getElementById('fRegion').value,shipping:document.getElementById('fShipping').value,shipping_region:document.getElementById('fRegion').value,discount_code:document.getElementById('fCode').value.trim(),notes:document.getElementById('fNotes').value.trim(),payment_method:'stripe',currency:cur,items:CART.map(function(it){return {job_uuid:it.job_uuid,job_id:it.job_id,model_name:it.model_name,material:it.material,color:it.color,colors:it.colors||1,quantity:it.qty,volume_cm3:it.vol,estimated_hours:0,dims:it.dims};})};
+  if(FULFILL==='pickup'){ shipAddr='ODBIÓR OSOBISTY — Gdańsk, ul. Międzygwiezdna 31/2 (Osowa), 80-299'; }
+  var _fa=(document.getElementById('fFirmAddr')||{}).value||''; if(_fa.trim()) shipAddr=(shipAddr?shipAddr+' | ':'')+'FAKTURA: '+_fa.trim();
+  var body={name:nm,email:em,phone:document.getElementById('fPhone').value.trim(),address:shipAddr,city:(FULFILL==='pickup'?'80-299 Gdańsk':document.getElementById('fCity').value.trim()),country:(FULFILL==='pickup'?'PL':document.getElementById('fRegion').value),shipping:document.getElementById('fShipping').value,shipping_region:document.getElementById('fRegion').value,discount_code:document.getElementById('fCode').value.trim(),notes:document.getElementById('fNotes').value.trim(),payment_method:'stripe',currency:cur,items:CART.map(function(it){return {job_uuid:it.job_uuid,job_id:it.job_id,model_name:it.model_name,material:it.material,color:it.color,colors:it.colors||1,quantity:it.qty,volume_cm3:it.vol,estimated_hours:0,dims:it.dims};})};
   var btn=document.getElementById('submitBtn'); btn.disabled=true; btn.textContent='Tworzę zamówienie…';
   fetch('/api/orders/multi?t='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};});})
@@ -709,7 +768,7 @@ window.__local3d = {
 };
 </script>
 
-<script src="/js/print_i18n.js?v=90"></script>
+<script src="/js/print_i18n.js?v=91"></script>
 <script>document.addEventListener('click',function(ev){var nb=document.getElementById('orderNav');if(nb&&nb.classList.contains('open')&&ev.target.closest('#orderNav a')){nb.classList.remove('open');}});</script>
 <footer class="prt-footer" id="siteFooter">
   <div class="prt-footer-inner">

@@ -3,6 +3,15 @@
 // Elements tagged with data-i18n="key" or data-i18n-ph="key" (placeholder) get translated.
 const PI18N = {
   pl: {
+        fulfillQ: 'Jak chcesz otrzymać zamówienie?',
+        fulPickD: 'Gdańsk Osowa · wysyłka 0 zł · SMS gdy gotowe',
+        fulShipD: 'Paczkomat InPost lub kurier pod adres',
+        pkStdT: 'Standard',
+        pkStdD: 'gotowe do 5 dni roboczych · 0 zł',
+        pkExpD: 'priorytet w kolejce, gotowe do 2 dni roboczych · +19 zł',
+        pkInfoT: 'Jak to działa:',
+        pkInfoD: 'Wyślemy SMS + email, gdy wydruk będzie gotowy i spakowany. Odbierasz: Gdańsk, ul. Międzygwiezdna 31/2 (Osowa), po uzgodnieniu godziny. Potrzebujemy Twojego numeru telefonu.',
+
     navHome: 'Start', navPrint: 'Zamów druk', navHosting: 'Hosting modeli', navAbout: 'O nas',
     navLogin: 'Zaloguj', navSignup: 'Załóż konto', navKonto: 'Konto', navLogout: 'Wyloguj',
     navHow: 'Jak to działa', navFAQ: 'FAQ',
@@ -97,6 +106,15 @@ const PI18N = {
     checkoutUnavail: 'Kasa chwilowo niedostępna.'
   },
   en: {
+        fulfillQ: 'How would you like to receive your order?',
+        fulPickD: 'Gdańsk Osowa · free pickup · SMS when ready',
+        fulShipD: 'InPost parcel locker or courier to your address',
+        pkStdT: 'Standard',
+        pkStdD: 'ready within 5 business days · 0 zł',
+        pkExpD: 'priority queue, ready within 2 business days · +19 zł',
+        pkInfoT: 'How it works:',
+        pkInfoD: 'We will send an SMS + email when your print is ready and packed. Pickup: Gdańsk, Międzygwiezdna 31/2 (Osowa), after agreeing on a time. We need your phone number.',
+
     navHome: 'Home', navPrint: 'Order a print', navHosting: 'Model hosting', navAbout: 'About',
     navLogin: 'Log in', navSignup: 'Sign up', navKonto: 'Account', navLogout: 'Log out',
     navHow: 'How it works', navFAQ: 'FAQ',
