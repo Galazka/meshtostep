@@ -438,7 +438,7 @@ document.addEventListener('click', function(e) {
       .then(function(r){ return r.json(); })
       .then(function(d){
         var el = document.getElementById('simOut');
-        el.innerHTML += '<div style="margin-top:8px;padding:10px;border:1px solid #1d4ed8;border-radius:8px;font-size:13px">🔌 Silnik API dla tych samych danych (bez co-ifli): <b>cena ' + (d.total != null ? d.total.toFixed(2) : '?') + ' ' + (d.currency || 'PLN') + '</b>, koszt filamentu ' + (d.internal ? d.internal.filament_cost : '?') + ' zł, ' + (d.internal ? d.internal.filament_g : '?') + ' g · ' + (d.internal ? d.internal.printing_hours : '?') + ' h. Różnica z symulatorem = twoje co-ifle (realna szpula / marża).</div>';
+        el.innerHTML += '<div style="margin-top:8px;padding:10px;border:1px solid #1d4ed8;border-radius:8px;font-size:13px">🔌 Silnik API dla tych samych danych (bez co-ifli): <b>cena ' + (d.total != null ? d.total.toFixed(2) : '?') + ' ' + (d.currency || 'PLN') + '</b> · produkt ' + (d.product_subtotal != null ? d.product_subtotal.toFixed(2) : '?') + ' zł · druk ' + (d.print_hours != null ? d.print_hours : '?') + ' h · części ' + (d.parts || 1) + '. Różnica z symulatorem = twoje co-ifle (realna szpula / marża).</div>';
       }).catch(function(e){ alert('Błąd weryfikacji: ' + e.message); });
   };
   document.addEventListener('click', function(e) {
