@@ -582,6 +582,44 @@ def order_stats(
     }
 
 
+# ── Powiadomienia email o zmianie statusu zamówienia ────────────────
+_STATUS_MAIL = {
+    "drukowane": ("Twój wydruk #%s jest w drukarce",
+                  "Zaczęliśmy druk Twojego zamówienia #%s. Damy znać, gdy będzie gotowe."),
+    "gotowe":    ("Wydruk #%s gotowy",
+                  "Twoje zamówienie #%s jest wydrukowane i spakowane. %s"),
+    "wysłane":   ("Wydruk #%s wysłany",
+                  "Paczka z zamówieniem #%s jest w drodze. Jeśli to Paczkomat — kod odbioru wyśle InPost osobnym SMS/e-mailem."),
+    "dostarczone": ("Dostarczone! Zamówienie #%s",
+                  "Potwierdź proszę, że wszystko się zgadza — jeśli wydruk nie spełnia oczekiwań, napisz na hello@3dfile.link (druga próba lub zwrot)."),
+    "anulowane": ("Zamówienie #%s anulowane",
+                  "Zamówienie #%s zostało anulowane. Ewentualna wpłata wróci na konto płatności do 14 dni."),
+}
+
+def _notify_order_status(o, old_status: str, new_status: str):
+    try:
+        if not o or not o.customer_email or new_status == old_status:
+            return
+        tpl = _STATUS_MAIL.get(new_status)
+        if not tpl:
+            return
+        subject, body = tpl[0] % o.id, tpl[1] % o.id
+        if new_status == "gotowe":
+            if getattr(o, "shipping_method", "") in ("pickup", "pickup_express"):
+                body += " Odbiór osobisty: Gdańsk, ul. Międzygwiezdna 31/2 (Osowa) — odezwiemy się co do godziny."
+            else:
+                body += " Nadajemy najszybciej jak to możliwe."
+        html = ("<div style='font-family:Inter,system-ui,sans-serif;max-width:520px;margin:0 auto;padding:24px;"
+                "border:1px solid #e5e7eb;border-radius:12px'>"
+                "<h2 style='margin:0 0 12px;color:#0B1730;font-size:18px'>3dfile.link</h2>"
+                "<p style='color:#334155;line-height:1.6;font-size:14px'>" + body + "</p>"
+                "<p style='color:#64748b;font-size:12px;margin-top:20px'>Pytania? hello@3dfile.link<br>3dfile.link — hosting i druk 3D</p></div>")
+        from .mail import send_mail
+        send_mail(o.customer_email, subject, html)
+    except Exception as e:
+        print(f"[order-notify] failed: {e}")
+
+
 @router.patch("/api/orders/{order_id}")
 def update_order(
     order_id: int,
@@ -595,6 +633,7 @@ def update_order(
     db: Session = Depends(get_db),
 ):
     o = db.get(models.Order, order_id)
+    old_status = o.status
     if not o:
         raise HTTPException(status_code=404, detail="Order not found")
     if not admin or not getattr(admin, "is_admin", False):
@@ -617,6 +656,8 @@ def update_order(
     o.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(o)
+    if status:
+        _notify_order_status(o, old_status, status)
     return {"ok": True, "order_id": o.id, "status": o.status, "is_paid": o.is_paid}
 
 
@@ -625,15 +666,8 @@ def update_order(
 
 @router.get("/api/orders/{order_id}/export")
 def export_order(order_id: int, admin=Depends(require_admin), db: Session = Depends(get_db)):
-    import traceback as _tb
-    try:
-        return _export_order_impl(order_id, admin, db)
-    except HTTPException:
-        raise
-    except Exception as _e:
-        return JSONResponse({"ok": False, "debug": str(_e), "tb": _tb.format_exc()[-1200:]}, status_code=501)
-
-def _export_order_impl(order_id, admin, db):
+    if not admin or not getattr(admin, "is_admin", False):
+        raise HTTPException(403, detail="Admin only")
     o = db.get(models.Order, order_id)
     if not o:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -661,7 +695,7 @@ def _export_order_impl(order_id, admin, db):
     w.writerow(["Razem", f"{o.total} zł"])
     w.writerow(["Status", o.status])
     w.writerow(["Opłacone", "tak" if o.is_paid else "nie"])
-    w.writerow(["Notatki admina", o.admin_notes or ""])
+    w.writerow(["Notatki admina", getattr(o, "admin_notes", None) or ""])
     resp = Response(buf.getvalue().encode("utf-8-sig"), media_type="text/csv")
     resp.headers["Content-Disposition"] = f"attachment; filename=zamowienie-{o.id}-{o.created_at.strftime('%Y%m%d')}.csv"
     return resp
@@ -734,8 +768,34 @@ def export_orders(admin=Depends(require_admin), db: Session = Depends(get_db)):
 def get_pricing(db: Session = Depends(get_db), admin=Depends(require_admin)):
     if not admin or not getattr(admin, "is_admin", False):
         raise HTTPException(403, detail="Admin only")
-    rows = db.query(models.PricingConfig).all()
-    return [{"key": r.key, "value": r.value, "kind": r.kind, "updated_at": r.updated_at.isoformat() if r.updated_at else None} for r in rows]
+    rows = {r.key: r for r in db.query(models.PricingConfig).all()}
+    # Efektywny cennik: wartości z bazy nadpisały domyślne; pokazujemy JEDNĄ listę
+    out = []
+    def _emit(key, default, kind="float"):
+        r = rows.get(key)
+        out.append({"key": key, "value": (r.value if r else str(default)),
+                    "kind": kind, "custom": bool(r),
+                    "default": str(default),
+                    "updated_at": r.updated_at.isoformat() if (r and r.updated_at) else None})
+    _emit("margin_percent", MARGIN_PERCENT)
+    _emit("kwh_pln", DEFAULT_KWH)
+    _emit("watts", DEFAULT_WATTS)
+    _emit("packing_pln", PACKING_FEE_PLN)
+    _emit("free_shipping_min_pln", FREE_SHIPPING_MIN_PLN)
+    _emit("small_order_max_product_pln", SMALL_ORDER_MAX_PRODUCT)
+    _emit("small_order_ship_flat_pln", SMALL_ORDER_SHIP_FLAT)
+    _emit("max_part_area_mm2", MAX_PART_AREA_MM2)
+    for mat, price in sorted(DEFAULT_MATERIAL_PRICES.items()):
+        _emit(f"material:{mat}", price)
+    for tier, regions in DEFAULT_SHIPPING.items():
+        for region, val in regions.items():
+            _emit(f"shipping_{tier}:{region}", val)
+    # ręczne wpisy w bazie, których nie ma w domyślnych (np. color:*)
+    for k, r in sorted(rows.items()):
+        if k not in {o["key"] for o in out}:
+            out.append({"key": k, "value": r.value, "kind": r.kind, "custom": True,
+                        "default": "", "updated_at": r.updated_at.isoformat() if r.updated_at else None})
+    return out
 
 
 @router.post("/api/admin/pricing")
