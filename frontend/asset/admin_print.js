@@ -599,9 +599,48 @@ window.loadAdminGallery = function() {
   // auto-open admin panel when URL has #admin (np. /admin -> /drukuje#admin)
   
   // ── Drukarnia: przełącznik zakładek (VERSION B / tab-p*) ─────────
-  /* stary debug-wrapper usuniety */
-  
-  /* alias usuniety — okno ma dobra wersje z WRAP */
+  // NOTA: admin_print.js musi sam definiowac switchPrintTab — admin.html
+  // wywoluje go z onclick tabow drukarni oraz z switchAdminTab (pusta rozwijka).
+  // Mapuje nazwe przycisku ('orders','stats','pricing',...) NA ID kontenera
+  // .tab-content w admin.html (tab-orders, tab-pstats, tab-pricing, ...).
+  var _printTabMap = {
+    'orders': 'tab-orders',
+    'stats': 'tab-pstats',
+    'pstats': 'tab-pstats',
+    'pricing': 'tab-pricing',
+    'codes': 'tab-codes',
+    'gallery': 'tab-gallery',
+    'reviews': 'tab-reviews',
+    'materials': 'tab-materials',
+    'reports': 'tab-reports'
+  };
+  var _printLoaders = {
+    'orders': loadAdminOrders,
+    'stats': loadAdminStats,
+    'pstats': loadAdminStats,
+    'pricing': loadAdminPricing,
+    'codes': loadAdminCodes,
+    'gallery': loadAdminGallery,
+    'reviews': loadAdminReviews,
+    'materials': loadAdminMaterials,
+    'reports': loadAdminReports
+  };
+  window.switchPrintTab = function (name) {
+    name = String(name || '').toLowerCase();
+    // 1. podswietl aktywny przycisk drukarni (usuń active z wszystkich print-tab-btn)
+    document.querySelectorAll('.print-tab-btn').forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-tab') === name);
+    });
+    // 2. ukryj wszystkie .tab-content
+    document.querySelectorAll('.tab-content').forEach(function (p) { p.classList.remove('active'); });
+    // 3. pokaż właściwy panel
+    var cid = _printTabMap[name];
+    var target = cid ? document.getElementById(cid) : null;
+    if (target) target.classList.add('active');
+    // 4. odpalenie loadera (jeśli istnieje)
+    var loader = _printLoaders[name];
+    if (typeof loader === 'function') setTimeout(function () { try { loader(); } catch (e) { console.error('printtab-loader', name, e); } }, 50);
+  };
 
   // ── DELETE order (backend: DELETE /api/orders/{id}) ──────────────
   window.deleteOrder = function (id) {
