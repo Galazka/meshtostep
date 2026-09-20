@@ -300,7 +300,7 @@ def calculate_price(
     if product_total < 3.0:
         product_total = 3.0
     # MAŁE ZAMÓWIENIE: flat wysyłka (zanim free-shipping check)
-    small_order = shipping_cost > 0 and product_total < SMALL_ORDER_MAX_PRODUCT and shipping != "pickup"
+    small_order = shipping_cost > 0 and product_total < SMALL_ORDER_MAX_PRODUCT and shipping not in ("pickup", "pickup_express")
     if small_order:
         shipping_cost = min(shipping_cost, SMALL_ORDER_SHIP_FLAT)
     # FREE SHIPPING: zamówienia >=200 zł (produkt) → wysyłka gratis, Tom pokrywa koszt
