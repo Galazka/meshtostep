@@ -61,20 +61,30 @@
   /* ==== Auth ==== */
   var currentUser = null;
   function getStoredToken() {
-    var m = document.cookie.match(/token=([^;]+)/);
-    if (m) return m[1];
-    return localStorage.getItem('token') || '';
+    try {
+      var m = document.cookie.match(/(?:^|;\s*)(?:mt_)?token=([^;]+)/);
+      if (m) return decodeURIComponent(m[1]);
+    } catch (e) {}
+    try {
+      return localStorage.getItem('mt_token') || localStorage.getItem('token') || '';
+    } catch (e) { return ''; }
   }
 
   async function checkAuth() {
+    var token = getStoredToken();
+    if (!token) return;                        /* anonim — nie ma po co pytac /api/me (bylo 401) */
     try {
-      var res = await fetch('/api/me', { headers: { 'Accept': 'application/json' } });
+      var res = await fetch('/api/me', {
+        headers: { 'Accept': 'application/json', 'Authorization': 'Bearer ' + token }
+      });
       if (res.ok) {
         currentUser = await res.json();
         if (currentUser.is_admin) {
           var adminLink = document.getElementById('adminLink');
           if (adminLink) adminLink.style.display = 'block';
         }
+      } else if (res.status === 401 || res.status === 403) {
+        try { localStorage.removeItem('mt_token'); } catch (e) {}
       }
     } catch (e) {}
   }
@@ -131,9 +141,10 @@
     if (!tbody) return;
     var t = function(k){ return (typeof window.__pi18n!=='undefined' && window.__pi18n.t) ? window.__pi18n.t(k) : k; };
     var rows = [
-          [t('sStand'), 21.49, 40, 60],
-          [t('sExpr'), 38, 75, 115],
-          [t('sPri'), 45.99, 100, 165],
+          /* ceny z DEFAULT_SHIPPING (routes_order.py) + PACKING_FEE_PLN 3 zł; pickup bez packing */
+          [t('sStand'), 19.49, 38.00, 58.00],
+          [t('sExpr'), 36.00, 73.00, 113.00],
+          [t('sPri'), 43.99, 98.00, 163.00],
           [t('sPick'), 0, 0, 0]
         ];
         tbody.innerHTML = '<tr><td style="padding:8px;color:#6b7280;font-size:11px" colspan="4">' + t('shipNote') + '</td></tr>' + rows.map(function(r) {
@@ -679,13 +690,13 @@
     document.querySelectorAll('.admin-tab-btn').forEach(function(e) { e.classList.remove('active'); e.style.borderBottom = 'none'; });
     var t = document.getElementById('admin' + tab.charAt(0).toUpperCase() + tab.slice(1));
     if (t) t.style.display = 'block';
-    if (tab === 'orders') setTimeout(loadAdminOrders, 50);
-    if (tab === 'stats') setTimeout(loadAdminStats, 50);
-    if (tab === 'pricing') setTimeout(loadAdminPricing, 50);
-    if (tab === 'codes') setTimeout(loadAdminCodes, 50);
-    if (tab === 'gallery') setTimeout(loadAdminGallery, 50);
-    if (tab === 'reviews') setTimeout(loadAdminReviews, 50);
-    if (tab === 'reports') setTimeout(loadAdminReports, 50);
+    if (tab === 'orders') setTimeout(function(){ if (typeof loadAdminOrders === 'function') loadAdminOrders(); }, 50);
+    if (tab === 'stats') setTimeout(function(){ if (typeof loadAdminStats === 'function') loadAdminStats(); }, 50);
+    if (tab === 'pricing') setTimeout(function(){ if (typeof loadAdminPricing === 'function') loadAdminPricing(); }, 50);
+    if (tab === 'codes') setTimeout(function(){ if (typeof loadAdminCodes === 'function') loadAdminCodes(); }, 50);
+    if (tab === 'gallery') setTimeout(function(){ if (typeof loadAdminGallery === 'function') loadAdminGallery(); }, 50);
+    if (tab === 'reviews') setTimeout(function(){ if (typeof loadAdminReviews === 'function') loadAdminReviews(); }, 50);
+    if (tab === 'reports') setTimeout(function(){ if (typeof loadAdminReports === 'function') loadAdminReports(); }, 50);
   };
 
   /* ==== Init ==== */

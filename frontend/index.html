@@ -278,39 +278,44 @@
         .step h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
         .step p { font-size: 14px; color: var(--text-secondary); }
 
-        /* ═══ DISCOVER ═══ */
-        .discover-header { padding: 40px 24px 0; max-width: 1000px; margin: 0 auto; }
-        .discover-header h2 { font-size: 28px; font-weight: 800; }
-        .discover-header p { color: var(--text-secondary); font-size: 15px; margin-top: 4px; }
-        .discover-search { display: flex; gap: 8px; margin-bottom: 16px; }
-        .discover-search input { flex: 1; padding: 10px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 14px; }
-        .discover-search input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-        .discover-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
-        .discover-tag { padding: 6px 14px; border: 1px solid var(--border); border-radius: 999px; font-size: 13px; font-weight: 500; cursor: pointer; background: var(--bg); color: var(--text-secondary); transition: all var(--transition); }
-        .discover-tag:hover, .discover-tag.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-        .discover-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; max-width: 1000px; margin: 0 auto; }
-        .model-card { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; text-decoration: none; color: inherit; background: var(--card); transition: all var(--transition); }
-        .model-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); text-decoration: none; }
-        .model-card-img { height: 160px; background: var(--bg-subtle); display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .model-card-img img { width: 100%; height: 100%; object-fit: cover; }
-        .model-card-body { padding: 12px; }
-        .model-card-title { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .model-card-meta { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+        /* ═══ DISCOVER (v3 · technical editorial) ═══ */
+        .discover-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(238px, 1fr)); gap: 18px; }
+        .dc-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+        .dc-bar input, .dc-bar select {
+            padding: 9px 13px; border: 1px solid var(--line); border-radius: 6px; background: #fff;
+            font-family: var(--font-mono); font-size: 12.5px; color: var(--ink); }
+        .dc-bar input { flex: 1; min-width: 220px; }
+        .dc-bar input::placeholder { color: var(--muted); }
+        .dc-bar input:focus, .dc-bar select:focus { outline: none; border-color: var(--accent); }
+        .discover-tags { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 22px; }
+        .discover-tags .tag-chip {
+            padding: 5px 11px; border: 1px solid var(--line); border-radius: 4px; background: #fff;
+            font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase;
+            color: var(--muted); cursor: pointer; text-decoration: none; }
+        .discover-tags .tag-chip:hover { border-color: var(--accent); color: var(--accent); }
+        .discover-tags .tag-chip.on { border-color: var(--accent); color: #fff; background: var(--accent); }
+        html[data-theme="dark"] .dc-bar input, html[data-theme="dark"] .dc-bar select,
+        html[data-theme="dark"] .discover-tags .tag-chip { background: #111C2E; }
 
-        /* ═══ MY FILES ═══ */
-        .files-header { padding: 40px 28px 0; max-width: 1320px; margin: 0 auto; }
-        .files-header h2 { font-size: 28px; font-weight: 800; }
-        .files-header p { color: var(--text-secondary); font-size: 15px; margin-top: 4px; }
-        .files-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 20px 0 12px; max-width: 1320px; margin-left: auto; margin-right: auto; }
-        .files-toolbar input { flex: 1; min-width: 160px; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 14px; }
-        .files-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; max-width: 1320px; margin: 0 auto 32px; }
-        .files-empty { text-align: center; padding: 72px 24px; color: var(--text-muted); max-width: 400px; margin: 0 auto; }
-        .files-empty svg { width: 48px; height: 48px; margin-bottom: 16px; opacity: .5; }
-        .files-empty h3 { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
-        .files-empty p { font-size: 14px; }
-        .quota-bar { margin-bottom: 16px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; max-width: 1320px; margin-left: auto; margin-right: auto; }
-        .quota-track { height: 6px; background: var(--bg-subtle); border-radius: 99px; overflow: hidden; margin-top: 8px; }
-        .quota-fill { height: 100%; background: var(--primary); border-radius: 99px; transition: width .3s; }
+        /* ═══ MY FILES (v3) ═══ */
+        .files-toolbar {
+            display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+            padding: 14px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+        .files-toolbar input[type="text"], .files-toolbar #mfSearch {
+            flex: 1; min-width: 200px; padding: 9px 13px; border: 1px solid var(--line); border-radius: 6px;
+            font-family: var(--font-mono); font-size: 12.5px; color: var(--ink); background: #fff; }
+        .files-toolbar input:focus { outline: none; border-color: var(--accent); }
+        .files-grid, #mfGrid { grid-template-columns: repeat(auto-fill, minmax(238px, 1fr)); gap: 18px; }
+        .files-empty { text-align: center; padding: 76px 24px; color: var(--muted); }
+        .files-empty svg { width: 42px; height: 42px; margin-bottom: 14px; opacity: .4; }
+        .files-empty h3 { font-family: var(--font-display); font-size: 17px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+        .files-empty p { font-family: var(--font-mono); font-size: 12px; }
+        .quota-bar { padding: 15px 17px; border: 1px solid var(--line); border-radius: 6px; background: #fff; margin: 20px 0; }
+        .quota-bar > div:first-child { font-family: var(--font-mono) !important; font-size: 11.5px !important; letter-spacing: .05em; text-transform: uppercase; }
+        .quota-track { height: 4px; background: var(--bg-soft); border-radius: 99px; overflow: hidden; margin-top: 11px; }
+        .quota-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width .3s; }
+        html[data-theme="dark"] .quota-bar { background: #111C2E; }
+        html[data-theme="dark"] .files-toolbar input { background: #111C2E; }
 
         /* ═══ FAQ ═══ */
         .faq { max-width: 700px; margin: 40px auto 64px; }
@@ -835,56 +840,62 @@
 
 <!-- ═══ DISCOVER ═══ -->
 <div class="page" id="page-discover">
-    <div class="discover-header">
-        <h2 data-i18n="discoverTitle">Odkrywaj modele</h2>
-        <p data-i18n="discoverDesc">Wyszukiwarka 3D — tagi, opis, YouTube. Tylko publiczne modele.</p>
+  <section class="prt-section" style="padding-top:64px;padding-bottom:72px">
+    <div class="prt-section-head" style="max-width:none;margin-bottom:30px">
+      <span class="prt-kicker" data-i18n="discoverKicker">Baza modeli</span>
+      <h2 data-i18n="discoverTitle">Odkrywaj modele</h2>
+      <p data-i18n="discoverDesc">Wyszukiwarka 3D — tagi, opis, YouTube. Tylko publiczne modele.</p>
     </div>
-    <div style="max-width:1000px;margin:0 auto;padding:0 24px">
-        <div class="discover-search" style="margin-top:20px">
-            <input id="discoverQ" data-i18n-placeholder="discoverSearchPh" placeholder="Szukaj np. wazon, holder, bracket">
-            <select id="discoverSort" style="padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-family:inherit">
-                <option value="latest" data-i18n="discoverSortLatest">Najnowsze</option>
-                <option value="popular" data-i18n="discoverSortPopular">Popularne</option>
-            </select>
-            <button class="nav-btn nav-btn-primary" onclick="doDiscover()" data-i18n="discoverSearchBtn">Szukaj</button>
-        </div>
-        <div class="discover-tags" id="discoverTags"></div>
-        <div class="ad-slot" data-slot="search_top" style="margin:12px auto"></div>
-        <div class="discover-grid" id="discoverGrid"></div>
-        <div id="discoverMore" style="text-align:center;margin:16px 0;display:none"><button class="nav-btn" onclick="discoverMore()" data-i18n="discoverMoreBtn">Więcej</button></div>
+    <div class="dc-bar">
+      <input id="discoverQ" data-i18n-placeholder="discoverSearchPh" placeholder="Szukaj np. wazon, holder, bracket">
+      <select id="discoverSort">
+        <option value="latest" data-i18n="discoverSortLatest">Najnowsze</option>
+        <option value="popular" data-i18n="discoverSortPopular">Popularne</option>
+      </select>
+      <button class="nav-btn nav-btn-primary" onclick="doDiscover()" data-i18n="discoverSearchBtn">Szukaj</button>
     </div>
+    <div class="discover-tags" id="discoverTags"></div>
+    <div class="ad-slot" data-slot="search_top" style="margin:14px 0"></div>
+    <div class="discover-grid" id="discoverGrid"></div>
+    <div id="discoverMore" style="text-align:center;margin:24px 0 0;display:none">
+      <button class="nav-btn" onclick="discoverMore()" data-i18n="discoverMoreBtn">Więcej</button>
+    </div>
+  </section>
 </div>
 
 <!-- ═══ MY FILES ═══ -->
 <div class="page" id="page-files">
-    <div class="files-header">
-        <h2 data-i18n="myFilesTitle">Moje pliki</h2>
-        <p data-i18n="myFilesDesc">Twoje pliki 3D. Udostępniaj linkiem, konwertuj do STEP.</p>
+  <section class="prt-section" style="padding-top:64px;padding-bottom:72px">
+    <div class="prt-section-head" style="max-width:none;margin-bottom:26px">
+      <span class="prt-kicker" data-i18n="myFilesKicker">Panel użytkownika</span>
+      <h2 data-i18n="myFilesTitle">Moje pliki</h2>
+      <p data-i18n="myFilesDesc">Twoje pliki 3D. Udostępniaj linkiem, konwertuj do STEP.</p>
     </div>
-    <div id="myFilesContent" style="padding-bottom:32px">
+    <div id="myFilesContent">
         <div class="quota-bar" id="quotaBar" style="display:none">
-            <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--text-secondary)"><span id="quotaLabel">Wykorzystano 0 / 100 MB</span><span id="quotaPct">0%</span></div>
+            <div style="display:flex;justify-content:space-between;color:var(--muted)"><span id="quotaLabel">Wykorzystano 0 / 100 MB</span><span id="quotaPct">0%</span></div>
             <div class="quota-track"><div class="quota-fill" id="quotaFill" style="width:0"></div></div>
         </div>
         <div class="files-toolbar" id="myFilesToolbar" style="display:none">
             <input type="hidden" id="mfFolderFilter" value="">
             <button class="nav-btn nav-btn-primary" onclick="quickUpload()" data-i18n="mfQuickUpload">↑ Wgraj</button>
             <input type="file" id="mfFileInput" accept=".stl,.3mf,.obj" hidden>
-            <input id="mfSearch" data-i18n-placeholder="mfSearchPh" placeholder="Szukaj po nazwie..." oninput="mfRender()">
+            <input type="text" id="mfSearch" data-i18n-placeholder="mfSearchPh" placeholder="Szukaj po nazwie..." oninput="mfRender()">
             <button class="nav-btn nav-btn-primary" onclick="mfCreateFolder()" data-i18n="mfCreateFolder">+ Folder</button>
-            <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" id="mfSelectAll" onchange="mfToggleAll(this.checked)"> <span data-i18n="mfSelectAll">Wszystkie</span></label>
-            <button id="mfBulkDelete" onclick="mfBulkDelete()" style="display:none" class="nav-btn" style="color:var(--error);border-color:var(--error)" data-i18n="mfBulkDelete">Usuń</button>
+            <label style="display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11.5px;color:var(--muted);cursor:pointer;text-transform:uppercase;letter-spacing:.05em"><input type="checkbox" id="mfSelectAll" onchange="mfToggleAll(this.checked)"> <span data-i18n="mfSelectAll">Wszystkie</span></label>
+            <button id="mfBulkDelete" onclick="mfBulkDelete()" class="nav-btn" style="display:none;color:var(--danger);border-color:var(--danger)" data-i18n="mfBulkDelete">Usuń</button>
         </div>
-        <div id="mfFolderChips" style="display:flex;gap:8px;overflow-x:auto;padding:4px 2px 12px;scrollbar-width:thin;max-width:1320px;margin:0 auto"></div>
+        <div id="mfFolderChips" style="display:flex;gap:8px;overflow-x:auto;padding:16px 2px 4px;scrollbar-width:thin"></div>
         <div class="files-empty" id="myFilesEmpty">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
             <h3 data-i18n="myFilesEmpty">Zaloguj się, aby zobaczyć pliki</h3>
-            <p style="margin-top:4px">100 MB, foldery, linki <code>/u/nick/slug</code></p>
-            <button class="nav-btn nav-btn-primary" style="margin-top:16px" onclick="showModal('register')" data-i18n="mfEmptyCta">Załóż konto — za darmo</button>
+            <p style="margin-top:6px">100 MB · foldery · <code>/u/nick/slug</code></p>
+            <button class="nav-btn nav-btn-primary" style="margin-top:18px" onclick="showModal('register')" data-i18n="mfEmptyCta">Załóż konto — za darmo</button>
         </div>
         <div class="files-grid" id="mfGrid" style="display:none"></div>
         <div id="myFilesTable" style="display:none"></div>
     </div>
+  </section>
 </div>
 
 <!-- ═══ JAK TO DZIAŁA ═══ -->

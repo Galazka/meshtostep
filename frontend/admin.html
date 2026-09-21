@@ -890,7 +890,10 @@ const I18N = {
     let _geoLoaded = false;
     let _adsLoaded = false;
     async function switchAdminTab(name) {
-        document.querySelectorAll('.admin-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+        // taby drukarni mają wlasny podswietlacz (switchPrintTab) — nie ruszamy ich tutaj,
+        // ale gasimy, żeby nie było dwóch aktywnych przy data-tab="stats" (admin + drukarnia)
+        document.querySelectorAll('.print-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.admin-tab:not(.print-tab-btn)').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
         document.querySelectorAll('.tab-content').forEach(p => p.classList.remove('active'));
         const target = document.getElementById('tab-' + name);
         if (target) target.classList.add('active');

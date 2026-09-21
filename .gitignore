@@ -20,3 +20,12 @@ node_modules/
 package.json
 package-lock.json
 _test_admin.js
+
+# sekrety lokalne — nigdy w repo
+.mt_token
+mt_login.json
+_live_admin.html
+admin_prod.html
+order_live.html
+admin_print_prod.js
+prod_admin_print_dl.js
