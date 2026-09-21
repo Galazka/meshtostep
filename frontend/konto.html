@@ -105,7 +105,23 @@ if (tok()) { load(); } else { showGate(); }
   document.getElementById('top').innerHTML =
   '<header class="prt-topbar"><a class="prt-logo-chip" href="/"><img src="/logo.png?v=83" alt="3DFILE.link"></a>' +
   '<nav class="prt-nav-links"><a href="/">Hosting 3D</a><a href="/#discover">Odkrywaj</a><a href="/drukuje">Druk 3D</a>' +
-  '<a href="/#hiw">Jak to działa</a><a href="/blog.html">Blog</a><a href="/kontakt">Kontakt</a></nav>' +
+  '<a href="/#hiw">Jak to działa</a><a href="/blog.html">Blog</a><a href="/kontakt">Kontakt</a></nav>
+<!-- PASEK STATUSU FARMY -->
+<div class="prt-marquee">
+  <div class="prt-marquee-in">
+    <div class="mq-l">
+      <span class="prt-mq-pip">Farma Gdańsk Osowa: 12/12 ONLINE</span>
+      <span class="sep hide-s">/</span><span class="hide-s">Czas cyklu: SLA 48h</span>
+      <span class="sep hide-s">/</span><span class="hide-s">Kalibracja stołów LiDAR 7&micro;m</span>
+    </div>
+    <div class="mq-r">
+      <span class="hide-s">Wycena STL/3MF w 30 s</span>
+      <span class="sep hide-s">|</span>
+      <b>InPost Paczkomat 24/7 &middot; BLIK</b>
+    </div>
+  </div>
+</div>
+' +
   '<div class="prt-actions" style="margin-left:auto;display:flex;gap:10px;align-items:center">' +
   (logged ? '<span style="color:#94a3b8;font-size:13px">Moje konto</span>' : '') +
   '<a class="prt-btn ghost" href="/">' + (logged ? '← Strona główna' : 'Zaloguj') + '</a></div></header>';

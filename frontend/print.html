@@ -87,7 +87,23 @@
     <button class="prt-burger" onclick="document.getElementById('printNavLinks').classList.toggle('open')" aria-label="Menu">☰</button>
   </div>
 </nav>
-      
+
+<!-- ═══ PASEK STATUSU FARMY ═══ -->
+<div class="prt-marquee">
+  <div class="prt-marquee-in">
+    <div class="mq-l">
+      <span class="prt-mq-pip">Farma Gdańsk Osowa: 12/12 ONLINE</span>
+      <span class="sep hide-s">/</span><span class="hide-s">Czas cyklu: SLA 48h</span>
+      <span class="sep hide-s">/</span><span class="hide-s">Kalibracja stołów LiDAR 7&micro;m</span>
+    </div>
+    <div class="mq-r">
+      <span class="hide-s">Wycena STL/3MF w 30 s</span>
+      <span class="sep hide-s">|</span>
+      <b>InPost Paczkomat 24/7 &middot; BLIK</b>
+    </div>
+  </div>
+</div>
+
   <main class="container-print" id="mainContent">
     <!-- Hero -->
     <section class="prt-slider" style="min-height:0">
@@ -188,26 +204,34 @@
         <h2 data-i18n="howTitle">Jak to działa</h2>
         <p class="section-sub">Cztery kroki od pliku do gotowego wydruku — bez rejestracji i zbędnej biurokracji.</p>
       </div>
-      <div class="steps-grid">
-        <div class="step-card">
-          <div class="step-num">1</div>
+      <div class="steps" style="grid-template-columns:repeat(4,1fr)">
+        <div class="step">
+          <div class="sn">01</div>
+          <div class="si"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7 9m5-5l5 5"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg></div>
           <h3 data-i18n="how1t">Wyślij swój model</h3>
           <p data-i18n="how1d">Wybierz plik STL/OBJ/3MF albo wpisz wymiary i objętość ręcznie.</p>
+          <span class="stag" data-i18n="how1tag">STL · OBJ · 3MF do 200 MB</span>
         </div>
-        <div class="step-card">
-          <div class="step-num">2</div>
+        <div class="step">
+          <div class="sn">02</div>
+          <div class="si"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
           <h3 data-i18n="how2t">Pobierz cenę natychmiast</h3>
           <p data-i18n="how2d">Obliczamy filament + prąd + czas + marża + wysyłka. Bez rejestracji.</p>
+          <span class="stag" data-i18n="how2tag">Wycena w 30 sekund</span>
         </div>
-        <div class="step-card">
-          <div class="step-num">3</div>
+        <div class="step">
+          <div class="sn">03</div>
+          <div class="si"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div>
           <h3 data-i18n="how3t">Zamów</h3>
           <p data-i18n="how3d">Wpisz adres, zapłać BLIKIEM/kartą/przelewem. My drukujemy i wysyłamy.</p>
+          <span class="stag" data-i18n="how3tag">BLIK · karta · Stripe</span>
         </div>
-        <div class="step-card">
-          <div class="step-num">4</div>
+        <div class="step">
+          <div class="sn">04</div>
+          <div class="si"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
           <h3 data-i18n="how4t">Śledź postępy</h3>
           <p data-i18n="how4d">Status: drukowane → wysłane → dostarczone. Gdy wydruk jest gotowy i spakowany, dostaniesz <strong>SMS z potwierdzeniem</strong>. Jeśli wysłaliśmy paczkę do Paczkomatu — osobną wiadomość z <strong>kodem do odbioru</strong>.</p>
+          <span class="stag" data-i18n="how4tag">SMS + kod Paczkomatu</span>
         </div>
       </div>
           </section>
@@ -449,7 +473,7 @@
     </div>
   </div>
 <script>document.addEventListener('click',function(ev){var nb=document.getElementById('printNav');if(nb&&nb.classList.contains('open')&&ev.target.closest('.prt-nav a')){nb.classList.remove('open');}});</script>
-  <script src="/js/print_i18n.js?v=92"></script>
+  <script src="/js/print_i18n.js?v=93"></script>
   <script src="/asset/print.js?v=96"></script>
   <script>
   // Cache-bust fetch + upload handler + init

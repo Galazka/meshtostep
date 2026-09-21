@@ -116,6 +116,22 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
     <a href="/blog.html">Blog</a>
     <a href="/kontakt">Kontakt</a>
   </nav>
+<!-- PASEK STATUSU FARMY -->
+<div class="prt-marquee">
+  <div class="prt-marquee-in">
+    <div class="mq-l">
+      <span class="prt-mq-pip">Farma Gdańsk Osowa: 12/12 ONLINE</span>
+      <span class="sep hide-s">/</span><span class="hide-s">Czas cyklu: SLA 48h</span>
+      <span class="sep hide-s">/</span><span class="hide-s">Kalibracja stołów LiDAR 7&micro;m</span>
+    </div>
+    <div class="mq-r">
+      <span class="hide-s">Wycena STL/3MF w 30 s</span>
+      <span class="sep hide-s">|</span>
+      <b>InPost Paczkomat 24/7 &middot; BLIK</b>
+    </div>
+  </div>
+</div>
+
   <div class="prt-actions nav-right" style="margin-left:auto">
     <button class="prt-lang" onclick="if(typeof toggleLang==='function')toggleLang();else if(window.__pi18n)window.__pi18n.setLang(window.__pi18n.lang==='pl'?'en':'pl')">EN</button>
     <span id="authBtns" style="display:inline-flex">
@@ -771,7 +787,7 @@ window.__local3d = {
 };
 </script>
 
-<script src="/js/print_i18n.js?v=92"></script>
+<script src="/js/print_i18n.js?v=93"></script>
 <script>document.addEventListener('click',function(ev){var nb=document.getElementById('orderNav');if(nb&&nb.classList.contains('open')&&ev.target.closest('#orderNav a')){nb.classList.remove('open');}});</script>
 <footer class="prt-footer" id="siteFooter">
   <div class="prt-footer-inner">
