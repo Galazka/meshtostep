@@ -276,26 +276,6 @@ window.adminSetSearch = function(v, f){ if(f) __adminQ.search=v; __adminQ.page=1
     }).then(function(r) { if (r.ok) { showToast('Usunięto', 'success'); loadAdminCodes(); } });
   };
 
-  window.switchPrintTab = function(tab) {
-    var WRAP = { orders:'tab-orders', stats:'tab-pstats', pricing:'tab-pricing', codes:'tab-codes', gallery:'tab-gallery', reviews:'tab-reviews', reports:'tab-reports', materials:'tab-materials' };
-    document.querySelectorAll('.tab-content').forEach(function(e) { e.classList.remove('active'); });
-    var w = document.getElementById(WRAP[tab] || ('tab-' + tab));
-    if (w) w.classList.add('active');
-    document.querySelectorAll('.admin-tab').forEach(function(e) { e.classList.remove('active'); });
-    var b = document.querySelector('.print-tab-btn[data-tab="' + tab + '"]');
-    if (b) b.classList.add('active');
-    var t = document.getElementById('admin' + tab.charAt(0).toUpperCase() + tab.slice(1));
-    if (t) t.style.display = 'block';
-    if (tab === 'orders') setTimeout(loadAdminOrders, 50);
-    if (tab === 'stats') setTimeout(loadAdminStats, 50);
-    if (tab === 'pricing') setTimeout(loadAdminPricing, 50);
-    if (tab === 'codes') setTimeout(loadAdminCodes, 50);
-    if (tab === 'gallery') setTimeout(loadAdminGallery, 50);
-    if (tab === 'reviews') setTimeout(loadAdminReviews, 50);
-    if (tab === 'reports') setTimeout(loadAdminReports, 50);
-    if (tab === 'materials') setTimeout(loadAdminMaterials, 50);
-  };
-
   /* ==== Init ==== */
   // event delegation for dynamically created buttons
   
@@ -619,10 +599,10 @@ window.loadAdminGallery = function() {
     'pstats': loadAdminStats,
     'pricing': loadAdminPricing,
     'codes': loadAdminCodes,
-    'gallery': loadAdminGallery,
-    'reviews': loadAdminReviews,
-    'materials': loadAdminMaterials,
-    'reports': loadAdminReports
+    'gallery': window.loadAdminGallery,
+    'reviews': window.loadAdminReviews,
+    'materials': window.loadAdminMaterials,
+    'reports': window.loadAdminReports
   };
   window.switchPrintTab = function (name) {
     name = String(name || '').toLowerCase();
