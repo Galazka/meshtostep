@@ -230,6 +230,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
         <div class="form-row" style="margin-top:10px">
           <div><label data-i18n="fRegion">Kraj</label><select id="fRegion" data-i18n-ph="fRegion"><option value="PL">Polska</option><option value="EU">UE</option><option value="GLOBAL">Świat</option></select></div>
                     <div><label data-i18n="fShipping">Wysyłka</label><select id="fShipping" data-i18n-ph="fShipping" onchange="calc();toggleShipUI()">
+                                <option value="pickup" style="display:none">Odbiór osobisty (Gdańsk Osowa)</option>
+                                <option value="pickup_express" style="display:none">Odbiór ekspresowy (Gdańsk Osowa)</option>
                                 <option value="standard">Standard · 5 dni (InPost Paczkomat)</option>
                                                                 <option value="express">Ekspres · 2 dni (x2)</option>
                                                                 <option value="address">Dostawa kurierem na adres (firma/osoba)</option>
@@ -536,7 +538,7 @@ function calc(){
   var isPickup = ship==='pickup', isPkExp = ship==='pickup_express';
   var base=(shipBase[ship]||shipBase.standard)[reg]||0;
   var shippingPLN = isPickup ? 0 : isPkExp ? 19 : (base+3);
-  var basePrint = Math.max(10, productsPLN); // minimum 10 zł (backend)
+  var basePrint = Math.max(3, productsPLN); // minimum druku 3 zł (backend)
     var adjPLN = basePrint + colorExt;
     var smallOrder = shippingPLN>0 && !isPkExp && adjPLN<40;
     if(smallOrder) shippingPLN = Math.min(shippingPLN, 9.90);

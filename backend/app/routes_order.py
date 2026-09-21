@@ -291,6 +291,10 @@ def calculate_price(
     margin_pln = round(subtotal * (margin_pct / 100), 2)
     product_total = round(subtotal + margin_pln, 2)  # what customer pays for printing
 
+    # MINIMUM ZAMÓWIENIA (druk): produkt zawsze >= 3 zł (hero/order mówią "od 3 zł")
+    if product_total < 3.0:
+        product_total = 3.0
+
     shipping_cost = round(_cfg_value(db, shipping, shipping_region), 2)
     # Packing fee (karton, etykieta, folia) — dodawany tylko gdy paczka jest wysyłana,
     # NIE przy odbiorze osobistym. Konfigurowalne: packing_pln (default 5.00).
@@ -301,9 +305,6 @@ def calculate_price(
     if discount_code and db:
         discount_pln, discount_info = _apply_discount(db, discount_code, product_total)
 
-    # minimum order: product must be >= 10 zł
-        if product_total < 10.0:
-            product_total = 10.0
     # MAŁE ZAMÓWIENIE: flat wysyłka (zanim free-shipping check)
     small_order = shipping_cost > 0 and product_total < SMALL_ORDER_MAX_PRODUCT and shipping not in ("pickup", "pickup_express")
     if small_order:
@@ -1035,12 +1036,12 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db)):
 
     # discount across whole order (apply once on product total)
     if req.discount_code and db:
-        d, info = _apply_discount(db, req.discount_code, max(subtotal_sum, 10.0))
+        d, info = _apply_discount(db, req.discount_code, max(subtotal_sum, 3.0))
         discount_pln = d
         total -= d
 
-    if total < 10.0:
-        total = subtotal_sum if subtotal_sum > 10.0 else 10.0
+    if total < 3.0:
+        total = subtotal_sum if subtotal_sum > 3.0 else 3.0
     total = _ceil05(total)
 
     cur = (req.currency or "PLN").upper()
