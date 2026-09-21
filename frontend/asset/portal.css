@@ -331,3 +331,6 @@ table.spec .dot{display:inline-block;width:8px;height:8px;border-radius:50%;marg
 .prt-final-in{max-width:900px;margin:0 auto;padding:70px 32px;text-align:center;position:relative}
 .prt-final h2{color:#fff;font-size:clamp(23px,3.3vw,37px);font-weight:700;line-height:1.12;letter-spacing:-.03em}
 .prt-final p{color:#94A3B8;font-size:15.5px;line-height:1.7;max-width:620px;margin:16px auto 28px}
+
+/* oznaczenie kroku w konfiguratorze */
+.krok{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:5px}

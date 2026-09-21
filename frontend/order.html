@@ -101,7 +101,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 {"imports":{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js","three/addons/loaders/OBJLoader.js":"/vendor/three/loaders/OBJLoader.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js"}}
 </script>
 
-    <link href="/asset/portal.css?v=34" rel="stylesheet">
+    <link href="/asset/portal.css?v=35" rel="stylesheet">
 </head>
 <body>
 <div class="loading" id="loading">Przeliczam…</div>
@@ -152,6 +152,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
     <!-- LEWA: formularz + modele -->
     <div>
       <div class="card">
+        <div class="krok">Krok 1 z 4</div>
         <h2><span class="n">1</span> Dodaj modele do druku</h2>
         <label for="fileInput" class="dropzone"><span data-i18n="dropTitle"><strong style="font-size:18px">📦 Umieść TUTAJ swoje pliki</strong><br>STL / OBJ / 3MF — kliknij, aby dodać model (możesz dodać kilka)</span>
                   <small data-i18n="dropSub">Objętość i wymiary wypełnią się automatycznie. Dodaj wiele modeli do jednej paczki.</small>
@@ -162,6 +163,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
       </div>
 
       <div class="card">
+        <div class="krok">Krok 2 z 4</div>
         <h2><span class="n">2</span> Wybierz materiał</h2>
         <p style="font-size:12.5px;color:var(--muted);margin:0 0 12px">Kliknij model, żeby przypisać mu materiał. Każdy opisuje, do czego się nadaje.</p>
         <div class="mats" id="mats"></div>
@@ -169,6 +171,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
       </div>
 
       <div class="card">
+        <div class="krok">Krok 3 z 4</div>
         <h2><span class="n">3</span> Kolor i liczba kolorów</h2>
         <p style="font-size:12.5px;color:var(--muted);margin:0 0 12px">Wybrany model: <b id="colFor">—</b>. Ustaw kolor i ile kolorów ma mieć wydruk.</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -201,6 +204,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
       </div>
 
       <div class="card">
+        <div class="krok">Krok 4 z 4</div>
         <h2><span class="n">4</span> Dane i dostawa</h2>
         <div id="fulfillStep">
           <label style="font-weight:600;margin-bottom:6px;display:block" data-i18n="fulfillQ">Jak chcesz otrzymać zamówienie?</label>
