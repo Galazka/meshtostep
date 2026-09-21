@@ -29,3 +29,16 @@ admin_prod.html
 order_live.html
 admin_print_prod.js
 prod_admin_print_dl.js
+
+# lokalne scratch / probki (nie commitowac)
+_*.mjs
+_*.js
+_*.html
+admin_prod.html
+admin_print_prod.js
+order_live.html
+prod_admin_print_dl.js
+e2e_admin_print.mjs
+frontend/partials/
+frontend/tw/
+frontend/asset/tw.css
