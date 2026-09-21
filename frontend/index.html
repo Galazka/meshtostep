@@ -439,7 +439,7 @@
         }
     </style>
     <script>try{var _t=localStorage.getItem("mt_theme")||"light";if(_t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}</script>
-    <link href="/asset/portal.css?v=33" rel="stylesheet">
+    <link href="/asset/portal.css?v=34" rel="stylesheet">
 </head>
 <body class="portal">
 
@@ -479,6 +479,22 @@
     <button class="prt-burger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">☰</button>
   </div>
 </nav>
+
+<!-- ═══ PASEK STATUSU FARMY ═══ -->
+<div class="prt-marquee">
+  <div class="prt-marquee-in">
+    <div class="mq-l">
+      <span class="prt-mq-pip">Farma Gdańsk Osowa: 12/12 ONLINE</span>
+      <span class="sep hide-s">/</span><span class="hide-s">Czas cyklu: SLA 48h</span>
+      <span class="sep hide-s">/</span><span class="hide-s">Kalibracja stołów LiDAR 7&micro;m</span>
+    </div>
+    <div class="mq-r">
+      <span class="hide-s">Szybka wycena STL/3MF</span>
+      <span class="sep hide-s">|</span>
+      <b>InPost Paczkomat 24/7 &middot; BLIK</b>
+    </div>
+  </div>
+</div>
 
 <!-- ═══ HOME ═══ -->
 <div class="page active" id="page-home">
@@ -651,25 +667,32 @@
 
     <div class="ad-slot" data-slot="after_convert"></div>
 
-    <div class="section-title">
-        <h2 data-i18n="hiwTitle">Jak to działa</h2>
-        <p data-i18n="hiwDesc">Trzy proste kroki.</p>
+    <div class="prt-section-head" style="max-width:1200px;padding:0 32px;margin:0 auto 40px">
+        <div class="prt-kicker" data-i18n="hiwKicker">Prosty przebieg procesu</div>
+        <h2 data-i18n="hiwTitle">Jak to działa w praktyce</h2>
+        <p data-i18n="hiwDesc">Trzy kroki od geometrii siatkowej do trwałego linku lub gotowego detalu.</p>
     </div>
-    <div class="hgrid">
-        <div class="hcell">
-            <div class="hnum">01</div>
-            <h3 data-i18n="hiwS1Title">Wgraj mesh</h3>
-            <p data-i18n="hiwS1Desc">Przeciągnij plik STL, 3MF lub OBJ. Do 200 MB. Bez konta też działa.</p>
+    <div class="steps">
+        <div class="step">
+            <div class="sn">01</div>
+            <div class="si"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7 9m5-5l5 5"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg></div>
+            <h3 data-i18n="hiwS1Title">Wgraj dowolny mesh</h3>
+            <p data-i18n="hiwS1Desc">Przeciągnij plik STL, 3MF lub OBJ o rozmiarze do 200 MB. Konto nie jest wymagane — silnik akceptuje pliki natychmiast.</p>
+            <span class="stag" data-i18n="hiwS1Tag">Obsługa wieloczęściowych 3MF</span>
         </div>
-        <div class="hcell">
-            <div class="hnum">02</div>
-            <h3 data-i18n="hiwS2Title">Silnik konwertuje</h3>
-            <p data-i18n="hiwS2Desc">Autorski silnik przetwarza geometrię. Automatyczna optymalizacja i czyszczenie modelu.</p>
+        <div class="step">
+            <div class="sn">02</div>
+            <div class="si"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 4.5v9L12 21l-9-4.5v-9z"/><path d="M12 12l9-4.5M12 12v9M12 12L3 7.5"/></svg></div>
+            <h3 data-i18n="hiwS2Title">Podgląd i automatyczna analiza</h3>
+            <p data-i18n="hiwS2Desc">Silnik WebGL renderuje bryłę na wirtualnym stole. Weryfikuje wodoszczelność siatki, liczy pole powierzchni, kubaturę w cm&sup3; oraz masę w gramach.</p>
+            <span class="stag" data-i18n="hiwS2Tag">Wykrywanie tolerancji grubości ścianek</span>
         </div>
-        <div class="hcell">
-            <div class="hnum">03</div>
-            <h3 data-i18n="hiwS3Title">Pobierz STEP</h3>
-            <p data-i18n="hiwS3Desc">Gotowy plik STEP do importu w CAD. Porównanie przed/po w podglądzie 3D.</p>
+        <div class="step">
+            <div class="sn">03</div>
+            <div class="si"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.5.5l3-3a5 5 0 00-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 00-7.5-.5l-3 3a5 5 0 007 7l1.7-1.7"/></svg></div>
+            <h3 data-i18n="hiwS3Title">Wybierz cel: Link, STEP lub Druk</h3>
+            <p data-i18n="hiwS3Desc">Pobierz plik STEP do dalszego modelowania, wyślij link ze podglądem klientowi lub zamów fizyczny wydruk z odbiorem w Gdańsku albo do Paczkomatu.</p>
+            <span class="stag" data-i18n="hiwS3Tag">Realizacja i wysyłka w 48 h</span>
         </div>
     </div>
     
@@ -683,6 +706,89 @@
     </div>
 
     <div class="ad-slot" data-slot="page_bottom"></div>
+
+    <!-- SEKCJA: specyfikacja farmy -->
+    <div class="prt-section-head" style="max-width:1200px;padding:0 32px;margin:0 auto 40px">
+        <div class="prt-kicker" data-i18n="specKicker">Specyfikacja techniczna farmy</div>
+        <h2 data-i18n="specTitle">Park 12 maszyn Bambu Lab P1S · Gdańsk</h2>
+        <p data-i18n="specDesc">Druk FDM/FFF o podwyższonej prędkości z dynamiczną kompensacją wibracji, aktywną komorą i dyszami ze stali hartowanej 0.4 mm.</p>
+    </div>
+    <div class="spec-wrap">
+        <table class="spec">
+            <thead>
+                <tr>
+                    <th data-i18n="specThMat">Materiał</th>
+                    <th data-i18n="specThTol">Tolerancja warstwy</th>
+                    <th data-i18n="specThHdt">Odporność termiczna (HDT)</th>
+                    <th data-i18n="specThUse">Główne zastosowanie</th>
+                    <th data-i18n="specThPrice">Cena wyjściowa</th>
+                    <th data-i18n="specThAvail">Dostępność</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="dot" style="background:var(--fil-pla)"></span>PLA Basic / Matte</td>
+                    <td class="mono">0.08 &ndash; 0.28 mm</td><td class="mono">~ 55 &deg;C</td>
+                    <td data-i18n="specPlaUse">Prototypy, obudowy, modele wizualne</td>
+                    <td class="mono">od 3.00 zł</td><td class="mono">12 rolek od ręki</td>
+                </tr>
+                <tr>
+                    <td><span class="dot" style="background:var(--fil-petg)"></span>PETG Przemysłowe</td>
+                    <td class="mono">0.12 &ndash; 0.28 mm</td><td class="mono">~ 75 &deg;C</td>
+                    <td data-i18n="specPetgUse">Uchwyty techniczne, odporność chemiczna</td>
+                    <td class="mono">od 5.00 zł</td><td class="mono">Magazyn stały</td>
+                </tr>
+                <tr>
+                    <td><span class="dot" style="background:var(--fil-asa)"></span>ASA Weatherproof</td>
+                    <td class="mono">0.12 &ndash; 0.24 mm</td><td class="mono">~ 95 &deg;C</td>
+                    <td data-i18n="specAsaUse">Części zewnętrzne (UV), motoryzacja, łodzie</td>
+                    <td class="mono">od 8.00 zł</td><td class="mono">Magazyn stały</td>
+                </tr>
+                <tr>
+                    <td><span class="dot" style="background:var(--fil-tpu)"></span>TPU 95A Flex</td>
+                    <td class="mono">0.16 &ndash; 0.24 mm</td><td class="mono">~ 80 &deg;C</td>
+                    <td data-i18n="specTpuUse">Uszczelki, odbojniki, zderzaki dronów</td>
+                    <td class="mono">od 10.00 zł</td><td class="mono">Wysyłka 24 h</td>
+                </tr>
+                <tr>
+                    <td><span class="dot" style="background:var(--fil-cf)"></span>PLA-CF / PA12-CF</td>
+                    <td class="mono">0.12 &ndash; 0.20 mm</td><td class="mono">~ 140 &deg;C (PA)</td>
+                    <td data-i18n="specCfUse">Elementy maszyn, sztywność konstrukcyjna</td>
+                    <td class="mono">od 14.00 zł</td><td class="mono">Dostępne</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="hgrid" style="margin-top:22px">
+        <div class="hcell">
+            <div class="hnum">256 &times; 256 &times; 256 mm</div>
+            <h3 data-i18n="specBedTitle">Pole robocze</h3>
+            <p data-i18n="specBedDesc">Pojedynczy detal do 256 mm lub większe konstrukcje dzielone na złącza wpustowe / jaskółcze ogony.</p>
+        </div>
+        <div class="hcell">
+            <div class="hnum">&plusmn;0.3% (min &plusmn;0.1 mm)</div>
+            <h3 data-i18n="specTolTitle">Tolerancja wymiarowa</h3>
+            <p data-i18n="specTolDesc">Kompensacja skurczu termicznego filamentu w profilach OrcaSlicer gwarantuje spasowanie gniazd na śruby M3/M4.</p>
+        </div>
+        <div class="hcell">
+            <div class="hnum">VAT 23%</div>
+            <h3 data-i18n="specVatTitle">Faktura dla firm</h3>
+            <p data-i18n="specVatDesc">Automatyczne wystawianie faktur dla polskich i europejskich podmiotów. NIP rozliczany w koszyku.</p>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ PAS CTA KOŃCOWY ═══ -->
+<div class="prt-final">
+    <div class="prt-final-in">
+        <div class="prt-kicker" style="color:#38BDF8" data-i18n="finalKicker">Bez instalacji &middot; bez karty</div>
+        <h2 data-i18n="finalTitle">Gotowy do podglądu lub druku?</h2>
+        <p data-i18n="finalDesc">Wgraj plik STL w kilka sekund. Udostępnij go klientowi jednym linkiem albo zamów fizyczny wydruk prosto z farmy Bambu Lab P1S w Gdańsku.</p>
+        <div class="prt-cta-row" style="justify-content:center">
+            <a href="#upload" class="prt-cta" onclick="scrollToUpload();return false" data-i18n="finalCta1">Wgraj plik i wyceń</a>
+            <a href="/#discover" class="prt-cta ghost" data-i18n="finalCta2">Przeglądaj projekty</a>
+        </div>
+    </div>
 </div>
 
 <!-- ═══ DISCOVER ═══ -->
@@ -1078,7 +1184,7 @@
 </script>
 <script type="module">
     import './js/shared.js?v=81';
-    import './js/i18n.js?v=91';
+    import './js/i18n.js?v=92';
     import './js/viewer3d.js?v=81';
     import './js/auth.js?v=82';
     import './js/convert.js?v=82';
