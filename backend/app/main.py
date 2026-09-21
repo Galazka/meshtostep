@@ -57,11 +57,25 @@ async def csp_middleware(request: Request, call_next):
     response = await call_next(request)
     csp = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com; "
+            # Google AdSense (Auto ads) + jego CMP (fundingchoicesmessages) dla ruchu z UE.
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net "
+            "https://pagead2.googlesyndication.com https://*.googlesyndication.com "
+            "https://googleads.g.doubleclick.net https://securepubads.g.doubleclick.net "
+            "https://tpc.googlesyndication.com https://adservice.google.com "
+            "https://www.googletagservices.com https://fundingchoicesmessages.google.com "
+            "https://*.google.com; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' data: https:; "
-            "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.youtube.com https://www.youtube-nocookie.com https://www.openstreetmap.org; "
+            # bez connect-src beacony AdSense lecą w default-src 'self' i są blokowane
+            "connect-src 'self' https://pagead2.googlesyndication.com https://*.googlesyndication.com "
+            "https://googleads.g.doubleclick.net https://*.doubleclick.net "
+            "https://adservice.google.com https://*.adtrafficquality.google "
+            "https://*.google.com https://fundingchoicesmessages.google.com; "
+            "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com "
+            "https://*.googlesyndication.com https://*.doubleclick.net https://www.google.com "
+            "https://fundingchoicesmessages.google.com "
+            "https://www.youtube.com https://www.youtube-nocookie.com https://www.openstreetmap.org; "
             "frame-ancestors 'self'; "
             "worker-src 'self' blob:; "
         )
