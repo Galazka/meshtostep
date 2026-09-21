@@ -71,16 +71,20 @@ DEFAULT_KWH = getattr(settings, "kwh_price", 1.50)  # Bamboo P1S ~1.5 zł/kWh
 PACKING_FEE_PLN = 3.0  # karton + etykieta + folia na przesyłkę (InPost Paczkomat), stałe niezależnie od liczby produktów
 PICKUP_EXPRESS_FEE_PLN = 19.00  # odbiór osobisty ekspres: priorytet w kolejce, gotowe do 2 dni roboczych (opłata all-inclusive)
 FREE_SHIPPING_MIN_PLN = 200.0  # zamówienia >=200 zł → wysyłka gratis (Tom pokrywa koszt)
+MIN_PRINT_PLN = 3.0  # minimalna cena samego wydruku (hero/order mówią "od 3 zł")
 
 # ── Małe zamówienia: promocyjna wysyłka (Tom dopłaca różnicę z marży — konkurencyjny pricing) ──
 SMALL_ORDER_MAX_PRODUCT = 40.0   # poniżej tej kwoty PRODUKTU obowiązuje flat
 SMALL_ORDER_SHIP_FLAT = 9.90     # wysyłka+pakowanie ŁĄCZNIE (normalnie InPost 16.49 + packing 3.00 = 19.49)
 
-def _apply_small_order_shipping(product_pln: float, shipping_cost: float, shipping: str) -> float:
-    """Małe zamówienia (<25 zł produktu, nie pickup): wysyłka+pakowanie flat 11.90 zł.
-    Bez tego mały model 6 cm³ kosztowałby 26 zł (wysyłka zjada 80% ceny)."""
-    if shipping_cost > 0 and shipping not in ("pickup", "pickup_express") and product_pln < SMALL_ORDER_MAX_PRODUCT:
-        return min(shipping_cost, SMALL_ORDER_SHIP_FLAT)
+def _apply_small_order_shipping(product_pln: float, shipping_cost: float, shipping: str, db=None) -> float:
+    """Małe zamówienia (< progu produktu, nie pickup): wysyłka+pakowanie flat.
+    Bez tego mały model 6 cm³ kosztowałby 26 zł (wysyłka zjada 80% ceny).
+    Próg i kwota flat czytane z bazy (klucze small_order_max_product_pln / small_order_ship_flat_pln)."""
+    max_prod = float(_cfg(db, "small_order_max_product_pln", SMALL_ORDER_MAX_PRODUCT))
+    flat = float(_cfg(db, "small_order_ship_flat_pln", SMALL_ORDER_SHIP_FLAT))
+    if shipping_cost > 0 and shipping not in ("pickup", "pickup_express") and product_pln < max_prod:
+        return min(shipping_cost, flat)
     return shipping_cost
 MARGIN_PERCENT = getattr(settings, "print_margin_percent", 68)
 MAX_PART_AREA_MM2 = 65536  # 256×256 mm build (Bamboo P1S)
@@ -291,9 +295,10 @@ def calculate_price(
     margin_pln = round(subtotal * (margin_pct / 100), 2)
     product_total = round(subtotal + margin_pln, 2)  # what customer pays for printing
 
-    # MINIMUM ZAMÓWIENIA (druk): produkt zawsze >= 3 zł (hero/order mówią "od 3 zł")
-    if product_total < 3.0:
-        product_total = 3.0
+    # MINIMUM ZAMÓWIENIA (druk): produkt zawsze >= min_print_pln (hero/order mówią "od 3 zł")
+    min_print = float(_cfg(db, "min_print_pln", MIN_PRINT_PLN))
+    if product_total < min_print:
+        product_total = min_print
 
     shipping_cost = round(_cfg_value(db, shipping, shipping_region), 2)
     # Packing fee (karton, etykieta, folia) — dodawany tylko gdy paczka jest wysyłana,
@@ -306,9 +311,11 @@ def calculate_price(
         discount_pln, discount_info = _apply_discount(db, discount_code, product_total)
 
     # MAŁE ZAMÓWIENIE: flat wysyłka (zanim free-shipping check)
-    small_order = shipping_cost > 0 and product_total < SMALL_ORDER_MAX_PRODUCT and shipping not in ("pickup", "pickup_express")
+    so_max = float(_cfg(db, "small_order_max_product_pln", SMALL_ORDER_MAX_PRODUCT))
+    so_flat = float(_cfg(db, "small_order_ship_flat_pln", SMALL_ORDER_SHIP_FLAT))
+    small_order = shipping_cost > 0 and product_total < so_max and shipping not in ("pickup", "pickup_express")
     if small_order:
-        shipping_cost = min(shipping_cost, SMALL_ORDER_SHIP_FLAT)
+        shipping_cost = min(shipping_cost, so_flat)
     # FREE SHIPPING: zamówienia >=200 zł (produkt) → wysyłka gratis, Tom pokrywa koszt
     free_shipping = False
     if shipping_cost > 0 and shipping not in ("pickup", "pickup_express") and product_total >= float(_cfg(db, "free_shipping_min_pln", FREE_SHIPPING_MIN_PLN)):
@@ -387,6 +394,49 @@ def calculate_price_endpoint(
         "quantity": quantity,
         "print_hours": calc["internal"]["print_hours"],
     }
+
+
+@router.get("/api/pricing/public")
+def public_pricing(db: Session = Depends(get_db)):
+    """Parametry cennika widoczne dla klienta (order.html liczy te same liczby co backend).
+
+    Bez tego order.html miał ZASZYTE na sztywno 16.49/3/9.90/40/200 — zmiana w /admin/pricing
+    nie wpływała na stronę zamówienia (rozjazd ceny pokazywanej vs pobieranej).
+    """
+    tiers = {}
+    for ship in ("standard", "express", "pickup", "pickup_express"):
+        tiers[ship] = {}
+        for reg in ("PL", "EU", "GLOBAL"):
+            tiers[ship][reg] = float(_cfg_value(db, ship, reg))
+    return {
+        "ok": True,
+        "currency": "PLN",
+        "rates": {"PLN": 1.0, "EUR": float(settings.currency_rate_eur or 4.3), "USD": float(settings.currency_rate_usd or 4.0)},
+        "shipping_tiers": tiers,
+        "packing_pln": float(_cfg(db, "packing_pln", PACKING_FEE_PLN)),
+        "pickup_express_fee_pln": PICKUP_EXPRESS_FEE_PLN,
+        "small_order_max_product_pln": float(_cfg(db, "small_order_max_product_pln", SMALL_ORDER_MAX_PRODUCT)),
+        "small_order_ship_flat_pln": float(_cfg(db, "small_order_ship_flat_pln", SMALL_ORDER_SHIP_FLAT)),
+        "free_shipping_min_pln": float(_cfg(db, "free_shipping_min_pln", FREE_SHIPPING_MIN_PLN)),
+        "min_print_pln": float(_cfg(db, "min_print_pln", MIN_PRINT_PLN)),
+    }
+
+
+@router.post("/api/discount/validate")
+def validate_discount(
+    code: str = Form(...),
+    amount: float = Form(0),
+    db: Session = Depends(get_db),
+):
+    """Sprawdza kod rabatowy PRZED złożeniem zamówienia (order.html: przycisk 'Zastosuj')."""
+    code = (code or "").strip().upper()
+    if not code:
+        return {"ok": False, "valid": False, "message": "Podaj kod"}
+    value = max(float(amount or 0), float(_cfg(db, "min_print_pln", MIN_PRINT_PLN)))
+    d, info = _apply_discount(db, code, value)
+    if d <= 0:
+        return {"ok": True, "valid": False, "code": code, "discount_pln": 0.0, "message": "Kod nieaktywny, wygasł lub nie spełnia warunków"}
+    return {"ok": True, "valid": True, "code": code, "discount_pln": round(d, 2), "info": info, "message": "Kod zastosowany: -" + f"{d:.2f}".rstrip("0").rstrip(".") + " zł"}
 
 
 # ---- Orders ----
@@ -793,11 +843,39 @@ def get_pricing(db: Session = Depends(get_db), admin=Depends(require_admin)):
     rows = {r.key: r for r in db.query(models.PricingConfig).all()}
     # Efektywny cennik: wartości z bazy nadpisały domyślne; pokazujemy JEDNĄ listę
     out = []
+    # Etykiety/opis dla panelu admina — bez tego admin widzi surowe klucze ("dane z tabeli niejasne")
+    def _meta(key):
+        if key.startswith("material:"):
+            return ("Cena szpuli — " + key.split(":", 1)[1], "Cena filamentu u dostawcy", "zł/kg", "Materiały")
+        if key.startswith("density:"):
+            return ("Gęstość — " + key.split(":", 1)[1], "Do przeliczenia cm³ na gramy", "g/cm³", "Materiały")
+        if key.startswith("throughput:"):
+            return ("Przepustowość — " + key.split(":", 1)[1], "Ile mm³ drukuje na sekundę", "mm³/s", "Materiały")
+        if key.startswith("color:"):
+            return ("Dopłata za kolor — " + key.split(":", 1)[1], "Premium za dodatkowy kolor", "zł", "Kolory")
+        if key.startswith("shipping_"):
+            t = key.split(":", 1)[0]
+            reg = key.split(":", 1)[1] if ":" in key else ""
+            return ("Wysyłka " + t.replace("shipping_", "") + " — " + reg, "Koszt samej wysyłki", "zł", "Wysyłka")
+        return {
+            "margin_percent": ("Marża", "Narzut doliczany do kosztu (cena = koszt × (1+marża/100))", "%", "Marża i prąd"),
+            "kwh_pln": ("Cena prądu", "Koszt energii do wyliczenia prądu wydruku", "zł/kWh", "Marża i prąd"),
+            "watts": ("Pobór mocy drukarki", "Watts pobierane przez drukarkę", "W", "Marża i prąd"),
+            "packing_pln": ("Pakowanie", "Karton + folia + etykieta (tylko przy wysyłce)", "zł", "Wysyłka"),
+            "free_shipping_min_pln": ("Darmowa wysyłka od", "Powyżej tej kwoty produktu wysyłka gratis", "zł", "Wysyłka"),
+            "small_order_max_product_pln": ("Małe zamówienie do", "Poniżej tej kwoty produktu obowiązuje flat wysyłki", "zł", "Wysyłka"),
+            "small_order_ship_flat_pln": ("Flat wysyłki (małe)", "Wysyłka+pakowanie łącznie dla małych zamówień", "zł", "Wysyłka"),
+            "max_part_area_mm2": ("Max pole wydruku", "Limit stołu Bambu P1S", "mm²", "Limity"),
+            "min_print_pln": ("Minimum druku", "Minimalna cena samego wydruku", "zł", "Limity"),
+        }.get(key, (key, "", "", "Inne"))
+
     def _emit(key, default, kind="float"):
         r = rows.get(key)
+        lbl, desc, unit, group = _meta(key)
         out.append({"key": key, "value": (r.value if r else str(default)),
                     "kind": kind, "custom": bool(r),
                     "default": str(default),
+                    "label": lbl, "desc": desc, "unit": unit, "group": group,
                     "updated_at": r.updated_at.isoformat() if (r and r.updated_at) else None})
     _emit("margin_percent", MARGIN_PERCENT)
     _emit("kwh_pln", DEFAULT_KWH)
@@ -807,6 +885,7 @@ def get_pricing(db: Session = Depends(get_db), admin=Depends(require_admin)):
     _emit("small_order_max_product_pln", SMALL_ORDER_MAX_PRODUCT)
     _emit("small_order_ship_flat_pln", SMALL_ORDER_SHIP_FLAT)
     _emit("max_part_area_mm2", MAX_PART_AREA_MM2)
+    _emit("min_print_pln", MIN_PRINT_PLN)
     for mat, price in sorted(DEFAULT_MATERIAL_PRICES.items()):
         _emit(f"material:{mat}", price)
     for mat, dens in sorted(DENSITIES.items()):
@@ -821,8 +900,10 @@ def get_pricing(db: Session = Depends(get_db), admin=Depends(require_admin)):
     # ręczne wpisy w bazie, których nie ma w domyślnych (np. color:*)
     for k, r in sorted(rows.items()):
         if k not in {o["key"] for o in out}:
+            lbl, desc, unit, group = _meta(k)
             out.append({"key": k, "value": r.value, "kind": r.kind, "custom": True,
-                        "default": "", "updated_at": r.updated_at.isoformat() if r.updated_at else None})
+                        "default": "", "label": lbl, "desc": desc, "unit": unit, "group": group,
+                        "updated_at": r.updated_at.isoformat() if r.updated_at else None})
     return out
 
 
@@ -1025,23 +1106,24 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db)):
 
     # MAŁE ZAMÓWIENIE: flat wysyłka (spójne z /api/calculate)
     product_pln = total - shipping_cost  # sama produkcja
-    _new_ship = _apply_small_order_shipping(product_pln, shipping_cost, req.shipping)
+    _new_ship = _apply_small_order_shipping(product_pln, shipping_cost, req.shipping, db)
     if _new_ship != shipping_cost:
         total = product_pln + _new_ship
         shipping_cost = _new_ship
-    # FREE SHIPPING: product >= 200 PLN -> shipping gratis (Tom covers cost)
+    # FREE SHIPPING: product >= próg -> shipping gratis (Tom covers cost)
     if shipping_cost > 0 and req.shipping not in ("pickup", "pickup_express") and product_pln >= float(_cfg(db, "free_shipping_min_pln", FREE_SHIPPING_MIN_PLN)):
         total -= shipping_cost
         shipping_cost = 0.0
 
     # discount across whole order (apply once on product total)
+    _min_print = float(_cfg(db, "min_print_pln", MIN_PRINT_PLN))
     if req.discount_code and db:
-        d, info = _apply_discount(db, req.discount_code, max(subtotal_sum, 3.0))
+        d, info = _apply_discount(db, req.discount_code, max(subtotal_sum, _min_print))
         discount_pln = d
         total -= d
 
-    if total < 3.0:
-        total = subtotal_sum if subtotal_sum > 3.0 else 3.0
+    if total < _min_print:
+        total = subtotal_sum if subtotal_sum > _min_print else _min_print
     total = _ceil05(total)
 
     cur = (req.currency or "PLN").upper()
