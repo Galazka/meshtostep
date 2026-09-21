@@ -48,13 +48,28 @@ DEFAULT_MATERIAL_PRICES = {
     "PLA Matte": 100.0, "PLA Silk": 110.0, "PLA Glow": 130.0,
 }
 
+# DOPŁATA KLIENCKA za szczególne pigmenty (srebrny/złoty/węglowy/przezroczysty).
+# UWAGA: to NIE jest koszt Toma — filament w różnych kolorach kosztuje go tyle samo,
+# więc dopłata jest czystym przychodem (doliczana do ceny, nie mnożona marżą).
 DEFAULT_COLOR_PREMIUM = {
     "natural": 0.0, "black": 0.0, "white": 0.0,
-    "blue": 5.0, "red": 5.0, "green": 5.0, "yellow": 5.0,
-    "orange": 7.0, "purple": 7.0, "pink": 7.0,
-    "gray": 3.0, "silver": 10.0, "gold": 15.0,
-    "carbon": 20.0, "wood": 15.0, "brass": 25.0,
+    "blue": 0.0, "red": 0.0, "green": 0.0, "yellow": 0.0,
+    "orange": 0.0, "purple": 0.0, "pink": 0.0, "gray": 0.0,
+    "silver": 20.0, "gold": 25.0, "carbon": 15.0, "wood": 15.0,
+    "transparent": 30.0, "brass": 25.0,
 }
+
+# DOPŁATA za wydruk wielokolorowy (jako jeden model): 1. kolor ekstra +20 zł, każdy kolejny +10 zł.
+MULTICOLOR_FIRST_EXTRA_PLN = 20.0
+MULTICOLOR_NEXT_EXTRA_PLN = 10.0
+
+
+def multicolor_fee(n_colors: int) -> float:
+    """Dopłata kliencka za N kolorów w jednym wydruku (N=1 → 0)."""
+    n = max(1, int(n_colors or 1))
+    if n <= 1:
+        return 0.0
+    return MULTICOLOR_FIRST_EXTRA_PLN + (n - 2) * MULTICOLOR_NEXT_EXTRA_PLN
 
 # InPost 2026: Paczkomat gabaryt A 16,49 zł. Standard = 5 dni (normalna cena).
 # Ekspres = 2 dni, ale x2 (Tom potrzebuje czasu na wydruki / kolejkowanie).
@@ -252,17 +267,26 @@ def calculate_price(
     discount_code: str = None,
     db=None,
     currency: str = "PLN",
+    colors: int = 1,
 ):
     """Calculate price. Returns dict with PUBLIC (customer-facing) + INTERNAL cost sheet.
 
     Public: shipping_cost, total (= product_subtotal + shipping - discount)
-    Internal: filament_cost, electricity_cost, color_premium, margin_percent,
-              margin_pln, discount_pln, parts
+    Internal: filament_cost, electricity_cost (KOSZT), color_premium + multicolor_fee
+              (DOPŁATA KLIENCKA = przychód, nie koszt), margin_percent, margin_pln,
+              profit_pln, discount_pln, parts
+
+    Kolejność (jedno źródło prawdy — order.html liczy identycznie):
+      koszt = filament + prąd
+      baza  = max(min_print, koszt + marża)
+      produkt = baza + dopłata za pigment + dopłata za wielokolor
+      total = _ceil05(produkt + wysyłka - rabat)
     """
     mat_price_kg = get_material_price(material, db)
     margin_pct = float(_cfg(db, "margin_percent", MARGIN_PERCENT))
     watts = float(_cfg(db, "watts", DEFAULT_WATTS))
     kwh = float(_cfg(db, "kwh_pln", DEFAULT_KWH))
+
 
     # auto-derive volume from dims if not provided — NOTE: this is BOUNDING BOX volume (overestimate for hollow/non-solid models)
     # prefer uploading STL for accurate volume; dims-only is a rough upper bound
@@ -289,16 +313,25 @@ def calculate_price(
 
     hours = max(estimated_hours, estimate_print_time_hours(volume_cm3, material, parts, db)) if volume_cm3 else max(estimated_hours, 2.0)
     power_cost = (watts / 1000) * hours * kwh
+    # KOSZT (to, co realnie płaci Tom): filament + prąd. Kolor NIE jest kosztem —
+    # filament w każdym kolorze kosztuje tyle samo, więc dopłata za pigment/wielokolor
+    # jest czystym przychodem i NIE jest mnożona marżą.
+    cost_pln = filament_cost + power_cost
     color_premium = float(_cfg(db, f"color:{color}", DEFAULT_COLOR_PREMIUM.get(color, 0.0))) * quantity
+    multi_fee = multicolor_fee(colors)
+    surcharge_pln = round(color_premium + multi_fee, 2)
 
-    subtotal = filament_cost + power_cost + color_premium
-    margin_pln = round(subtotal * (margin_pct / 100), 2)
-    product_total = round(subtotal + margin_pln, 2)  # what customer pays for printing
+    subtotal = round(cost_pln, 2)
+    margin_pln = round(cost_pln * (margin_pct / 100), 2)
+    product_base = round(cost_pln + margin_pln, 2)  # baza klienta: koszt + marża
 
-    # MINIMUM ZAMÓWIENIA (druk): produkt zawsze >= min_print_pln (hero/order mówią "od 3 zł")
+    # MINIMUM ZAMÓWIENIA (druk): baza zawsze >= min_print_pln (hero/order mówią "od 3 zł")
     min_print = float(_cfg(db, "min_print_pln", MIN_PRINT_PLN))
-    if product_total < min_print:
-        product_total = min_print
+    if product_base < min_print:
+        product_base = min_print
+
+    # co klient płaci za DRUK = baza + dopłaty (pigment, wielokolor)
+    product_total = round(product_base + surcharge_pln, 2)
 
     shipping_cost = round(_cfg_value(db, shipping, shipping_region), 2)
     # Packing fee (karton, etykieta, folia) — dodawany tylko gdy paczka jest wysyłana,
@@ -335,8 +368,11 @@ def calculate_price(
 
     return {
         # ── klient widzi ──
-        "product_subtotal": subtotal_cur,   # druk + marża (ukryta)
+        "product_subtotal": subtotal_cur,   # druk + marża + dopłaty (ukryta struktura)
         "product_subtotal_pln": product_total,
+        "surcharge_pln": surcharge_pln,     # dopłata za pigment + wielokolor (jawna linia)
+        "color_premium_pln": round(color_premium, 2),
+        "multicolor_fee_pln": round(multi_fee, 2),
         "shipping_cost": shipping_cur,
         "shipping_cost_pln": shipping_cost,
         "free_shipping": free_shipping,
@@ -350,9 +386,13 @@ def calculate_price(
             "filament_g": round(total_filament_g, 2),
             "filament_cost": round(filament_cost, 2),
             "electricity_cost": round(power_cost, 2),
-            "color_premium": round(color_premium, 2),
+            "cost_pln": round(cost_pln, 2),          # realny koszt Toma (filament + prąd)
+            "color_premium": round(color_premium, 2),  # DOPŁATA KLIENCKA (przychód!)
+            "multicolor_fee": round(multi_fee, 2),     # DOPŁATA KLIENCKA (przychód!)
+            "colors": int(colors or 1),
             "margin_percent": margin_pct,
-            "margin_pln": margin_pln,
+            "margin_pln": margin_pln,                  # marża 68% od kosztu
+            "profit_pln": round(product_total - cost_pln, 2),  # marża + dopłaty
             "print_parts": parts,
             "print_hours": round(hours, 2),
             "material_price_kg": mat_price_kg,
@@ -374,23 +414,30 @@ def calculate_price_endpoint(
     dims: str = Form(None),
     discount_code: str = Form(None),
     currency: str = Form("PLN"),
+    colors: int = Form(1, ge=1),
     db: Session = Depends(get_db),
 ):
     """Public price calculator — only shows shipping + total to customer."""
     calc = calculate_price(material, color, quantity, shipping, shipping_region,
-                           volume_cm3, estimated_hours, dims, discount_code, db, currency)
+                           volume_cm3, estimated_hours, dims, discount_code, db, currency,
+                           colors)
     return {
         "ok": True,
         "product_subtotal": calc["product_subtotal"],
         "shipping_cost": calc["shipping_cost"],
         "free_shipping": calc["free_shipping"],
+        "small_order_shipping": calc["small_order_shipping"],
         "discount_pln": calc["discount_pln"],
+        "surcharge_pln": calc["surcharge_pln"],
+        "color_premium_pln": calc["color_premium_pln"],
+        "multicolor_fee_pln": calc["multicolor_fee_pln"],
         "total": calc["total"],
         "currency": calc["currency"],
         "exchange_rate": calc["exchange_rate"],
         "parts": calc["parts"],
         "material": material,
         "color": color,
+        "colors": colors,
         "quantity": quantity,
         "print_hours": calc["internal"]["print_hours"],
     }
@@ -419,6 +466,13 @@ def public_pricing(db: Session = Depends(get_db)):
         "small_order_ship_flat_pln": float(_cfg(db, "small_order_ship_flat_pln", SMALL_ORDER_SHIP_FLAT)),
         "free_shipping_min_pln": float(_cfg(db, "free_shipping_min_pln", FREE_SHIPPING_MIN_PLN)),
         "min_print_pln": float(_cfg(db, "min_print_pln", MIN_PRINT_PLN)),
+        # Dopłaty za pigment (jawna linia w koszyku) + wielokolor. Frontend MUSI użyć tych
+        # samych liczb, inaczej pokaże inną cenę niż backend policzy.
+        "color_surcharge": {
+            k: float(_cfg(db, f"color:{k}", v)) for k, v in DEFAULT_COLOR_PREMIUM.items()
+        },
+        "multicolor_first_extra_pln": float(_cfg(db, "multicolor_first_extra_pln", MULTICOLOR_FIRST_EXTRA_PLN)),
+        "multicolor_next_extra_pln": float(_cfg(db, "multicolor_next_extra_pln", MULTICOLOR_NEXT_EXTRA_PLN)),
     }
 
 
@@ -588,6 +642,8 @@ def list_orders(
                 "volume_cm3": it.volume_cm3, "dims_mm": it.dims_mm,
                 "filament_grams": it.filament_grams, "subtotal": it.subtotal,
                 "margin_pln": it.margin_pln, "print_parts": it.print_parts,
+                "surcharge_pln": getattr(it, "surcharge_pln", 0.0) or 0.0,
+                "colors": max(1, len(str(it.color or "").split(" + "))),
             } for it in (o.items or [])],
             "customer_name": o.customer_name, "customer_email": o.customer_email,
             "customer_phone": o.customer_phone, "customer_city": o.customer_city,
@@ -599,6 +655,10 @@ def list_orders(
             "filament_cost": o.filament_cost, "electricity_cost": o.electricity_cost,
             "color_premium": o.color_premium, "subtotal": o.subtotal,
             "margin_pln": o.margin_pln,
+            "surcharge_pln": getattr(o, "surcharge_pln", 0.0) or 0.0,
+            "multicolor_fee": getattr(o, "multicolor_fee", 0.0) or 0.0,
+            "cost_pln": getattr(o, "cost_pln", 0.0) or 0.0,
+            "profit_pln": round(((o.total or 0.0) - (o.shipping_cost or 0.0)) - (getattr(o, "cost_pln", 0.0) or 0.0), 2),
             "shipping_cost": o.shipping_cost, "total": o.total,
             "currency": o.currency, "exchange_rate": o.exchange_rate,
             "discount_pln": o.discount_pln, "print_parts": o.print_parts,
@@ -760,8 +820,12 @@ def export_order(order_id: int, admin=Depends(require_admin), db: Session = Depe
     w.writerow(["Koszt filamentu", o.filament_cost or 0])
     w.writerow(["Koszt prądu", o.electricity_cost or 0])
     w.writerow(["Premium koloru", o.color_premium or 0])
-    w.writerow(["Subtotal (fil+prąd+kolor)", o.subtotal or 0])
+    w.writerow(["Dopłata wielokolor", getattr(o, "multicolor_fee", 0.0) or 0])
+    w.writerow(["Dopłaty razem (pigment+multi)", getattr(o, "surcharge_pln", 0.0) or 0])
+    w.writerow(["Subtotal (fil+prąd)", o.subtotal or 0])
     w.writerow(["Marża (PLN)", o.margin_pln])
+    w.writerow(["Koszt całkowity (fil+prąd+pakowanie)", getattr(o, "cost_pln", 0.0) or 0])
+    w.writerow(["Zysk (produkt bez wysyłki - koszt)", round(((o.total or 0.0) - (o.shipping_cost or 0.0)) - (getattr(o, "cost_pln", 0.0) or 0.0), 2)])
     w.writerow(["Wysyłka", f"{o.shipping_method} {o.shipping_region}: {o.shipping_cost} zł"])
     w.writerow(["Rabat", f"-{o.discount_pln} zł"])
     w.writerow(["Razem", f"{o.total} zł"])
@@ -785,8 +849,9 @@ def export_orders(admin=Depends(require_admin), db: Session = Depends(get_db)):
     ws.title = "Zamówienia"
     ws.append(["ID", "Data", "Imię", "Email", "Telefon", "Adres", "Miasto", "Kraj",
                "Materiał", "Kolor", "Ilość", "Wysyłka", "Objętość cm³", "Filament g",
-               "Czas (h)", "Koszt filamentu", "Koszt prądu", "Premium koloru", "Subtotal", "Marża (PLN)", "Wysyłka (zł)",
-               "Rabat", "Razem", "Currency", "Status", "Zapłacony", "Notatki"])
+               "Czas (h)", "Koszt filamentu", "Koszt prądu", "Premium koloru", "Subtotal (fil+prąd)", "Marża (PLN)", "Wysyłka (zł)",
+               "Rabat", "Razem", "Currency", "Status", "Zapłacony", "Wielokolor (dopłata)", "Dopłaty razem",
+               "Koszt całkowity (+pakowanie)", "Zysk (produkt - koszt)", "Notatki"])
     for o in db.query(models.Order).order_by(models.Order.id.desc()).all():
         ws.append([
             o.id, o.created_at.strftime("%Y-%m-%d %H:%M"),
@@ -796,7 +861,12 @@ def export_orders(admin=Depends(require_admin), db: Session = Depends(get_db)):
             o.volume_cm3, o.filament_grams, o.printing_hours,
             o.filament_cost or 0, o.electricity_cost or 0, o.color_premium or 0,
             o.subtotal, o.margin_pln, o.shipping_cost, o.discount_pln,
-            o.total, o.currency, o.status, "Tak" if o.is_paid else "Nie", o.notes
+            o.total, o.currency, o.status, "Tak" if o.is_paid else "Nie",
+            getattr(o, "multicolor_fee", 0.0) or 0,
+            getattr(o, "surcharge_pln", 0.0) or 0,
+            getattr(o, "cost_pln", 0.0) or 0,
+            round(((o.total or 0.0) - (o.shipping_cost or 0.0)) - (getattr(o, "cost_pln", 0.0) or 0.0), 2),
+            o.notes
         ])
     # Sheet2: wszystkie modele (itemy) w zamówieniach — co drukować, ile razy
     ws_m = wb.create_sheet("Modele")
@@ -806,7 +876,8 @@ def export_orders(admin=Depends(require_admin), db: Session = Depends(get_db)):
         if items:
             for it in items:
                 ws_m.append([o.id, o.created_at.strftime("%Y-%m-%d"), o.customer_name, o.customer_email,
-                    it.model_name, it.quantity, it.material, it.color, "", it.volume_cm3 or "", it.dims_mm or "",
+                    it.model_name, it.quantity, it.material, it.color,
+                    max(1, len(str(it.color or "").split(" + "))), it.volume_cm3 or "", it.dims_mm or "",
                     it.filament_grams, it.filament_cost, it.subtotal, it.margin_pln, o.status, "Tak" if o.is_paid else "Nie"])
         else:
             ws_m.append([o.id, o.created_at.strftime("%Y-%m-%d"), o.customer_name, o.customer_email,
@@ -1066,24 +1137,25 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db)):
     shipping_cost = round(shipping_cost + packing_fee, 2)
 
     total = shipping_cost
-    subtotal_sum = 0.0
+    subtotal_sum = 0.0   # KOSZT: filament + prąd
     margin_sum = 0.0
+    surcharge_sum = 0.0  # dopłata pigment
+    multicolor_sum = 0.0  # dopłata wielokolor
     discount_pln = 0.0
     items_rows = []
     for it in req.items:
+        n_colors = max(1, getattr(it, "colors", 1) or 1)
         calc = calculate_price(
             material=it.material, color=it.color, quantity=it.quantity,
             shipping=req.shipping, shipping_region=req.shipping_region,
             volume_cm3=it.volume_cm3 or 0, estimated_hours=it.estimated_hours or 0,
             dims=it.dims, discount_code=req.discount_code, db=db, currency="PLN",
+            colors=n_colors,
         )
         internal = calc["internal"]
-        # Multi-color premium: 1 coloring = normal; each extra color +20 zł, next +10 zł ea.
-        # (printed model with N colors is more expensive than single-color)
-        n_colors = max(1, getattr(it, "colors", 1) or 1)
-        color_mult = 0.0
-        if n_colors > 1:
-            color_mult = 20.0 + (n_colors - 2) * 10.0
+        # Dopłaty (pigment + wielokolor) liczy SILNIK — jedno źródło prawdy, zero duplikacji.
+        row_surcharge = round(calc.get("color_premium_pln", 0.0), 2)
+        row_multi = round(calc.get("multicolor_fee_pln", 0.0), 2)
         row = models.OrderItem(
             job_id=it.job_id, job_uuid=it.job_uuid,
             model_name=(it.model_name or it.job_uuid or "Model"),
@@ -1093,15 +1165,18 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db)):
             filament_cost=internal["filament_cost"],
             electricity_cost=internal["electricity_cost"],
             color_premium=internal["color_premium"],
-            subtotal=internal["filament_cost"] + internal["electricity_cost"] + internal["color_premium"],
+            subtotal=round(internal["filament_cost"] + internal["electricity_cost"], 2),
+            surcharge_pln=row_surcharge,
             margin_pln=internal["margin_pln"],
             print_parts=internal["print_parts"],
         )
-        subtotal_sum += row.subtotal + row.margin_pln + color_mult   # product (druk) + multi-color
+        subtotal_sum += row.subtotal
         margin_sum += row.margin_pln
+        surcharge_sum += row_surcharge
+        multicolor_sum += row_multi
         if n_colors > 1:
             row.model_name = (row.model_name or "Model") + f" ({n_colors}x kolor)"
-        total += (calc["total"] - calc["shipping_cost"]) + color_mult   # product per item (PLN, no shipping)
+        total += calc["product_subtotal_pln"]   # produkt per item (PLN, bez wysyłki)
         items_rows.append(row)
 
     # MAŁE ZAMÓWIENIE: flat wysyłka (spójne z /api/calculate)
@@ -1118,12 +1193,12 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db)):
     # discount across whole order (apply once on product total)
     _min_print = float(_cfg(db, "min_print_pln", MIN_PRINT_PLN))
     if req.discount_code and db:
-        d, info = _apply_discount(db, req.discount_code, max(subtotal_sum, _min_print))
+        d, info = _apply_discount(db, req.discount_code, max(product_pln, _min_print))
         discount_pln = d
         total -= d
 
     if total < _min_print:
-        total = subtotal_sum if subtotal_sum > _min_print else _min_print
+        total = max(product_pln + shipping_cost, _min_print)
     total = _ceil05(total)
 
     cur = (req.currency or "PLN").upper()
@@ -1151,6 +1226,9 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db)):
         payment_method=req.payment_method[:20],
         subtotal=round(subtotal_sum, 2),
         margin_pln=round(margin_sum, 2),
+        surcharge_pln=round(surcharge_sum, 2),
+        multicolor_fee=round(multicolor_sum, 2),
+        cost_pln=round(subtotal_sum + packing_fee, 2),
         shipping_cost=round(shipping_cost, 2),
         discount_pln=round(discount_pln, 2),
         total=round(total, 2),

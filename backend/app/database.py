@@ -137,8 +137,17 @@ def _migrate_columns():
             add_col(conn, "orders", "currency", "VARCHAR(10) DEFAULT 'PLN'", existing_orders)
             add_col(conn, "orders", "exchange_rate", "FLOAT DEFAULT 1.0", existing_orders)
             add_col(conn, "orders", "updated_at", "TIMESTAMP" if is_pg else "DATETIME", existing_orders)
+            # dopłaty klienckie (przychód) — muszą być w DB, inaczej kosztorys/CSV kłamie
+            add_col(conn, "orders", "surcharge_pln", "FLOAT DEFAULT 0", existing_orders)
+            add_col(conn, "orders", "multicolor_fee", "FLOAT DEFAULT 0", existing_orders)
+            add_col(conn, "orders", "cost_pln", "FLOAT DEFAULT 0", existing_orders)
         except Exception as e:
             print(f"[3dfile] orders migrate: {e}")
+        try:
+            existing_items = {c["name"] for c in insp.get_columns("order_items")}
+            add_col(conn, "order_items", "surcharge_pln", "FLOAT DEFAULT 0", existing_items)
+        except Exception as e:
+            print(f"[3dfile] order_items migrate: {e}")
         conn.commit()
     # ensure tables exist
     _tbl_map = {"comments": "Comment", "ad_slots": "AdSlot", "folders": "Folder", "job_ratings": "JobRating", "user_likes": "UserLike", "orders": "Order", "print_requests": "PrintRequest", "pricing_config": "PricingConfig"}

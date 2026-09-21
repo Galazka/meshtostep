@@ -271,11 +271,14 @@ class Order(Base):
     admin_notes = Column(Text, nullable=True)
     stripe_receipt_url = Column(String(500), nullable=True)
     payment_method = Column(String(20), default="blik")
-    subtotal = Column(Float, default=0.0)  # filament + electricity + color premium (internal cost)
+    subtotal = Column(Float, default=0.0)  # KOSZT: filament + prąd (materiał/energia)
     margin_pln = Column(Float, default=0.0)  # Tom's markup (hidden)
     shipping_cost = Column(Float, default=0.0)  # shown to customer
     discount_pln = Column(Float, default=0.0)  # coupon / global discount (visible as line)
-    total = Column(Float, default=0.0)  # = subtotal + margin + shipping - discount
+    surcharge_pln = Column(Float, default=0.0)  # dopłata za pigment (jawna linia u klienta)
+    multicolor_fee = Column(Float, default=0.0)  # dopłata wielokolor (jawna linia u klienta)
+    cost_pln = Column(Float, default=0.0)  # koszt całkowity (filament+prąd+pakowanie) — admin
+    total = Column(Float, default=0.0)  # = subtotal + margin + surcharge + multicolor + shipping - discount
     print_parts = Column(Integer, default=1)  # how many 25x25mm parts model was split into
     currency = Column(String(10), default="PLN")  # PLN, USD, EUR
     exchange_rate = Column(Float, default=1.0)  # PLN per unit of currency (e.g., 4.20 for USD)
@@ -304,8 +307,9 @@ class OrderItem(Base):
     filament_grams = Column(Float, default=0.0)
     filament_cost = Column(Float, default=0.0)
     electricity_cost = Column(Float, default=0.0)
-    color_premium = Column(Float, default=0.0)
-    subtotal = Column(Float, default=0.0)
+    color_premium = Column(Float, default=0.0)  # koszt pigmentu (zużycie) — NIE dopłata
+    subtotal = Column(Float, default=0.0)  # KOSZT: filament + prąd
+    surcharge_pln = Column(Float, default=0.0)  # dopłata za pigment (jawna linia u klienta)
     margin_pln = Column(Float, default=0.0)
     print_parts = Column(Integer, default=1)
     order = relationship("Order", back_populates="items")
