@@ -23,16 +23,15 @@
   var showToast = _showToast;
 
   function esc(s) {
+    var o = (s === null || s === undefined) ? '' : String(s);
+    return o.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\x22/g, '&quot;').replace(/'/g, '&#39;');
+  }
 
   // Stuby: publiczna galeria/reviews NIE istnieją w tym panelu — no-op.
   window.$ = window.$ || null;
   if (!window.loadGallery) window.loadGallery = function () {};
   if (!window.loadReviews) window.loadReviews = function () {};
   if (!window.renderStars) window.renderStars = function (n) { var o=''; for (var i=1;i<=5;i++) o += i<=n?'★':'☆'; return o; };
-
-    if (s === null || s === undefined) return '';
-    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  }
 
   var THINK_PREFIX = '';
 
