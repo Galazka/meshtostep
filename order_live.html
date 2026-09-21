@@ -101,7 +101,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 {"imports":{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js","three/addons/loaders/OBJLoader.js":"/vendor/three/loaders/OBJLoader.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js"}}
 </script>
 
-    <link href="/asset/portal.css?v=37" rel="stylesheet">
+    <link href="/asset/portal.css?v=33" rel="stylesheet">
 </head>
 <body>
 <div class="loading" id="loading">Przeliczam…</div>
@@ -116,22 +116,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
     <a href="/blog.html">Blog</a>
     <a href="/kontakt">Kontakt</a>
   </nav>
-<!-- PASEK STATUSU FARMY -->
-<div class="prt-marquee">
-  <div class="prt-marquee-in">
-    <div class="mq-l">
-      <span class="prt-mq-pip">Farma Gdańsk Osowa: 12/12 ONLINE</span>
-      <span class="sep hide-s">/</span><span class="hide-s">Czas cyklu: SLA 48h</span>
-      <span class="sep hide-s">/</span><span class="hide-s">Kalibracja stołów LiDAR 7&micro;m</span>
-    </div>
-    <div class="mq-r">
-      <span class="hide-s">Wycena STL/3MF w 30 s</span>
-      <span class="sep hide-s">|</span>
-      <b>InPost Paczkomat 24/7 &middot; BLIK</b>
-    </div>
-  </div>
-</div>
-
   <div class="prt-actions nav-right" style="margin-left:auto">
     <button class="prt-lang" onclick="if(typeof toggleLang==='function')toggleLang();else if(window.__pi18n)window.__pi18n.setLang(window.__pi18n.lang==='pl'?'en':'pl')">EN</button>
     <span id="authBtns" style="display:inline-flex">
@@ -152,7 +136,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
     <!-- LEWA: formularz + modele -->
     <div>
       <div class="card">
-        <div class="krok">Krok 1 z 4</div>
         <h2><span class="n">1</span> Dodaj modele do druku</h2>
         <label for="fileInput" class="dropzone"><span data-i18n="dropTitle"><strong style="font-size:18px">📦 Umieść TUTAJ swoje pliki</strong><br>STL / OBJ / 3MF — kliknij, aby dodać model (możesz dodać kilka)</span>
                   <small data-i18n="dropSub">Objętość i wymiary wypełnią się automatycznie. Dodaj wiele modeli do jednej paczki.</small>
@@ -163,7 +146,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
       </div>
 
       <div class="card">
-        <div class="krok">Krok 2 z 4</div>
         <h2><span class="n">2</span> Wybierz materiał</h2>
         <p style="font-size:12.5px;color:var(--muted);margin:0 0 12px">Kliknij model, żeby przypisać mu materiał. Każdy opisuje, do czego się nadaje.</p>
         <div class="mats" id="mats"></div>
@@ -171,7 +153,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
       </div>
 
       <div class="card">
-        <div class="krok">Krok 3 z 4</div>
         <h2><span class="n">3</span> Kolor i liczba kolorów</h2>
         <p style="font-size:12.5px;color:var(--muted);margin:0 0 12px">Wybrany model: <b id="colFor">—</b>. Ustaw kolor i ile kolorów ma mieć wydruk.</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -204,7 +185,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
       </div>
 
       <div class="card">
-        <div class="krok">Krok 4 z 4</div>
         <h2><span class="n">4</span> Dane i dostawa</h2>
         <div id="fulfillStep">
           <label style="font-weight:600;margin-bottom:6px;display:block" data-i18n="fulfillQ">Jak chcesz otrzymać zamówienie?</label>
@@ -250,8 +230,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
         <div class="form-row" style="margin-top:10px">
           <div><label data-i18n="fRegion">Kraj</label><select id="fRegion" data-i18n-ph="fRegion"><option value="PL">Polska</option><option value="EU">UE</option><option value="GLOBAL">Świat</option></select></div>
                     <div><label data-i18n="fShipping">Wysyłka</label><select id="fShipping" data-i18n-ph="fShipping" onchange="calc();toggleShipUI()">
-                                <option value="pickup" style="display:none">Odbiór osobisty (Gdańsk Osowa)</option>
-                                <option value="pickup_express" style="display:none">Odbiór ekspresowy (Gdańsk Osowa)</option>
                                 <option value="standard">Standard · 5 dni (InPost Paczkomat)</option>
                                                                 <option value="express">Ekspres · 2 dni (x2)</option>
                                                                 <option value="address">Dostawa kurierem na adres (firma/osoba)</option>
@@ -330,11 +308,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
   <div class="ico">✅</div>
   <h1 data-i18n="thanksTitle">Dziękujemy za zamówienie!</h1>
     <p>Twoje zamówienie <b class="ord" id="thanksOrder" data-i18n="thanksNo">#—</b> zostało przyjęte.<br>Prześlemy potwierdzenie i szczegóły płatności na podany email. Drukujemy i wysyłamy w wybranym terminie.</p>
-    <p style="margin-top:14px;color:var(--muted)">W razie pytań: <b>hello@3dfile.link</b></p>
+    <p style="margin-top:14px;color:var(--muted)">W razie pytań: <b><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="adc5c8c1c1c2ed9ec9cbc4c1c883c1c4c3c6">[email&#160;protected]</a></b></p>
     <button class="btn-main" onclick="location='/'" data-i18n="backHome">← Wróć na stronę</button>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 var CART=[]; var cur='PLN'; var RATES={PLN:1,USD:4.20,EUR:4.55}; var SYM={PLN:'zł',USD:'$',EUR:'€'};
 var MATS={}; var CUR_ACTSYM=1; var selIdx=-1;
 
@@ -558,7 +536,7 @@ function calc(){
   var isPickup = ship==='pickup', isPkExp = ship==='pickup_express';
   var base=(shipBase[ship]||shipBase.standard)[reg]||0;
   var shippingPLN = isPickup ? 0 : isPkExp ? 19 : (base+3);
-  var basePrint = Math.max(3, productsPLN); // minimum druku 3 zł (backend)
+  var basePrint = Math.max(10, productsPLN); // minimum 10 zł (backend)
     var adjPLN = basePrint + colorExt;
     var smallOrder = shippingPLN>0 && !isPkExp && adjPLN<40;
     if(smallOrder) shippingPLN = Math.min(shippingPLN, 9.90);
@@ -791,7 +769,7 @@ window.__local3d = {
 };
 </script>
 
-<script src="/js/print_i18n.js?v=93"></script>
+<script src="/js/print_i18n.js?v=91"></script>
 <script>document.addEventListener('click',function(ev){var nb=document.getElementById('orderNav');if(nb&&nb.classList.contains('open')&&ev.target.closest('#orderNav a')){nb.classList.remove('open');}});</script>
 <footer class="prt-footer" id="siteFooter">
   <div class="prt-footer-inner">
@@ -819,7 +797,7 @@ window.__local3d = {
     </div>
     <div class="prt-f-col">
       <h4>Kontakt</h4>
-      <a href="mailto:hello@3dfile.link">hello@3dfile.link</a>
+      <a href="/cdn-cgi/l/email-protection#224a474e4e4d621146444b4e470c4e4b4c49"><span class="__cf_email__" data-cfemail="ec8489808083acdf888a858089c280858287">[email&#160;protected]</span></a>
       <h4 style="margin-top:14px">Prawne</h4>
       <a href="/regulamin.html">Regulamin</a>
       <a href="/prywatnosc.html">Polityka prywatności</a>
@@ -828,7 +806,7 @@ window.__local3d = {
   <div class="prt-f-bottom">© 2026 3dfile.link · Hosting & druk 3D · <a href="/regulamin.html" style="color:#bcc9de">Regulamin</a> · <a href="/prywatnosc.html" style="color:#bcc9de">Polityka prywatności</a></div>
 </footer>
 
-<script src="/asset/theme.js?v=2"></script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="/asset/theme.js?v=2"></script>
 <script src="/asset/reveal.js?v=2"></script>
 </body>
 </html>
