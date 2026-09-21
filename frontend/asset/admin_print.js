@@ -203,18 +203,46 @@ window.adminSetSearch = function(v, f){ if(f) __adminQ.search=v; __adminQ.page=1
   }
 
   async function loadAdminPricing() {
+    var box = document.getElementById('adminPricing'); if (!box) return;
     var headers = { 'Authorization': 'Bearer ' + getStoredToken(), 'Accept': 'application/json' };
+    box.innerHTML = '<div style="padding:18px;color:#64748b">Ładowanie cennika…</div>';
     try {
       var res = await fetch('/api/admin/pricing?' + Date.now(), { headers: headers });
       var data = await res.json();
-      var html = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="border-bottom:2px solid #e5e7eb;text-align:left"><th style="padding:6px">Klucz</th><th style="padding:6px">Wartość</th><th style="padding:6px">Typ</th></tr></thead><tbody>';
-      (data || []).forEach(function(r) {
-        var safeKey = String(r.key).replace(/'/g, "\\'");
-        html += '<tr style="border-bottom:1px solid #e5e7eb"><td style="padding:6px">' + r.key + '</td><td style="padding:6px"><input type="text" value="' + r.value + '" onchange="updatePricing(\'' + safeKey + '\', this.value)" style="width:140px;padding:4px;font-size:12px"></td><td style="padding:6px;color:#9ca3af">' + r.kind + '</td></tr>';
+      if (!Array.isArray(data)) { box.innerHTML = '<div style="padding:18px;color:#b91c1c">Błąd: ' + JSON.stringify(data).slice(0, 200) + '</div>'; return; }
+      // grupowanie: najpierw stałe (Marża i prąd, Wysyłka, Limity), na końcu Materiały i Kolory
+      var order = ['Marża i prąd', 'Wysyłka', 'Limity', 'Kolory', 'Materiały', 'Inne'];
+      var groups = {};
+      data.forEach(function (r) { var g = r.group || 'Inne'; (groups[g] = groups[g] || []).push(r); });
+      var names = Object.keys(groups).sort(function (a, b) {
+        var ia = order.indexOf(a), ib = order.indexOf(b);
+        return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
       });
-      html += '</tbody></table></div>';
-      document.getElementById('adminPricing').innerHTML = html;
-    } catch (e) {}
+      var html = '<div style="font-size:12px;color:#6b7280;margin-bottom:10px">Wszystkie pola edytowalne — zmiana zapisuje się w bazie i <b>natychmiast</b> przelicza ceny dla klientów. '
+        + 'Silnik: <b>cena klienta = (materiał + prąd + dopłaty za kolory) × (1 + marża/100)</b>, potem minimum druku i pakowanie.</div>';
+      names.forEach(function (g) {
+        var rows = groups[g];
+        html += '<div style="margin:18px 0 6px;font-weight:700;font-size:14px;color:#14325c;border-bottom:2px solid #e5e7eb;padding-bottom:4px">' + g + '</div>';
+        html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><tbody>';
+        rows.forEach(function (r) {
+          var safeKey = String(r.key).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+          var lbl = r.label || r.key, desc = r.desc || '', unit = r.unit || '';
+          var tag = r.custom ? '<span style="font-size:10px;background:#fef3c7;color:#92400e;border-radius:4px;padding:1px 5px;margin-left:6px">własna</span>' : '';
+          html += '<tr style="border-bottom:1px solid #eef1f5;vertical-align:top">'
+            + '<td style="padding:8px 10px;width:44%"><div style="font-weight:600">' + lbl + tag + '</div>'
+            + '<div style="color:#6b7280;font-size:11px">' + desc + '</div>'
+            + '<div style="color:#9ca3af;font-family:ui-monospace,Consolas,monospace;font-size:10px">' + r.key + '</div></td>'
+            + '<td style="padding:8px 10px;white-space:nowrap"><input type="text" value="' + String(r.value).replace(/"/g, '&quot;') + '" '
+            + 'onchange="updatePricing(\'' + safeKey + '\', this.value)" style="width:120px;padding:5px 7px;font-size:13px;border:1px solid #d7dce3;border-radius:6px;text-align:right">'
+            + ' <span style="color:#6b7280;font-size:11px">' + unit + '</span>'
+            + '<div style="color:#9ca3af;font-size:10px">domyślnie: ' + (r.default === '' ? '—' : r.default) + (unit ? ' ' + unit : '') + '</div></td></tr>';
+        });
+        html += '</tbody></table></div>';
+      });
+      box.innerHTML = html;
+    } catch (e) {
+      box.innerHTML = '<div style="padding:18px;color:#b91c1c">Błąd wczytywania cennika: ' + (e && e.message ? e.message : e) + '</div>';
+    }
   }
 
   window.updatePricing = function(key, value) {
