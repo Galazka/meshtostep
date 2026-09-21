@@ -61,20 +61,12 @@ footer a{color:#cbd5e1;text-decoration:none}
 .nav-burger{display:none;background:none;border:1px solid #334155;border-radius:8px;cursor:pointer;padding:8px 10px;font-size:19px;line-height:1;color:#fff}
 @media(max-width:760px){.nav-burger{display:inline-flex;align-items:center;gap:6px}.nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border-bottom:1px solid #334155;padding:10px 20px;flex-direction:column;align-items:stretch!important;z-index:60}.nav-links.open{display:flex}.nav{position:relative}.nav-links a{width:100%;text-align:left;margin-left:0!important;padding:12px 4px}}
 </style>
-    <link href="/asset/portal.css?v=37" rel="stylesheet">
+    <link href="/asset/portal.css?v=38" rel="stylesheet">
 </head>
 <body>
-<nav class="prt-topbar" id="siteNav">
-  <a class="prt-brand" href="/"><span class="prt-logo-chip"><img src="/logo.png?v=83" alt="3DFILE.link"></span></a>
-  <nav class="prt-nav" id="navLinks">
-    <a href="/">Hosting 3D</a>
-    <a href="/#discover">Odkrywaj</a>
-    <a href="/drukuje">Druk 3D</a>
-    <a href="/#hiw">Jak to działa</a>
-    <a href="/#faq">Pomoc FAQ</a>
-    <a href="/blog.html">Blog</a>
-    <a href="/kontakt" class="active">Kontakt</a>
-  </nav>
+
+<!-- ═══ PASEK STATUSU FARMY ═══ -->
+
 <!-- PASEK STATUSU FARMY -->
 <div class="prt-marquee">
   <div class="prt-marquee-in">
@@ -90,6 +82,18 @@ footer a{color:#cbd5e1;text-decoration:none}
     </div>
   </div>
 </div>
+
+<nav class="prt-topbar" id="siteNav">
+  <a class="prt-brand" href="/"><span class="prt-logo-chip"><img src="/logo.png?v=83" alt="3DFILE.link"></span></a>
+  <nav class="prt-nav" id="navLinks">
+    <a href="/">Hosting 3D</a>
+    <a href="/#discover">Odkrywaj</a>
+    <a href="/drukuje">Druk 3D</a>
+    <a href="/#hiw">Jak to działa</a>
+    <a href="/#faq">Pomoc FAQ</a>
+    <a href="/blog.html">Blog</a>
+    <a href="/kontakt" class="active">Kontakt</a>
+  </nav>
 
   <div class="prt-actions nav-right" style="margin-left:auto">
     <button class="prt-lang" onclick="if(typeof toggleLang==='function')toggleLang();else if(window.__pi18n)window.__pi18n.setLang(window.__pi18n.lang==='pl'?'en':'pl')">EN</button>

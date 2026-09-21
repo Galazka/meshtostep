@@ -101,21 +101,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 {"imports":{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js","three/addons/loaders/OBJLoader.js":"/vendor/three/loaders/OBJLoader.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js"}}
 </script>
 
-    <link href="/asset/portal.css?v=37" rel="stylesheet">
+    <link href="/asset/portal.css?v=38" rel="stylesheet">
 </head>
 <body>
-<div class="loading" id="loading">Przeliczam…</div>
-  <nav class="prt-topbar" id="siteNav">
-  <a class="prt-brand" href="/"><span class="prt-logo-chip"><img src="/logo.png?v=83" alt="3DFILE.link"></span></a>
-  <nav class="prt-nav" id="navLinks">
-    <a href="/">Hosting 3D</a>
-    <a href="/#discover">Odkrywaj</a>
-    <a href="/drukuje">Druk 3D</a>
-    <a href="/#hiw">Jak to działa</a>
-    <a href="/#faq">Pomoc FAQ</a>
-    <a href="/blog.html">Blog</a>
-    <a href="/kontakt">Kontakt</a>
-  </nav>
+
+<!-- ═══ PASEK STATUSU FARMY ═══ -->
+
 <!-- PASEK STATUSU FARMY -->
 <div class="prt-marquee">
   <div class="prt-marquee-in">
@@ -131,6 +122,19 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
     </div>
   </div>
 </div>
+
+<div class="loading" id="loading">Przeliczam…</div>
+  <nav class="prt-topbar" id="siteNav">
+  <a class="prt-brand" href="/"><span class="prt-logo-chip"><img src="/logo.png?v=83" alt="3DFILE.link"></span></a>
+  <nav class="prt-nav" id="navLinks">
+    <a href="/">Hosting 3D</a>
+    <a href="/#discover">Odkrywaj</a>
+    <a href="/drukuje">Druk 3D</a>
+    <a href="/#hiw">Jak to działa</a>
+    <a href="/#faq">Pomoc FAQ</a>
+    <a href="/blog.html">Blog</a>
+    <a href="/kontakt">Kontakt</a>
+  </nav>
 
   <div class="prt-actions nav-right" style="margin-left:auto">
     <button class="prt-lang" onclick="if(typeof toggleLang==='function')toggleLang();else if(window.__pi18n)window.__pi18n.setLang(window.__pi18n.lang==='pl'?'en':'pl')">EN</button>
