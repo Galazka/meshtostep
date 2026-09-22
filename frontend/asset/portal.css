@@ -402,7 +402,7 @@ html[data-theme="dark"] .eco-ico{background:#0B1220;border-color:var(--line)}
 .door-b{border-top:3px solid var(--accent)}
 .door-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .door-num{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;color:#94a3b8}
-.door-chip{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+.door-chip{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;flex:none;
   background:var(--bg-soft);border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--muted)}
 .door h2{font-size:21px;font-weight:700;margin:2px 0 0;color:#0B1730;letter-spacing:-.01em}
 .door p{font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:0;overflow-wrap:anywhere}
