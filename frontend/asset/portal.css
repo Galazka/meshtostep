@@ -472,3 +472,13 @@ body.portal > *{min-width:0;max-width:100%}
 .prt-actions .prt-nav-link.acct:hover{background:rgba(255,255,255,.08);color:#fff}
 .prt-actions .prt-nav-link.acct.active{background:#2B5CE6;color:#fff}
 @media(max-width:900px){.prt-actions .prt-nav-link.acct{display:none !important}}
+
+/* ── Konto SPA (index) mobile: inputy i karty ── */
+@media(max-width:640px){
+  .account{max-width:100% !important;padding:0 4px}
+  .account-card input,.account-card select{font-size:16px !important}
+  .account-card [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:minmax(0,1fr) !important}
+  .files-toolbar{flex-wrap:wrap}
+  .files-toolbar input[type="text"]{min-width:0;flex:1 1 140px}
+  #myFilesTable{overflow-x:auto}
+}

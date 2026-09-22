@@ -76,13 +76,13 @@ footer a{color:#cbd5e1;text-decoration:none}
   <div class="meta"><span>28.09.2026</span><span>Zespół 3DFILE.link</span><span>9 min czytania</span></div>
   <img src="/asset/blog/cover-retrakcja-druk-3d.svg" alt="retrakcja druk 3d nici stringing ustawienia direct bowden" class="hero-img" loading="lazy">
 
-  <p>„Wyszedł cały w niciach, jak pajęczyna” — tak brzmi najczęstsze zdanie z reklamacji, które nigdy nie jest reklamacją, tylko kalibracją. Retrakcja to cofnięcie filamentu w strefę topnienia tuż przed pustym przejazdem głowicy: wyciskamy nadciśnienie z komory, żeby roztop tworzywa nie sączył się z dyszy tam, gdzie nie ma być śladu materiału. Problem w tym, że retrakcja balansuje między dwoma usterkami: za słaba daje stringing, za mocna — niedodruk po powrocie, pęcherze na krawędziach, a przy dużych dystansach — zacięcia i poślizg kół ekstrudera. Poniżej: mechanika direct vs bowden, konkretne wartości startowe dla popularnych maszyn i protokół testu, który mówi, co dołożyć.</p>
+  <p>„Wyszedł cały w niciach, jak pajęczyna” — tak brzmi najczęstsze zdanie z reklamacji, które nigdy nie jest reklamacją, tylko kalibracją. Retrakcja to cofnięcie filamentu w strefę topnienia tuż przed pustym przejazdem głowicy: wyciskamy nadciśnienie z komory, żeby roztop tworzywa nie sączył się z dyszy tam, gdzie nie ma być śladu materiału. Problem w tym, że retrakcja balansuje między dwoma usterkami: za słaba daje stringing, za mocna — niedodruk po powrocie, pęcherze na krawędziach, a przy dużych dystansach — zacięcia i poślizg kół ekstrudera. Poniżej: mechanika, wartości startowe dla popularnych maszyn i protokół testu, który mówi, co dołożyć.</p>
 
   <h2>Direct czy bowden — czemu wartości dzieli przepaść</h2>
   <p>W głowicy <strong>direct</strong> ekstruder trzyma filament centymetr przed dyszą: cofnięcie 0,4–1,2 mm wystarcza, żeby odciążyć kolumnę stopu, i reaguje niemal natychmiast. W układzie <strong>bowden</strong> między kółkiem a hotendem leży 40–60 cm teflonowej prowadnicy — filament działa jak sprężyna, więc potrzeba 4–6 mm cofnięcia, żeby nadrobić jego ściśliwość i dotrzeć do stopu. Stąd pozorne szaleństwo: ta sama „retrakcja 6 mm” to w Enderze 3 norma, a w MK4 — pewny zator i kruszenie filamentu. Zasada: <strong>im dłuższa ścieżka, tym większy dystans i szybsza retrakcja</strong>; direct pracuje na krótkich dystansach przy prędkościach 25–50 mm/s.</p>
 
   <h2>Wartości startowe per drukarka</h2>
-  <p>Numery poniżej to sprawdzone punkty wyjścia pod PLA w dyszy 0,4 mm — nie dogmaty: oficjalne profile producentów zmieniają się z wersjami firmware, a stan prowadnicy i dopasowanie hotendu decydują o ±50%. Startuj, drukuj test, zapisuj wynik w profilu filamentu.</p>
+  <p>Numery poniżej to sprawdzone punkty wyjścia pod PLA w dyszy 0,4 mm — oficjalne profile zmieniają się z firmware, a stan prowadnicy decyduje o ±50%. Zapisuj wynik w profilu filamentu.</p>
   <div class="box tip">
     <table>
       <thead>
@@ -97,16 +97,16 @@ footer a{color:#cbd5e1;text-decoration:none}
         <tr><td>Ender-3 (bowden, oryginał)</td><td>Bowden</td><td>4,5–6,0 mm</td><td>35–50 mm/s</td><td>0,2–0,3 mm</td><td>Luz w kółku >0,3 mm zje część dystansu — najpierw napęd</td></tr>
       </tbody>
     </table>
-    <p>Dla wydruków zamawianych u nas nie ruszasz nic — profile per maszyna i filament mamy zmierzone wieżami testowymi; ale jeśli składasz własny profil, zacznij od tych liczb i kalibruj testem opisanym na końcu.</p>
+    <p>Jeśli składasz własny profil, zacznij od tych liczb i kalibruj testem opisanym na końcu.</p>
   </div>
 
   <h2>Wipe i Z-hop: sprzątanie i unikanie, nie retrakcja</h2>
-  <p><strong>Wipe (wycieranie przy retrakcji)</strong> to przedłużenie ostatniego ruchu ekstruzji o 0,2–1,0 mm „w powietrze”, poza obrys części: końcówka dyszy przejeżdża jeszcze kawałek bez podawania i zgarnia porcję, która inaczej wykapałaby na początku następnego przejazdu. Daje to mniejsze stringi bez zwiększania dystansu, a przy okazji redukuje „dzioby” na ścianach. W Orca/Bambu Studio to opcja „Wipe while retracting”, w Cura „Wipe while retracting” + „retraction wipe distance”. Koszt: wyciera w powietrzu — kropla ląduje tam, gdzie nie przeszkadza, o ile głowica zdążyła opuścić model.</p>
-  <p><strong>Z-hop (podniesienie osi Z na czas przejazdu)</strong> podnosi dyszę o 0,15–0,4 mm, żeby nie zeskrobywała już położonych krawędzi przy przejeździe przez wydruk. Pomocny przy dużych przerwach nad częścią i na otwartych „wyspach”, szkodliwy gdy nadużywany: każdy hop to mikro-drgnienia i punkt kapania w locie, a na górnych wypełnieniach zostawia „dziurki od klucza”. Ustawiaj go tam, gdzie przejazd musi przechodzić nad materiałem; przy opcji „comb through infill / not on skin” często zbędny.</p>
+  <p><strong>Wipe (wycieranie przy retrakcji)</strong> to przedłużenie ostatniego ruchu ekstruzji o 0,2–1,0 mm „w powietrze”, poza obrys części: końcówka dyszy przejeżdża jeszcze kawałek bez podawania i zgarnia porcję, która inaczej wykapałaby na początku następnego przejazdu. Daje to mniejsze stringi bez zwiększania dystansu, a przy okazji redukuje „dzioby” na ścianach. W Orca/Bambu Studio to opcja „Wipe while retracting”, w Cura „Wipe while retracting” + „retraction wipe distance”.</p>
+  <p><strong>Z-hop (podniesienie osi Z na czas przejazdu)</strong> podnosi dyszę o 0,15–0,4 mm, żeby nie zeskrobywała już położonych krawędzi. Pomocny nad dużymi przerwami, szkodliwy gdy nadużywany: każdy hop to drgania i punkt kapania w locie, a na wypełnieniach zostawia „dziurki od klucza”. Przy sprawnym combingu często zbędny.</p>
   <ul>
     <li><strong>Kolejność poprawy stringów:</strong> suchy filament → temperatura w dół o 5°C → dystans prędkości → wipe on → dopiero na końcu Z-hop i combing.</li>
-    <li>Prędkość przejazdów: 150–300 mm/s skraca czas, w którym stop kapię — tanie osiągnięcie, zanim dotkniesz retrakcji.</li>
-    <li>Wielomateriałowość (AMS/MMU): tam gdzie jest wieża czyszcząca, retrakcja ma drugorzędne znaczenie — priorytetem jest purge.</li>
+    <li>Prędkość przejazdów: 150–300 mm/s skraca czas, w którym stop może kapać — najtańszy zysk, zanim dotkniesz retrakcji.</li>
+    <li>Przy AMS/MMU z wieżą czyszczącą priorytetem jest purge, nie retrakcja.</li>
   </ul>
 
   <h2>Materiały i ich skłonność do nici</h2>
@@ -124,12 +124,12 @@ footer a{color:#cbd5e1;text-decoration:none}
         <tr><td>PA / PC</td><td>średnia</td><td>PA 250–270 / PC 270–290°C</td><td>0,6–1,0 mm / 30 mm/s</td><td>Higroskopijne — bez suszarki nie ma co kalibrować</td></tr>
       </tbody>
     </table>
-    <p>Jeśli po wymianie materiału „wszystko zaczęło nitkować”, w dziewięciu przypadkach na dziesięć winna jest wilgoć lub temperatura, a nie retrakcja. To także argument za tym, by przy <a href="/zamow">zamówieniu serii</a> materiał był już wybrany na etapie wyceny.</p>
+    <p>Jeśli po wymianie materiału „wszystko zaczęło nitkować”, w dziewięciu przypadkach na dziesięć winna jest wilgoć lub temperatura, a nie retrakcja.</p>
   </div>
 
   <h2>OrcaSlicer i Klipper — co gdzie ustawiasz</h2>
-  <p><strong>Orca / Bambu Studio</strong> (ten sam układ pól): Settings → Print settings → Other → Retraction: „Retraction distance”, „Retraction speed”, „Enable wipe”, „Retract on travel moves” (z progiem minimalnego przejazdu ~1,0–1,5 mm — krótsze ruchy nie mają sensu cofać), „Combing mode: In fill / Not in skin” i „Z hop when retracting”. Do auto-testu służy kreator <strong>Calibration → Flow Dynamics</strong>, który nadrukuje serię kolumn i dobiera retrakcję i pressure advance za Ciebie — zrób go raz per filament i zapomnij.</p>
-  <p><strong>Klipper</strong> (K1, KE, Voron, Prusa XL na Klipperze): w `printer.cfg` sekcja <code>[firmware_retract]</code> z <code>default_retract_length</code> / <code>default_retract_speed</code>; w slicerze gcode_flavor „klipper”, żeby G10/G11 szły do firmware zamiast być emulowane ruchem E. Retrakcję trzymaj w profilu, nie w makrach. Dodatkowo <strong>pressure_advance 0,02–0,08</strong> redukuje „kapanie startowe” po wlocie w linię — pośrednio zdejmuje robotę retrakcji; testuj go przed cięciem wartości retrakcji w dół.</p>
+  <p><strong>Orca / Bambu Studio</strong> (ten sam układ pól): Settings → Print settings → Other → Retraction: „Retraction distance”, „Retraction speed”, „Enable wipe”, „Retract on travel moves” (z progiem minimalnego przejazdu ~1,0–1,5 mm — krótsze ruchy nie mają sensu cofać), „Combing mode: In fill / Not in skin” i „Z hop when retracting”. Do auto-testu służy kreator <strong>Calibration → Flow Dynamics</strong>, który nadrukuje serię kolumn i dobiera retrakcję i pressure advance za Ciebie.</p>
+  <p><strong>Klipper</strong> (K1, KE, Voron, Prusa XL na Klipperze): w `printer.cfg` sekcja <code>[firmware_retract]</code> z <code>default_retract_length</code> / <code>default_retract_speed</code>; w slicerze gcode_flavor „klipper”, żeby G10/G11 szły do firmware zamiast być emulowane ruchem E. Dodatkowo <strong>pressure_advance 0,02–0,08</strong> redukuje „kapanie startowe” po wlocie w linię — pośrednio zdejmuje robotę retrakcji; testuj go przed cięciem wartości retrakcji w dół.</p>
 
   <h2>Test na wieżę — jak czytać wyniki</h2>
   <p>Protokół, który powtarzamy przy każdym nowym filamentie: dwie prostopadłościenne kolumny 20×20 mm, odstęp 30–50 mm, wysokość 60–100 mm, wypełnienie 10–15%, przejazdy wyłącznie po powietrzu. Warunki bazowe: suchy materiał, temperatura dolna z okna, startowa retrakcja z tabeli. Potem <strong>jedna zmienna na wydruk</strong>:</p>
@@ -137,10 +137,10 @@ footer a{color:#cbd5e1;text-decoration:none}
     <li><strong>Ciągłe, grube „liny” między kolumnami</strong> — za słaba retrakcja: dystans +0,2 mm (direct) / +0,5 mm (bowden) albo prędkość retrakcji +5 mm/s.</li>
     <li><strong>Włoskowate, przerwane nitki</strong> — zwykle temperatura: −5°C. Poniżej ~195°C PLA zaczyna niedodrukowywać — wróć wtedy o krok wyżej.</li>
     <li><strong>Nici kończą się kroplą na ścianie / ślad po kapaniu na starcie przejazdu</strong> — za dużo materiału wyciśniętego przed retrakcją: +dystans, ale też za wysoka temperatura.</li>
-    <li><strong>Podciśnienia, „dziury w narożniku”, trzaski extrudera</strong> — przesadziłeś: zmniejsz dystans, obniż prędkość cofania; grind = znak stopu.</li>
+    <li><strong>Podciśnienia, „dziury w narożniku”, trzaski extrudera</strong> — przesadziłeś: zmniejsz dystans, obniż prędkość cofania; poślizg kół = znak stopu.</li>
     <li><strong>Ślady po dyszy na wierzchu kolumn</strong> — Z-hop za niski albo w ogóle wyłącz go, użyj combingu.</li>
   </ol>
-  <p>Prawidłowo ustawiona retrakcja wygląda tak: między kolumnami widać pojedyncze, napięte „włoski”, które odpadają pod palcem bez śladu na modelu. Zero nici wcale jest możliwe dla PLA w direct — w PETG celuj w „prawie zero”, nie w ideał, bo dopłacisz za niego niedodrukami.</p>
+  <p>Prawidłowo ustawiona retrakcja wygląda tak: między kolumnami widać pojedyncze, napięte „włoski”, które odpadają pod palcem bez śladu na modelu. W PETG celuj w „prawie zero” — ideał okupisz niedodrukami.</p>
 
   <blockquote>
     Zasada z pracowni: nici nie kalibruje się w nieskończoność. Trzy wydruki testowe per zmienna, a jak nie ma poprawy — problem jest w wilgoci, temperaturze albo zużytym hotendzie, nie w liczbie milimetrów cofnięcia.
@@ -148,17 +148,17 @@ footer a{color:#cbd5e1;text-decoration:none}
 
   <h2>Najczęściej zadawane pytania</h2>
   <h3>Czy direct drive potrzebuje w ogóle retrakcji?</h3>
-  <p>Tak, ale niewielkiej. Krótka kolumna stopu nadal utrzymuje ciśnienie resztkowe i „kapi” przy długich przejazdach przez puste obszary. 0,2–0,4 mm w połączeniu z combingiem wystarczy w typowym druku single-material.</p>
+  <p>Tak, ale niewielkiej. Krótka kolumna stopu nadal utrzymuje ciśnienie resztkowe i kapie przy długich przejazdach przez puste obszary. 0,2–0,4 mm plus combing wystarcza w druku single-material.</p>
   <h3>Bowden na 0 mm — dlaczego nie?</h3>
   <p>Bo samo cofnięcie nie jest problemem, problemem jest odpowiedź: przy 50 cm sprężystego łuku cofnięcie 1 mm zgasi ściśliwość filamentu, nie ciśnienie w hotendzie. Musisz nadrobić opóźnienie sprężyny większym dystansem; inaczej nici zostają, a przy okazji dostajesz niedodruk.</p>
   <h3>Czy większa prędkość przejazdów zastąpi retrakcję?</h3>
-  <p>Częściowo tak — szybciej mijasz otwarte przestrzenie, mniej kapi w czasie. Nie zastąpi jej przy materiałach niskolepkich (PETG) i dużych odstępach; używaj obu parametrów równolegle, ale zmieniaj po jednym naraz.</p>
+  <p>Częściowo tak — szybciej mijasz otwarte przestrzenie, mniej zdąży wykapać. Nie zastąpi jej przy materiałach niskolepkich (PETG) i dużych odstępach; zmieniaj oba parametry, ale po jednym naraz.</p>
   <h3>Mam zator — to wina retrakcji?</h3>
-  <p>Często tak, przy źle dobranym dystansie: cofany stop zasysa powietrze i resztki degradują się w strefie grzania, a „cold creep” (cofanie na gorącej głowicy godzinami) wepchnie je niżej. Sztuka: nie zmieniaj retrakcji w trakcie druku o więcej niż ±0,3 mm i nie susz materiału powyżej temperatury mięknienia.</p>
+  <p>Często tak, przy źle dobranym dystansie: cofany stop zasysa powietrze i resztki degradują się w strefie grzania, a wielogodzinne postoje rozgrzanej głowicy wtopią je niżej, w chłodniejszą strefę. Sztuka: nie zmieniaj retrakcji w trakcie druku o więcej niż ±0,3 mm i nie susz filamentu w temperaturze bliskiej topnienia materiału.</p>
 
   <div class="box cta">
     <h3>Nie chcesz kalibrować? Wydrukujemy na profilach po testach</h3>
-    <p>Każdy filament przechodzi u nas wieżę na stringing i test wymiarowy zanim pojedzie Twoje zlecenie — bez nici, z powtarzalnym wymiarem.</p>
+    <p>Każdy filament przechodzi u nas wieżę na stringing i test wymiarowy, zanim pojedzie Twoje zlecenie.</p>
     <a class="btn" href="/zamow">Zamów czysty wydruk</a>
   </div>
 

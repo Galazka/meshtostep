@@ -1,126 +1,127 @@
-<!doctype html>
-<html lang="pl">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Moje konto i zamówienia — 3dfile.link</title>
-<meta name="description" content="Historia zamówień druku 3D, statusy, rachunki i potwierdzenia płatności.">
-<script src="/asset/theme.js?v=2"></script>
-<link rel="stylesheet" href="/asset/portal.css?v=49">
-<style>
-.kwrap{max-width:860px;margin:0 auto;padding:28px 20px 60px}
-.ocard{border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:14px;background:var(--card,#fff)}
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Moje konto i zamówienia — 3dfile.link</title>
+<meta name="description" content="Historia zamówień druku 3D, statusy, rachunki i potwierdzenia płatności.">
+<script src="/asset/theme.js?v=2"></script>
+<link rel="stylesheet" href="/asset/portal.css?v=50">
+<style>
+.kwrap{max-width:860px;margin:0 auto;padding:28px 14px 60px;min-width:0}
+.ocard{border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:14px;background:var(--card,#fff)}
 .ohead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
-.onum{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px}
-.odate{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted-foreground,#64748b)}
-.badge{font-size:11px;padding:3px 10px;border-radius:999px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
-.b-nowy{background:#fee2e2;color:#991b1b}.b-realizacja{background:#ede9fe;color:#5b21b6}
-.b-drukowane{background:#ffedd5;color:#9a3412}.b-gotowe{background:#dbeafe;color:#1e40af}
-.b-wysłane{background:#cffafe;color:#155e75}.b-dostarczone{background:#dcfce7;color:#166534}
-.b-anulowane{background:#f1f5f9;color:#475569}.b-wycena{background:#fef9c3;color:#854d0e}
-.paid{color:#166534;font-weight:700}.unpaid{color:#991b1b;font-weight:700}
-.oitems{margin:10px 0 4px;font-size:13.5px;color:#334155}
-.oitems li{margin:2px 0}
-.obtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.obtns a{font-size:12.5px;padding:7px 14px;border-radius:8px;border:1px solid var(--accent,#2B5CE6);color:var(--accent,#2B5CE6);text-decoration:none}
-.obtns a.solid{background:var(--accent,#2B5CE6);color:#fff}
-.ototal{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700}
-.lform{max-width:360px;margin:40px auto;border:1px solid var(--border);border-radius:14px;padding:22px}
-.lform input{width:100%;padding:10px 12px;margin:6px 0;border:1px solid var(--border);border-radius:9px;background:var(--card,#fff);color:inherit;font:inherit}
-.lform button{width:100%;padding:11px;margin-top:8px;background:var(--accent,#2B5CE6);color:#fff;border:none;border-radius:9px;font-weight:600;cursor:pointer;font-size:14px}
-.empty{padding:40px;text-align:center;color:var(--muted-foreground,#64748b)}
-@media (prefers-color-scheme:dark){.oitems{color:#cbd5e1}}
-</style>
-<!-- Google AdSense (Auto ads) -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8919352846655813"
-        crossorigin="anonymous"></script>
-<meta name="google-adsense-account" content="ca-pub-8919352846655813">
-</head>
-<body>
-<script>window.__prtNav=function(){return ''}</script>
-<div id="top"></div>
-<div class="kwrap">
-  <h1 style="font-size:22px;margin:6px 0 2px">Moje konto</h1>
-  <p style="color:var(--muted-foreground,#64748b);font-size:13.5px;margin:0 0 18px">Historia zamówień druku 3D ze statusami, rachunkami i potwierdzeniami płatności.</p>
-  <div id="gate" style="display:none">
-    <div class="lform">
-      <h2 style="font-size:16px;margin:0 0 6px">Zaloguj się</h2>
-      <p style="font-size:12.5px;color:var(--muted-foreground,#64748b);margin:0 0 8px">Zamówienia złożone jako gość są przypisywane po adresie e-mail — zaloguj się tym samym mailem, a pojawią się tutaj.</p>
-      <input id="liEmail" type="email" placeholder="Twój e-mail">
-      <input id="liPass" type="password" placeholder="Hasło">
-      <button onclick="loginGo()">Zaloguj się</button>
-      <p style="font-size:12px;margin-top:10px"><a href="/" style="color:var(--accent,#2B5CE6)">← Wróć na stronę główną</a></p>
-    </div>
-  </div>
-  <div id="list"></div>
-</div>
-<script>
-var API = '';
-function tok(){ return localStorage.getItem('mt_token') || localStorage.getItem('token') || ''; }
-function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function H(){ return { 'Authorization': 'Bearer ' + tok(), 'Accept': 'application/json' }; }
-var ST = { nowy:'Nowe', wycena:'Wycena', realizacja:'W realizacji', drukowane:'Drukowane', gotowe:'Gotowe', 'wysłane':'Wysłane', dostarczone:'Dostarczone', anulowane:'Anulowane' };
-function render(orders){
-  var el = document.getElementById('list');
-  if (!orders.length){ el.innerHTML = '<div class="empty">Nie masz jeszcze zamówień.<br><a href="/zamow" style="color:var(--accent,#2B5CE6)">Zamów wydruk 3D →</a></div>'; return; }
-  el.innerHTML = orders.map(function(o){
-    var items = (o.items||[]).map(function(it){
-      return '<li>' + esc(it.model_name||'Model') + ' · ' + esc(it.material||'') + (it.color? ' · '+esc(it.color):'') + (it.quantity>1? ' ×'+it.quantity:'') + (it.volume_cm3? ' · '+it.volume_cm3+' cm³':'') + '</li>';
-    }).join('');
-    var when = o.created_at ? new Date(o.created_at).toLocaleString('pl-PL') : '';
-    var shipTxt = { pickup:'odbiór osobisty', pickup_express:'odbiór osobisty (ekspres)', standard:'paczkomat', express:'ekspres', address:'kurier' }[o.shipping_method] || o.shipping_method || '';
-    return '<div class="ocard"><div class="ohead"><div><span class="onum">Zamówienie #' + o.id + '</span> <span class="odate">' + when + '</span></div>' +
-      '<span class="ototal">' + (+o.total||0).toFixed(2) + ' ' + esc(o.currency||'PLN') + '</span></div>' +
-      '<div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
-      '<span class="badge b-' + esc(o.status) + '">' + (ST[o.status]||esc(o.status)) + '</span>' +
-      (o.is_paid ? '<span class="paid">✓ opłacone</span>' : '<span class="unpaid">oczekuje na płatność</span>') +
-      (shipTxt ? '<span style="font-size:12px;color:var(--muted-foreground,#64748b)">📦 ' + esc(shipTxt) + '</span>' : '') +
-      '</div>' + (items ? '<ul class="oitems">' + items + '</ul>' : '') +
-      '<div class="obtns"><a class="solid" href="/api/orders/' + o.id + '/receipt?token=' + encodeURIComponent(tok()) + '" target="_blank">🧾 Rachunek</a>' +
-      (o.stripe_receipt ? '<a href="' + esc(o.stripe_receipt) + '" target="_blank" rel="noopener">Potwierdzenie Stripe</a>' : '') +
-      (!o.is_paid ? '<a href="/platnosc?status=pending&order=' + o.id + '">Dokończ płatność</a>' : '') +
-      '</div></div>';
-  }).join('');
-}
-function load(){
-  fetch(API + '/api/account/orders?t=' + Date.now(), { headers: H() })
-    .then(function(r){ if (r.status === 401 || r.status === 403) { showGate(); return null; } return r.json(); })
-    .then(function(d){ if (d && d.ok) { document.getElementById('gate').style.display='none'; render(d.orders||[]); } })
-    .catch(showGate);
-}
-function showGate(){ document.getElementById('gate').style.display='block'; document.getElementById('list').innerHTML=''; }
-function loginGo(){
-  var e = document.getElementById('liEmail').value.trim(), p = document.getElementById('liPass').value;
-  fetch('/api/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email:e,password:p}) })
-    .then(function(r){ return r.json(); })
-    .then(function(d){
-      var t = d.token || d.access_token;
-      if (!t){ alert('Nie udało się zalogować. Sprawdź e-mail i hasło.'); return; }
-      localStorage.setItem('mt_token', t);
-      load();
-    }).catch(function(){ alert('Błąd sieci'); });
-}
-if (tok()) { load(); } else { showGate(); }
-</script>
-<script>
-/* wspólny topbar portali (ten sam układ co reszta stron) */
-(function(){
-  var logged = !!tok();
-  document.getElementById('top').innerHTML =
-  '<div class="prt-marquee"><div class="prt-marquee-in">' +
-      '<div class="mq-l"><span class="prt-mq-pip">Farma Gdańsk Osowa: 12/12 ONLINE</span>' +
-      '<span class="sep hide-s">/</span><span class="hide-s">Czas cyklu: SLA 48h</span>' +
-      '<span class="sep hide-s">/</span><span class="hide-s">Kalibracja stołów LiDAR 7&micro;m</span></div>' +
-      '<div class="mq-r"><span class="hide-s">Wycena STL/3MF w 30 s</span>' +
-      '<span class="sep hide-s">|</span><b>InPost Paczkomat 24/7 &middot; BLIK</b></div>' +
-  '</div></div>' +
-  '<header class="prt-topbar"><a class="prt-logo-chip" href="/"><img src="/logo.png?v=83" alt="3DFILE.link"></a>' +
-  '<nav class="prt-nav-links"><a href="/">Hosting 3D</a><a href="/#discover">Odkrywaj</a><a href="/drukuje">Wydrukuj u nas</a>' +
-  '<a href="/#hiw">Jak to działa</a><a href="/blog.html">Blog</a><a href="/kontakt">Kontakt</a></nav>' +
-  '<div class="prt-actions" style="margin-left:auto;display:flex;gap:10px;align-items:center">' +
-  (logged ? '<span style="color:#94a3b8;font-size:13px">Moje konto</span>' : '') +
-  '<a class="prt-btn ghost" href="/">' + (logged ? '← Strona główna' : 'Zaloguj') + '</a></div></header>';
-})();
-</script>
-</body>
-</html>
+@media(max-width:640px){.kwrap{padding:20px 10px 48px}.ocard{padding:14px 12px}.onum{font-size:14px}.ototal{font-size:16px}.oitems{font-size:13px}.obtns a{padding:6px 10px;font-size:12px}.lform{padding:16px}.prt-nav-links,.prt-actions .acct{display:none !important}}
+.onum{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px}
+.odate{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted-foreground,#64748b)}
+.badge{font-size:11px;padding:3px 10px;border-radius:999px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.b-nowy{background:#fee2e2;color:#991b1b}.b-realizacja{background:#ede9fe;color:#5b21b6}
+.b-drukowane{background:#ffedd5;color:#9a3412}.b-gotowe{background:#dbeafe;color:#1e40af}
+.b-wysłane{background:#cffafe;color:#155e75}.b-dostarczone{background:#dcfce7;color:#166534}
+.b-anulowane{background:#f1f5f9;color:#475569}.b-wycena{background:#fef9c3;color:#854d0e}
+.paid{color:#166534;font-weight:700}.unpaid{color:#991b1b;font-weight:700}
+.oitems{margin:10px 0 4px;font-size:13.5px;color:#334155}
+.oitems li{margin:2px 0}
+.obtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.obtns a{font-size:12.5px;padding:7px 14px;border-radius:8px;border:1px solid var(--accent,#2B5CE6);color:var(--accent,#2B5CE6);text-decoration:none}
+.obtns a.solid{background:var(--accent,#2B5CE6);color:#fff}
+.ototal{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700}
+.lform{max-width:360px;margin:40px auto;border:1px solid var(--border);border-radius:14px;padding:22px}
+.lform input{width:100%;padding:10px 12px;margin:6px 0;border:1px solid var(--border);border-radius:9px;background:var(--card,#fff);color:inherit;font:inherit}
+.lform button{width:100%;padding:11px;margin-top:8px;background:var(--accent,#2B5CE6);color:#fff;border:none;border-radius:9px;font-weight:600;cursor:pointer;font-size:14px}
+.empty{padding:40px;text-align:center;color:var(--muted-foreground,#64748b)}
+@media (prefers-color-scheme:dark){.oitems{color:#cbd5e1}}
+</style>
+<!-- Google AdSense (Auto ads) -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8919352846655813"
+        crossorigin="anonymous"></script>
+<meta name="google-adsense-account" content="ca-pub-8919352846655813">
+</head>
+<body>
+<script>window.__prtNav=function(){return ''}</script>
+<div id="top"></div>
+<div class="kwrap">
+  <h1 style="font-size:22px;margin:6px 0 2px">Moje konto</h1>
+  <p style="color:var(--muted-foreground,#64748b);font-size:13.5px;margin:0 0 18px">Historia zamówień druku 3D ze statusami, rachunkami i potwierdzeniami płatności.</p>
+  <div id="gate" style="display:none">
+    <div class="lform">
+      <h2 style="font-size:16px;margin:0 0 6px">Zaloguj się</h2>
+      <p style="font-size:12.5px;color:var(--muted-foreground,#64748b);margin:0 0 8px">Zamówienia złożone jako gość są przypisywane po adresie e-mail — zaloguj się tym samym mailem, a pojawią się tutaj.</p>
+      <input id="liEmail" type="email" placeholder="Twój e-mail">
+      <input id="liPass" type="password" placeholder="Hasło">
+      <button onclick="loginGo()">Zaloguj się</button>
+      <p style="font-size:12px;margin-top:10px"><a href="/" style="color:var(--accent,#2B5CE6)">← Wróć na stronę główną</a></p>
+    </div>
+  </div>
+  <div id="list"></div>
+</div>
+<script>
+var API = '';
+function tok(){ return localStorage.getItem('mt_token') || localStorage.getItem('token') || ''; }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function H(){ return { 'Authorization': 'Bearer ' + tok(), 'Accept': 'application/json' }; }
+var ST = { nowy:'Nowe', wycena:'Wycena', realizacja:'W realizacji', drukowane:'Drukowane', gotowe:'Gotowe', 'wysłane':'Wysłane', dostarczone:'Dostarczone', anulowane:'Anulowane' };
+function render(orders){
+  var el = document.getElementById('list');
+  if (!orders.length){ el.innerHTML = '<div class="empty">Nie masz jeszcze zamówień.<br><a href="/zamow" style="color:var(--accent,#2B5CE6)">Zamów wydruk 3D →</a></div>'; return; }
+  el.innerHTML = orders.map(function(o){
+    var items = (o.items||[]).map(function(it){
+      return '<li>' + esc(it.model_name||'Model') + ' · ' + esc(it.material||'') + (it.color? ' · '+esc(it.color):'') + (it.quantity>1? ' ×'+it.quantity:'') + (it.volume_cm3? ' · '+it.volume_cm3+' cm³':'') + '</li>';
+    }).join('');
+    var when = o.created_at ? new Date(o.created_at).toLocaleString('pl-PL') : '';
+    var shipTxt = { pickup:'odbiór osobisty', pickup_express:'odbiór osobisty (ekspres)', standard:'paczkomat', express:'ekspres', address:'kurier' }[o.shipping_method] || o.shipping_method || '';
+    return '<div class="ocard"><div class="ohead"><div><span class="onum">Zamówienie #' + o.id + '</span> <span class="odate">' + when + '</span></div>' +
+      '<span class="ototal">' + (+o.total||0).toFixed(2) + ' ' + esc(o.currency||'PLN') + '</span></div>' +
+      '<div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
+      '<span class="badge b-' + esc(o.status) + '">' + (ST[o.status]||esc(o.status)) + '</span>' +
+      (o.is_paid ? '<span class="paid">✓ opłacone</span>' : '<span class="unpaid">oczekuje na płatność</span>') +
+      (shipTxt ? '<span style="font-size:12px;color:var(--muted-foreground,#64748b)">📦 ' + esc(shipTxt) + '</span>' : '') +
+      '</div>' + (items ? '<ul class="oitems">' + items + '</ul>' : '') +
+      '<div class="obtns"><a class="solid" href="/api/orders/' + o.id + '/receipt?token=' + encodeURIComponent(tok()) + '" target="_blank">🧾 Rachunek</a>' +
+      (o.stripe_receipt ? '<a href="' + esc(o.stripe_receipt) + '" target="_blank" rel="noopener">Potwierdzenie Stripe</a>' : '') +
+      (!o.is_paid ? '<a href="/platnosc?status=pending&order=' + o.id + '">Dokończ płatność</a>' : '') +
+      '</div></div>';
+  }).join('');
+}
+function load(){
+  fetch(API + '/api/account/orders?t=' + Date.now(), { headers: H() })
+    .then(function(r){ if (r.status === 401 || r.status === 403) { showGate(); return null; } return r.json(); })
+    .then(function(d){ if (d && d.ok) { document.getElementById('gate').style.display='none'; render(d.orders||[]); } })
+    .catch(showGate);
+}
+function showGate(){ document.getElementById('gate').style.display='block'; document.getElementById('list').innerHTML=''; }
+function loginGo(){
+  var e = document.getElementById('liEmail').value.trim(), p = document.getElementById('liPass').value;
+  fetch('/api/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email:e,password:p}) })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var t = d.token || d.access_token;
+      if (!t){ alert('Nie udało się zalogować. Sprawdź e-mail i hasło.'); return; }
+      localStorage.setItem('mt_token', t);
+      load();
+    }).catch(function(){ alert('Błąd sieci'); });
+}
+if (tok()) { load(); } else { showGate(); }
+</script>
+<script>
+/* wspólny topbar portali (ten sam układ co reszta stron) */
+(function(){
+  var logged = !!tok();
+  document.getElementById('top').innerHTML =
+  '<div class="prt-marquee"><div class="prt-marquee-in">' +
+      '<div class="mq-l"><span class="prt-mq-pip">Farma Gdańsk Osowa: 12/12 ONLINE</span>' +
+      '<span class="sep hide-s">/</span><span class="hide-s">Czas cyklu: SLA 48h</span>' +
+      '<span class="sep hide-s">/</span><span class="hide-s">Kalibracja stołów LiDAR 7&micro;m</span></div>' +
+      '<div class="mq-r"><span class="hide-s">Wycena STL/3MF w 30 s</span>' +
+      '<span class="sep hide-s">|</span><b>InPost Paczkomat 24/7 &middot; BLIK</b></div>' +
+  '</div></div>' +
+  '<header class="prt-topbar"><a class="prt-logo-chip" href="/"><img src="/logo.png?v=83" alt="3DFILE.link"></a>' +
+  '<nav class="prt-nav-links"><a href="/">Hosting 3D</a><a href="/#discover">Odkrywaj</a><a href="/drukuje">Wydrukuj u nas</a>' +
+  '<a href="/#hiw">Jak to działa</a><a href="/blog.html">Blog</a><a href="/kontakt">Kontakt</a></nav>' +
+  '<div class="prt-actions" style="margin-left:auto;display:flex;gap:10px;align-items:center">' +
+  (logged ? '<span style="color:#94a3b8;font-size:13px">Moje konto</span>' : '') +
+  '<a class="prt-btn ghost" href="/">' + (logged ? '← Strona główna' : 'Zaloguj') + '</a></div></header>';
+})();
+</script>
+</body>
+</html>
