@@ -625,11 +625,11 @@ def create_order(
     db.commit()
     db.refresh(order)
 
-    # —— bonus: +100 MB storage for paid orders >= 50 zł (K1.5 bonus quota) ——
+    # —— bonus: +500 MB storage for paid orders >= 50 zł (K1.5 bonus quota) ——
     if order.total and order.total >= 50 and order.user_id:
         u = db.get(models.User, order.user_id)
         if u:
-            u.bonus_mb = (u.bonus_mb or 0) + 100
+            u.bonus_mb = (u.bonus_mb or 0) + 500
             db.commit()
 
     # log discount usage

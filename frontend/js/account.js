@@ -24,7 +24,7 @@ function loadAccount() {
         if (!q || !q.limit_bytes) return;
         var _fmt=function(b){return b<1048576?(b/1024).toFixed(1).replace('.',',')+' KB':Math.round(b/1048576)+' MB'};
         document.getElementById('kontoQuotaUsed').textContent=(q.used_bytes!=null?_fmt(q.used_bytes):q.used_mb+' MB');
-        document.getElementById('kontoQuotaLimit').textContent = q.limit_mb + ' MB';
+        document.getElementById('kontoQuotaLimit').textContent = (q.limit_mb >= 1024 ? (Math.round(q.limit_mb / 102.4) / 10) + ' GB' : q.limit_mb + ' MB');
         document.getElementById('kontoQuotaFill').style.width = Math.min(q.percent || 0, 100) + '%';
         var pc = document.getElementById('kontoQuotaPct'); if (pc) pc.textContent = Math.round(q.percent || 0) + '%';
         if (q.percent >= 90) document.getElementById('kontoQuotaFill').style.background = '#dc2626';

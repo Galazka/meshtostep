@@ -36,7 +36,7 @@ class User(Base):
     register_user_agent = Column(String(512), nullable=True)
     bio = Column(Text, nullable=True)
     avatar_url = Column(String(512), nullable=True)
-    quota_limit_bytes = Column(Integer, default=100 * 1024 * 1024, nullable=False)  # 100 MB
+    quota_limit_bytes = Column(Integer, default=5 * 1024 * 1024 * 1024, nullable=False)  # 5 GB
     bonus_mb = Column(Integer, default=0)  # bonus MB earned from print orders
     # — zapisane dane do wysyłki druku (profil klienta, auto-fill w zamówieniach) —
     ship_full_name = Column(String(100), nullable=True)

@@ -1,5 +1,5 @@
 // main.js — entry: tabs/routing, theme, FAQ, ads, home-recent, modal glue, init.
-import { applyI18n } from './i18n.js?v=100';
+import { applyI18n } from './i18n.js?v=103';
 import { token } from './shared.js?v=81';
 import { refreshThreeTheme } from './viewer3d.js?v=81';
 import { fetchUser, showModal } from './auth.js?v=83';

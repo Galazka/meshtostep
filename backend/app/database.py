@@ -103,7 +103,9 @@ def _migrate_columns():
             print(f"[3dfile] credits relax: {e}")
         try:
             existing = {c["name"] for c in insp.get_columns("users")}
-            add_col(conn, "users", "quota_limit_bytes", "INTEGER DEFAULT 104857600", existing)
+            add_col(conn, "users", "quota_limit_bytes", "INTEGER DEFAULT 5368709120", existing)
+            # upgrade darmowego kwot: stary default 100 MB -> 5 GB (identyfikator: 104857600)
+            conn.execute(text("UPDATE users SET quota_limit_bytes = 5368709120 WHERE quota_limit_bytes = 104857600"))
             add_col(conn, "users", "bonus_mb", "INTEGER DEFAULT 0", existing)
             add_col(conn, "users", "ship_full_name", "VARCHAR(100)", existing)
             add_col(conn, "users", "ship_phone", "VARCHAR(30)", existing)

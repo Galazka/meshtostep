@@ -78,7 +78,11 @@ SHARES_DIR = Path(settings.DATA_DIR) / "shares"
 for d in [JOBS_DIR, PREVIEWS_DIR, SHARES_DIR]:
     d.mkdir(parents=True, exist_ok=True)
 
-QUOTA_DEFAULT = 100 * 1024 * 1024
+QUOTA_DEFAULT = 5 * 1024 * 1024 * 1024
+
+def _fmt_limit(nbytes):
+    mb = (nbytes or 0) / 1048576
+    return f"{round(mb/1024,1)} GB" if mb >= 1024 else f"{round(mb)} MB"
 
 @router.get("/quota")
 def get_quota(user: models.User = Depends(require_user), db: Session = Depends(get_db)):
@@ -149,7 +153,7 @@ async def convert_file(
         used = _quota_used(db, user.id)
         if used + data_len > limit:
             shutil.rmtree(job_dir, ignore_errors=True)
-            raise HTTPException(413, f"Przekroczono limit {round(limit/1024/1024)} MB. Zwolnij miejsce usuwając pliki, albo zamów druk — +100 MB gratis.")
+            raise HTTPException(413, f"Przekroczono limit {_fmt_limit(limit)}. Zwolnij miejsce usuwając pliki, albo zamów druk — dostaniesz bonus +500 MB. (5 GB i tak rzadko kto zapełni)")
 
     if user and not getattr(user,'username',None):
         base = re.sub(r'[^a-z0-9]+','', (user.email.split('@')[0].lower()))[:20] or 'user'

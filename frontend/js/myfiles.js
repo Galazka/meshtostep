@@ -1,5 +1,5 @@
 // myfiles.js  -  jobs grid, folders, bulk, share modal, job modal, fullscreen, editor (verbatim).
-import { t } from './i18n.js?v=100';
+import { t } from './i18n.js?v=103';
 import { token } from './shared.js?v=81';
 import { toast } from './viewer3d.js?v=81';
 
@@ -139,7 +139,7 @@ async function loadQuota(){
         const bar=document.getElementById('quotaBar');
         bar.style.display='block';
         var _kb=function(b){return b<1048576?(b/1024).toFixed(1).replace('.',',')+' KB':(b/1048576).toFixed(1).replace('.',',')+' MB'};
-        document.getElementById('quotaLabel').textContent='Wykorzystano '+(q.used_bytes!=null?_kb(q.used_bytes):q.used_mb+' MB')+' / '+q.limit_mb+' MB';
+        document.getElementById('quotaLabel').textContent='Wykorzystano '+(q.used_bytes!=null?_kb(q.used_bytes):q.used_mb+' MB')+' / '+(q.limit_mb>=1024?(Math.round(q.limit_mb/102.4)/10)+' GB':q.limit_mb+' MB');
         document.getElementById('quotaPct').textContent=q.percent+'%';
         const fill=document.getElementById('quotaFill');
         fill.style.width=Math.min(q.percent,100)+'%';
