@@ -444,7 +444,7 @@
         }
     </style>
     <script>try{var _t=localStorage.getItem("mt_theme")||"light";if(_t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}</script>
-    <link href="/asset/portal.css?v=47" rel="stylesheet">
+    <link href="/asset/portal.css?v=48" rel="stylesheet">
 <!-- Google AdSense (Auto ads) -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8919352846655813"
         crossorigin="anonymous"></script>
@@ -480,12 +480,12 @@
     <a href="/drukuje" id="printerNav" data-i18n="navPrint">Wydrukuj u nas</a>
     <a href="/#hiw" data-i18n="navHow" onclick="if(location.pathname==='/'){go('hiw');return false}">Jak to działa</a>
     <a href="/#faq" data-i18n="navFAQ" onclick="if(location.pathname==='/'){go('faq');return false}">FAQ</a>
-    <button class="prt-nav-link" data-page="files" onclick="go('files')" id="navFiles" style="display:none">Moje pliki</button>
-    <button class="prt-nav-link" data-page="konto" onclick="go('konto')" id="kontoNav" style="display:none">Konto</button>
     <a href="/blog.html" data-i18n="navBlog">Blog</a>
     <a href="/kontakt" data-i18n="navContact">Kontakt</a>
   </nav>
   <div class="prt-actions nav-right" style="margin-left:auto">
+    <button class="prt-nav-link acct" data-page="files" onclick="go('files')" id="navFiles" style="display:none">Moje pliki</button>
+    <button class="prt-nav-link acct" data-page="konto" onclick="go('konto')" id="kontoNav" style="display:none">Konto</button>
     <button class="prt-btn ghost" id="themeToggle" onclick="toggleTheme()" title="Tryb ciemny" aria-label="Motyw">◐</button>
     <button class="prt-btn ghost" id="langToggle" onclick="toggleLang()">EN</button>
     <span id="userPanel" style="display:none;position:relative" class="prt-usr">
@@ -518,23 +518,23 @@
     <div class="prt-slide on doors-slide">
       <div class="doors-head">
         <span class="prt-eyebrow" data-i18n="doorsEyebrow">3DFile · Hosting modeli + wlasna drukarnia · Gdańsk</span>
-        <h1 data-i18n="doorsH1">Wrzucasz jeden plik.<br><em>Dalej decydujesz Ty.</em></h1>
-        <p class="prt-sub" data-i18n="doorsLead">3dfile.link to dwa usługi w jednym adresie: darmowy hosting modeli 3D z podglądem w przeglądarce — oraz drukarnia, która wydrukuje Twój model i przyśle go pod drzwi.</p>
+        <h1 data-i18n="doorsH1">Jeden plik.<br><em>Dwie drogi: link albo wydruk.</em></h1>
+        <p class="prt-sub" data-i18n="doorsLead">Wgrywasz STL, 3MF lub OBJ raz. Potem decydujesz: publikujesz link z działającym podglądem 3D — albo zamawiasz fizyczny wydruk z dostawą pod drzwi. Bez instalacji, bez ukrytych kosztów.</p>
       </div>
       <div class="doors-grid">
         <a class="door door-a" href="#upload" onclick="scrollToUpload();return false">
-          <div class="door-top"><span class="door-num">01</span><span class="door-chip" data-i18n="doorAchip">dla twórców · 0 zł</span></div>
-          <h2 data-i18n="doorAh">Schowaj i podziel się</h2>
-          <p data-i18n="doorAd">Wgrywasz STL / 3MF / OBJ → dostajesz link <code>3dfile.link/u/twoj/model</code> z działającym podglądem 3D na każdym urządzeniu. Konwersja do STEP na żądanie, foldery, prywatne linki, sprzedaż modelu.</p>
+          <div class="door-top"><span class="door-num">01</span><span class="door-chip" data-i18n="doorAchip">dla twórców · 0 zł na start</span></div>
+          <h2 data-i18n="doorAh">Hosting: wrzuć i podziel się linkiem</h2>
+          <p data-i18n="doorAd">Wgrywasz STL / 3MF / OBJ → dostajesz link <code>3dfile.link/u/twoj/model</code> z działającym podglądem 3D na każdym urządzeniu. Konwersja do STEP na żądanie, foldery, prywatne i niepubliczne linki, embed na forum.</p>
           <div class="door-metrics"><span>wgranie <b>30 s</b></span><span>link <b>na zawsze</b></span><span>miejsce <b>100 MB gratis</b></span></div>
-          <span class="door-cta" data-i18n="doorActa">Wgraj model — za darmo →</span>
+          <span class="door-cta" data-i18n="doorActa">Wgraj model — 0 zł, 30 sekund →</span>
         </a>
         <a class="door door-b" href="/zamow">
           <div class="door-top"><span class="door-num">02</span><span class="door-chip" data-i18n="doorBchip">dla klientów · od 10 zł</span></div>
-          <h2 data-i18n="doorBh">Wydrukuj pod drzwi</h2>
-          <p data-i18n="doorBd">Nie masz drukarki? Masz plik? Wycena liczona na żywo (filament + czas + wysyłka), płatność BLIK-iem lub kartą, InPost Paczkomat lub kurier pod adres. Ekspres do 48 h.</p>
+          <h2 data-i18n="doorBh">Druk: odeślij plik, odbierz paczkę</h2>
+          <p data-i18n="doorBd">Nie masz drukarki? Wystarczy plik. Cena liczona na żywo z materiału, czasu druku i wysyłki. Płatność BLIK lub kartą, Paczkomat albo kurier pod drzwi, ekspres do 48 godzin.</p>
           <div class="door-metrics"><span>wycena <b>30 s</b></span><span>materiały <b>13</b></span><span>realizacja <b>≤ 5 dni</b></span></div>
-          <span class="door-cta" data-i18n="doorBcta">Wyceń mój wydruk →</span>
+          <span class="door-cta" data-i18n="doorBcta">Wyceń swój wydruk — cena od 10 zł →</span>
         </a>
       </div>
     </div>
@@ -713,11 +713,6 @@
             <div class="hicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg></div>
             <h3 data-i18n="feat5H">100 MB + foldery</h3>
             <p>Każdy zalogowany ma 100 MB. Foldery, zmiana nazw, grupowe usuwanie, podglądy JPG.</p>
-        </div>
-        <div class="hcell">
-            <div class="hicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1.6"/><circle cx="19" cy="21" r="1.6"/><path d="M2 3h3l2.6 12.4a2 2 0 002 1.6h8.8a2 2 0 002-1.6L22 7H6"/></svg></div>
-            <h3 data-i18n="feat6H">Odkrywaj + sprzedaż</h3>
-            <p>Wyszukiwarka, tagi, YouTube, komentarze. <strong>80% dla Ciebie</strong>, 20% prowizji.</p>
         </div>
     </div>
 
@@ -1288,7 +1283,7 @@
 </script>
 <script type="module">
     import './js/shared.js?v=81';
-    import './js/i18n.js?v=97';
+    import './js/i18n.js?v=98';
     import './js/viewer3d.js?v=81';
     import './js/auth.js?v=82';
     import './js/convert.js?v=83';
@@ -1325,7 +1320,12 @@ window.addEventListener('hashchange', function() {
     if (h === 'converter') h = 'home'; // legacy hash compat
     go(h);
 })();
-function scrollToUpload() { document.getElementById('uploadSection').scrollIntoView({behavior:'smooth',block:'start'}); }
+function scrollToUpload() {
+    var u=document.getElementById('uploadSection');
+    if(!u) return;
+    if(!u.offsetParent && typeof go==='function'){ go('home'); setTimeout(function(){ u.scrollIntoView({behavior:'smooth',block:'start'}); }, 80); }
+    else u.scrollIntoView({behavior:'smooth',block:'start'});
+  }
 function toggleDropdown(e) {
     e && e.stopPropagation();
     var d = document.getElementById('accountDropdown');
@@ -1440,7 +1440,12 @@ function cookieConsent(accept) {
     slides[cur].classList.add('on'); if(dots&&dots[cur]) dots[cur].classList.add('on');
   };
   window.prtSlide=function(d){ window.prtGo(cur+d); restart(); };
-  function restart(){ if(timer) clearInterval(timer); timer=setInterval(function(){ window.prtGo(cur+1); }, 6500); }
+  function delay(){ return cur===0 ? 11000 : 6500; }
+  var paused=false, waitTimer=null;
+  function tick(){ if(paused){ if(waitTimer)clearTimeout(waitTimer); waitTimer=setTimeout(function(){ if(!paused) restart(); },400); return; } window.prtGo(cur+1); timer=setTimeout(tick, delay()); }
+  function restart(){ if(timer) clearTimeout(timer); timer=setTimeout(tick, delay()); }
+  var sl=document.getElementById('heroSlider');
+  if(sl){ sl.addEventListener('mouseenter',function(){paused=true;}); sl.addEventListener('mouseleave',function(){paused=false; restart();}); }
   restart();
 })();
 </script>
