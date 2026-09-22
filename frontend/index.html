@@ -444,7 +444,7 @@
         }
     </style>
     <script>try{var _t=localStorage.getItem("mt_theme")||"light";if(_t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}</script>
-    <link href="/asset/portal.css?v=39" rel="stylesheet">
+    <link href="/asset/portal.css?v=40" rel="stylesheet">
 <!-- Google AdSense (Auto ads) -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8919352846655813"
         crossorigin="anonymous"></script>
@@ -514,29 +514,28 @@
     <div class="prt-slider" id="heroSlider">
   <div class="prt-slides">
 
-    <!-- SLAJD 01 · HOSTING -->
-    <div class="prt-slide on">
-      <div>
-        <span class="prt-eyebrow">3DFile · Hosting modeli 3D</span>
-        <h1>Wgraj model 3D.<br>Podziel się <em>jednym linkiem</em>.</h1>
-        <p class="prt-sub">STL · 3MF · OBJ — pojedynczy plik do <strong>200 MB</strong>. Podgląd 3D w przeglądarce, konwersja do STEP, linki na Printables i MakerWorld. Bez instalacji. <strong>100 MB miejsca za darmo</strong> (konto).</p>
-        <div class="prt-cta-row">
-          <a href="#upload" class="prt-cta" onclick="scrollToUpload();return false">Wgraj model — bezpłatnie</a>
-          <a href="/#discover" class="prt-cta ghost">Przeglądaj modele</a>
-        </div>
+    <!-- SLAJD 01 · DWA DRZWI — wybór dla nowego gościa -->
+    <div class="prt-slide on doors-slide">
+      <div class="doors-head">
+        <span class="prt-eyebrow" data-i18n="doorsEyebrow">3DFile · Hosting modeli + wlasna drukarnia · Gdańsk</span>
+        <h1>Wrzucasz jeden plik.<br><em>Dalej decydujesz Ty.</em></h1>
+        <p class="prt-sub" data-i18n="doorsLead">3dfile.link to dwa usługi w jednym adresie: darmowy hosting modeli 3D z podglądem w przeglądarce — oraz drukarnia, która wydrukuje Twój model i przyśle go pod drzwi.</p>
       </div>
-      <div class="prt-visual">
-        <div class="vhead"><span>wycena-druku</span><span class="live">live</span></div>
-        <div class="vbody">
-          <div class="vrow"><span class="k">plik</span><span class="v" id="lvFile">bracket_v2.stl</span></div>
-          <div class="vrow"><span class="k">objetosc</span><span class="v">6.60 cm³</span></div>
-          <div class="vrow"><span class="k">wymiary</span><span class="v">42 × 31 × 18 mm</span></div>
-          <div class="vrow"><span class="k">material</span><span class="v" id="lvMat">PLA · 8.2 g</span></div>
-          <div class="vrow"><span class="k">czas druku</span><span class="v" id="lvHours">—</span></div>
-          <div class="vrow"><span class="k">cena</span><span class="v hl" id="lvCena">—</span></div>
-          <div class="vrow"><span class="k">ostatnio na odkrywaj</span><span class="v" id="lvLast">—</span></div>
-          <div class="vbars"><i style="height:30%"></i><i style="height:44%"></i><i style="height:38%"></i><i style="height:62%"></i><i style="height:55%"></i><i style="height:78%"></i><i style="height:100%"></i><i style="height:84%"></i><i style="height:66%"></i><i style="height:92%"></i></div>
-        </div>
+      <div class="doors-grid">
+        <a class="door door-a" href="#upload" onclick="scrollToUpload();return false">
+          <div class="door-top"><span class="door-num">01</span><span class="door-chip" data-i18n="doorAchip">dla twórców · 0 zł</span></div>
+          <h2 data-i18n="doorAh">Schowaj i podziel się</h2>
+          <p data-i18n="doorAd">Wgrywasz STL / 3MF / OBJ → dostajesz link <code>3dfile.link/u/twoj/model</code> z działającym podglądem 3D na każdym urządzeniu. Konwersja do STEP na żądanie, foldery, prywatne linki, sprzedaż modelu.</p>
+          <div class="door-metrics"><span>wgranie <b>30 s</b></span><span>link <b>na zawsze</b></span><span>miejsce <b>100 MB gratis</b></span></div>
+          <span class="door-cta" data-i18n="doorActa">Wgraj model — za darmo →</span>
+        </a>
+        <a class="door door-b" href="/zamow">
+          <div class="door-top"><span class="door-num">02</span><span class="door-chip" data-i18n="doorBchip">dla klientów · od 10 zł</span></div>
+          <h2 data-i18n="doorBh">Wydrukuj pod drzwi</h2>
+          <p data-i18n="doorBd">Nie masz drukarki? Masz plik? Wycena liczona na żywo (filament + czas + wysyłka), płatność BLIK-iem lub kartą, InPost Paczkomat lub kurier pod adres. Ekspres do 48 h.</p>
+          <div class="door-metrics"><span>wycena <b>30 s</b></span><span>materiały <b>13</b></span><span>realizacja <b>≤ 5 dni</b></span></div>
+          <span class="door-cta" data-i18n="doorBcta">Wyceń mój wydruk →</span>
+        </a>
       </div>
     </div>
 
@@ -560,6 +559,8 @@
           <div class="vrow"><span class="k">ekspres</span><span class="v">48 h</span></div>
           <div class="vrow"><span class="k">wysylka</span><span class="v">InPost · UE · World</span></div>
           <div class="vrow"><span class="k">minimalne zamowienie</span><span class="v hl">10.00 zł</span></div>
+          <div class="vrow"><span class="k">przyklad 6.6 cm3 PLA</span><span class="v hl" id="lvCena">—</span></div>
+          <div class="vrow"><span class="k">czas druku</span><span class="v" id="lvHours">—</span></div>
         </div>
       </div>
     </div>
@@ -751,6 +752,44 @@
         </div>
     </div>
     
+
+    <!-- ═══ DLA KOGO / RÓŻNICE / GWARANCJE (Hormozi: value + risk reversal) ═══ -->
+    <div class="why-wrap">
+      <div class="why-head">
+        <div class="prt-kicker" data-i18n="whyDiffKicker">Dlaczego jedno miejsce a nie trzy</div>
+        <h2 data-i18n="whyDiffH">Hosting bez wydruku to archiwum.<br>Drukarnia bez linku to mail z załącznikiem.</h2>
+        <p class="lead" data-i18n="whyDiffLead">Thingiverse i Printables przechowują pliki — ale nie wyślą Ci detalu pod drzwi i nie oddadzą pliku STEP. OLX i Allegro sprzedają wydruki — ale nie dają portfolio z działającym podglądem 3D. My skleiliśmy oba światy pod jednym adresem.</p>
+      </div>
+      <div class="why-grid">
+        <div class="why-table">
+          <table>
+            <thead><tr><th data-i18n="whyThCap">Umiejętość</th><th class="us">3dfile.link</th><th>Thingiverse / Printables</th><th>OLX / Allegro</th></tr></thead>
+            <tbody>
+              <tr><td>Link z podglądem 3D na każdym urządzeniu</td><td class="us">✓ twoje /u/nick/slug</td><td>✓ tylko ich baza</td><td>✗ załącznik w mailu</td></tr>
+              <tr><td>Konwersja mesh → STEP do CAD</td><td class="us">✓ na żądanie, 5 trybów</td><td>✗</td><td>✗</td></tr>
+              <tr><td>Wydruk z dostawą pod drzwi</td><td class="us">✓ InPost · kurier · odbiór PL</td><td>✗</td><td>~ ktoś z drukarką</td></tr>
+              <tr><td>Wycena zanim zapłacisz</td><td class="us">✓ live: filament+czas+wysyłka</td><td>—</td><td>✗ „proszę o wycenę w DM”</td></tr>
+              <tr><td>Prywatność i usunięcie danych</td><td class="us">✓ unlisted link, RODO, skasuj konto = skasujemy wszystko</td><td>✗ profil publiczny</td><td>✗</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="why-guarantees">
+          <div class="g-card">
+            <div class="g-tag" data-i18n="g1Tag">Gwarancja geometrii</div>
+            <h3 data-i18n="g1H">Drugi wydruk gratis albo zwrot</h3>
+            <p data-i18n="g1D">Jeśli detal nie pasuje wymiarowo do Twojego pliku (tolerancja ±0,3%), drukujemy ponownie bez opłaty albo oddajemy pieniądze. Bez licytacji na zdjęcia.</p>
+          </div>
+          <div class="g-card">
+            <div class="g-tag" data-i18n="g2Tag">Gwarancja hostingu</div>
+            <h3 data-i18n="g2H">Twój link działa dopóki chcesz</h3>
+            <p data-i18n="g2D">Model nie znika, nie łamie się po zmianie regulaminu, nie znika za paywallem. Konto usuniesz w klik — i razem z nim wszystkie dane.</p>
+          </div>
+          <div class="g-strip">
+            <span>0 zł na start</span><span>·</span><span>bez instalacji</span><span>·</span><span>bez karty na próbę</span><span>·</span><span>polska drukarnia, polski kontakt</span>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div id="homeRecent" style="display:none;margin-bottom:48px">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px">
