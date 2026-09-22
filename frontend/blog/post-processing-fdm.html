@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Post-processing FDM — szlifowanie, wygładzanie, lakierowanie | 3DFILE.link</title>
+<meta name="description" content="Jak wykończyć wydruk FDM? Gradacje papieru 120–2000, podkład wypełniający, wygładzanie acetonem ABS i ASA, ostrożnie z limoneną w PETG, lakier UV, klejenie epoxy i cyjanoakrylate. Czas i koszty w PLN.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://3dfile.link/blog/post-processing-fdm.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Post-processing FDM — szlifowanie, wygładzanie, lakierowanie">
+<meta property="og:description" content="Jak wykończyć wydruk FDM? Gradacje papieru 120–2000, podkład wypełniający, wygładzanie acetonem ABS i ASA, ostrożnie z limoneną w PETG, lakier UV, klejenie epoxy i cyjanoakrylate. Czas i koszty w PLN.">
+<meta property="og:image" content="https://3dfile.link/asset/blog/cover-post-processing-fdm.svg">
+<meta property="og:site_name" content="3DFILE.link">
+<meta property="og:url" content="https://3dfile.link/blog/post-processing-fdm.html">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#0f172a;--muted:#64748b;--accent:#0ea5e9;--accent2:#0b5394;--border:#e2e8f0;--card:#ffffff;--bg:#f8fafc}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);line-height:1.65}
+.nav{background:#0f172a;color:#fff;padding:14px 0;position:sticky;top:0;z-index:50}
+.nav-in{max-width:1120px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.nav a{color:#fff;text-decoration:none;font-weight:600;font-size:14px}
+.nav-links a{margin-left:18px;opacity:.85}
+.nav-links a:hover{opacity:1}
+.badge{background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.3px}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 20px 60px}
+.crumbs{font-size:13px;color:var(--muted);margin-bottom:18px}
+.crumbs a{color:var(--accent);text-decoration:none}
+.crumbs a:hover{text-decoration:underline}
+h1{font-size:34px;line-height:1.2;font-weight:800;letter-spacing:-.5px;margin-bottom:14px}
+.meta{color:var(--muted);font-size:14px;margin-bottom:22px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.hero-img{width:100%;border-radius:14px;margin-bottom:26px;box-shadow:0 6px 24px rgba(15,23,42,.12)}
+h2{font-size:24px;font-weight:800;margin:34px 0 12px;letter-spacing:-.3px;line-height:1.3}
+h3{font-size:19px;font-weight:700;margin:26px 0 10px}
+p{margin-bottom:16px}
+ul,ol{margin:0 0 18px 22px}
+li{margin-bottom:8px}
+.box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin:20px 0}
+.box.cta{background:linear-gradient(135deg,#0ea5e9,#0b5394);color:#fff;border:none;text-align:center;padding:28px}
+.box.cta h3{color:#fff;font-size:22px;margin-bottom:8px}
+.box.cta p{color:#e0f2fe;font-size:15px}
+.btn{display:inline-block;background:#fff;color:#0b5394;font-weight:800;padding:13px 30px;border-radius:10px;text-decoration:none;font-size:16px;margin-top:14px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.btn:hover{transform:translateY(-1px)}
+.tip table{width:100%;border-collapse:collapse;margin:14px 0}
+.tip td,.tip th{border:1px solid var(--border);padding:10px 12px;font-size:14px;text-align:left}
+.tip th{background:#f1f5f9;font-weight:700}
+blockquote{border-left:4px solid var(--accent);background:var(--card);padding:4px 20px;font-size:17px;margin:20px 0;font-style:italic}
+.tag{display:inline-block;background:#e0f2fe;color:#0369a1;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;margin-right:8px;margin-top:6px}
+.tag:hover{background:#bae6fd;text-decoration:none}
+.related h3{font-size:21px;margin:44px 0 16px}
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.rel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;text-decoration:none;color:var(--fg);display:block;transition:transform .15s,box-shadow .15s}
+.rel:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(15,23,42,.1)}
+.rel img{width:100%;height:120px;object-fit:cover}
+.rel .b{padding:12px 14px}
+.rel .b strong{font-size:15px;display:block;margin-bottom:4px;line-height:1.4}
+.rel .b span{color:var(--muted);font-size:13px}
+footer{background:#0f172a;color:#94a3b8;text-align:center;padding:24px;font-size:13px}
+footer a{color:#cbd5e1;text-decoration:none}
+@media(max-width:600px){h1{font-size:26px}h2{font-size:20px}}
+.nav-burger{display:none;background:none;border:1px solid #334155;border-radius:8px;cursor:pointer;padding:8px 10px;font-size:19px;line-height:1;color:#fff}
+@media(max-width:760px){.nav-burger{display:inline-flex;align-items:center;gap:6px}.nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border-bottom:1px solid #334155;padding:10px 20px;flex-direction:column;align-items:stretch!important;z-index:60}.nav-links.open{display:flex}.nav{position:relative}.nav-links a{width:100%;text-align:left;margin-left:0!important;padding:12px 4px}}
+</style>
+</head>
+<body>
+<nav class="nav"><div class="nav-in">
+  <a href="/">3DFILE.link</a>
+  <button class="nav-burger" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">☰</button>
+  <div class="nav-links"><a href="/drukuje">Druk</a><a href="/">Hosting</a><a href="/blog.html">Blog</a></div>
+</div></nav>
+<div class="wrap">
+  <div class="crumbs"><a href="/drukuje">Strona główna</a> › <a href="/blog.html">Blog</a> › <span>post-processing-fdm</span></div>
+  <h1>Post-processing FDM — jak zamienić wydruk w produkt</h1>
+  <div class="meta"><span>📅 21.09.2026</span><span>✍️ Zespół 3DFILE.link</span><span>⏱ 9 min czytania</span></div>
+  <img src="/asset/blog/cover-post-processing-fdm.svg" alt="post-processing wydruków fdm szlifowanie lakierowanie wygładzanie" class="hero-img" loading="lazy">
+
+  <p>Wydruk prosto ze stołu to surowiec, nie wyrób. Linie warstw, ślady po podporach i matowa, „piaskowa” faktura sprawiają, że element techniczny wygląda jak prototyp — nawet gdy działa idealnie. Różnica między „widać, że z drukarki” a „nikt nie uwierzy, że to nie wtrysk” mieści się zwykle w trzech-czterech godzinach pracy: papierze ściernym, podkładzie i lakierze. Ten poradnik przeprowadza przez cały łańcuch wykończenia FDM — od doboru gradacji, przez wygładzanie chemiczne, po klejenie i zabezpieczanie — z liczbami, którymi realnie operujemy w pracowni.</p>
+
+  <h2>Szlifowanie: gradacje od 120 do 2000</h2>
+  <p>Szlifowanie to jedyny etap, który trzeba zacząć od najgrubszego papieru, jaki zniesie geometria, i skończyć na najdrobniejszym, jaki zniesie Twoja cierpliwość. Zasada nadrzędna: <strong>każdą kolejną gradację dobieramy tak, aby usunęła rysy po poprzedniej</strong> — jeśli przeskoczysz z 120 na 600, głębokie rysy zostaną pod powierzchnią i wyjdą przy lakierowaniu. Przed właściwym szlifowaniem zgrubnym ścina się resztki podpór nożem i dłutem modelarskim, a wypukłe krawędzie lekkim przeszlifem pod kątem prostym.</p>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Gradacja</th><th>Zadanie</th><th>Uwagi praktyczne</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>120–180</td><td>Zdjęcie linii warstw, usunięcie śladów po podporach</td><td>Przy PLA nie dociskaj — tarcie topi powierzchnię i „rozmazuje” plastik zamiast go ścierać.</td></tr>
+        <tr><td>240–400</td><td>Wyrównanie rys po gradacji zgrubnej</td><td>Najważniejszy etap pod podkład wypełniający; powierzchnia ma być jednolicie matowa.</td></tr>
+        <tr><td>600–800</td><td>Wykończenie między warstwami podkładu i lakieru</td><td>Szlif na mokro z wodą; pochłania drobne nedoskonałości bez przerywania powłoki.</td></tr>
+        <tr><td>1000–1500</td><td>Przygotowanie do polerowania na wysoki połysk</td><td>Stosuj tylko przy ABS/ASA i filamentach „polishable”; w PLA efekt bywa mętny.</td></tr>
+        <tr><td>2000–2500 + pasta polerska</td><td>Połysk lustrzany</td><td>Ostatni etap przed lakierem bezbarwnym albo samodzielna metoda na „gładkość fabryczną”.</td></tr>
+      </tbody>
+    </table>
+    <p>Szlifując na mokro, użyj gąbki lub klocka — szlifowanie palcem wygładza krawędzie, których nie chciałeś ruszać, i zostawia falowaną powierzchnię.</p>
+  </div>
+
+  <h2>Podkład wypełniający — najszybsza droga do gładkości</h2>
+  <p>Zamiast godzin szlifowania często wystarczy <strong>filler primer, czyli podkład wypełniający</strong>: gęsty lakier natryskowy, który wchodzi w linie warstw i po wyschnięciu tworzy jednolitą, miękką powłokę łatwą do zszlifowania. Typowy cykl w pracowni: dwie-trzy cienkie warstwy podkładu co 20–30 minut, schnięcie do rana, a następnie jednolite przeszlifowanie gradacją 600–800 na mokro. Jedna puszka 400 ml wystarcza na cztery-pięć elementów wielkości dłoni. Podkład jest też testem prawdy: jego matowa powierzchnia natychmiast pokazuje wszystkie rysy i dołki, których nie widać na surowym wydruku — im szybciej je zobaczysz, tym mniej pracy stracisz.</p>
+
+  <h2>Wygładzanie chemiczne — działa na ABS i ASA, nie na PLA</h2>
+  <p>Najszybszą metodą na idealnie gładką powierzchnię jest reakcja chemiczna, ale materiał musi na nią pozwalać. <strong>ABS i ASA rozpuszczają się w acetonie</strong> — krótką kąpiel (30–60 sekund) albo napar w komorze z pary acetonu rozpuszczają wierzchnią warstwę linii i „zlakierowują” element jednolitą, błyszczącą skórą. Traci się przy tym około 0,1–0,2 mm wymiaru, więc gwinty i pasowania wygładzamy wyłącznie z zapasem. <strong>PLA w acetonie jest praktycznie obojętne</strong> — popularne „wygładzanie PLA acetonem” z filmików to marketing albo chlorowane rozpuszczalniki niebezpieczne dla domowego warsztatu.</p>
+  <p><strong>PETG a limonena</strong>: d-limonena (składnik wielu zmywaczy „eko”) rzeczywiście lekko atakuje PETG, ale efekty są kapryśne — powierzchnia często wychodzi lepka, matowo-mleczna albo nierównomiernie zżarta. Jeśli próbujesz, zrób test na odpadzie, pracuj w rękawicach nitrylowych i dobrej wentylacji, a element po kąpieli traktuj jako ozdobny, nie funkcjonalny. Czysta prawda: PETG najskuteczniej wygładza się szlifowaniem i podkładem, nie chemią.</p>
+  <blockquote>
+    Bezpieczeństwo przede wszystkim: aceton i limonena to lotne rozpuszczalniki — praca tylko przy otwartym oknie lub pod wyciągiem, z dala od iskier. Para acetonu w zamkniętym pokoju to gotowy scenariusz na pożar, nie na gładki wydruk.
+  </blockquote>
+
+  <h2>Malowanie i lakier UV</h2>
+  <p>Po podkładzie przychodzi kolor: farby akrylowe w puszce (najszybciej), aerograf (najładniej, ale sprzęt i mycie robią swoje) albo ręcznie pędzlem dla detali. Ważna kolejność: <strong>cieńkie warstwy niż grube</strong> — trzy lekkie krycia po 10 minut schnięcia biją jedno „grube”, które spłynie po krawędziach. Ostatni ruch to <strong>lakier bezbarwny z filtrem UV</strong> — mat, satyna lub połysk do wyboru. Dla elementów zewnętrznych (osłony, mocowania na balkonie, obudowy czujników) nie jest to fanaberia: PLA i PETG bez ochrony potrafią po dwóch sezonach na słońcu zżółknąć i spaćć, a porządny lakier UV z absorberem przedłuża życie koloru o lata. ASA sam w sobie jest odporny na UV i często wystarczy samo wygładzenie.</p>
+
+  <h2>Klejenie: epoksyd czy cyjanoakrylat?</h2>
+  <p>Elementy drukowane na pół i sklejkę łączone są na dwa główne sposoby. <strong>Klej cyjanoakrylowy (CA) z aktywatorze</strong> — spoiwo sekundowe, wypełnia szczeliny do 0,1 mm, sprawdza się w drobnych naprawach i elementach ozdobnych; minusy: kruchość na udar i wilgoć, brak odporności termicznej powyżej około 80 °C. <strong>Epoksyd dwuskładnikowy (np. 5-minutowy lub wolny, 24 h)</strong> — wypełnia nierówności, tworzy spoinę zdolną przenosić obciążenia, odporną na chemię; wymaga docisku na kilka godzin i jest droższy. Praktyczna reguła: części ruchome i nośne — epoksyd plus, jeśli to możliwe, wtopione w spoinę kołki z drutu (metoda „pin and epoxy”). Gładkie powierzchnie przed klejeniem zmatuj gradacją 240 i odtłuść alkoholem izopropylowym.</p>
+
+  <h2>Uszczelnianie i zabezpieczanie</h2>
+  <p>Wydruki FDM są z natury lekko porowate — linie warstw to mikroskopijne kanały. Do elementów mających kontakt z wodą lub powietrzem pod ciśnieniem (osłony, obudowy filtrów, prototypy hydrauliki) stosuje się <strong>uszczelnianie</strong>: cienką warstwę epoksydu pędzlem, lakier bezbarwny albo specjalne uszczelniacze spożywcze — uwaga: certyfikat dopuszczenia do kontaktu z żywnością ma tylko część epoksydów, sam PLA „jest spożywczy” wyłącznie jako granulat, a nie jako wydruk z rowkami. W warunkach zewnętrznych bazą ochrony jest ASA lub PETG plus lakier; PLA bez powłoki na mrozie i w deszczu nie ma sensu.</p>
+
+  <h2>Ile to trwa i ile kosztuje</h2>
+  <p>Poniżej realia naszej pracowni dla elementu wielkości dłoni (~150 cm³ objętości, PLA lub ABS). Koszt materiałów liczony „na sztuka” przy większej serii spada o 20–40%; robocizna wyceniana jest zwykle według godziny.</p>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Zakres wykończenia</th><th>Czas (robocizna)</th><th>Materiały (PLN/szt.)</th><th>Wykończenie w serwisie (PLN/szt.)</th><th>Efekt</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Samo usunięcie podpór + uproszczone szlifowanie 240</td><td>0,5–1 h</td><td>5–10</td><td>30–80</td><td>Matowy, wyczuwalne resztki warstw</td></tr>
+        <tr><td>Szlifowanie pełne + 2 warstwy podkładu filler</td><td>2–4 h</td><td>15–35</td><td>100–250</td><td>Gładko, jednolita powierzchnia pod kolor</td></tr>
+        <tr><td>Pełne malowanie akrylem + lakier UV</td><td>4–8 h</td><td>30–70</td><td>200–500</td><td>Kolor „z półki”, połysk lub mat</td></tr>
+        <tr><td>Wygładzanie parowe ABS/ASA (kąpiel acetonowa)</td><td>1–2 h + 24 h schnięcia</td><td>25–50</td><td>100–220</td><td>Błysk, zlikwidowane linie warstw</td></tr>
+        <tr><td>Uszczelnienie epoksydem (od zewnętrznego nacisku)</td><td>1–2 h + 24 h utwardzania</td><td>15–40</td><td>80–180</td><td>Wodoszczelne, gładka „skóra”</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Material × metoda — tabela ryzyka</h2>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Materiał</th><th>Szlifowanie</th><th>Podkład filler</th><th>Chemia wygładzająca</th><th>Malowanie</th><th>Ryzyka i uwagi</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>PLA</td><td>tak, ostrożnie</td><td>tak</td><td>brak praktycznej metody</td><td>tak</td><td>mięknie przy tarciu powyżej ~60 °C; unikać agresywnych rozpuszczalników.</td></tr>
+        <tr><td>PETG</td><td>tak</td><td>tak</td><td>limonena — efekt niepewny</td><td>tak (mat z rysami trzyma słabo)</td><td>test na odpadzie przed serią; powierzchnia lepka = zła kompatybilność lakieru.</td></tr>
+        <tr><td>ABS</td><td>tak</td><td>tak</td><td>aceton — bardzo skuteczny</td><td>tak</td><td>odporność UV niska — malowanie praktycznie obowiązkowe.</td></tr>
+        <tr><td>ASA</td><td>tak</td><td>tak</td><td>aceton / dichlorometan</td><td>tak</td><td>najlepszy materiał pod wygładzanie i zastosowania zewnętrzne.</td></tr>
+        <tr><td>PA (nylon)</td><td>trudno (włóknisty)</td><td>słabo trzyma</td><td>brak</td><td>słabo</td><td>higroskopijny — maluj szybko po wysuszeniu; po co lakier: rozważ barwienie w tonerze zamiast malowania.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Najczęściej zadawane pytania (FAQ)</h2>
+  <div class="box">
+    <h3>Czy opłaca się szlifować wydruk ręcznie, czy jest jakaś maszyna?</h3>
+    <p>Na pojedyncze elementy ręczne plus podkład to wystarczająca jakość. Przy seriach powyżej kilkunastu sztuk sprawdza się szlifierka oscylacyjna z drobnym papierem na klocku oraz — w usługach — śrucinowanie (piaskowanie) wibrościerne, które matowi powierzchnię równomiernie w 20–30 minut bez pracy ręcznej.</p>
+  </div>
+  <div class="box">
+    <h3>Jak nie zniszczyć wymiarów przy szlifowaniu?</h3>
+    <p>Przyjmuje się, że szlifowanie „na wymiar” powinno zdjąć poniżej 0,2 mm. Mierz element suwmiarką przed i w trakcie, pracuj klockiem a nie palcem, a w newralgicznych miejscach (gwinty, otwory na wcisk) zostaw nadmiar materiału w projekcie. O zapasach na pasowania pisaliśmy w artykule <a href="/blog/tolerancje-i-dokladnosc-druku-3d.html">tolerancje i dokładność druku 3D</a>.</p>
+  </div>
+  <div class="box">
+    <h3>Czy wygładzanie acetonem osłabia wydruk?</h3>
+    <p>Nieznacznie zmniejsza przekrój (0,1–0,2 mm) i wygładza mikropęknięcia, więc wytrzymałość rośnie. Ryzyko jest inne: zbyt długa kąpiel potrafi rozpuścić cienkie ścianki poniżej 1 mm albo skleić elementy ruchowe. Zawsze rób test na odpisie z tej samej szpuli.</p>
+  </div>
+  <div class="box">
+    <h3>Mogę zamówić wydruk już wykończony?</h3>
+    <p>Tak — przy <a href="/drukuje">druku na życzenie</a> zaznacz zakres wykończenia (szlifowanie, podkład, kolor RAL, lakier UV), a wycenę przez <a href="/zamow">formularz zamówienia</a> dostaniesz z rozbiciem na druk i obróbkę. Przy większych seriach wykończenie jest zwykle tańsze jednostkowo. Orientacyjne ceny samej produkcji znajdziesz we wpisie <a href="/blog/druk-3d-na-zamowienie-ile-kosztuje.html">druk 3D na zamówienie — ile kosztuje</a>.</p>
+  </div>
+
+  <div class="box cta">
+    <h3>Chcesz efekt „jak z fabryki”, bez piasku pod paznokciami?</h3>
+    <p>Wyceńmy razem: wydruk plus szlifowanie, podkład i lakier w jednym zamówieniu.</p>
+    <a class="btn" href="/zamow">Wyceń wydruk z wykończeniem</a>
+  </div>
+
+  <div class="related">
+    <h3>← Przeczytaj też</h3>
+    <div class="rel-grid">
+      <a class="rel" href="/blog/tolerancje-i-dokladnosc-druku-3d.html"><img src="/asset/blog/printer3.jpg" alt=""><div class="b"><strong>Tolerancje i dokładność druku 3D</strong></div></a>
+      <a class="rel" href="/blog/druk-3d-na-zamowienie-ile-kosztuje.html"><img src="/asset/blog/gadget.jpg" alt=""><div class="b"><strong>Druk 3D na zamówienie — ile kosztuje</strong></div></a>
+      <a class="rel" href="/blog/jaki-filament-wybrac-3d.html"><img src="/asset/blog/prototype.jpg" alt=""><div class="b"><strong>PLA vs PETG vs ABS</strong></div></a>
+    </div>
+  </div>
+</div>
+<footer>© 2026 3DFILE.link — <a href="/drukuje">druk 3D na życzenie</a> · <a href="/blog.html">Blog</a> · <a href="/kontakt">Kontakt</a> · <a href="/prywatnosc.html">Prywatność</a></footer>
+<script>document.addEventListener('click',function(ev){var nl=document.querySelector('.nav-links');if(nl&&nl.classList.contains('open')&&ev.target.closest('.nav-links a')){nl.classList.remove('open');}});</script>
+</body>
+</html>

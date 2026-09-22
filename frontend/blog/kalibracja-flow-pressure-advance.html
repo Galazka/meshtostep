@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kalibracja flow i Pressure Advance — ostre narożniki bez nadlewek | 3DFILE.link</title>
+<meta name="description" content="Test liniowy przepływu, wieża Pressure Advance 0,02-0,06 s zależnie od hotendu, ringing a input shaping i workflow kalibracji w OrcaSlicer oraz Klipper.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://3dfile.link/blog/kalibracja-flow-pressure-advance.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kalibracja flow i Pressure Advance — ostre narożniki bez nadlewek">
+<meta property="og:description" content="Test liniowy przepływu, wieża Pressure Advance 0,02-0,06 s zależnie od hotendu, ringing a input shaping i workflow kalibracji w OrcaSlicer oraz Klipper.">
+<meta property="og:image" content="https://3dfile.link/asset/blog/cover-kalibracja-flow-pressure-advance.svg">
+<meta property="og:site_name" content="3DFILE.link">
+<meta property="og:url" content="https://3dfile.link/blog/kalibracja-flow-pressure-advance.html">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#0f172a;--muted:#64748b;--accent:#0ea5e9;--accent2:#0b5394;--border:#e2e8f0;--card:#ffffff;--bg:#f8fafc}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);line-height:1.65}
+.nav{background:#0f172a;color:#fff;padding:14px 0;position:sticky;top:0;z-index:50}
+.nav-in{max-width:1120px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.nav a{color:#fff;text-decoration:none;font-weight:600;font-size:14px}
+.nav-links a{margin-left:18px;opacity:.85}
+.nav-links a:hover{opacity:1}
+.badge{background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.3px}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 20px 60px}
+.crumbs{font-size:13px;color:var(--muted);margin-bottom:18px}
+.crumbs a{color:var(--accent);text-decoration:none}
+.crumbs a:hover{text-decoration:underline}
+h1{font-size:34px;line-height:1.2;font-weight:800;letter-spacing:-.5px;margin-bottom:14px}
+.meta{color:var(--muted);font-size:14px;margin-bottom:22px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.hero-img{width:100%;border-radius:14px;margin-bottom:26px;box-shadow:0 6px 24px rgba(15,23,42,.12)}
+h2{font-size:24px;font-weight:800;margin:34px 0 12px;letter-spacing:-.3px;line-height:1.3}
+h3{font-size:19px;font-weight:700;margin:26px 0 10px}
+p{margin-bottom:16px}
+ul,ol{margin:0 0 18px 22px}
+li{margin-bottom:8px}
+.box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin:20px 0}
+.box.cta{background:linear-gradient(135deg,#0ea5e9,#0b5394);color:#fff;border:none;text-align:center;padding:28px}
+.box.cta h3{color:#fff;font-size:22px;margin-bottom:8px}
+.box.cta p{color:#e0f2fe;font-size:15px}
+.btn{display:inline-block;background:#fff;color:#0b5394;font-weight:800;padding:13px 30px;border-radius:10px;text-decoration:none;font-size:16px;margin-top:14px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.btn:hover{transform:translateY(-1px)}
+.tip table{width:100%;border-collapse:collapse;margin:14px 0}
+.tip td,.tip th{border:1px solid var(--border);padding:10px 12px;font-size:14px;text-align:left}
+.tip th{background:#f1f5f9;font-weight:700}
+blockquote{border-left:4px solid var(--accent);background:var(--card);padding:4px 20px;font-size:17px;margin:20px 0;font-style:italic}
+.tag{display:inline-block;background:#e0f2fe;color:#0369a1;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;margin-right:8px;margin-top:6px}
+.tag:hover{background:#bae6fd;text-decoration:none}
+.related h3{font-size:21px;margin:44px 0 16px}
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.rel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;text-decoration:none;color:var(--fg);display:block;transition:transform .15s,box-shadow .15s}
+.rel:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(15,23,42,.1)}
+.rel img{width:100%;height:120px;object-fit:cover}
+.rel .b{padding:12px 14px}
+.rel .b strong{font-size:15px;display:block;margin-bottom:4px;line-height:1.4}
+.rel .b span{color:var(--muted);font-size:13px}
+footer{background:#0f172a;color:#94a3b8;text-align:center;padding:24px;font-size:13px}
+footer a{color:#cbd5e1;text-decoration:none}
+@media(max-width:600px){h1{font-size:26px}h2{font-size:20px}}
+.nav-burger{display:none;background:none;border:1px solid #334155;border-radius:8px;cursor:pointer;padding:8px 10px;font-size:19px;line-height:1;color:#fff}
+@media(max-width:760px){.nav-burger{display:inline-flex;align-items:center;gap:6px}.nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border-bottom:1px solid #334155;padding:10px 20px;flex-direction:column;align-items:stretch!important;z-index:60}.nav-links.open{display:flex}.nav{position:relative}.nav-links a{width:100%;text-align:left;margin-left:0!important;padding:12px 4px}}
+</style>
+</head>
+<body>
+<nav class="nav"><div class="nav-in">
+  <a href="/">3DFILE.link</a>
+  <button class="nav-burger" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">☰</button>
+  <div class="nav-links"><a href="/drukuje">Druk</a><a href="/">Hosting</a><a href="/blog.html">Blog</a></div>
+</div></nav>
+<div class="wrap">
+  <div class="crumbs"><a href="/drukuje">Strona główna</a> › <a href="/blog.html">Blog</a> › <span>kalibracja-flow-pressure-advance</span></div>
+  <h1>Kalibracja flow i Pressure Advance — ostre narożniki bez nadlewek</h1>
+  <div class="meta"><span>📅 08.09.2026</span><span>✍️ Zespół 3DFILE.link</span><span>⏱ 8 min czytania</span></div>
+  <img src="/asset/blog/cover-kalibracja-flow-pressure-advance.svg" alt="kalibracja flow pressure advance wieza pa klipper orca slicer" class="hero-img" loading="lazy">
+
+
+  <p>Drukarka leży, warstwa 0,2 mm, filament suchy — a mimo to narożniki mają „nadlewki”, a ściany widać falujące pod światło. Za ten widok odpowiadają zwykle dwie różne rzeczy, które wiele osób kalibruje na opak: <strong>przepływ</strong> (flow), czyli ile materiału realnie wychodzi z dyszy, i <strong>Pressure Advance</strong>, czyli jak szybko system reaguje na zmianę prędkości. Złe flow psuje wymiary, złe PA psuje wygląd narożników. Poniżej — testy, tabele wartości i kolejność działań, którą stosujemy na maszynach Klipper i OrcaSlicer; na końcu uwaga dla zamkniętych systemów Bambu Lab.</p>
+
+  <h2>Test liniowy przepływu — punkt wyjścia</h2>
+  <p>Zanim ruszysz PA, musisz znać swoje flow, bo Pressure Advance dokłada korektę do wartości, która może być zaniżona. Test jest prosty i tani:</p>
+  <ol>
+    <li>Wydrukuj sześcian o boku 20 mm z <strong>jednym obwodem</strong>, wypełnieniem 0%, trzech–pięciu warstwach, bez korekt flow (100%).</li>
+    <li>Mikrometrem zmierz grubość ścianki w pięciu miejscach (różne wysokości i strony). Średnia dla dyszy 0,4 mm powinna wynosić 0,40 ± 0,02 mm.</li>
+    <li>Policz korektę: <em>flow = 100 × 0,40 / zmierzona grubość</em>. Wyjdzie 0,42 mm → 95%; wyjdzie 0,38 mm → 105%.</li>
+    <li>Wpisz wartość w profil materiału, wydrukuj kontrolkę i kontrolnym pomiarem wymiaru zewnętrznego sześcianu: 20 mm modelu powinno dać 19,9–20,0 mm wydruku.</li>
+  </ol>
+  <p>W OrcaSlicerze odpowiada za to „Flow Rate” w menu kalibracji, które generuje wydruk wielu pasków o różnych szerokościach. Uwaga praktyczna: flow kalibruje się <strong>na szpulę</strong>, nie na drukarkę — PLA od dwóch producentów przy tej samej temperaturze da różnicę dwóch–trzech punktów procentowych.</p>
+
+  <h2>Pressure Advance — fizyka w jednym akapicie</h2>
+  <p>Ekstruder nie „kładzie” materiału natychmiast: między korbą a dyszą stopka tworzywa działa jak sprężyna, w której narasta ciśnienie. Gdy głowica przyspiesza, ciśnienie jeszcze nie nadążyło — dostajesz niedoextruzję; gdy hamuje przed narożnikiem — nadmiar tworzywa wypływa z dyszy, zostawiając kołnierz. <strong>Pressure Advance dodaje wyprzedzający impuls ekstruzji proporcjonalny do przyspieszenia</strong>, wyrównując ciśnienie dokładnie w momencie zawrotu. W Klipperze ustawiasz go sekundach (parameter <code>pressure_advance</code> w sekcji [extruder]), w Marlinie komendą M900 K — jednostki są zgodne.</p>
+
+  <h2>Typowe wartości PA zależnie od hotendu</h2>
+  <p>Wartość PA zależy przede wszystkim od objętości stopki i długości ścieżki topnienia. Realne okna z naszych maszyn (hotend all-metal, PLA, warstwa 0,2 mm):</p>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Zestaw uplastyczniający</th><th>Typowe PA (s)</th><th>Komentarz</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Direct + lekki hotend (Mosquito, Dragon UHF)</td><td>0,02–0,03</td><td>Mała masa i objętość topnienia — system reaguje najszybciej.</td></tr>
+        <tr><td>Direct standard (E3D V6, Slice HF, Mosquito Magnum)</td><td>0,03–0,04</td><td>Najpopularniejszy punkt wyjścia dla Voron i Prusa MK4.</td></tr>
+        <tr><td>Direct z długim kanałem topnienia (Revo, Oh3D Rapier)</td><td>0,04–0,05</td><td>Więcej „sprężystej” masy stopionej, potrzebna większa kompensata.</td></tr>
+        <tr><td>Krótka pętla PTFE (tzw. hybrid, 10–20 cm)</td><td>0,05–0,06</td><td>Granica opłacalności bowdena; wyżej już tylko PA „na oko”.</td></tr>
+        <tr><td>Bowden klasyczny &gt;50 cm</td><td>0,08–0,15</td><td>W Marlinie często i tak niewystarczające — rozważ direct.</td></tr>
+      </tbody>
+    </table>
+    <p>Zakresy dotyczą dyszy 0,4 mm; przy dyszy 0,6 mm rosną zwykle o ~20–30%. Zmiana materiału na bardziej lepki (PETG w niższej temperaturze) też przesuwa optimum w górę.</p>
+  </div>
+
+  <h2>Wieża PA — jak czytać wydruk testowy</h2>
+  <p>Wieżę generuje Klipper (makro <code>TEST_PRESSURE_ADVANCE</code>) albo OrcaSlicer: Ustawienia → Kalibracja → Pressure Advance; wartości od 0 do 0,08 co 0,005 wypalane są na kolejnych piętrach walca lub sześcianu z ostrymi narożnikami. Czyta się ją tak:</p>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Co widać na narożniku</th><th>Diagnoza</th><th>Reakcja</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Glut/nadlewka na zewnątrz narożnika, „kapturek”</td><td>PA za niskie — nadmiar ciśnienia przy hamowaniu</td><td>Zwiększ o 0,01 i drukuj wyżej</td></tr>
+        <tr><td>Wąskie szczeliny, „przetarta” ścianka przy wirażu</td><td>PA za wysokie — extruder cofa materiał</td><td>Zmniejsz o 0,01</td></tr>
+        <tr><td>Rowek na wewnętrznej stronie narożnika</td><td>Typowy objaw niedostatku PA</td><td>Podnieś wartość o krok</td></tr>
+        <tr><td>Ścianka równej grubości przez całą wysokość</td><td>Trafione optimum</td><td>Zapisz i jedź dalej</td></tr>
+      </tbody>
+    </table>
+    <p>Jeśli dwie sąsiednie wartości na wieży wyglądają tak samo dobrze, wybierz <strong>niższą</strong> — niższe PA przy większych przyspieszeniach wybacza więcej niż zawyżone, które przy gwałtownym hamowaniu dosłownie ściera ścianki.</p>
+  </div>
+
+  <h2>Ringing a input shaping — nie myl z PA</h2>
+  <p><strong>Ringing (ghosting)</strong> to fale za ostrym elementem, powtarzające się po obu stronach wyspy — wynik drgań mechaniki, nie ciśnienia w hotendzie. Pressure Advance ich <strong>nie usunie</strong>, tak jak korekta flow nie napręzi pasków. Co pomaga: obniżenie przyspieszenia z 3000–5000 na 1000–2000 mm/s², dociągnięcie pasków i rolek, a najlepiej <strong>input shaper</strong> w Klipperze (ZV/MZV/ZVD z częstotliwościami zmierzonymi akcelerometrem ADXL345 albo z wieży testowej na rezonans). Symptom jest łatwy do odróżnienia: kłopoty z PA widać na narożnikach jako nadlewki i szczeliny, ringing wygląda jak „echo” po drugiej stronie krawędzi, a sama krawędź jest czysta.</p>
+
+  <h2>Workflow kalibracji w OrcaSlicer i Klipper</h2>
+  <ol>
+    <li>Sprawdź mechanikę: paski, nakrętki mimośrodowe, dokręcenie hotendu na gorąco — na luźnej maszynie każda kalibracja jest bezwartościowa.</li>
+    <li>Test liniowy flow i korekta w profilu materiału.</li>
+    <li>Test przepływu maksymalnego (Orca: Max Flow) — ustaw limit objętościowy, żeby slicer nie planował nierealnych prędkości.</li>
+    <li>Wieża PA (0–0,08 krok 0,005) → wpis do <code>printer.cfg</code> sekcja [extruder], wraz z <code>pressure_advance_smooth_time</code> 0,03–0,04 s; SAVE_RESTART.</li>
+    <li>Input shaping (akcelerometr lub wieża rezonansowa), potem korekta PA o jeden krok w dół — bo skuteczne wygładzenie przyspieszeń zmienia charakter ciśnienia.</li>
+    <li>Kontrola: sześcian 25 mm, 4 obwody — zmierz wymiary zewnętrzne suwmiarką (to już dział tolerancji, o których piszemy w artykule o <a href="/blog/tolerancje-i-dokladnosc-druku-3d.html">dokładności druku</a>) i oceń narożniki pod światło.</li>
+  </ol>
+
+  <h2>Uwaga dla zamkniętych maszyn Bambu Lab</h2>
+  <p>Bambu (X1 Carbon, P1S, A1) nie udostępnia edycji Pressure Advance — firmware realizuje kompensatę ciśnienia własnym, autorskim algorytmem i samouczącymi się kalibracjami automatycznymi. Nie próbuj więc drukować wież PA ani wstrzykiwać <code>pressure_advance</code> z OrcaSlicera do pliku .gcode — maszyna wartości zignoruje, a w skrajnym razie zakwestionuje polecenia firmware. Co realnie możesz poprawić: kalibrację flow i dynamiki przepływu (Flow Dynamics Calibration w Bambu Studio/Orca), czyszczenie dyszy (wipe tower), temperaturę i chłodzenie materiału w profilu, oraz aktualny firmware. Jeśli jeździsz na ekosystemie Bambu i potrzebujesz pełnej kontroli nad parametrami ciśnienia, to argument za Klipperem — a jeśli nie chcesz składać go samodzielnie, <a href="/zamow">zamów wydruk</a> w <a href="/">3dfile.link</a>, u nas profile PA są policzone na każdej maszynie.</p>
+
+  <h2>Najczęściej zadawane pytania</h2>
+  <h3>PA czy flow — co kalibrować pierwsze?</h3>
+  <p>Zawsze flow. Pressure Advance operuje w procentach wartości zadanej; jeśli zadana jest zaniżona o 6%, to i korekta PA „kręci” wokół błędnego poziomu.</p>
+  <h3>Mam Marlin — wartości z wieży wyglądają inaczej</h3>
+  <p>Marlin używa komendy M900 z jednostką K (sekundy, analogicznie do Klippera), ale bez smooth_time — efekt bywa ostrzej widoczny na narożnikach. Wartości z tabeli przenieś 1:1 i sprawdź zmianę o ±20%.</p>
+  <h3>Czy zmiana dyszy na 0,6 wymaga rekalibracji?</h3>
+  <p>Tak, i flow i PA. Większa objętość przepływu przez dyszę zmienia dynamikę ciśnienia; zwykle PA rośnie o jedną-dwie dziesiąte wartości.</p>
+  <h3>Wieża wyszła „wszędzie taka sama”</h3>
+  <p>Najczęściej przyczyna leży poza PA: zbyt niskie przyspieszenia w profilu (kompensata nie ma czego korygować) albo mokry filament — pęcherzyki działają jak losowy generator nadlewek. Wydrukuj test przy 5000 mm/s² na suchym materiale i porównaj.</p>
+
+  <div class="box cta">
+    <h3>Nie chcesz kalibrować po nocy?</h3>
+    <p>W naszej pracowni profile flow i PA są policzone pod każdą maszynę — Ty tylko wysyłasz plik.</p>
+    <a class="btn" href="/drukuje">Sprawdź druk z kalibrowanym profilem</a>
+  </div>
+
+  <div class="related">
+    <h3>← Przeczytaj też</h3>
+    <div class="rel-grid">
+      <a class="rel" href="/blog/defects-druku-diagnostyka.html"><img src="/asset/blog/cover-defects-druku-diagnostyka.svg" alt=""><div class="b"><strong>Defekty druku — diagnostyka</strong></div></a>
+      <a class="rel" href="/blog/anizotropia-warstw-fdm.html"><img src="/asset/blog/cover-anizotropia-warstw-fdm.svg" alt=""><div class="b"><strong>Anizotropia warstw FDM</strong></div></a>
+      <a class="rel" href="/blog/jak-przygotowac-plik-do-druku-3d.html"><img src="/asset/blog/prototype.jpg" alt=""><div class="b"><strong>Jak przygotować plik</strong></div></a>
+    </div>
+  </div>
+
+</div>
+<footer>© 2026 3DFILE.link — <a href="/drukuje">druk 3D na życzenie</a> · <a href="/blog.html">Blog</a> · <a href="/kontakt">Kontakt</a> · <a href="/prywatnosc.html">Prywatność</a></footer>
+<script>document.addEventListener('click',function(ev){var nl=document.querySelector('.nav-links');if(nl&&nl.classList.contains('open')&&ev.target.closest('.nav-links a')){nl.classList.remove('open');}});</script>
+</body>
+</html>

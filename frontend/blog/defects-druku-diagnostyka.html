@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Defekty druku 3D — diagnostyka: od stringingu po z-banding | 3DFILE.link</title>
+<meta name="description" content="Stringing, warping, layer shift, over- i underextruzja, zebra, ringing, zatory — tabela symptom, przyczyna, naprawa z konkretnymi wartościami i kolejność diagnostyki.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://3dfile.link/blog/defects-druku-diagnostyka.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Defekty druku 3D — diagnostyka: od stringingu po z-banding">
+<meta property="og:description" content="Stringing, warping, layer shift, over- i underextruzja, zebra, ringing, zatory — tabela symptom, przyczyna, naprawa z konkretnymi wartościami i kolejność diagnostyki.">
+<meta property="og:image" content="https://3dfile.link/asset/blog/cover-defects-druku-diagnostyka.svg">
+<meta property="og:site_name" content="3DFILE.link">
+<meta property="og:url" content="https://3dfile.link/blog/defects-druku-diagnostyka.html">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#0f172a;--muted:#64748b;--accent:#0ea5e9;--accent2:#0b5394;--border:#e2e8f0;--card:#ffffff;--bg:#f8fafc}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);line-height:1.65}
+.nav{background:#0f172a;color:#fff;padding:14px 0;position:sticky;top:0;z-index:50}
+.nav-in{max-width:1120px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.nav a{color:#fff;text-decoration:none;font-weight:600;font-size:14px}
+.nav-links a{margin-left:18px;opacity:.85}
+.nav-links a:hover{opacity:1}
+.badge{background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.3px}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 20px 60px}
+.crumbs{font-size:13px;color:var(--muted);margin-bottom:18px}
+.crumbs a{color:var(--accent);text-decoration:none}
+.crumbs a:hover{text-decoration:underline}
+h1{font-size:34px;line-height:1.2;font-weight:800;letter-spacing:-.5px;margin-bottom:14px}
+.meta{color:var(--muted);font-size:14px;margin-bottom:22px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.hero-img{width:100%;border-radius:14px;margin-bottom:26px;box-shadow:0 6px 24px rgba(15,23,42,.12)}
+h2{font-size:24px;font-weight:800;margin:34px 0 12px;letter-spacing:-.3px;line-height:1.3}
+h3{font-size:19px;font-weight:700;margin:26px 0 10px}
+p{margin-bottom:16px}
+ul,ol{margin:0 0 18px 22px}
+li{margin-bottom:8px}
+.box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin:20px 0}
+.box.cta{background:linear-gradient(135deg,#0ea5e9,#0b5394);color:#fff;border:none;text-align:center;padding:28px}
+.box.cta h3{color:#fff;font-size:22px;margin-bottom:8px}
+.box.cta p{color:#e0f2fe;font-size:15px}
+.btn{display:inline-block;background:#fff;color:#0b5394;font-weight:800;padding:13px 30px;border-radius:10px;text-decoration:none;font-size:16px;margin-top:14px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.btn:hover{transform:translateY(-1px)}
+.tip table{width:100%;border-collapse:collapse;margin:14px 0}
+.tip td,.tip th{border:1px solid var(--border);padding:10px 12px;font-size:14px;text-align:left}
+.tip th{background:#f1f5f9;font-weight:700}
+blockquote{border-left:4px solid var(--accent);background:var(--card);padding:4px 20px;font-size:17px;margin:20px 0;font-style:italic}
+.tag{display:inline-block;background:#e0f2fe;color:#0369a1;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;margin-right:8px;margin-top:6px}
+.tag:hover{background:#bae6fd;text-decoration:none}
+.related h3{font-size:21px;margin:44px 0 16px}
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.rel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;text-decoration:none;color:var(--fg);display:block;transition:transform .15s,box-shadow .15s}
+.rel:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(15,23,42,.1)}
+.rel img{width:100%;height:120px;object-fit:cover}
+.rel .b{padding:12px 14px}
+.rel .b strong{font-size:15px;display:block;margin-bottom:4px;line-height:1.4}
+.rel .b span{color:var(--muted);font-size:13px}
+footer{background:#0f172a;color:#94a3b8;text-align:center;padding:24px;font-size:13px}
+footer a{color:#cbd5e1;text-decoration:none}
+@media(max-width:600px){h1{font-size:26px}h2{font-size:20px}}
+.nav-burger{display:none;background:none;border:1px solid #334155;border-radius:8px;cursor:pointer;padding:8px 10px;font-size:19px;line-height:1;color:#fff}
+@media(max-width:760px){.nav-burger{display:inline-flex;align-items:center;gap:6px}.nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border-bottom:1px solid #334155;padding:10px 20px;flex-direction:column;align-items:stretch!important;z-index:60}.nav-links.open{display:flex}.nav{position:relative}.nav-links a{width:100%;text-align:left;margin-left:0!important;padding:12px 4px}}
+</style>
+</head>
+<body>
+<nav class="nav"><div class="nav-in">
+  <a href="/">3DFILE.link</a>
+  <button class="nav-burger" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">☰</button>
+  <div class="nav-links"><a href="/drukuje">Druk</a><a href="/">Hosting</a><a href="/blog.html">Blog</a></div>
+</div></nav>
+<div class="wrap">
+  <div class="crumbs"><a href="/drukuje">Strona główna</a> › <a href="/blog.html">Blog</a> › <span>defects-druku-diagnostyka</span></div>
+  <h1>Defekty druku 3D — diagnostyka: od stringingu po z-banding</h1>
+  <div class="meta"><span>📅 15.09.2026</span><span>✍️ Zespół 3DFILE.link</span><span>⏱ 8 min czytania</span></div>
+  <img src="/asset/blog/cover-defects-druku-diagnostyka.svg" alt="defekty druku 3d diagnostyka stringing warping layer shift" class="hero-img" loading="lazy">
+
+
+  <p>Nitkowanie jak pajęczyna, narożniki odklejone od stołu, „zebra” na ścianach i warstwa przesunięta o 3 mm na środku wydruku — defekty druku 3D są zaskakująco powtarzalne, bo ich przyczyny też. Praktycznie każdy problem na zdjęciu z forum da się sprowadzić do jednej z pięciu kategorii: temperatura, retrakcja, przepływ, mechanika i materiał. Poniżej ściąga, z której korzystamy przy serwisie naszych maszyn: tabela symptom–przyczyna–naprawa z konkretnymi wartościami, potem kolejność diagnostyki, żeby nie kręcić się w kółko przy konsoli.</p>
+
+  <h2>Ściąga: defekt, przyczyna, naprawa</h2>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Defekt</th><th>Symptom</th><th>Najczęstsza przyczyna</th><th>Naprawa (wartości wyjściowe)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Stringing (nitkowanie)</td><td>Włókna między wieżami, „koguty” na słupkach</td><td>Mokry filament lub resztkowe ciśnienie w dyszy</td><td>PLA 210→200°C; retrakcja direct 0,4–0,8 mm, bowden 4–6 mm przy 40–50 mm/s; włącz wipe i comb „wewnątrz wypełnienia”</td></tr>
+        <tr><td>Warping (krzywienie)</td><td>Rogi odklejone, pęknięcia na krawędziach stołu</td><td>Skurcz termiczny i za zimny stół</td><td>Stół: PLA 55–60, PETG 75–85, ABS 90–100°C; brim 8–15 mm; wentylator 1. warstwy 0%; ABS/PA tylko w komorze</td></tr>
+        <tr><td>Layer shift (przesunięcie warstw)</td><td>Nagłe „schodki” powtarzające się co turę osi</td><td>Utrata kroków: luźne paski, za wysokie przyspieszenia, opór osi Z</td><td>Paski napięte jak „struna”; acc. 3000→1500 mm/s²; sprzęgło i śruba Z bez luźnych nakrętek; kontrola temperatury driverów</td></tr>
+        <tr><td>Underextruzja</td><td>Prześwity między nitkami, kreskowana górna powierzchnia</td><td>Częściowo zatkana dysza, luz PTFE w bowdenie, za zimna dysza</td><td>Temp +5–10°C; cold-pull; dociąć rurkę PTFE prosto do dyszy; flow 95→100% z weryfikacją testem liniowym</td></tr>
+        <tr><td>Overextruzja</td><td>Nadlewki na narożnikach, „futerko” na ścianach, wymiary na plus</td><td>Błędne e-steps, flow >105%, za niskie Pressure Advance</td><td>Kalibracja kroków: zmierz 100 mm, steps/mm pomnóż przez 100/wartość zmierzoną; PA test wieży; flow -3 do -5%</td></tr>
+        <tr><td>Bandy / zebra (paskowanie Z)</td><td>Regularne fale poziome co kilka warstw na pełnym obwodzie</td><td>Luz lub bicie osi Z: sprzęgło, śruba, nakrętka, nierówne prowadnice</td><td>Sprzęgło elastyczne bez luzu; śruba Z prosta i lekko smarowana; prowadnice bez punktowego docisku</td></tr>
+        <tr><td>Ringing (ghosting)</td><td>Fale za wyspą/otworem, krawędź czysta, „echo” po drugiej stronie</td><td>Drgania mechaniki — NIE ustawienia extruzji</td><td>Acc. −50%; input shaping (Klipper: MZV/ZVD, test z akcelerometrem); dociągnięcie pasków</td></tr>
+        <tr><td>Zator termiczny (heat creep)</td><td>Druk zaczyna się ładnie, po 20 min gasnie</td><td>Ciepło pełźnie w górę hotendu: wentylator chłodzi radiator, materiał „rozmiękcza” kanał</td><td>Temp w dół o 5–10°C; sprawne chłodzenie radiatoru; przy wolnych detalach PLA pod 200°C</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Kolejność diagnostyki — pięć kroków bez kręcenia w kółko</h2>
+  <ol>
+    <li><strong>Temperatury.</strong> Pierwsza warstwa powie najwięcej: klei i „leje się” → gorąco; odkleja się w narożnikach → stół i skurcz. Wydrukuj temperaturę tower PLA 190–225°C przed czymkolwiek innym.</li>
+    <li><strong>Retrakcja i wygładzenia.</strong> Nitki, „szwy”, ciągnące się resztki — retrakcja, wipe, comb. Żadnego ruszania mechaniki, dopóki te dwie pozycje są nieustalone.</li>
+    <li><strong>Przepływ: flow, PA, e-steps.</strong> Nadlewki i prześwity na ścianach należą do tej kategorii. Test liniowy flow i wieża PA opisał kolega w artykule o <a href="/blog/kalibracja-flow-pressure-advance.html">kalibracji flow i Pressure Advance</a>.</li>
+    <li><strong>Mechanika.</strong> Paski, rolki, mimośrody, oś Z, luzy łożysk stołu. Schodki i zebra nie naprawiają się kodem G.</li>
+    <li><strong>Materiał.</strong> Średnica z tolerancją ±0,05 mm, wilgotność, jakość szpuli (plątania = nierówne podawanie). Stare ABS z marketu potrafi zabić najlepszy profil.</li>
+  </ol>
+  <p>Złota zasada: <strong>jedna zmieniana wartość na wydruk</strong>. Trzy poprawki naraz i nie wiesz, która pomogła — albo która pogorszyła pozostałe dwie.</p>
+
+  <h2>Wpływ materiału na wilgotność</h2>
+  <p>Osobna tabela, bo „stringuje mimo dobrych ustawień” to najczystszy objaw mokrej szpuli. Suszenie w suszarce do filamentu:</p>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Materiał</th><th>Temperatura suszenia</th><th>Czas</th><th>Objawy wilgoci</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>PLA</td><td>45°C</td><td>4–6 h</td><td>Trzaski przy retrakcji, pęcherzyki, stringing</td></tr>
+        <tr><td>PETG</td><td>55°C</td><td>6 h</td><td>Nitki i „koguty” przy idealnych ustawieniach</td></tr>
+        <tr><td>ABS/ASA</td><td>70°C</td><td>6–8 h</td><td>Szorstka powierzchnia, gwizd w dyszy</td></tr>
+        <tr><td>PA (nylon)</td><td>70–80°C</td><td>12 h</td><td>Spadek wytrzymałości międzywarstwowej o ~20%</td></tr>
+        <tr><td>TPU</td><td>50°C</td><td>4 h</td><td>Nierówne podawanie, mikrozatory powietrza</td></tr>
+      </tbody>
+    </table>
+    <p>PLA chłonie wilgoć wolno (miesiące), PETG i nylon — dni. Szpula z PETG zostawiona na noc przy otwartym oknie potrafi zjeść całą robotę kalibracyjną z tygodnia.</p>
+  </div>
+
+  <h2>Test diagnostyczny na dwadzieścia minut</h2>
+  <p>Gdy maszyna „ostatnio dziwnie drukuje”, nie zacznij od reprintu części, która wyszła krzywo. Wydrukuj trzy małe testy, każdy oceniaj osobno i dopiero potem szukaj winowajcy w tabeli powyżej:</p>
+  <ul>
+    <li><strong>Sześcian 25 mm, cztery obwody, zero wypełnienia</strong> — pokazuje wymiary zewnętrzne (flow, e-steps), grubość ścianki mikrometrem i narożniki pod światło (PA). Cel: 25,0 ± 0,15 mm i ścianka 0,40 ± 0,02 mm.</li>
+    <li><strong>Dwie wieże 10 mm średnicy w rozstawie 20 mm</strong> — test retrakcji i stringingu; mostki między nimi mówią też, czy temp jest za wysoka, czy filament mokry.</li>
+    <li><strong>Pierwsza warstwa dowolnego płaskiego elementu 40×40 mm</strong> — szpachla vs prześwity vs odklejające się rogi; to najszybsza diagnoza stołu, temperatury i poziomowania.</li>
+  </ul>
+  <p>Jeśli wszystkie trzy wyjdą czysto, a konkretny wydruk nadal ma defekt — przyczyna leży w geometrii lub orientacji konkretnej części, nie w maszynie. To moment, żeby wrócić do slicera, a nie do printer.cfg.</p>
+
+  <h2>Czego ustawienia nie naprawią</h2>
+  <ul>
+    <li><strong>Zły projekt</strong> — ścianki cieńsze niż 2× szerokość linii, wiszące detale bez podpór: patrz <a href="/blog/jak-przygotowac-plik-do-druku-3d.html">jak przygotować plik do druku 3D</a>.</li>
+    <li><strong>Pasowania „na zero”</strong> — otwór 5,00 mm wyjdzie 4,7–4,9 mm; to fizyka, nie defekt, i leży po stronie <a href="/blog/tolerancje-i-dokladnosc-druku-3d.html">tolerancji</a>.</li>
+    <li><strong>Wytrzymałość w Z</strong> — pękająca między warstwami część to anizotropia, opisana w artykule o <a href="/blog/anizotropia-warstw-fdm.html">anizotropii warstw FDM</a>.</li>
+  </ul>
+
+  <h2>Zamawiając wydruk, kupujesz spokój diagnostyczny</h2>
+  <p>W pracowni <a href="/">3dfile.link</a> każdy materiał ma policzone profile — suszenie, flow, PA, chłodzenie i brim dobieramy do geometrii części, nie odwrotnie. Zanim wystartuje Twoja seria, masz test pierwszych warstw i pomiary kluczowych wymiarów. Jeśli opis problemu brzmi „wydrukuje mi to ktoś, kto się tym zajmuje” — dobrze trafiłeś, <a href="/zamow">złóż zamówienie</a> albo zajrzyj na stronę <a href="/drukuje">druku na życzenie</a>.</p>
+
+  <h2>Najczęściej zadawane pytania</h2>
+  <h3>Wydruk stringuje tylko z jednego rogu — czemu?</h3>
+  <p>Typowy objaw nierównej wysokości stołu albo dyszy ocierającej o wydruk w jednym rejonie stołu: tam extruzja dostaje „kopnięcie” ciśnienia. Wypoziomuj, potem wracaj do retrakcji.</p>
+  <h3>Zebrę widać co 0,8 mm. Co jest grane?</h3>
+  <p>Krok co cztery warstwy przy 0,2 mm wskazuje na śrubę Z z wyrobionym łbem lub niedokręconą nakrętką antyluzową. Dokręć i sprawdź bicie — jeśli źródłem jest pasek, fala wróci przy zmianie obwodu.</p>
+  <h3>Czy naprawa ustawień naprawi wydruk z marketowej szpuli?</h3>
+  <p>Częściowo: średnica ±0,1 mm zamiast ±0,02 to wahania przepływu, których nie skompensuje żadne PA. Kupuj filament z tolerancją i suchy — to najtańsza kalibracja.</p>
+  <h3>Ile trwa sensowna diagnostyka samodzielna?</h3>
+  <p>Uczciwie: wieczór-dwa i kilka wydruków testowych. Przy częściach o wartościach użytkowych zwykle taniej jest zamówić próbny wydruk niż drukarkę, suszarkę i weekend.</p>
+
+  <div class="box cta">
+    <h3>Wolisz efekt końcowy niż serwis drukarki?</h3>
+    <p>Wrzuć plik, dobierzemy materiał i parametry — wydamy wydruk bez nitkowania i przesunięć.</p>
+    <a class="btn" href="/zamow">Zamów czysty wydruk</a>
+  </div>
+
+  <div class="related">
+    <h3>← Przeczytaj też</h3>
+    <div class="rel-grid">
+      <a class="rel" href="/blog/kalibracja-flow-pressure-advance.html"><img src="/asset/blog/cover-kalibracja-flow-pressure-advance.svg" alt=""><div class="b"><strong>Kalibracja flow i Pressure Advance</strong></div></a>
+      <a class="rel" href="/blog/3mf-vs-stl-vs-obj-vs-step.html"><img src="/asset/blog/cover-3mf-vs-stl-vs-obj-vs-step.svg" alt=""><div class="b"><strong>3MF vs STL vs OBJ vs STEP</strong></div></a>
+      <a class="rel" href="/blog/tolerancje-i-dokladnosc-druku-3d.html"><img src="/asset/blog/printer3.jpg" alt=""><div class="b"><strong>Tolerancje i dokładność druku</strong></div></a>
+    </div>
+  </div>
+
+</div>
+<footer>© 2026 3DFILE.link — <a href="/drukuje">druk 3D na życzenie</a> · <a href="/blog.html">Blog</a> · <a href="/kontakt">Kontakt</a> · <a href="/prywatnosc.html">Prywatność</a></footer>
+<script>document.addEventListener('click',function(ev){var nl=document.querySelector('.nav-links');if(nl&&nl.classList.contains('open')&&ev.target.closest('.nav-links a')){nl.classList.remove('open');}});</script>
+</body>
+</html>

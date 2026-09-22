@@ -122,6 +122,10 @@ async function fetchUser() {
     document.getElementById('userPanel').style.display='inline';
     document.getElementById('navFiles').style.display='';
     var kn = document.getElementById('kontoNav'); if (kn) kn.style.display='';
+    var fm=document.getElementById('navFilesM'); if(fm)fm.style.display='';
+    var km=document.getElementById('navKontoM'); if(km)km.style.display='';
+    var om=document.getElementById('navOrdersM'); if(om)om.style.display='';
+    var am=document.getElementById('navAuthMobile'); if(am){var zl=am.querySelector('[data-i18n="navLogin"]'),zs=am.querySelector('[data-i18n="navSignup"]');if(zl)zl.style.display='none';if(zs)zs.style.display='none';}
     if (d.is_admin) {
         const a = document.createElement('a'); a.href='/admin'; a.textContent='Admin'; a.style.cssText='margin-left:8px;font-size:13px;color:var(--text-secondary)';
         document.querySelector('.nav-right').insertBefore(a, document.getElementById('themeToggle'));

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fusion 360 pod druk 3D — od szkicu do pliku 3MF/STL | 3DFILE.link</title>
+<meta name="description" content="Workflow Fusion 360 pod druk FDM: szkic ze współrzędnymi i parametrami, fugi, eksport Mesh 3MF/STL z odchyleniem cięciwowym 0,05 mm, minimalne ściany wokół otworów M2–M5 i typowe błędy NURBS oraz meshów nie-manifold.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://3dfile.link/blog/fuzja-360-pod-druk-3d.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Fusion 360 pod druk 3D — od szkicu do pliku 3MF/STL">
+<meta property="og:description" content="Workflow Fusion 360 pod druk FDM: parametry, fugi, eksport 3MF/STL z odchyleniem cięciwowym 0,05 mm, minimalne ściany wokół otworów M2–M5 i typowe błędy. Poradnik.">
+<meta property="og:image" content="https://3dfile.link/asset/blog/cover-fuzja-360-pod-druk-3d.svg">
+<meta property="og:site_name" content="3DFILE.link">
+<meta property="og:url" content="https://3dfile.link/blog/fuzja-360-pod-druk-3d.html">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#0f172a;--muted:#64748b;--accent:#0ea5e9;--accent2:#0b5394;--border:#e2e8f0;--card:#ffffff;--bg:#f8fafc}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);line-height:1.65}
+.nav{background:#0f172a;color:#fff;padding:14px 0;position:sticky;top:0;z-index:50}
+.nav-in{max-width:1120px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.nav a{color:#fff;text-decoration:none;font-weight:600;font-size:14px}
+.nav-links a{margin-left:18px;opacity:.85}
+.nav-links a:hover{opacity:1}
+.badge{background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.3px}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 20px 60px}
+.crumbs{font-size:13px;color:var(--muted);margin-bottom:18px}
+.crumbs a{color:var(--accent);text-decoration:none}
+.crumbs a:hover{text-decoration:underline}
+h1{font-size:34px;line-height:1.2;font-weight:800;letter-spacing:-.5px;margin-bottom:14px}
+.meta{color:var(--muted);font-size:14px;margin-bottom:22px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.hero-img{width:100%;border-radius:14px;margin-bottom:26px;box-shadow:0 6px 24px rgba(15,23,42,.12)}
+h2{font-size:24px;font-weight:800;margin:34px 0 12px;letter-spacing:-.3px;line-height:1.3}
+h3{font-size:19px;font-weight:700;margin:26px 0 10px}
+p{margin-bottom:16px}
+ul,ol{margin:0 0 18px 22px}
+li{margin-bottom:8px}
+.box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin:20px 0}
+.box.cta{background:linear-gradient(135deg,#0ea5e9,#0b5394);color:#fff;border:none;text-align:center;padding:28px}
+.box.cta h3{color:#fff;font-size:22px;margin-bottom:8px}
+.box.cta p{color:#e0f2fe;font-size:15px}
+.btn{display:inline-block;background:#fff;color:#0b5394;font-weight:800;padding:13px 30px;border-radius:10px;text-decoration:none;font-size:16px;margin-top:14px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.btn:hover{transform:translateY(-1px)}
+.tip table{width:100%;border-collapse:collapse;margin:14px 0}
+.tip td,.tip th{border:1px solid var(--border);padding:10px 12px;font-size:14px;text-align:left}
+.tip th{background:#f1f5f9;font-weight:700}
+blockquote{border-left:4px solid var(--accent);background:var(--card);padding:4px 20px;font-size:17px;margin:20px 0;font-style:italic}
+.tag{display:inline-block;background:#e0f2fe;color:#0369a1;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;margin-right:8px;margin-top:6px}
+.tag:hover{background:#bae6fd;text-decoration:none}
+.related h3{font-size:21px;margin:44px 0 16px}
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.rel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;text-decoration:none;color:var(--fg);display:block;transition:transform .15s,box-shadow .15s}
+.rel:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(15,23,42,.1)}
+.rel img{width:100%;height:120px;object-fit:cover}
+.rel .b{padding:12px 14px}
+.rel .b strong{font-size:15px;display:block;margin-bottom:4px;line-height:1.4}
+.rel .b span{color:var(--muted);font-size:13px}
+footer{background:#0f172a;color:#94a3b8;text-align:center;padding:24px;font-size:13px}
+footer a{color:#cbd5e1;text-decoration:none}
+@media(max-width:600px){h1{font-size:26px}h2{font-size:20px}}
+.nav-burger{display:none;background:none;border:1px solid #334155;border-radius:8px;cursor:pointer;padding:8px 10px;font-size:19px;line-height:1;color:#fff}
+@media(max-width:760px){.nav-burger{display:inline-flex;align-items:center;gap:6px}.nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border-bottom:1px solid #334155;padding:10px 20px;flex-direction:column;align-items:stretch!important;z-index:60}.nav-links.open{display:flex}.nav{position:relative}.nav-links a{width:100%;text-align:left;margin-left:0!important;padding:12px 4px}}
+</style>
+</head>
+<body>
+<nav class="nav"><div class="nav-in">
+  <a href="/">3DFILE.link</a>
+  <button class="nav-burger" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">☰</button>
+  <div class="nav-links"><a href="/drukuje">Druk</a><a href="/">Hosting</a><a href="/blog.html">Blog</a></div>
+</div></nav>
+<div class="wrap">
+  <div class="crumbs"><a href="/drukuje">Strona główna</a> › <a href="/blog.html">Blog</a> › <span>fuzja-360-pod-druk-3d</span></div>
+  <h1>Fusion 360 pod druk 3D — od szkicu do pliku 3MF/STL</h1>
+  <div class="meta"><span>22.09.2026</span><span>Zespół 3DFILE.link</span><span>9 min czytania</span></div>
+  <img src="/asset/blog/cover-fuzja-360-pod-druk-3d.svg" alt="fuzja 360 pod druk 3d workflow modelowanie eksport" class="hero-img" loading="lazy">
+
+  <p>Fusion 360 to najczęstszy program, z jakim trafiają do nas pliki do <a href="/drukuje">druku na żądanie</a> — i jednocześnie najczęstsze źródło problemów, które potem widoczne są na stole roboczym drukarki: „model się otworzył, ale slicer pokazuje dziury”, „otwór pod wkładkę wyszedł za ciasny”, „eksport STL wyrzucił błąd NURBS”. Dobry projekt pod FDM to nie kwestia talentu, tylko kolejności kroków: w pełni zwymiarowany szkic, parametry zamiast liczb wpisanych na sztywno, przemyślane zaokrąglenia i świadomy eksport siatki. W tym poradniku prowadzę cały ten workflow od nowa części po gotowy plik 3MF lub STL, z tabelami realnych wartości, którymi sami się posługujemy.</p>
+
+  <h2>Szkic, który da się zmieniać</h2>
+  <p>Podstawowa zasada: każdy wymiar widoczny w rysunku technicznym powinien być <strong>wymiarem (dimension) w szkicu</strong>, a nie „odległością od linii pomocniczej, której już nie pamiętasz”. Niedopasowany (niebieski) szkic wygląda dobrze do momentu, w którym ruszysz jedną krawędź — wtedy geometria „składa się” jak domek z kart. W pełni dopasowany szkic jest czarny, a jego jedyną zmienną jest to, co świadomie zostawisz.</p>
+  <p>Następnie wyprowadzamy wymiary do <strong>parametrów użytkownika</strong> (Modify → Change Parameters). Nazwy z przedrostkiem <code>p.</code> (plate) i <code>f.</code> (feature) działają w całym dokumencie, więc zapis <code>p.szer = 60 mm</code> steruje szkicem obudowy, rozmieszczeniem otworów i długością śrub. Różnica w pracy jest kolosalna: gdy klient poprosi o wersję o 10 mm szerszą, zmieniasz trzy liczby zamiast przeklikiwać dwadzieścia szkiców. Dla części drukowanych to tym ważniejsze, że pierwszą wersję prawie zawsze koryguje się po wydruku próbnego egzemplarza — patrz też nasz artykuł o <a href="/blog/tolerancje-i-dokladnosc-druku-3d.html">tolerancjach i dokładności druku 3D</a>.</p>
+
+  <h2>Fugi, ścięcia i detale, które FDM lubi</h2>
+  <p><strong>Fugi (fillet)</strong> w projekcie pod druk pełnią inną rolę niż w CADzie „zeszytowym”. Wewnętrzne zaokrąglenie przepuszcza naprężenia i zapobiega pękaniu narożników — przy cienkościance wydrukowanej w PLA to często jedyna różnica między częścią a odpadkiem. Zewnętrzna fuga wygładza przejście warstw. Praktyczne wartości: promień fugi nie mniejszy niż dwukrotność wysokości warstwy (dla 0,2 mm — minimum 0,4 mm, wygodnie 1 mm i więcej).</p>
+  <p><strong>Ścięcie (chamfer) 0,4–0,8 mm</strong> na krawędzi otworu to z kolei „lejek wejściowy” dla wkładki gwintowej: bez niego czoło insertu zrywa górną warstwę przy wtapianiu. O samych wkładkach piszemy osobno w poradniku o <a href="/blog/inserty-gwintowe-druk-3d.html">wsadach gwintowych M2–M5</a>; tutaj pilnuj tylko, żeby otwór miał właściwą średnicę i fazę wejściową, a ścianka wokół — odpowiednią grubość.</p>
+
+  <h2>Minimalne ściany wokół otworów pod insert</h2>
+  <p>Najczęstszy błąd wymiarowy w projektach FDM z gwintem: otwór jest katalogowy, ale plastik dookoła ma 1 mm i wyrywa się razem z wkładką. Poniżej wartości, które przyjmujemy w pracowni dla druku z pełnym wypełnieniem wokół otworu (minimum 4 obwody zewnętrzne, PLA/PETG):</p>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Rozmiar insertu</th><th>Średnica otworu w modelu</th><th>Min. ściana od otworu do krawędzi części</th><th>Typowa długość insertu</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>M2</td><td>3,0–3,2 mm</td><td>2,0–2,5 mm</td><td>4,0 mm</td></tr>
+        <tr><td>M3</td><td>4,0–4,2 mm</td><td>2,5–3,0 mm</td><td>5,0–6,0 mm</td></tr>
+        <tr><td>M4</td><td>5,5–6,0 mm</td><td>3,0–3,5 mm</td><td>6,0–8,0 mm</td></tr>
+        <tr><td>M5</td><td>7,0–8,0 mm</td><td>3,5–4,5 mm</td><td>8,0–10,0 mm</td></tr>
+      </tbody>
+    </table>
+    <p>Średnice otworów to wartości z katalogów popularnych wsadów wtapianych (M2 o średnicy zewnętrznej 3,1 mm, M3 o 4,0 mm, M4 o ok. 6,0 mm, M5 o ok. 8,0 mm). Zawsze weryfikuj je z kartą konkretnego producenta — różnice między seriami potrafią wynosić 0,2 mm, czyli dokładnie tyle, ile wynosi luz pasowania w druku FDM.</p>
+  </div>
+  <p>Reguła porządkująca: <strong>grubość materiału wokół otworu ≥ 0,75–1,0 × średnica zewnętrzna tulei</strong>, a od otworu do dowolnej krawędzi swobodnej — minimum 3 mm w PLA. Jeśli projekt nie mieści tej wartości, lepiej przesunąć otwór albo wzmocnić gniazdo lokalnym „pucharem”, niż liczyć na cuda po stronie drukarki.</p>
+
+  <h2>Eksport: 3MF czy STL i czym jest odchylenie cięciwowe</h2>
+  <p>Bryła z Fusiona to matematyczne powierzchnie NURBS; drukarka nie rozumie ani NURBS-ów, ani STL-a „jako bryły” — dostaje chmurę trójkątów. Przy eksporcie (File → Export → Mesh, format 3MF lub Binary STL) wybieramy więc <strong>dokładność aproksymacji</strong>, sterowaną parametrem odchylenia cięciwowego (chordal deviation): maksymalnym dopuszczalnym „strzałem łuku” między prawdziwą krzywą a cięciwą trójkąta siatki.</p>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Odchylenie cięciwowe</th><th>Co dostajesz</th><th>Kiedy stosować</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>0,02 mm</td><td>Łuki praktycznie gładkie, plik nawet 5–10× większy</td><td>Biżuteria, mikro detale &lt;10 mm, optyka</td></tr>
+        <tr><td>0,05 mm</td><td>Nasz standard: fasetki niewidoczne, otwór Ø4 mm to ok. 126 trójkątów na obwodzie</td><td>Części funkcjonalne, obudowy, gniazda insertów</td></tr>
+        <tr><td>0,1 mm</td><td>Widoczne spłaszczenie dużych łuków (&gt;30 mm), plik lżejszy</td><td>Elementy dekoracyjne, szybkie prototypy</td></tr>
+        <tr><td>0,2–0,5 mm</td><td>Wyraźna poligonalizacja promieni</td><td>Makiety, bryły&gt;200 mm, gdzie czas liczy się bardziej niż faktura</td></tr>
+      </tbody>
+    </table>
+    <p>Dla porównania: warstwa druku ma 0,2 mm, a ślad dyszy 0,4–0,45 mm. Odchylenie 0,05 mm jest więc czterokrotnie mniejsze od warstwy — dalej zwiększanie rozdzielczości nie ma wpływu na wydruk, tylko na wagę pliku (standardowe „Resolution: Custom: 0.05 mm / normal deviation 5°” zamiast presetu High, który bywa przeskalowany).</p>
+  </div>
+  <p>Format: <strong>3MF wygrywa ze STL</strong>, bo zapisuje jednostki milimetrowe, kolor, siatkę płyty i wiele brył bez „sklejania” ich w jeden konglomerat. STL nie ma jednostek — jeśli ktoś otworzy Twój plik w programie zakładającym cale, wymiary rozjadą się 25,4-krotnie. W 2026 roku eksport STL zostawiamy wyłącznie dla narzędzi, które 3MF nie przyjmą.</p>
+
+  <h2>Typowe błędy eksportu i jak je naprawiać</h2>
+  <ul>
+    <li><strong>„The BRep may contain non-manifold edges or vertices”.</strong> Klasyczny komunikat Fusiona przy eksporcie mesha. Przyczyny: dwie bryły dotykające się ścianą do ściany lub krawędzią do krawędzi (współbieżne geometrie), powierzchnie zamiast brył (Surface Bodies nie są „zamknięte”), nieudane operacje Combine. Lekarstwo: scal ciało z ciałem przez Combine (New Body), a nie przez „dotykanie się”; usuń zbędne powierzchnie; przed eksportem użyj Inspect → Analysis → Interference i Check → Draft, a bryłę przekształć na mesh komendą <code>Mesh → Convert Mesh (Standard, nie Prismatic)</code> i eksportuj obiekt Mesh.</li>
+    <li><strong>Eksport zawodzi na fugach.</strong> Zbyt duży promień filleta „zjada” całą ściankę i kernele OCC nie potrafią go zsiatkować. Zmniejsz fugę, zamień ją na ścięcie albo przeprojektuj narożnik. Fuga 1 mm na ściance 1,2 mm to błąd projektu, nie programu.</li>
+    <li><strong>Mesh „non-manifold” w slicerze</strong> (Orca/Bambu: „mesh has broken faces”, „self-intersecting”). Zazwyczaj siatka ma wolne krawędzie po nieudanym ekspercie z dużą wartością odchylenia albo podwójne wierzchołki. Najszybsza naprawa: ponowny eksport z niższym odchyleniem; jeśli nie pomaga — otwarcie w 3D Builderze (automatyczna naprawa „Nieprawidłowy obiekt”) albo Meshmixerze i funkcja „mesh cleanup → merge vertices”.</li>
+    <li><strong>Skalowanie w slicerze.</strong> Każdy ręczny scale 99% po to, żeby „wyszło w wymiarze”, kasuje powtarzalność serii. Korektę zostaw kompensacji otworów w profilu drukarki.</li>
+  </ul>
+
+  <blockquote>
+    Zasada z pracowni: jeśli plik sprawia problemy w dwóch różnych slicerach, problem jest w projekcie — trzeci slicer go nie naprawi. Dwie minuty Inspect w Fusionie potrafią zaoszczędzić trzy nieudane wydruki.
+  </blockquote>
+
+  <h2>Najczęściej zadawane pytania</h2>
+  <h3>Jaką jednostkę ustawić w Fusion 360 do druku 3D?</h3>
+  <p>Milimetry (Preferences → General → Default units: Millimeter) i dokument tworzony „mm od początku”. Eksport STL nie zapisuje jednostki, więc każdy program po drodze musi zakładać milimetry — najczęstszy błąd „druk 25× mniejszy” bierze się z dokumentu w calach.</p>
+  <h3>Czy kosmetyczny gwint (Cosmetic Thread) ma sens pod druk?</h3>
+  <p>Nie — to oznaczenie do wizualizacji i rysunku technicznego, które nie wpływa na geometrię siatki. Jeśli naprawdę chcesz drukować gwint (zamiast otworu pod insert), modeluj go jako ślimak przez Helix i Coil (ewentualnie funkcję Thread), albo generuj w slicerze; uwaga: drukowany gwint w PLA wytrzymuje zwykle 1–3 montażowe cykle, zanim zerze warstwy.</p>
+  <h3>Bryła czy mesh w drzewie projektu?</h3>
+  <p>Pracuj na bryle (solid) do samego końca. Mesh z „Convert Mesh” służy tylko do kontroli lub naprawy; eksport siatki wcześniej oznacza utratę parametryczności i problemy ze skalowaniem.</p>
+  <h3>Pliki 3MF z Fusiona są duże. Co zrobić?</h3>
+  <p>Zwykle winny jest preset „High” (odchylenie 0,01–0,02 mm). Ustaw Custom: 0,05 mm — plik zrzutuje o 60–90% bez żadnej różnicy na wydruku. Przy dużych złożeniach eksportuj tylko potrzebną kompilację (Export: Selected Object).</p>
+
+  <div class="box cta">
+    <h3>Masz model w Fusionie — wydrukujemy go bez niespodzianek</h3>
+    <p>Wyślij plik 3MF lub STEP, sprawdzimy manifoldność, wymiary newralgiczne i zaproponujemy parametry. Wycena w godzinę.</p>
+    <a class="btn" href="/zamow">Zamów wydruk z weryfikacją pliku</a>
+  </div>
+
+  <div class="related">
+    <h3>← Przeczytaj też</h3>
+    <div class="rel-grid">
+      <a class="rel" href="/blog/inserty-gwintowe-druk-3d.html"><img src="/asset/blog/cover-inserty-gwintowe-druk-3d.svg" alt=""><div class="b"><strong>Wkładki gwintowe M2–M5</strong><span>średnice, temperatury, wytrzymałości</span></div></a>
+      <a class="rel" href="/blog/jak-przygotowac-plik-do-druku-3d.html"><img src="/asset/blog/prototype.jpg" alt=""><div class="b"><strong>Jak przygotować plik do druku 3D</strong><span>STL, 3MF, naprawy siatki</span></div></a>
+      <a class="rel" href="/blog/tolerancje-i-dokladnosc-druku-3d.html"><img src="/asset/blog/printer3.jpg" alt=""><div class="b"><strong>Tolerancje i dokładność druku 3D</strong><span>skurcz, luz, pasowania</span></div></a>
+    </div>
+  </div>
+</div>
+<footer>© 2026 3DFILE.link — <a href="/drukuje">druk 3D na życzenie</a> · <a href="/blog.html">Blog</a> · <a href="/kontakt">Kontakt</a> · <a href="/prywatnosc.html">Prywatność</a></footer>
+<script>document.addEventListener('click',function(ev){var nl=document.querySelector('.nav-links');if(nl&&nl.classList.contains('open')&&ev.target.closest('.nav-links a')){nl.classList.remove('open');}});</script>
+</body>
+</html>

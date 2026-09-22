@@ -456,7 +456,11 @@ html[data-theme="dark"] .why-table td.us{background:rgba(143,180,255,.07)}
   .prt-actions .prt-lang,.prt-actions .ghost{display:none}
   .prt-actions{gap:6px}
   .prt-actions a.prt-btn{display:none}
-  .prt-nav.open ~ .prt-actions::after{content:"Zaloguj / Załóż konto — w menu ☰";font-family:var(--font-mono);font-size:9.5px;color:#7E93BE}
+  .nav-auth-mobile{display:none;flex-direction:column;gap:8px;padding-top:12px;margin-top:4px;border-top:1px solid rgba(255,255,255,.12)}
+.prt-nav.open .nav-auth-mobile{display:flex}
+.nav-auth-mobile button{font-family:inherit;font-size:14px;font-weight:600;color:#C7D4EC;background:transparent;border:1px solid rgba(255,255,255,.22);border-radius:9px;padding:10px 12px;cursor:pointer;text-align:left;width:100%}
+.nav-auth-mobile button.solid{background:#2B5CE6;border-color:#2B5CE6;color:#fff}
+@media(min-width:761px){.nav-auth-mobile{display:none !important}}
 }
 
 /* flex-body SPA: dzieci nie moga rozpedzac body do min-content (root-cause overflow mobile) */

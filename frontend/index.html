@@ -444,7 +444,7 @@
         }
     </style>
     <script>try{var _t=localStorage.getItem("mt_theme")||"light";if(_t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}</script>
-    <link href="/asset/portal.css?v=48" rel="stylesheet">
+    <link href="/asset/portal.css?v=49" rel="stylesheet">
 <!-- Google AdSense (Auto ads) -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8919352846655813"
         crossorigin="anonymous"></script>
@@ -482,6 +482,13 @@
     <a href="/#faq" data-i18n="navFAQ" onclick="if(location.pathname==='/'){go('faq');return false}">FAQ</a>
     <a href="/blog.html" data-i18n="navBlog">Blog</a>
     <a href="/kontakt" data-i18n="navContact">Kontakt</a>
+    <span class="nav-auth-mobile" id="navAuthMobile">
+      <button onclick="showModal('login');closeNav()" data-i18n="navLogin">Zaloguj</button>
+      <button class="solid" onclick="showModal('register');closeNav()" data-i18n="navSignup">Załóż konto</button>
+      <button id="navFilesM" onclick="go('files');closeNav()" style="display:none" data-i18n="navMyFiles">Moje pliki</button>
+      <button id="navKontoM" onclick="go('konto');closeNav()" style="display:none" data-i18n="navMyAccount">Konto</button>
+      <button id="navOrdersM" onclick="closeNav();location.href='/konto'" style="display:none" data-i18n="navMyOrders">Moje zamówienia</button>
+    </span>
   </nav>
   <div class="prt-actions nav-right" style="margin-left:auto">
     <button class="prt-nav-link acct" data-page="files" onclick="go('files')" id="navFiles" style="display:none">Moje pliki</button>
@@ -1285,7 +1292,7 @@
     import './js/shared.js?v=81';
     import './js/i18n.js?v=98';
     import './js/viewer3d.js?v=81';
-    import './js/auth.js?v=82';
+    import './js/auth.js?v=83';
     import './js/convert.js?v=83';
     import './js/discover.js?v=81';
     import './js/myfiles.js?v=87';
@@ -1424,7 +1431,10 @@ function cookieConsent(accept) {
   </div>
 </div>
 
-<script>document.addEventListener('click',function(ev){var nl=document.getElementById('navLinks');if(nl&&nl.classList.contains('open')&&ev.target.closest('#navLinks a,#navLinks button')){nl.classList.remove('open');}});</script>
+<script>
+function closeNav(){var nl=document.getElementById('navLinks');if(nl)nl.classList.remove('open');}
+document.addEventListener('click',function(ev){var nl=document.getElementById('navLinks');if(nl&&nl.classList.contains('open')&&ev.target.closest('#navLinks a,#navLinks button'))nl.classList.remove('open');});
+</script>
 
 
 <script>

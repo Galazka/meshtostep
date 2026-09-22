@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Retrakcja w druku 3D — ustawienia dla Bambu, Prusa, Creality i Endera | 3DFILE.link</title>
+<meta name="description" content="Retrakcja FDM bez nici: direct vs bowden, dystans i prędkość dla Bambu A1/P1S, Prusa MK4, Creality K1, Ender 3 V3, wipe i Z-hop, ustawienia Orca/Klipper i odczyt testu na wieżę stringingu.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://3dfile.link/blog/retrakcja-druk-3d.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Retrakcja w druku 3D — ustawienia dla Bambu, Prusa, Creality i Endera">
+<meta property="og:description" content="Direct vs bowden, tabele dystansu i prędkości retrakcji, wipe i Z-hop, skłonność materiałów do nici, profil Orca/Klipper i test wieżowy krok po kroku.">
+<meta property="og:image" content="https://3dfile.link/asset/blog/cover-retrakcja-druk-3d.svg">
+<meta property="og:site_name" content="3DFILE.link">
+<meta property="og:url" content="https://3dfile.link/blog/retrakcja-druk-3d.html">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#0f172a;--muted:#64748b;--accent:#0ea5e9;--accent2:#0b5394;--border:#e2e8f0;--card:#ffffff;--bg:#f8fafc}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);line-height:1.65}
+.nav{background:#0f172a;color:#fff;padding:14px 0;position:sticky;top:0;z-index:50}
+.nav-in{max-width:1120px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.nav a{color:#fff;text-decoration:none;font-weight:600;font-size:14px}
+.nav-links a{margin-left:18px;opacity:.85}
+.nav-links a:hover{opacity:1}
+.badge{background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.3px}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 20px 60px}
+.crumbs{font-size:13px;color:var(--muted);margin-bottom:18px}
+.crumbs a{color:var(--accent);text-decoration:none}
+.crumbs a:hover{text-decoration:underline}
+h1{font-size:34px;line-height:1.2;font-weight:800;letter-spacing:-.5px;margin-bottom:14px}
+.meta{color:var(--muted);font-size:14px;margin-bottom:22px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.hero-img{width:100%;border-radius:14px;margin-bottom:26px;box-shadow:0 6px 24px rgba(15,23,42,.12)}
+h2{font-size:24px;font-weight:800;margin:34px 0 12px;letter-spacing:-.3px;line-height:1.3}
+h3{font-size:19px;font-weight:700;margin:26px 0 10px}
+p{margin-bottom:16px}
+ul,ol{margin:0 0 18px 22px}
+li{margin-bottom:8px}
+.box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin:20px 0}
+.box.cta{background:linear-gradient(135deg,#0ea5e9,#0b5394);color:#fff;border:none;text-align:center;padding:28px}
+.box.cta h3{color:#fff;font-size:22px;margin-bottom:8px}
+.box.cta p{color:#e0f2fe;font-size:15px}
+.btn{display:inline-block;background:#fff;color:#0b5394;font-weight:800;padding:13px 30px;border-radius:10px;text-decoration:none;font-size:16px;margin-top:14px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.btn:hover{transform:translateY(-1px)}
+.tip table{width:100%;border-collapse:collapse;margin:14px 0}
+.tip td,.tip th{border:1px solid var(--border);padding:10px 12px;font-size:14px;text-align:left}
+.tip th{background:#f1f5f9;font-weight:700}
+blockquote{border-left:4px solid var(--accent);background:var(--card);padding:4px 20px;font-size:17px;margin:20px 0;font-style:italic}
+.tag{display:inline-block;background:#e0f2fe;color:#0369a1;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;margin-right:8px;margin-top:6px}
+.tag:hover{background:#bae6fd;text-decoration:none}
+.related h3{font-size:21px;margin:44px 0 16px}
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.rel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;text-decoration:none;color:var(--fg);display:block;transition:transform .15s,box-shadow .15s}
+.rel:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(15,23,42,.1)}
+.rel img{width:100%;height:120px;object-fit:cover}
+.rel .b{padding:12px 14px}
+.rel .b strong{font-size:15px;display:block;margin-bottom:4px;line-height:1.4}
+.rel .b span{color:var(--muted);font-size:13px}
+footer{background:#0f172a;color:#94a3b8;text-align:center;padding:24px;font-size:13px}
+footer a{color:#cbd5e1;text-decoration:none}
+@media(max-width:600px){h1{font-size:26px}h2{font-size:20px}}
+.nav-burger{display:none;background:none;border:1px solid #334155;border-radius:8px;cursor:pointer;padding:8px 10px;font-size:19px;line-height:1;color:#fff}
+@media(max-width:760px){.nav-burger{display:inline-flex;align-items:center;gap:6px}.nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border-bottom:1px solid #334155;padding:10px 20px;flex-direction:column;align-items:stretch!important;z-index:60}.nav-links.open{display:flex}.nav{position:relative}.nav-links a{width:100%;text-align:left;margin-left:0!important;padding:12px 4px}}
+</style>
+</head>
+<body>
+<nav class="nav"><div class="nav-in">
+  <a href="/">3DFILE.link</a>
+  <button class="nav-burger" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">☰</button>
+  <div class="nav-links"><a href="/drukuje">Druk</a><a href="/">Hosting</a><a href="/blog.html">Blog</a></div>
+</div></nav>
+<div class="wrap">
+  <div class="crumbs"><a href="/drukuje">Strona główna</a> › <a href="/blog.html">Blog</a> › <span>retrakcja-druk-3d</span></div>
+  <h1>Retrakcja w druku 3D — ustawienia dla Bambu, Prusa, Creality i Endera</h1>
+  <div class="meta"><span>28.09.2026</span><span>Zespół 3DFILE.link</span><span>9 min czytania</span></div>
+  <img src="/asset/blog/cover-retrakcja-druk-3d.svg" alt="retrakcja druk 3d nici stringing ustawienia direct bowden" class="hero-img" loading="lazy">
+
+  <p>„Wyszedł cały w niciach, jak pajęczyna” — tak brzmi najczęstsze zdanie z reklamacji, które nigdy nie jest reklamacją, tylko kalibracją. Retrakcja to cofnięcie filamentu w strefę topnienia tuż przed pustym przejazdem głowicy: wyciskamy nadciśnienie z komory, żeby roztop tworzywa nie sączył się z dyszy tam, gdzie nie ma być śladu materiału. Problem w tym, że retrakcja balansuje między dwoma usterkami: za słaba daje stringing, za mocna — niedodruk po powrocie, pęcherze na krawędziach, a przy dużych dystansach — zacięcia i poślizg kół ekstrudera. Poniżej: mechanika direct vs bowden, konkretne wartości startowe dla popularnych maszyn i protokół testu, który mówi, co dołożyć.</p>
+
+  <h2>Direct czy bowden — czemu wartości dzieli przepaść</h2>
+  <p>W głowicy <strong>direct</strong> ekstruder trzyma filament centymetr przed dyszą: cofnięcie 0,4–1,2 mm wystarcza, żeby odciążyć kolumnę stopu, i reaguje niemal natychmiast. W układzie <strong>bowden</strong> między kółkiem a hotendem leży 40–60 cm teflonowej prowadnicy — filament działa jak sprężyna, więc potrzeba 4–6 mm cofnięcia, żeby nadrobić jego ściśliwość i dotrzeć do stopu. Stąd pozorne szaleństwo: ta sama „retrakcja 6 mm” to w Enderze 3 norma, a w MK4 — pewny zator i kruszenie filamentu. Zasada: <strong>im dłuższa ścieżka, tym większy dystans i szybsza retrakcja</strong>; direct pracuje na krótkich dystansach przy prędkościach 25–50 mm/s.</p>
+
+  <h2>Wartości startowe per drukarka</h2>
+  <p>Numery poniżej to sprawdzone punkty wyjścia pod PLA w dyszy 0,4 mm — nie dogmaty: oficjalne profile producentów zmieniają się z wersjami firmware, a stan prowadnicy i dopasowanie hotendu decydują o ±50%. Startuj, drukuj test, zapisuj wynik w profilu filamentu.</p>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Drukarka</th><th>Układ</th><th>Dystans retrakcji</th><th>Prędkość</th><th>Z-hop</th><th>Uwagi</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Bambu Lab A1</td><td>Direct</td><td>0,4–0,8 mm (AMS: 0,8–1,5 mm)</td><td>25–35 mm/s</td><td>off</td><td>Minimalne cofnięcia w profilu oficjalnym; przy AMS ścieżka dłuższa i bardziej sprężysta</td></tr>
+        <tr><td>Bambu Lab P1S</td><td>Direct</td><td>0,4–0,8 mm (AMS: 0,8–1,5 mm)</td><td>25–35 mm/s</td><td>off</td><td>Obudowa grzeje komorę — przy ABS trzymaj niższą temperaturę, mniej stringów</td></tr>
+        <tr><td>Prusa MK4</td><td>Direct (Nextruder)</td><td>0,1–0,4 mm</td><td>40 mm/s</td><td>off</td><td>Sztywny napęd — wysokie wartości prowadzą do ścierania i zatorów</td></tr>
+        <tr><td>Creality K1</td><td>Direct</td><td>0,4–1,0 mm</td><td>30–45 mm/s</td><td>0–0,2 mm</td><td>Profil Klipper: retrakcja przez firmware retract</td></tr>
+        <tr><td>Ender-3 V3 KE / SE</td><td>Direct (Sprite)</td><td>0,6–1,2 mm</td><td>25–40 mm/s</td><td>0,2 mm</td><td>Klipper (KE) — sprawdź, czy slicer wysyła G10/G11 do firmware</td></tr>
+        <tr><td>Ender-3 (bowden, oryginał)</td><td>Bowden</td><td>4,5–6,0 mm</td><td>35–50 mm/s</td><td>0,2–0,3 mm</td><td>Luz w kółku >0,3 mm zje część dystansu — najpierw napęd</td></tr>
+      </tbody>
+    </table>
+    <p>Dla wydruków zamawianych u nas nie ruszasz nic — profile per maszyna i filament mamy zmierzone wieżami testowymi; ale jeśli składasz własny profil, zacznij od tych liczb i kalibruj testem opisanym na końcu.</p>
+  </div>
+
+  <h2>Wipe i Z-hop: sprzątanie i unikanie, nie retrakcja</h2>
+  <p><strong>Wipe (wycieranie przy retrakcji)</strong> to przedłużenie ostatniego ruchu ekstruzji o 0,2–1,0 mm „w powietrze”, poza obrys części: końcówka dyszy przejeżdża jeszcze kawałek bez podawania i zgarnia porcję, która inaczej wykapałaby na początku następnego przejazdu. Daje to mniejsze stringi bez zwiększania dystansu, a przy okazji redukuje „dzioby” na ścianach. W Orca/Bambu Studio to opcja „Wipe while retracting”, w Cura „Wipe while retracting” + „retraction wipe distance”. Koszt: wyciera w powietrzu — kropla ląduje tam, gdzie nie przeszkadza, o ile głowica zdążyła opuścić model.</p>
+  <p><strong>Z-hop (podniesienie osi Z na czas przejazdu)</strong> podnosi dyszę o 0,15–0,4 mm, żeby nie zeskrobywała już położonych krawędzi przy przejeździe przez wydruk. Pomocny przy dużych przerwach nad częścią i na otwartych „wyspach”, szkodliwy gdy nadużywany: każdy hop to mikro-drgnienia i punkt kapania w locie, a na górnych wypełnieniach zostawia „dziurki od klucza”. Ustawiaj go tam, gdzie przejazd musi przechodzić nad materiałem; przy opcji „comb through infill / not on skin” często zbędny.</p>
+  <ul>
+    <li><strong>Kolejność poprawy stringów:</strong> suchy filament → temperatura w dół o 5°C → dystans prędkości → wipe on → dopiero na końcu Z-hop i combing.</li>
+    <li>Prędkość przejazdów: 150–300 mm/s skraca czas, w którym stop kapię — tanie osiągnięcie, zanim dotkniesz retrakcji.</li>
+    <li>Wielomateriałowość (AMS/MMU): tam gdzie jest wieża czyszcząca, retrakcja ma drugorzędne znaczenie — priorytetem jest purge.</li>
+  </ul>
+
+  <h2>Materiały i ich skłonność do nici</h2>
+  <p>Retrakcja „na sztywno” nie istnieje — lepkość stopu jest różna dla każdego polimeru. Tabela orientacyjna dla dyszy 0,4 mm i testu dwóch kolumn:</p>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Materiał</th><th>Skłonność do nici</th><th>Okno temperatur (koniec dolny)</th><th>Start retrakcji direct</th><th>Komentarz</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>PLA</td><td>niska</td><td>190–210°C</td><td>0,4–0,8 mm / 35 mm/s</td><td>Powyżej ~215°C nitkuje wyraźnie; suszenie rzadko potrzebne</td></tr>
+        <tr><td>PETG</td><td>wysoka</td><td>225–240°C</td><td>0,8–1,2 mm / 35–45 mm/s</td><td>Niska lepkość stopu = kapanie; suszyć 6 h/65°C — wilgoć daje pęcherze mylone z retrakcją</td></tr>
+        <tr><td>ABS / ASA</td><td>średnia</td><td>235–250°C</td><td>0,6–1,0 mm / 30–40 mm/s</td><td>Combing (przejazdy po wypełnieniu) redukuje najbardziej; komora zamknięta</td></tr>
+        <tr><td>TPU</td><td>bardzo wysoka</td><td>215–230°C</td><td>0,4–0,8 mm / 20–25 mm/s</td><td>Amortyzuje w kółkach; retrakcja minimalna, wolne przejazdy, Z-hop off</td></tr>
+        <tr><td>PA / PC</td><td>średnia</td><td>PA 250–270 / PC 270–290°C</td><td>0,6–1,0 mm / 30 mm/s</td><td>Higroskopijne — bez suszarki nie ma co kalibrować</td></tr>
+      </tbody>
+    </table>
+    <p>Jeśli po wymianie materiału „wszystko zaczęło nitkować”, w dziewięciu przypadkach na dziesięć winna jest wilgoć lub temperatura, a nie retrakcja. To także argument za tym, by przy <a href="/zamow">zamówieniu serii</a> materiał był już wybrany na etapie wyceny.</p>
+  </div>
+
+  <h2>OrcaSlicer i Klipper — co gdzie ustawiasz</h2>
+  <p><strong>Orca / Bambu Studio</strong> (ten sam układ pól): Settings → Print settings → Other → Retraction: „Retraction distance”, „Retraction speed”, „Enable wipe”, „Retract on travel moves” (z progiem minimalnego przejazdu ~1,0–1,5 mm — krótsze ruchy nie mają sensu cofać), „Combing mode: In fill / Not in skin” i „Z hop when retracting”. Do auto-testu służy kreator <strong>Calibration → Flow Dynamics</strong>, który nadrukuje serię kolumn i dobiera retrakcję i pressure advance za Ciebie — zrób go raz per filament i zapomnij.</p>
+  <p><strong>Klipper</strong> (K1, KE, Voron, Prusa XL na Klipperze): w `printer.cfg` sekcja <code>[firmware_retract]</code> z <code>default_retract_length</code> / <code>default_retract_speed</code>; w slicerze gcode_flavor „klipper”, żeby G10/G11 szły do firmware zamiast być emulowane ruchem E. Retrakcję trzymaj w profilu, nie w makrach. Dodatkowo <strong>pressure_advance 0,02–0,08</strong> redukuje „kapanie startowe” po wlocie w linię — pośrednio zdejmuje robotę retrakcji; testuj go przed cięciem wartości retrakcji w dół.</p>
+
+  <h2>Test na wieżę — jak czytać wyniki</h2>
+  <p>Protokół, który powtarzamy przy każdym nowym filamentie: dwie prostopadłościenne kolumny 20×20 mm, odstęp 30–50 mm, wysokość 60–100 mm, wypełnienie 10–15%, przejazdy wyłącznie po powietrzu. Warunki bazowe: suchy materiał, temperatura dolna z okna, startowa retrakcja z tabeli. Potem <strong>jedna zmienna na wydruk</strong>:</p>
+  <ol>
+    <li><strong>Ciągłe, grube „liny” między kolumnami</strong> — za słaba retrakcja: dystans +0,2 mm (direct) / +0,5 mm (bowden) albo prędkość retrakcji +5 mm/s.</li>
+    <li><strong>Włoskowate, przerwane nitki</strong> — zwykle temperatura: −5°C. Poniżej ~195°C PLA zaczyna niedodrukowywać — wróć wtedy o krok wyżej.</li>
+    <li><strong>Nici kończą się kroplą na ścianie / ślad po kapaniu na starcie przejazdu</strong> — za dużo materiału wyciśniętego przed retrakcją: +dystans, ale też za wysoka temperatura.</li>
+    <li><strong>Podciśnienia, „dziury w narożniku”, trzaski extrudera</strong> — przesadziłeś: zmniejsz dystans, obniż prędkość cofania; grind = znak stopu.</li>
+    <li><strong>Ślady po dyszy na wierzchu kolumn</strong> — Z-hop za niski albo w ogóle wyłącz go, użyj combingu.</li>
+  </ol>
+  <p>Prawidłowo ustawiona retrakcja wygląda tak: między kolumnami widać pojedyncze, napięte „włoski”, które odpadają pod palcem bez śladu na modelu. Zero nici wcale jest możliwe dla PLA w direct — w PETG celuj w „prawie zero”, nie w ideał, bo dopłacisz za niego niedodrukami.</p>
+
+  <blockquote>
+    Zasada z pracowni: nici nie kalibruje się w nieskończoność. Trzy wydruki testowe per zmienna, a jak nie ma poprawy — problem jest w wilgoci, temperaturze albo zużytym hotendzie, nie w liczbie milimetrów cofnięcia.
+  </blockquote>
+
+  <h2>Najczęściej zadawane pytania</h2>
+  <h3>Czy direct drive potrzebuje w ogóle retrakcji?</h3>
+  <p>Tak, ale niewielkiej. Krótka kolumna stopu nadal utrzymuje ciśnienie resztkowe i „kapi” przy długich przejazdach przez puste obszary. 0,2–0,4 mm w połączeniu z combingiem wystarczy w typowym druku single-material.</p>
+  <h3>Bowden na 0 mm — dlaczego nie?</h3>
+  <p>Bo samo cofnięcie nie jest problemem, problemem jest odpowiedź: przy 50 cm sprężystego łuku cofnięcie 1 mm zgasi ściśliwość filamentu, nie ciśnienie w hotendzie. Musisz nadrobić opóźnienie sprężyny większym dystansem; inaczej nici zostają, a przy okazji dostajesz niedodruk.</p>
+  <h3>Czy większa prędkość przejazdów zastąpi retrakcję?</h3>
+  <p>Częściowo tak — szybciej mijasz otwarte przestrzenie, mniej kapi w czasie. Nie zastąpi jej przy materiałach niskolepkich (PETG) i dużych odstępach; używaj obu parametrów równolegle, ale zmieniaj po jednym naraz.</p>
+  <h3>Mam zator — to wina retrakcji?</h3>
+  <p>Często tak, przy źle dobranym dystansie: cofany stop zasysa powietrze i resztki degradują się w strefie grzania, a „cold creep” (cofanie na gorącej głowicy godzinami) wepchnie je niżej. Sztuka: nie zmieniaj retrakcji w trakcie druku o więcej niż ±0,3 mm i nie susz materiału powyżej temperatury mięknienia.</p>
+
+  <div class="box cta">
+    <h3>Nie chcesz kalibrować? Wydrukujemy na profilach po testach</h3>
+    <p>Każdy filament przechodzi u nas wieżę na stringing i test wymiarowy zanim pojedzie Twoje zlecenie — bez nici, z powtarzalnym wymiarem.</p>
+    <a class="btn" href="/zamow">Zamów czysty wydruk</a>
+  </div>
+
+  <div class="related">
+    <h3>← Przeczytaj też</h3>
+    <div class="rel-grid">
+      <a class="rel" href="/blog/pierwsza-warstwa-kalibracja.html"><img src="/asset/blog/cover-pierwsza-warstwa-kalibracja.svg" alt=""><div class="b"><strong>Pierwsza warstwa — kalibracja</strong><span>Z-offset, live-Z, temperatury</span></div></a>
+      <a class="rel" href="/blog/jaki-filament-wybrac-3d.html"><img src="/asset/blog/prototype.jpg" alt=""><div class="b"><strong>Jaki filament wybrać</strong><span>PLA, PETG, ABS, PA — właściwości</span></div></a>
+      <a class="rel" href="/blog/tolerancje-i-dokladnosc-druku-3d.html"><img src="/asset/blog/printer3.jpg" alt=""><div class="b"><strong>Tolerancje i dokładność druku 3D</strong><span>co wychodzi z kalibracji</span></div></a>
+    </div>
+  </div>
+</div>
+<footer>© 2026 3DFILE.link — <a href="/drukuje">druk 3D na życzenie</a> · <a href="/blog.html">Blog</a> · <a href="/kontakt">Kontakt</a> · <a href="/prywatnosc.html">Prywatność</a></footer>
+<script>document.addEventListener('click',function(ev){var nl=document.querySelector('.nav-links');if(nl&&nl.classList.contains('open')&&ev.target.closest('.nav-links a')){nl.classList.remove('open');}});</script>
+</body>
+</html>

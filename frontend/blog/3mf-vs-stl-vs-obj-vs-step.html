@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3MF, STL, OBJ czy STEP — który format pliku 3D wybrać | 3DFILE.link</title>
+<meta name="description" content="STL vs 3MF vs OBJ vs STEP: tessellacja i odchylenie cięciwowe 0,01-0,05 mm, metadane 3MF, bryły STEP pod CAM, pułapka mm/cal i tabela rozmiarów plików.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://3dfile.link/blog/3mf-vs-stl-vs-obj-vs-step.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="3MF, STL, OBJ czy STEP — który format pliku 3D wybrać">
+<meta property="og:description" content="STL vs 3MF vs OBJ vs STEP: tessellacja i odchylenie cięciwowe 0,01-0,05 mm, metadane 3MF, bryły STEP pod CAM, pułapka mm/cal i tabela rozmiarów plików.">
+<meta property="og:image" content="https://3dfile.link/asset/blog/cover-3mf-vs-stl-vs-obj-vs-step.svg">
+<meta property="og:site_name" content="3DFILE.link">
+<meta property="og:url" content="https://3dfile.link/blog/3mf-vs-stl-vs-obj-vs-step.html">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#0f172a;--muted:#64748b;--accent:#0ea5e9;--accent2:#0b5394;--border:#e2e8f0;--card:#ffffff;--bg:#f8fafc}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);line-height:1.65}
+.nav{background:#0f172a;color:#fff;padding:14px 0;position:sticky;top:0;z-index:50}
+.nav-in{max-width:1120px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.nav a{color:#fff;text-decoration:none;font-weight:600;font-size:14px}
+.nav-links a{margin-left:18px;opacity:.85}
+.nav-links a:hover{opacity:1}
+.badge{background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.3px}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 20px 60px}
+.crumbs{font-size:13px;color:var(--muted);margin-bottom:18px}
+.crumbs a{color:var(--accent);text-decoration:none}
+.crumbs a:hover{text-decoration:underline}
+h1{font-size:34px;line-height:1.2;font-weight:800;letter-spacing:-.5px;margin-bottom:14px}
+.meta{color:var(--muted);font-size:14px;margin-bottom:22px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.hero-img{width:100%;border-radius:14px;margin-bottom:26px;box-shadow:0 6px 24px rgba(15,23,42,.12)}
+h2{font-size:24px;font-weight:800;margin:34px 0 12px;letter-spacing:-.3px;line-height:1.3}
+h3{font-size:19px;font-weight:700;margin:26px 0 10px}
+p{margin-bottom:16px}
+ul,ol{margin:0 0 18px 22px}
+li{margin-bottom:8px}
+.box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin:20px 0}
+.box.cta{background:linear-gradient(135deg,#0ea5e9,#0b5394);color:#fff;border:none;text-align:center;padding:28px}
+.box.cta h3{color:#fff;font-size:22px;margin-bottom:8px}
+.box.cta p{color:#e0f2fe;font-size:15px}
+.btn{display:inline-block;background:#fff;color:#0b5394;font-weight:800;padding:13px 30px;border-radius:10px;text-decoration:none;font-size:16px;margin-top:14px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.btn:hover{transform:translateY(-1px)}
+.tip table{width:100%;border-collapse:collapse;margin:14px 0}
+.tip td,.tip th{border:1px solid var(--border);padding:10px 12px;font-size:14px;text-align:left}
+.tip th{background:#f1f5f9;font-weight:700}
+blockquote{border-left:4px solid var(--accent);background:var(--card);padding:4px 20px;font-size:17px;margin:20px 0;font-style:italic}
+.tag{display:inline-block;background:#e0f2fe;color:#0369a1;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;margin-right:8px;margin-top:6px}
+.tag:hover{background:#bae6fd;text-decoration:none}
+.related h3{font-size:21px;margin:44px 0 16px}
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.rel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;text-decoration:none;color:var(--fg);display:block;transition:transform .15s,box-shadow .15s}
+.rel:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(15,23,42,.1)}
+.rel img{width:100%;height:120px;object-fit:cover}
+.rel .b{padding:12px 14px}
+.rel .b strong{font-size:15px;display:block;margin-bottom:4px;line-height:1.4}
+.rel .b span{color:var(--muted);font-size:13px}
+footer{background:#0f172a;color:#94a3b8;text-align:center;padding:24px;font-size:13px}
+footer a{color:#cbd5e1;text-decoration:none}
+@media(max-width:600px){h1{font-size:26px}h2{font-size:20px}}
+.nav-burger{display:none;background:none;border:1px solid #334155;border-radius:8px;cursor:pointer;padding:8px 10px;font-size:19px;line-height:1;color:#fff}
+@media(max-width:760px){.nav-burger{display:inline-flex;align-items:center;gap:6px}.nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border-bottom:1px solid #334155;padding:10px 20px;flex-direction:column;align-items:stretch!important;z-index:60}.nav-links.open{display:flex}.nav{position:relative}.nav-links a{width:100%;text-align:left;margin-left:0!important;padding:12px 4px}}
+</style>
+</head>
+<body>
+<nav class="nav"><div class="nav-in">
+  <a href="/">3DFILE.link</a>
+  <button class="nav-burger" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">☰</button>
+  <div class="nav-links"><a href="/drukuje">Druk</a><a href="/">Hosting</a><a href="/blog.html">Blog</a></div>
+</div></nav>
+<div class="wrap">
+  <div class="crumbs"><a href="/drukuje">Strona główna</a> › <a href="/blog.html">Blog</a> › <span>3mf-vs-stl-vs-obj-vs-step</span></div>
+  <h1>3MF, STL, OBJ czy STEP — który format pliku 3D wybrać</h1>
+  <div class="meta"><span>📅 11.09.2026</span><span>✍️ Zespół 3DFILE.link</span><span>⏱ 9 min czytania</span></div>
+  <img src="/asset/blog/cover-3mf-vs-stl-vs-obj-vs-step.svg" alt="formaty plikow 3d stl 3mf obj step porownanie" class="hero-img" loading="lazy">
+
+
+  <p>Wysyłasz „jakiś STL”, dostajesz wydruk dwa razy większy, a warsztat CNC prosi o „normalny plik, nie tę kaszę z trójkątów”. Każde z tych zdarzeń ma wspólny mianownik: <strong>format pliku 3D</strong>. W codziennej pracy z plikami na <a href="/">3dfile.link</a> spotykamy cztery główne typy — STL, 3MF, OBJ i STEP — i każdy z nich coś przenosi, a coś gubi. Ten artykuł tłumaczy, co dokładnie, ile to waży w megabajtach i kiedy wybór formatu kosztuje Cię wydruk albo zapytanie ofertowe bez odpowiedzi.</p>
+
+  <h2>STL i OBJ — siatka trójkątów bez metryki</h2>
+  <p>STL (lata 80., standard de facto druku 3D) opisuje powierzchnię jako chmurę trójkątów z ich orientacją — i nic więcej: <strong>ani jednostek, ani kolorów, ani historii</strong>. OBJ jest starszym bratem z dodatkami: współdzielonymi wierzchołkami, normalnymi, koordynatami tekstur (plik .mtl). Oba są tylko aproksymacją — <strong>tessellacją</strong> — prawdziwej geometrii z CAD. Twoje zaokrąglenie z promieniem 5 mm to dla slicera wielokąt, który ma tyle boków, ile zdecydował eksport.</p>
+
+  <h2>Tessellacja i odchyłła cięciwowa (chordal)</h2>
+  <p>Odchyłła cięciwowa to maksymalna odległość między łukiem krawędzi a cięciwą trójkąta aproksymacji — czyli tym, o ile „wielokąt” odstaje od „okrągłości”. Przy promieniu 5 mm: chordal 0,05 mm daje 22-bok, 0,02 mm — 36-bok, 0,01 mm — 50-bok na każdą krawędź. Różnica wygląda na marginesową, a realnie mnoży się przez liczbę krawędzi modelu — i właśnie z tego bierze się rozbieżność rozmiarów plików między „tym samym” modelem:</p>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Odchyłła cięciwowa</th><th>Boki na kole R5 mm</th><th>Trójkąty (pokrywa 50×50×50 mm)</th><th>STL binary (12 B na trójkąt)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>0,05 mm</td><td>~22</td><td>~15 000</td><td>~180 KB</td></tr>
+        <tr><td>0,02 mm</td><td>~36</td><td>~45 000</td><td>~540 KB</td></tr>
+        <tr><td>0,01 mm</td><td>~50</td><td>~120 000</td><td>~1,4 MB</td></tr>
+      </tbody>
+    </table>
+    <p>Do druku FDM z dyszą 0,4 mm wystarcza zwykle 0,02–0,05 mm — dalej dysza fizycznie nie odtworzy geometrii. Do SLA z warstwą 25 µm i do inspekcji wymiarowej celuj w 0,01 mm lub w STEP.</p>
+  </div>
+
+  <h2>3MF — ten sam mesh, ale z metadanymi</h2>
+  <p>3MF (format promowany przez konsorcjum z Microsoft, Autodesk, 3D Systems) to kontener ZIP z opisem XML. Geometria pozostaje siatkowa, ale dostajesz w pakiecie to, czego STL nie umie: <strong>jednostkę miary</strong> (milimetr zapisany jawnie), wiele obiektów w montażu, kolory i materiały (smodel), transformacje, a nawet <strong>ustawienia slicera</strong> (profile PrusaSlicer/Bambu/Orca zapisują tam wysokość warstwy, ustawienia podpór i przypisanie części do ekstruderów). Po otwarciu 3MF w slicerze część ma kolor, rozmieszczenie na stole i parametry — odpada „a który filament do której części?”. Dla druku wielomateriałowego i do przesyłania plików przez dział zakupów to dziś wybór domyślny; wspiera go zarówno <a href="/drukuje">konfigurator druku</a>, jak i wszystkie aktualne slicery.</p>
+
+  <h2>STEP — geometria analityczna pod CAD i CAM</h2>
+  <p>STEP (ISO 10303, AP203/AP214) nie jest siatką, lecz opisem <strong>bryły B-rep</strong>: powierzchnie analityczne i B-spline, krawędzie, wierzchołki, montaż, a w AP242 także adnotacje tolerancji (PMI). W otwartym FreeCAD czy Fusion 360 otrzymujesz pełnoprawną bryłę z historią jednostek — da się ją mierzyć, pasować, a co najważniejsze <strong>generować z niej ścieżki narzędzia CNC</strong>, bo frezarka nie rozumie trójkątów. Slicer i tak zamieni STEP na mesh „po drodze”, z tym że wykonuje to z własną kontrolą chordal. Plik do wtrysku, obrabiarki albo do archiwum projektu po dziesięciu latach? STEP. Plik „na teraz na drukarkę”? wystarcza mesh.</p>
+
+  <h2>Format a rozmiar pliku — ten sam detal 5 cm</h2>
+  <p>Obudowa 50×50×50 mm z promieniami i otworami, ten sam model wyeksportowany różnymi drogami:</p>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Format</th><th>Ustawienia eksportu</th><th>Rozmiar</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>STL binary</td><td>chordal 0,05 mm</td><td>~180 KB</td></tr>
+        <tr><td>STL binary</td><td>chordal 0,01 mm</td><td>~1,4 MB</td></tr>
+        <tr><td>STL ASCII</td><td>chordal 0,01 mm</td><td>~30 MB</td></tr>
+        <tr><td>OBJ + MTL</td><td>chordal 0,01 mm</td><td>~5 MB</td></tr>
+        <tr><td>3MF</td><td>chordal 0,01 mm, kompresja deflate</td><td>~500 KB</td></tr>
+        <tr><td>STEP AP214</td><td>B-rep, powierzchnie dokładne</td><td>~1,2 MB</td></tr>
+      </tbody>
+    </table>
+    <p>Ciekawostka: dobrze skompresowany 3MF jest mniejszy niż równorzędny STL binarny, bo XML z powtarzalnymi wierzchołkami idealnie łapie się pod deflate. STEP za to rośnie z liczbą powierzchni, a nie z gęstością dyskretyzacji — „dokładność” nie kosztuje tu bajtów trójkątów.</p>
+  </div>
+
+  <h2>Pułapka jednostek: dlaczego wyszło 25,4 raza większe</h2>
+  <p>STL przechowuje liczby bez jednostek. Model 100 mm, który z SolidWorks/Fusion wyszedł jako „100 cali”, a slicer odczytał jako „100 mm”, to pomyłka w jedną stronę; a podwójna konwersja cal→mm (raz na eksporcie, raz na imporcie) skurczy wydruk do 4% właściwej wielkości. Zawsze sprawdzaj w podglądzie slicera trzy wymiary obwiedni na rysunkiem — zanim naciśniesz start. W 3MF i STEP jednostka zapisana jest jawnie w pliku i ten klasyczny bug po prostu nie istnieje. Jeśli plik od dostawcy zachowuje się dziwnie, nie walcz z ręczną skalą — prześlij go do <a href="/">konwersji</a> lub zapytaj nas przez <a href="/zamow">zamówienie z weryfikacją pliku</a>.</p>
+
+  <h2>Naprawa siatki: non-manifold i dziury</h2>
+  <p>Mesh pobrany ze strony czy wyeksportowany z programu do rzeźbienia bywa <strong>niezdatny do druku</strong>: brzegi bez sąsiada (dziury), krawędzie wspólne dla więcej niż dwóch trójkątów (non-manifold), odwrócone normalne, samoprzecięcia. Kolejność ratowania: zjednoczenie powtarzających się wierzchołków → spójne normalne (na zewnątrz) → zamknięcie dziur → usunięcie wewnętrznych części → naprawa samoprzecięć. Robią to m.in. darmowy 3D Builder (Windows, „napraw” w jednym kliknięciu), Meshmixer, Netfabb, moduł Mesh FreeCAD. Ostatecznością jest remesh wokselowy — ratuje plik, ale gubi ostre krawędzie z CAD. Jak przygotować model od razu dobrze, opisujemy w poradniku <a href="/blog/jak-przygotowac-plik-do-druku-3d.html">jak przygotować plik do druku 3D</a>, a dokładność gotowego wydruku — w artykule o <a href="/blog/tolerancje-i-dokladnosc-druku-3d.html">tolerancjach</a>.</p>
+
+  <h2>Który format wybrać — ściągawka</h2>
+  <ul>
+    <li><strong>Druk FDM z kolorami/montażem</strong> → 3MF.</li>
+    <li><strong>Wszędzie, czyli maksymalna kompatybilność</strong> → STL binarny (chordal 0,02–0,05).</li>
+    <li><strong>Skany 3D, modele ze skanów z teksturą</strong> → OBJ lub 3MF.</li>
+    <li><strong>CNC, formy, inspekcja, archiwizacja</strong> → STEP.</li>
+  </ul>
+
+  <h2>Najczęściej zadawane pytania</h2>
+  <h3>Czy slicer sam „poprawi” STL na STEP?</h3>
+  <p>Nie. Mesh nigdy nie odzyska analitycznej postaci bryły — można tylko dopasować powierzchnie z przybliżeniem. Dlatego trzymaj źródło w CAD, a do druku eksportuj mesh z ustawioną chordal.</p>
+  <h3>Jaki format przyjmujecie na zamówienie?</h3>
+  <p>STL, 3MF, OBJ i STEP. STEP i 3MF są dla nas korzystniejsze, bo niosą jednostki i zamiar montażu, przez co pierwszy wydruk rzadziej wymaga poprawek.</p>
+  <h3>3MF to nie jest format „zamknięty” dla Bambu?</h3>
+  <p>Sam kontener 3MF to standard otwarty, certyfikowany przez 3MF Consortium. Metadane slicerów bywają prywatne (profile bambu), ale rdzeń pliku otworzysz w dowolnym współczesnym slicerze.</p>
+  <h3>Ile waży „za dużo” trójkątów?</h3>
+  <p>Gdy slicer zawiesza się na imporcie albo drukarnia sieciowa odmawia pliku powyżej 50 MB — to znak, że eksport poszedł z chordal 0,001 mm „na wszelki wypadek”. Zredukuj do 0,02 i zaoszczędź nerwów wszystkim w łańcuchu.</p>
+
+  <div class="box cta">
+    <h3>Masz plik i nie wiesz, co z niego wyjdzie?</h3>
+    <p>Wrzuć go na hosting, zobacz podgląd, skonwertuj do STEP albo zamów wydruk z weryfikacją geometrii.</p>
+    <a class="btn" href="/drukuje">Wyślij plik do wyceny</a>
+  </div>
+
+  <div class="related">
+    <h3>← Przeczytaj też</h3>
+    <div class="rel-grid">
+      <a class="rel" href="/blog/kalibracja-flow-pressure-advance.html"><img src="/asset/blog/cover-kalibracja-flow-pressure-advance.svg" alt=""><div class="b"><strong>Kalibracja flow i Pressure Advance</strong></div></a>
+      <a class="rel" href="/blog/anizotropia-warstw-fdm.html"><img src="/asset/blog/cover-anizotropia-warstw-fdm.svg" alt=""><div class="b"><strong>Anizotropia warstw FDM</strong></div></a>
+      <a class="rel" href="/blog/jak-przygotowac-plik-do-druku-3d.html"><img src="/asset/blog/prototype.jpg" alt=""><div class="b"><strong>Jak przygotować plik</strong></div></a>
+    </div>
+  </div>
+
+</div>
+<footer>© 2026 3DFILE.link — <a href="/drukuje">druk 3D na życzenie</a> · <a href="/blog.html">Blog</a> · <a href="/kontakt">Kontakt</a> · <a href="/prywatnosc.html">Prywatność</a></footer>
+<script>document.addEventListener('click',function(ev){var nl=document.querySelector('.nav-links');if(nl&&nl.classList.contains('open')&&ev.target.closest('.nav-links a')){nl.classList.remove('open');}});</script>
+</body>
+</html>

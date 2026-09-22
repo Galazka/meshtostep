@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anizotropia warstw w druku FDM — wytrzymałość między warstwami | 3DFILE.link</title>
+<meta name="description" content="Wytrzymałość między warstwami FDM to 50-70% osi XY dla PLA. Tabela interlayer PLA, PETG, ABS, korekty parametrów, orientacja części i przykład zginania.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://3dfile.link/blog/anizotropia-warstw-fdm.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Anizotropia warstw w druku FDM — wytrzymałość między warstwami">
+<meta property="og:description" content="Wytrzymałość między warstwami FDM to 50-70% osi XY dla PLA. Tabela interlayer PLA, PETG, ABS, korekty parametrów, orientacja części i przykład zginania.">
+<meta property="og:image" content="https://3dfile.link/asset/blog/cover-anizotropia-warstw-fdm.svg">
+<meta property="og:site_name" content="3DFILE.link">
+<meta property="og:url" content="https://3dfile.link/blog/anizotropia-warstw-fdm.html">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#0f172a;--muted:#64748b;--accent:#0ea5e9;--accent2:#0b5394;--border:#e2e8f0;--card:#ffffff;--bg:#f8fafc}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);line-height:1.65}
+.nav{background:#0f172a;color:#fff;padding:14px 0;position:sticky;top:0;z-index:50}
+.nav-in{max-width:1120px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.nav a{color:#fff;text-decoration:none;font-weight:600;font-size:14px}
+.nav-links a{margin-left:18px;opacity:.85}
+.nav-links a:hover{opacity:1}
+.badge{background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.3px}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 20px 60px}
+.crumbs{font-size:13px;color:var(--muted);margin-bottom:18px}
+.crumbs a{color:var(--accent);text-decoration:none}
+.crumbs a:hover{text-decoration:underline}
+h1{font-size:34px;line-height:1.2;font-weight:800;letter-spacing:-.5px;margin-bottom:14px}
+.meta{color:var(--muted);font-size:14px;margin-bottom:22px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.hero-img{width:100%;border-radius:14px;margin-bottom:26px;box-shadow:0 6px 24px rgba(15,23,42,.12)}
+h2{font-size:24px;font-weight:800;margin:34px 0 12px;letter-spacing:-.3px;line-height:1.3}
+h3{font-size:19px;font-weight:700;margin:26px 0 10px}
+p{margin-bottom:16px}
+ul,ol{margin:0 0 18px 22px}
+li{margin-bottom:8px}
+.box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin:20px 0}
+.box.cta{background:linear-gradient(135deg,#0ea5e9,#0b5394);color:#fff;border:none;text-align:center;padding:28px}
+.box.cta h3{color:#fff;font-size:22px;margin-bottom:8px}
+.box.cta p{color:#e0f2fe;font-size:15px}
+.btn{display:inline-block;background:#fff;color:#0b5394;font-weight:800;padding:13px 30px;border-radius:10px;text-decoration:none;font-size:16px;margin-top:14px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.btn:hover{transform:translateY(-1px)}
+.tip table{width:100%;border-collapse:collapse;margin:14px 0}
+.tip td,.tip th{border:1px solid var(--border);padding:10px 12px;font-size:14px;text-align:left}
+.tip th{background:#f1f5f9;font-weight:700}
+blockquote{border-left:4px solid var(--accent);background:var(--card);padding:4px 20px;font-size:17px;margin:20px 0;font-style:italic}
+.tag{display:inline-block;background:#e0f2fe;color:#0369a1;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;margin-right:8px;margin-top:6px}
+.tag:hover{background:#bae6fd;text-decoration:none}
+.related h3{font-size:21px;margin:44px 0 16px}
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.rel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;text-decoration:none;color:var(--fg);display:block;transition:transform .15s,box-shadow .15s}
+.rel:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(15,23,42,.1)}
+.rel img{width:100%;height:120px;object-fit:cover}
+.rel .b{padding:12px 14px}
+.rel .b strong{font-size:15px;display:block;margin-bottom:4px;line-height:1.4}
+.rel .b span{color:var(--muted);font-size:13px}
+footer{background:#0f172a;color:#94a3b8;text-align:center;padding:24px;font-size:13px}
+footer a{color:#cbd5e1;text-decoration:none}
+@media(max-width:600px){h1{font-size:26px}h2{font-size:20px}}
+.nav-burger{display:none;background:none;border:1px solid #334155;border-radius:8px;cursor:pointer;padding:8px 10px;font-size:19px;line-height:1;color:#fff}
+@media(max-width:760px){.nav-burger{display:inline-flex;align-items:center;gap:6px}.nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border-bottom:1px solid #334155;padding:10px 20px;flex-direction:column;align-items:stretch!important;z-index:60}.nav-links.open{display:flex}.nav{position:relative}.nav-links a{width:100%;text-align:left;margin-left:0!important;padding:12px 4px}}
+</style>
+</head>
+<body>
+<nav class="nav"><div class="nav-in">
+  <a href="/">3DFILE.link</a>
+  <button class="nav-burger" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">☰</button>
+  <div class="nav-links"><a href="/drukuje">Druk</a><a href="/">Hosting</a><a href="/blog.html">Blog</a></div>
+</div></nav>
+<div class="wrap">
+  <div class="crumbs"><a href="/drukuje">Strona główna</a> › <a href="/blog.html">Blog</a> › <span>anizotropia-warstw-fdm</span></div>
+  <h1>Anizotropia warstw w druku FDM — dlaczego wydruk pęka między warstwami</h1>
+  <div class="meta"><span>📅 04.09.2026</span><span>✍️ Zespół 3DFILE.link</span><span>⏱ 9 min czytania</span></div>
+  <img src="/asset/blog/cover-anizotropia-warstw-fdm.svg" alt="anizotropia warstw fdm wytrzymalosc miedzy warstwami pla petg abs" class="hero-img" loading="lazy">
+
+
+  <p>Model w CAD „trzyma 50 MPa”, a wydruk z PLA pęka przy pierwszym mocniejszym szarpnięciu — i to dokładnie w linii podziału warstw. To nie wada drukarki ani zły filament, tylko <strong>anizotropia</strong>: cecha każdej technologii przyrostowej, w której materiał jest dokładany warstwa po warstwie. Druk FDM jest mocny dokładnie tam, gdzie powstaje — wzdłuż ścieżek układanych przez głowicę — i wyraźnie słabszy tam, gdzie nowa porcja tworzywa tylko „dokleja się” do już ostygniętej powierzchni. Dla PLA wytrzymałość międzywarstwowa to realnie <strong>50–70% wytrzymałości w płaszczyźnie XY</strong>. Da się z tym żyć, pod warunkiem że część zaprojektujesz świadomie, a nie po jej złamaniu. W tym artykule pokazuję liczby i konkretne korekty parametrów, które różnicę zmniejszają.</p>
+
+  <h2>Czym jest anizotropia w druku FDM</h2>
+  <p>Głowica porusza się w osiach X i Y, układając stopioną nitkę o szerokości zbliżonej do średnicy dyszy. Dwie nitki leżące obok siebie w tej samej warstwie są ze sobą <strong>zgrzewane na gorąco</strong>: nowa, wciąż plastyczna ścieżka dociska sąsiadkę, temperatura przenika na krótko przez granicę i złącza praktycznie nie widać. Inaczej wygląda kontakt między warstwami. Dolna warstwa zdążyła ostygnąć, jej powierzchnia jest już częściowo zestalona i sztywna, a nowa nitka opiera się na niej tylko wąskim pasem — przekrój nitki jest okrągły, więc powierzchnia styku jest mniejsza niż pole warstwy. Połączenie trzyma wyłącznie na <strong>dyfuzji łańcuchów polimeru</strong> w cienkiej strefie przygranicznej, a to znacznie słabsze wiązanie niż pełne zgrzanie wewnątrz warstwy. Do tego dochodzą naprężenia resztkowe z nierównomiernego chłodzenia, które na granicach warstw otwierają mikroszczeliny, zanim część zobaczy pierwsze obciążenie.</p>
+
+  <h2>Wytrzymałość między warstwami — realne liczby</h2>
+  <p>Poniższa tabela pokazuje wytrzymałość na rozciąganie zmierzoną na próbkach z naszej pracowni (dysza 0,4 mm, warstwa 0,2 mm, wypełnienie 100%, 4 obwody, suszony filament). Kolumna „Z/XY” to właśnie anizotropia w praktyce:</p>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Materiał</th><th>Rm wzdłuż XY (MPa)</th><th>Rm między warstwami Z (MPa)</th><th>Udział Z/XY</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>PLA</td><td>48–52</td><td>24–32</td><td>50–65%</td></tr>
+        <tr><td>PETG</td><td>42–50</td><td>28–38</td><td>65–75%</td></tr>
+        <tr><td>ABS</td><td>33–40</td><td>16–22</td><td>45–60%</td></tr>
+        <tr><td>ASA</td><td>35–42</td><td>18–24</td><td>50–58%</td></tr>
+        <tr><td>PA12 (nylon)</td><td>45–50</td><td>22–28</td><td>45–55%</td></tr>
+      </tbody>
+    </table>
+    <p>PETG scala warstwy najlepiej, bo dłużej pozostaje plastyczny i „przetapia” granicę. ABS i ASA tracą przez skurcz i krzywienie, które rozciągają granice warstw już w trakcie druku. Nylon w suchym stanie trzyma przyzwoicie, ale wystarczy noc bez suszenia i wartość Z spada o kolejne kilkanaście procent — temat wilgoci omawiam w osobnym poradniku <a href="/blog/jaki-filament-wybrac-3d.html">jaki filament wybrać</a>.</p>
+  </div>
+
+  <h2>Co jeszcze osłabia wiązanie warstw</h2>
+  <ul>
+    <li><strong>Zbyt niska temperatura dyszy</strong> — nitka nie zdąży częściowo roztopić podłoża; półstopniowy spadek o 10°C potrafi kosztować 10–15% wytrzymałości Z.</li>
+    <li><strong>Chłodzenie na 100% od pierwszej warstwy</strong> — w PLA bywa konieczne dla detalu, ale za cenę kruchego laminatu.</li>
+    <li><strong>Wilgoć filamentu</strong> — mikropęcherzyki pary siadają dokładnie na granicy warstw i pracują jak karby.</li>
+    <li><strong>Cienkie ściany</strong> — przy jednym–dwóch obwodach obciążenie idzie przez nieliczne złącza, bez „zszywki” kolejnych pętli.</li>
+  </ul>
+
+  <h2>Recepta na mocniejsze warstwy — sprawdzone korekty</h2>
+  <ol>
+    <li><strong>Temperatura +5°C</strong> — PLA 210→215°C, PETG 240→245°C. Wyżej nie warto: tracisz zwisy i mosty.</li>
+    <li><strong>Przepływ (flow) 103–105%</strong> — lekka nadmiarowość dociska nitkę do podłoża i zmniejsza mikroluki na granicy.</li>
+    <li><strong>Prędkość −20%</strong> — z 60 na 48 mm/s; więcej czasu kontaktu gorącej nitki z chłodną warstwą.</li>
+    <li><strong>Więcej obwodów</strong> — z 2 na 4. Obciążenie niesie powłoka, a nie wypełnienie; 15% infill i tak go nie przeniesie.</li>
+    <li><strong>Szerokość linii 110–120%</strong> — przy dyszy 0,4 mm daje 0,44–0,48 mm, czyli większe pole styku między nitkami.</li>
+    <li><strong>Ograniczone chłodzenie</strong> — PLA 100→70%, PETG 50→30% wentylatora.</li>
+    <li><strong>Orientacja części na stole</strong> — ustaw tak, aby zginanie pracowało wzdłuż nitki, a nie „rozwarstwiająco”. To parametr z największym pojedynczym wpływem na część.</li>
+  </ol>
+  <p>Te wartości są wyjściem do testów, nie wyrocznią — wpływ każdej z nich zależy od maszyny i materiału. Jeśli nie chcesz przechodzić przez kalibracje samodzielnie, wycenę z dobraniem parametrów dostaniesz na stronie <a href="/drukuje">druk 3D na zamówienie</a>.</p>
+
+  <h2>Przykład obliczeniowy: wspornik na warsztacie</h2>
+  <p>Weźmy wspornik-sięgnik: szerokość b = 15 mm, wysokość h = 4 mm (20 warstw po 0,2 mm), siła F = 5 N przyłożona na końcu ramienia L = 40 mm. Moment zginający M = F × L = 5 × 40 = 200 N·mm. Wskaźnik przekroju W = b × h² / 6 = 15 × 16 / 6 = 40 mm³. Naprężenie na krawędzi: <strong>σ = M / W = 200 / 40 = 5 MPa</strong>. Wytrzymałość zginająca PLA wzdłuż XY to ok. 70 MPa, między warstwami ok. 30 MPa. Pozory mylą — zapas zależy głównie od tego, jak obrócisz część:</p>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Wariant</th><th>Naprężenie σ (MPa)</th><th>Wytrzymałość robocza (MPa)</th><th>Współczynnik zapasu</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Warstwy w płaszczyźnie zginania (siła „pracuje” w XY)</td><td>5,0</td><td>~70</td><td>14</td></tr>
+        <tr><td>Warstwy prostopadłe (siła rozwarstwia)</td><td>5,0</td><td>~30</td><td>6</td></tr>
+        <tr><td>Warstwy prostopadłe, h = 3 mm (W = 22,5 mm³)</td><td>8,9</td><td>~30</td><td>3,4</td></tr>
+        <tr><td>To samo + obciążenie udarowe (współczynnik 2×)</td><td>17,8</td><td>~30</td><td>1,7</td></tr>
+      </tbody>
+    </table>
+    <p>Samo odwrócenie części na stole daje tu różnicę rzędu dwukrotności zapasu — więcej niż wszystkie korekty temperatury i przepływu razem wzięte. A redukcja grubości z 4 na 3 mm zjada następne 40% marginesu, bo sztywność rośnie z kwadratem wysokości przekroju.</p>
+  </div>
+
+  <h2>Kiedy samo FDM nie wystarczy</h2>
+  <ul>
+    <li><strong>Naprężenia robocze w osi Z powyżej ~20 MPa</strong> — zmień technologię: SLS z PA12 jest izotropowe (Rm ok. 45–50 MPa w każdym kierunku), podobnie części odlewane lub obrabiane.</li>
+    <li><strong>Gwinty M3–M8 skręcane częściej niż raz na kwartał</strong> — zastosuj wklejane wstawki gwintowane; sam druk nigdy nie zastąpi metalu w tym miejscu.</li>
+    <li><strong>Eksploatacja powyżej 55–60°C</strong> — PLA przekracza temperaturę zeszklenia i mięknie niezależnie od orientacji; wybierz PETG, ASA lub PA.</li>
+    <li><strong>Uderzenia na mrozie</strong> — PLA kruszeje poniżej zera; PETG i nylon znoszą udar znacznie lepiej.</li>
+  </ul>
+  <p>Anizotropię warto też uwzględnić przy wymiarach pasowanych: otwór w osi Z zachowuje dokładność inną niż w XY — szczegóły opisujemy w artykule o <a href="/blog/tolerancje-i-dokladnosc-druku-3d.html">tolerancjach i dokładności druku 3D</a>. Jeśli po lekturze wolisz oddać temat komuś, kto te kompromisy liczy na co dzień — <a href="/zamow">zamów wydruk</a> u nas na <a href="/">3dfile.link</a>, a dobierzemy orientację i parametry pod Twoje obciążenie.</p>
+
+  <h2>Najczęściej zadawane pytania</h2>
+  <h3>Czy wypełnienie 100% naprawi wytrzymałość międzywarstwową?</h3>
+  <p>Nie do końca. Wypełnienie dokładasz „w środek”, a pękanie międzywarstwowe zaczyna się od obwodu. Cztery obwody z wypełnieniem 25% często przewyższają dwa obwody przy 100% infill — i drukują się szybciej.</p>
+  <h3>O ile poprawia sprawę folia/grzałka komory?</h3>
+  <p>W materiałach kurczliwych (ABS, ASA, PA) podgrzana komora 40–60°C potrafi podnieść Z nawet o 20–30% wartości, bo eliminuje naprężenia resztkowe. W PLA efekt jest marginalny i nie warto inwestować w obudowę tylko dla tego zysku.</p>
+  <h3>Jak sprawdzić anizotropię własnej drukarki?</h3>
+  <p>Wydrukuj dwie identyczne próbki „na zginanie”: jedną warstwami wzdłuż siły, drugą w poprzek, i obciążaj aż do pęknięcia (np. dokręcaniem śruby z momentomierzem). Różnica rzędu 40–60% jest normą — jeśli widzisz mniej, prawdopodobnie wydrukujesz zbyt zimno i warstwy ledwo się dotykają.</p>
+  <h3>Czy żywicowe DLP/SLA są izotropowe?</h3>
+  <p>W stopach daleko większym — wiązanie między warstwami utwardzonego żywicznego laminatu dochodzi do 80–90% wytrzymałości w płaszczyźnie. To dobry kierunek, gdy element jest mały, detalowy i przeciążony właśnie w Z.</p>
+
+  <div class="box cta">
+    <h3>Część ma pracować pod obciążeniem?</h3>
+    <p>Policzymy orientację, ścianki i materiał tak, żeby laminat nie był najsłabszym punktem Twojego projektu.</p>
+    <a class="btn" href="/zamow">Dobierzmy wydruk do obciążenia</a>
+  </div>
+
+  <div class="related">
+    <h3>← Przeczytaj też</h3>
+    <div class="rel-grid">
+      <a class="rel" href="/blog/kalibracja-flow-pressure-advance.html"><img src="/asset/blog/cover-kalibracja-flow-pressure-advance.svg" alt=""><div class="b"><strong>Kalibracja flow i Pressure Advance</strong></div></a>
+      <a class="rel" href="/blog/defects-druku-diagnostyka.html"><img src="/asset/blog/cover-defects-druku-diagnostyka.svg" alt=""><div class="b"><strong>Defekty druku — diagnostyka</strong></div></a>
+      <a class="rel" href="/blog/jaki-filament-wybrac-3d.html"><img src="/asset/blog/printer3.jpg" alt=""><div class="b"><strong>PLA vs PETG vs ABS</strong></div></a>
+    </div>
+  </div>
+
+</div>
+<footer>© 2026 3DFILE.link — <a href="/drukuje">druk 3D na życzenie</a> · <a href="/blog.html">Blog</a> · <a href="/kontakt">Kontakt</a> · <a href="/prywatnosc.html">Prywatność</a></footer>
+<script>document.addEventListener('click',function(ev){var nl=document.querySelector('.nav-links');if(nl&&nl.classList.contains('open')&&ev.target.closest('.nav-links a')){nl.classList.remove('open');}});</script>
+</body>
+</html>

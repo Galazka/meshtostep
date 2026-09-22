@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pierwsza warstwa — kalibracja Z-offset, temperatura i przyczepność | 3DFILE.link</title>
+<meta name="description" content="Kalibracja pierwszej warstwy w druku 3D FDM: test kartką i live-Z, tabela temperatur na pierwszą warstwę dla PLA, PETG, ABS, TPU, PA, słoniowa stopa, błędy przyczepności i przepływ 100–105%. Poradnik.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://3dfile.link/blog/pierwsza-warstwa-kalibracja.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Pierwsza warstwa — kalibracja Z-offset, temperatura i przyczepność">
+<meta property="og:description" content="Test kartką i live-Z, temperatury pierwszej warstwy na stół i dyszę per materiał, słoniowa stopa, adhezja, przepływ 100–105%. Kompletna kalibracja FDM.">
+<meta property="og:image" content="https://3dfile.link/asset/blog/cover-pierwsza-warstwa-kalibracja.svg">
+<meta property="og:site_name" content="3DFILE.link">
+<meta property="og:url" content="https://3dfile.link/blog/pierwsza-warstwa-kalibracja.html">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#0f172a;--muted:#64748b;--accent:#0ea5e9;--accent2:#0b5394;--border:#e2e8f0;--card:#ffffff;--bg:#f8fafc}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);line-height:1.65}
+.nav{background:#0f172a;color:#fff;padding:14px 0;position:sticky;top:0;z-index:50}
+.nav-in{max-width:1120px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.nav a{color:#fff;text-decoration:none;font-weight:600;font-size:14px}
+.nav-links a{margin-left:18px;opacity:.85}
+.nav-links a:hover{opacity:1}
+.badge{background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.3px}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 20px 60px}
+.crumbs{font-size:13px;color:var(--muted);margin-bottom:18px}
+.crumbs a{color:var(--accent);text-decoration:none}
+.crumbs a:hover{text-decoration:underline}
+h1{font-size:34px;line-height:1.2;font-weight:800;letter-spacing:-.5px;margin-bottom:14px}
+.meta{color:var(--muted);font-size:14px;margin-bottom:22px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.hero-img{width:100%;border-radius:14px;margin-bottom:26px;box-shadow:0 6px 24px rgba(15,23,42,.12)}
+h2{font-size:24px;font-weight:800;margin:34px 0 12px;letter-spacing:-.3px;line-height:1.3}
+h3{font-size:19px;font-weight:700;margin:26px 0 10px}
+p{margin-bottom:16px}
+ul,ol{margin:0 0 18px 22px}
+li{margin-bottom:8px}
+.box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin:20px 0}
+.box.cta{background:linear-gradient(135deg,#0ea5e9,#0b5394);color:#fff;border:none;text-align:center;padding:28px}
+.box.cta h3{color:#fff;font-size:22px;margin-bottom:8px}
+.box.cta p{color:#e0f2fe;font-size:15px}
+.btn{display:inline-block;background:#fff;color:#0b5394;font-weight:800;padding:13px 30px;border-radius:10px;text-decoration:none;font-size:16px;margin-top:14px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.btn:hover{transform:translateY(-1px)}
+.tip table{width:100%;border-collapse:collapse;margin:14px 0}
+.tip td,.tip th{border:1px solid var(--border);padding:10px 12px;font-size:14px;text-align:left}
+.tip th{background:#f1f5f9;font-weight:700}
+blockquote{border-left:4px solid var(--accent);background:var(--card);padding:4px 20px;font-size:17px;margin:20px 0;font-style:italic}
+.tag{display:inline-block;background:#e0f2fe;color:#0369a1;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;margin-right:8px;margin-top:6px}
+.tag:hover{background:#bae6fd;text-decoration:none}
+.related h3{font-size:21px;margin:44px 0 16px}
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.rel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;text-decoration:none;color:var(--fg);display:block;transition:transform .15s,box-shadow .15s}
+.rel:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(15,23,42,.1)}
+.rel img{width:100%;height:120px;object-fit:cover}
+.rel .b{padding:12px 14px}
+.rel .b strong{font-size:15px;display:block;margin-bottom:4px;line-height:1.4}
+.rel .b span{color:var(--muted);font-size:13px}
+footer{background:#0f172a;color:#94a3b8;text-align:center;padding:24px;font-size:13px}
+footer a{color:#cbd5e1;text-decoration:none}
+@media(max-width:600px){h1{font-size:26px}h2{font-size:20px}}
+.nav-burger{display:none;background:none;border:1px solid #334155;border-radius:8px;cursor:pointer;padding:8px 10px;font-size:19px;line-height:1;color:#fff}
+@media(max-width:760px){.nav-burger{display:inline-flex;align-items:center;gap:6px}.nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border-bottom:1px solid #334155;padding:10px 20px;flex-direction:column;align-items:stretch!important;z-index:60}.nav-links.open{display:flex}.nav{position:relative}.nav-links a{width:100%;text-align:left;margin-left:0!important;padding:12px 4px}}
+</style>
+</head>
+<body>
+<nav class="nav"><div class="nav-in">
+  <a href="/">3DFILE.link</a>
+  <button class="nav-burger" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">☰</button>
+  <div class="nav-links"><a href="/drukuje">Druk</a><a href="/">Hosting</a><a href="/blog.html">Blog</a></div>
+</div></nav>
+<div class="wrap">
+  <div class="crumbs"><a href="/drukuje">Strona główna</a> › <a href="/blog.html">Blog</a> › <span>pierwsza-warstwa-kalibracja</span></div>
+  <h1>Pierwsza warstwa — kalibracja Z-offset, temperatura i przyczepność</h1>
+  <div class="meta"><span>26.09.2026</span><span>Zespół 3DFILE.link</span><span>8 min czytania</span></div>
+  <img src="/asset/blog/cover-pierwsza-warstwa-kalibracja.svg" alt="pierwsza warstwa kalibracja z-offset druk 3d fdm" class="hero-img" loading="lazy">
+
+  <p>90% „tajemniczych” problemów z drukiem FDM zaczyna się na pierwszej warstwie. Jeśli nie przykleiła się porządnie, reszta wydruku jest kwestią czasu — odpadnie w drugiej godzinie albo zacznie się rozwarstwiać przy byle dotyku. Dobra pierwsza warstwa to dokładnie trzy ustawienia: <strong>odległość dyszy od stołu (Z-offset), temperatura i prędkość tej jednej warstwy</strong> oraz <strong>przepływ</strong>. W tym poradniku pokazuję, jak ustawić każdy z tych parametrów — testem kartką, na żywo (live-Z) i tabelą temperatur per materiał — bo wartości „z internetu” rzadko pasują do Twojej konkretnej drukarki i filamentu.</p>
+
+  <h2>Z-offset testem kartką</h2>
+  <p>Klasyczna metoda nadal działa najlepiej, o ile wykonasz ją na gorąco: rozgrzej dyszę do temperatury roboczej materiału i stół do temperatury druku (PLA: 210 i 60°C), zhomuj oś Z, podłóż kartkę A4 o grubości ok. 0,1 mm. Przesuwaj kartkę pod dyszą w czterech rogach i na środku stołu. <strong>Szukasz momentu, w którym papier stawia wyraźny, ale jednostajny opór</strong> — lekko „tarmosi się”, nie zatrzymuje, nie śmiga luźno. Ustaw offset w kroku 0,01–0,02 mm i powtarzaj, aż opór będzie identyczny w każdym punkcie. Najpierw jednak musi być poziomowanie XY-stołu (auto-tramwanie albo ręczne pod śrubami) — Z-offset koryguje odległość globalną, nie nierówności rzędu 0,2 mm między rogami; jeśli drukarka ich nie widzi przez czujnik, kartka je pokaże.</p>
+  <p>Drukarki z sondą (Bambu A1/P1S, Prusa MK4 z LOAD_CELL, maszyny na Klipperze z CR Touch) robią mapowanie stołu same. Ich Z-offset to jedna, globalna wartość — ustawiasz ją raz przy składaniu i przy zmianie folii na PEI. Po każdej wymianie dyszy lub grzałki sprawdzaj go ponownie: nowa dysza bywa osadzona o 0,1–0,3 mm wyżej albo niżej.</p>
+
+  <h2>Live-Z — korekta w trakcie druku</h2>
+  <p>Najszybsza droga do optymalnej pierwszej warstwy: drukuj test (kwadrat 40×40 mm, 3–4 warstwy) i <strong>koryguj offset „na żywo”</strong>, patrząc na to, co wychodzi spod dyszy. W Prusie MK4 i MK3 służy do tego pozycja „Live adjust Z” w menu pierwszego warstwowania, w Bambu Studio/pamięci drukarki A1 — suwak Z offset w panelu prędkości/ustawień podczas drukowania, w Klipperze/Mainsail komenda <code>SET_GCODE_OFFSET Z_ADJUST=0.02 MOVE=1</code> przypisana do przycisków lub joysticka. Ruch jest zawsze ten sam: schodzisz w dół po 0,02 mm, aż linie przestaną być osobne i zaczną się lekko spłaszczać — i cofasz o jedno kliknięcie.</p>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Objaw na pierwszej warstwie</th><th>Diagnoza</th><th>Korekta</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Linie osobne, owalne w przekroju, dają się zebrać szpachlą jednym pociągnięciem</td><td>Z za wysoko — brak squishu, brak wiązania ze stołem</td><td>Obniż o 0,05–0,10 mm; sprawdź poziomowanie</td></tr>
+        <tr><td>Linie płaskie, stykają się ze sobą bez szczelin, wierzch lekko błyszczący</td><td>Wzorcowa pierwsza warstwa</td><td>Zostaw, zapisz offset dla filamentu</td></tr>
+        <tr><td>Przezroczysta, „zglodzona” warstwa, krawędzie szarpane, dysza brzęczy i zostawia zadziory</td><td>Z za nisko — za duży nacisk</td><td>Podnieś o 0,04–0,08 mm</td></tr>
+        <tr><td>Dysza zsuwa już położone linie („fala” za przejazdem)</td><td>Z za nisko + za szybko</td><td>Podnieś i zwolnij do 20 mm/s</td></tr>
+        <tr><td>Nici i kłęby na wierzchu pierwszej warstwy</td><td>Za zimna dysza lub za wysoki Z, słabe topliwe wiązanie</td><td>+5°C i korekta Z w dół</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Temperatura i prędkość pierwszej warstwy per materiał</h2>
+  <p>Pierwsza warstwa lubi być cieplejsza i wolniejsza niż reszta wydruku: gorętszy plastik lepiej zwilża stół (zwłaszcza teksturowane PEI, gdzie „wgryza się” w dolinki), a prędkość <strong>20–30 mm/s</strong> daje mu czas na przyklejenie. Standardowy zestaw startowy, którego używamy w <a href="/drukuje">naszej pracowni</a>:</p>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Materiał</th><th>Dysza — 1. warstwa</th><th>Stół — 1. warstwa</th><th>Prędkość</th><th>Uwagi</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>PLA</td><td>210–215°C</td><td>55–60°C</td><td>20–25 mm/s</td><td>Najłatwiejszy; na gładkim PEI warstwa wychodzi lustrzana</td></tr>
+        <tr><td>PETG</td><td>230–240°C</td><td>75–80°C</td><td>20–25 mm/s</td><td>Kleje za mocno — podkład klejowy jako warstwa rozdzielcza</td></tr>
+        <tr><td>ABS / ASA</td><td>240–250°C</td><td>95–105°C</td><td>25–30 mm/s</td><td>Osłona przeciwwiąsowa, zero przeciągu; klej ABS-owy/PEI</td></tr>
+        <tr><td>TPU 95A</td><td>220–230°C</td><td>45–55°C</td><td>15–20 mm/s</td><td>Wolniej i bez retrakcji; suchy filament obowiązkowy</td></tr>
+        <tr><td>PA12 / nylon</td><td>260–280°C</td><td>80–90°C</td><td>25–30 mm/s</td><td>Suszenie 4–6 h, klej PVA/„nylon glue”</td></tr>
+        <tr><td>PC</td><td>270–290°C</td><td>105–110°C</td><td>25–30 mm/s</td><td>Najwyższe wymagania termiczne komory</td></tr>
+      </tbody>
+    </table>
+    <p>Te same wartości z tabeli to punkty startowe — zawsze zweryfikuj z kartą producenta filamentu, bo modyfikaty („PLA+”, „High Speed”) mają przesunięte okna nawet o 20°C. Szczegóły doboru materiału opisywaliśmy we wpisie <a href="/blog/jaki-filament-wybrac-3d.html">jaki filament wybrać</a>.</p>
+  </div>
+
+  <h2>Przepływ pierwszej warstwy: 100% i ewentualnie 105</h2>
+  <p>Pierwsza warstwa ustawia odniesienie dla całego wydruku, więc zaczynaj od <strong>przepływu 100%</strong> i koryguj wyłącznie po wyglądzie: linie mają się stykać krawędziami, tworząc jednolitą taflę — bez szczelin (za mało materiału) i bez wałków na granicach linii (za dużo). Jeśli mimo prawidłowego Z szczeliny zostają, podnieś przepływ pierwszej warstwy do <strong>102–105%</strong> (w Orca/Bambu Studio: „First layer flow ratio”, w PrusaSlicer „First layer flow rate”, w Cura przez szerszą pierwszą warstwę). Uwaga: więcej niż 105% to prawie zawsze objaw innej usterki — zużytej lub brudnej dyszy, mokrego filamentu, buksującego ekstrudera — a nie „kalibracja”.</p>
+
+  <h2>Słoniowa stopa i błędy przyczepności</h2>
+  <p><strong>Słoniowa stopa (elephant foot)</strong> to wybrzuszenie obrysu pierwszych 1–4 warstw: plastik pod naciskiem kolejnych warstw i od temperatury stołu „rozlewa się” na boki. Ilość: typowo 0,1–0,3 mm na stronę, w PLA przy stole 60°C ok. 0,1–0,15 mm, w PETG i ABS więcej. Kompensacja: w slicerze ustaw <strong>„Elephant foot compensation” / ujemne „initial layer horizontal expansion” na 0,1–0,2 mm</strong> dla PLA, 0,2–0,3 dla PETG/ABS, plus chłodniejsza pierwsza warstwa (stół −5°C) i mocny wentylator zaraz po niej. Jeśli element ma pasowanie po podstawie (obudowa wchodząca w wnękę), skompensuj to w CADzie parametrem, nie „na chłopski rozum” pilnikiem.</p>
+  <p><strong>Warstwa nie trzyma stołu?</strong> Idź po listę kontrolną w tej kolejności:</p>
+  <ol>
+    <li><strong>Tłusty stół.</strong> Najczęstsza przyczyna. PEI i szkło myj ciepłą wodą z płynem do naczyń, potem IPA; palce zostawiają warstwę, której nie widać.</li>
+    <li><strong>Za zimny stół lub za szybka pierwsza warstwa.</strong> Wróć do tabeli powyżej — to nie temperatura „drukowania”, tylko przyklejania.</li>
+    <li><strong>Brak squishu.</strong> Jeden obrót śruby albo 0,06 mm w live-Z dzieli wydruk od odpadnięcia po 30 minutach.</li>
+    <li><strong>Materiał kapryśny.</strong> PETG i TPU lubią podkład z kleju w sztyfcie (paradoksalnie — jako warstwę <em>rozdzielczą</em>), ABS/ASA — klej ABS-owy (aceton + ścinki), nylon — dedykowany „glue stick” PVA.</li>
+    <li><strong>Przeciąg.</strong> Otwarte okno przy ABS/PC schładza stół punktowo i unosi rogi — osłoń komorę albo przenieś drukarkę z przeciągu — z termiką się nie wygrywa.</li>
+  </ol>
+
+  <blockquote>
+    Zasada z pracowni: nigdy nie kalibruj pierwszej warstwy na pełnym wydruku za trzy godziny. Kwadrat 40×40 na trzy warstwy to pięć minut, a powie Ci o Z, temperaturze i przepływie wszystko, czego potrzebujesz.
+  </blockquote>
+
+  <h2>Najczęściej zadawane pytania</h2>
+  <h3>Co najpierw: poziomowanie stołu czy Z-offset?</h3>
+  <p>Zawsze najpierw geometria — stół równoległy do ruchu dyszy (tramowanie, kontrola luźnych popychaczy, napięcie pasków), potem Z-offset globalny, na końcu live-Z na teście. Próba „obejścia” nierównego stołu offsetem to najkrótsza droga do wydruku, który przykleił się w rogu i odpadł na środku.</p>
+  <h3>Czy live-Z może uszkodzić drukarkę?</h3>
+  <p>Nie — to wyłącznie przesunięcie punktu zero w softwarze. Ryzyko pojawia się przy ręcznym schodzeniu dyszy bez rozgrzanej ścianki: zimna dysza może ułamać kawałek stołu teksturowanego albo wygiąć PEI. Drobna zasada: Z obniżasz zawsze na gorąco.</p>
+  <h3>Dlaczego pierwsza warstwa odchodzi „prostokątnymi kawałkami”?</h3>
+  <p>To typowy ślad tłustego stołu albo zbyt zimnego pierwszego przejścia — plastik skurczył się punktowo. Mycie, +5°C do stołu, wolniej o 5 mm/s: w trzech czwartych przypadków problem znika.</p>
+  <h3>Używam auto-levelingu — czy muszę znać Z-offset?</h3>
+  <p>Tak. Sonda mapuje kształt stołu względem siebie, nie względem końcówki Twojej dyszy — a ta różni się przy każdej wymianie. Po zakupie dyszy, grzałki albo grubej warstwy resztek z podkładu warto wyzerować offset testem kartką.</p>
+
+  <div class="box cta">
+    <h3>Wolisz nie walczyć z pierwszą warstwą?</h3>
+    <p>Wyślemy Twoje modele na maszynie po pełnej kalibracji — z kontrolą pierwszej warstwy przed startem serii. Wycena online w kilka godzin.</p>
+    <a class="btn" href="/zamow">Zamów sprawdzony wydruk</a>
+  </div>
+
+  <div class="related">
+    <h3>← Przeczytaj też</h3>
+    <div class="rel-grid">
+      <a class="rel" href="/blog/retrakcja-druk-3d.html"><img src="/asset/blog/cover-retrakcja-druk-3d.svg" alt=""><div class="b"><strong>Retrakcja bez nici</strong><span>direct vs bowden, profile, test</span></div></a>
+      <a class="rel" href="/blog/tolerancje-i-dokladnosc-druku-3d.html"><img src="/asset/blog/printer3.jpg" alt=""><div class="b"><strong>Tolerancje i dokładność druku 3D</strong><span>skurcz, luz, pasowania</span></div></a>
+      <a class="rel" href="/blog/jak-przygotowac-plik-do-druku-3d.html"><img src="/asset/blog/prototype.jpg" alt=""><div class="b"><strong>Jak przygotować plik do druku</strong><span>CAD, mesh, 3MF</span></div></a>
+    </div>
+  </div>
+</div>
+<footer>© 2026 3DFILE.link — <a href="/drukuje">druk 3D na życzenie</a> · <a href="/blog.html">Blog</a> · <a href="/kontakt">Kontakt</a> · <a href="/prywatnosc.html">Prywatność</a></footer>
+<script>document.addEventListener('click',function(ev){var nl=document.querySelector('.nav-links');if(nl&&nl.classList.contains('open')&&ev.target.closest('.nav-links a')){nl.classList.remove('open');}});</script>
+</body>
+</html>

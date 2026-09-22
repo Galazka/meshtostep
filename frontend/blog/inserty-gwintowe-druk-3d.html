@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wkładki gwintowe w druku 3D — M2, M3, M4, M5 kompletny poradnik | 3DFILE.link</title>
+<meta name="description" content="Inserty wtapiane M2–M5 w wydrukach FDM: katalogowe średnice otworów, temperatury wtapiania (PLA 160–180, PETG 190–210, ABS 220–240°C), siły wyrwania i wypchnięcia, koszt vs gwint drukowany i wkręty samogwintujące.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://3dfile.link/blog/inserty-gwintowe-druk-3d.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Wkładki gwintowe w druku 3D — M2, M3, M4, M5 kompletny poradnik">
+<meta property="og:description" content="Inserty wtapiane M2–M5: średnice otworów z katalogu, temperatury wtapiania dla PLA/PETG/ABS, wytrzymałość, porównanie z gwintem samogwintującym i drukowanym. Poradnik.">
+<meta property="og:image" content="https://3dfile.link/asset/blog/cover-inserty-gwintowe-druk-3d.svg">
+<meta property="og:site_name" content="3DFILE.link">
+<meta property="og:url" content="https://3dfile.link/blog/inserty-gwintowe-druk-3d.html">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#0f172a;--muted:#64748b;--accent:#0ea5e9;--accent2:#0b5394;--border:#e2e8f0;--card:#ffffff;--bg:#f8fafc}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);line-height:1.65}
+.nav{background:#0f172a;color:#fff;padding:14px 0;position:sticky;top:0;z-index:50}
+.nav-in{max-width:1120px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.nav a{color:#fff;text-decoration:none;font-weight:600;font-size:14px}
+.nav-links a{margin-left:18px;opacity:.85}
+.nav-links a:hover{opacity:1}
+.badge{background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.3px}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 20px 60px}
+.crumbs{font-size:13px;color:var(--muted);margin-bottom:18px}
+.crumbs a{color:var(--accent);text-decoration:none}
+.crumbs a:hover{text-decoration:underline}
+h1{font-size:34px;line-height:1.2;font-weight:800;letter-spacing:-.5px;margin-bottom:14px}
+.meta{color:var(--muted);font-size:14px;margin-bottom:22px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.hero-img{width:100%;border-radius:14px;margin-bottom:26px;box-shadow:0 6px 24px rgba(15,23,42,.12)}
+h2{font-size:24px;font-weight:800;margin:34px 0 12px;letter-spacing:-.3px;line-height:1.3}
+h3{font-size:19px;font-weight:700;margin:26px 0 10px}
+p{margin-bottom:16px}
+ul,ol{margin:0 0 18px 22px}
+li{margin-bottom:8px}
+.box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin:20px 0}
+.box.cta{background:linear-gradient(135deg,#0ea5e9,#0b5394);color:#fff;border:none;text-align:center;padding:28px}
+.box.cta h3{color:#fff;font-size:22px;margin-bottom:8px}
+.box.cta p{color:#e0f2fe;font-size:15px}
+.btn{display:inline-block;background:#fff;color:#0b5394;font-weight:800;padding:13px 30px;border-radius:10px;text-decoration:none;font-size:16px;margin-top:14px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.btn:hover{transform:translateY(-1px)}
+.tip table{width:100%;border-collapse:collapse;margin:14px 0}
+.tip td,.tip th{border:1px solid var(--border);padding:10px 12px;font-size:14px;text-align:left}
+.tip th{background:#f1f5f9;font-weight:700}
+blockquote{border-left:4px solid var(--accent);background:var(--card);padding:4px 20px;font-size:17px;margin:20px 0;font-style:italic}
+.tag{display:inline-block;background:#e0f2fe;color:#0369a1;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;margin-right:8px;margin-top:6px}
+.tag:hover{background:#bae6fd;text-decoration:none}
+.related h3{font-size:21px;margin:44px 0 16px}
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.rel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;text-decoration:none;color:var(--fg);display:block;transition:transform .15s,box-shadow .15s}
+.rel:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(15,23,42,.1)}
+.rel img{width:100%;height:120px;object-fit:cover}
+.rel .b{padding:12px 14px}
+.rel .b strong{font-size:15px;display:block;margin-bottom:4px;line-height:1.4}
+.rel .b span{color:var(--muted);font-size:13px}
+footer{background:#0f172a;color:#94a3b8;text-align:center;padding:24px;font-size:13px}
+footer a{color:#cbd5e1;text-decoration:none}
+@media(max-width:600px){h1{font-size:26px}h2{font-size:20px}}
+.nav-burger{display:none;background:none;border:1px solid #334155;border-radius:8px;cursor:pointer;padding:8px 10px;font-size:19px;line-height:1;color:#fff}
+@media(max-width:760px){.nav-burger{display:inline-flex;align-items:center;gap:6px}.nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border-bottom:1px solid #334155;padding:10px 20px;flex-direction:column;align-items:stretch!important;z-index:60}.nav-links.open{display:flex}.nav{position:relative}.nav-links a{width:100%;text-align:left;margin-left:0!important;padding:12px 4px}}
+</style>
+</head>
+<body>
+<nav class="nav"><div class="nav-in">
+  <a href="/">3DFILE.link</a>
+  <button class="nav-burger" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">☰</button>
+  <div class="nav-links"><a href="/drukuje">Druk</a><a href="/">Hosting</a><a href="/blog.html">Blog</a></div>
+</div></nav>
+<div class="wrap">
+  <div class="crumbs"><a href="/drukuje">Strona główna</a> › <a href="/blog.html">Blog</a> › <span>inserty-gwintowe-druk-3d</span></div>
+  <h1>Wkładki gwintowe w druku 3D — M2, M3, M4, M5 kompletny poradnik</h1>
+  <div class="meta"><span>24.09.2026</span><span>Zespół 3DFILE.link</span><span>9 min czytania</span></div>
+  <img src="/asset/blog/cover-inserty-gwintowe-druk-3d.svg" alt="inserty gwintowe wkładki M2 M3 M4 M5 druk 3d" class="hero-img" loading="lazy">
+
+  <p>Śruba wkręcona bezpośrednio w PLA trzyma dobrze dokładnie przez pierwszy montaż. Przy drugim gwint jest już rozdeptany, przy trzecim śruba kręci się w luźnym stożku. To nie wina materiału, tylko fizyki: tworzywo sztuczne o strukturze warstwowej nie ma z czego „utrzymać” zwoju. Rozwiązanie znamy od dekad i nazywamy je <strong>wkładką gwintową</strong> — mosiężną tuleją z naciętym gwintem w środku i rolkowanym (karbowanym) wierzchem, która po wtopieniu staje się częścią części. W tym artykule: katalogowe średnice otworów dla M2–M5, realne temperatury wtapiania dla popularnych filamentów, wartości wytrzymałości i pułapki, przez które insert wyrwa się razem z „czopem” plastiku.</p>
+
+  <h2>Średnice otworów — wartości katalogowe</h2>
+  <p>Otwór pod insert wtapiany projektuje się <strong>dokładnie pod średnicę zewnętrzną tulei</strong>, z drobną korektą na skurcz materiału (o tym niżej). Poniżej zestawienie dla najpopularniejszych serii wsadów mosiężnych dostępnych w handlu (typy gładkie i karbowane, długości standardowe):</p>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Rozmiar insertu</th><th>Ø zewnętrzna tulei</th><th>Ø otworu w modelu — PLA</th><th>Ø otworu — PETG / ABS</th><th>Długość typowa</th><th>Głębokość gniazda (ślepy)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>M2 (np. 2×4)</td><td>3,1 mm</td><td>3,0–3,2 mm</td><td>3,1–3,3 mm</td><td>4,0 mm</td><td>min. 3,2 mm</td></tr>
+        <tr><td>M3 (np. 3×5)</td><td>4,0 mm</td><td>4,0–4,1 mm</td><td>4,0–4,2 mm</td><td>5,0–6,0 mm</td><td>min. 4,0 mm</td></tr>
+        <tr><td>M4 (np. 4×8)</td><td>5,6–6,0 mm</td><td>5,6–5,8 mm</td><td>5,8–6,1 mm</td><td>6,0–8,0 mm</td><td>min. 0,8 × długości</td></tr>
+        <tr><td>M5 (np. 5×10)</td><td>7,0–8,0 mm</td><td>7,0–7,5 mm</td><td>7,3–8,1 mm</td><td>8,0–10,0 mm</td><td>min. 0,8 × długości</td></tr>
+      </tbody>
+    </table>
+    <p>Wartości obejmują najczęściej spotykane serie (np. M4 karbowany o Ø 6,0 mm i „slim” o Ø 5,6 mm). <strong>Zawsze zmierz insert suwmiarką przed zaprojektowaniem otworu</strong> — części z różnych dostaw różnią się do 0,2 mm, a przy drukowanym otworze to różnica między pasowaniem na wcisk a luźnym gniazdem. W PLA otwór po druku wychodzi naturalnie o ok. 0,05–0,15 mm mniejszy niż w modelu, w PETG bywa odwrotnie przez „napęcznienie” ścianki.</p>
+  </div>
+  <p>Projekt otworu pod <a href="/blog/fuzja-360-pod-druk-3d.html">modelowanie w Fusion 360</a>: średnica katalogowa, ścięcie wejściowe 0,4–0,8 mm (lejek dla czoła insertu) i minimum 4 obwody pełnego materiału wokół gniazda — to ostatnie ważniejsze niż sama średnica, bo to obwody, nie wypełnienie, trzymają tuleję w części.</p>
+
+  <h2>Temperatury wtapiania według materiału</h2>
+  <p>Zasada jest jedna: grot lutownicy ma stopić <strong>ściankę gniazda, nie cały insert ani otoczenie</strong>. Za niska temperatura — plastik nie opłynie rolki tulei i trzymanie jest o połowę słabsze. Za wysoka — materiał wokół odpływa, insert tonie do kołnierza, a na powierzchni części pojawia się odbarwienie. Sprawdź, przy jakim temperamencie pracuje Twój filament — opisywaliśmy to w tekście <a href="/blog/jaki-filament-wybrac-3d.html">PLA vs PETG vs ABS</a>.</p>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Materiał części</th><th>Temperatura grota</th><th>Czas docisku</th><th>Studzenie</th><th>Uwagi praktyczne</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>PLA</td><td>160–180°C</td><td>2–4 s</td><td>wolne, pod dociskiem</td><td>Powyżej ~190°C żółknie i „płynie”; najłatwiejszy materiał do wtapiania.</td></tr>
+        <tr><td>PETG</td><td>190–210°C</td><td>3–5 s</td><td>pod dociskiem</td><td>Mięknie wyżej i mocniej ciągnie — prowadź insert prostopadle, nie ratuj skręcaniem.</td></tr>
+        <tr><td>ABS / ASA</td><td>220–240°C</td><td>3–5 s</td><td>wolne</td><td>Ryzyko skurczu i pęcherzy wokół gniazda; element warto wstępnie podgrzać do ~60°C.</td></tr>
+        <tr><td>PA / nylon</td><td>240–260°C</td><td>4–6 s</td><td>pod dociskiem</td><td>Wysoka temperatura topnienia; suszony filament obowiązkowo.</td></tr>
+      </tbody>
+    </table>
+    <p>Wtapiaj grotami dedykowanymi do insertów (walcowymi, z prowadnicą średnicy) albo zwykłym grotem stożkowym z największą starannością. Nigdy nie dogrzewaj „na oko” palnikiem ani hot-air — topi się wtedy całe otoczenie tulei.</p>
+  </div>
+
+  <h2>Ile to naprawdę trzyma — wyrwanie, wypchnięcie, cykle</h2>
+  <p>Poniżej wartości orientacyjne z testów społeczności makerów i naszych próbek warsztatowych: PLA, 4 obwody, otwór zgodny z katalogiem, insert wtopiony prostopadle. Realny rozrzut jest duży — licz ±30% i traktuj liczby jako porządek wielkości, nie gwarancję projektową.</p>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Rozmiar</th><th>Wyrwanie insertu wtopionego</th><th>Wypchnięcie (osiowo)</th><th>Wkręt samogwintujący (wyrwanie)</th><th>Gwint drukowany (wyrwanie)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>M2</td><td>250–350 N</td><td>90–140 N</td><td>150–220 N</td><td>50–100 N</td></tr>
+        <tr><td>M3</td><td>400–600 N</td><td>150–250 N</td><td>250–400 N</td><td>80–150 N</td></tr>
+        <tr><td>M4</td><td>600–900 N</td><td>250–400 N</td><td>400–600 N</td><td>rzadko sensowne</td></tr>
+        <tr><td>M5</td><td>900–1200 N</td><td>400–600 N</td><td>550–800 N</td><td>—</td></tr>
+      </tbody>
+    </table>
+    <p>Kluczowa różnica nie tkwi tylko w sile, ale w <strong>trwałości cyklowej</strong>: insert wtapiany znosi 20–50 pełnych cykli skręć bez zauważalnego spadku; wkręt samogwintujący 3–5 (każde wkręcanie naskrobuje nowy „gwint” w plastiku); gwint drukowany w PLA — 1–3, potem warstwy się ścierają. Jeśli część ma być serwisowana, wybór jest jeden.</p>
+  </div>
+
+  <h2>Inserty vs samogwintujące vs gwint drukowany — koszt i kiedy co</h2>
+  <ul>
+    <li><strong>Wkładka wtapiana</strong>: koszt detaliczny ok. 0,3–0,8 zł/szt., przy opakowaniu 200 szt. (zestaw M2–M5) poniżej 0,35 zł/szt. Plus robocizna wtopienia (~1 min/otwór). Wybieraj, gdy część jest demontowana, przenosi siły osiowe albo idzie w serię.</li>
+    <li><strong>Wkręt samogwintujący</strong>: 0,2–0,6 zł/szt., wkręca się bez narzędzi, otwór mniejszy (np. pod M3: 2,6–2,8 mm). Wygrywa przy montażu „na jeden raz” i w miękkich materiałach typu TPU, w które insert się wbija. Przy częstym serwisie gwint się zeruje.</li>
+    <li><strong>Gwint drukowany</strong>: koszt materiałowy praktycznie zerowy (warstwa materiału dookoła), zero montażu wtórnego. Dopuszczalny przy dużych gwintach (≥M6), częstej geometrii i połączeniach śrubowych z nakrętką. Jako główne połączenie w M3 — nie.</li>
+  </ul>
+  <p>Drobna, ale częsta wątpliwość przy wycenie: sam insert to grosze, prawdziwy koszt to <strong>czas wtopienia i ryzyko zniszczenia części</strong>. Przy 50-elementowej serii wliczamy montaż insertów jako osobną pozycję — <a href="/drukuje">wycena druku z osprzętem</a> zawsze zawiera ich listę, żeby liczby się nie rozjechały.</p>
+
+  <h2>Delaminacja i inne pułapki</h2>
+  <p>Najgorsza awaria wkładki to nie zerwany gwint, tylko <strong> wyrwanie insertu wraz z czopem plastiku</strong> — klasyczna delaminacja po granicy warstwy, tuż pod kołnierzem. Co ją wywołuje:</p>
+  <ul>
+    <li><strong>Za mało obwodów.</strong> 2 obwody i wypełnienie 15% pod gniazdem to proszenie się o wyłuskanie tulei razem z „korkiem”. Minimum: 4 obwody, 80–100% wypełnienia w strefie insertu.</li>
+    <li><strong>Wtapianie w rozgrzaną część.</strong> Insert włożony w element prosto z budowanego stołu (stół 60–80°C trzyma dłużej niż myślisz) topi ściankę bez kontroli — powstaje jamka, a nie opaska. Studź część do temperatury pokojowej.</li>
+    <li><strong>Skręcanie zamiast korekty.</strong> Gdy insert idzie krzywo, nie wykręcaj go „na siłę” — zrywasz rolkowanie ze ścianki. Wyjmij, rozgrzej gniazdo raz jeszcze, włóż prostopadle.</li>
+    <li><strong>Wilgotny filament.</strong> Pęcherzyki w ściance otworu (PLA i PETG po nocy bez suszarki) potrafią zbić trzymanie o 30–50%. Otwór pod insert powinien być lity i gładki.</li>
+    <li><strong>Przekręcenie momentu.</strong> Białe zacieki wokół gniazda po dokręceniu = plastik doprowadzony powyżej granicy płynności. M3 z wyczuciem to maks. ~0,5–0,8 Nm; kluczy dynamometrycznych nikt nie używa, ale wkrętarka na 12 Nm potrafi układać warstwy od nowa.</li>
+    <li><strong>Otwór ślepy bez ujścia.</strong> Wtapiany do denka ~1 mm grubości wypchnie je jak balon. Głębokość ślepego gniazda ≤ długość insertu minus 1 mm materiału na dnie, albo przewierć na wylot i wtapiaj od obu stron po 60% długości.</li>
+  </ul>
+
+  <blockquote>
+    Zasada z pracowni: insert to nie zaprawka na niedokładny otwór. Zbyt luźny otwór to błąd wymiaru w projekcie albo zużyta dysza — klej na wkładce to tylko przyznanie się do tego dwa razy drożej.
+  </blockquote>
+
+  <h2>Najczęściej zadawane pytania</h2>
+  <h3>Czy otwór pod insert trzeba „nadcinać” w slicerze?</h3>
+  <p>Najpierw wydrukuj próbkę testową z trzema otworami (nominalny, −0,05 mm, +0,05 mm) i sprawdź, w który insert wchodzi z lekkim oporem na gorąco, a na zimno nie ma luzu. Dopiero taką korektę (±0,05–0,1 mm) zostaw w profilu. Nie zgaduj — suwmiarka kosztuje mniej niż seria.</p>
+  <h3>Czy zwykła lutownica transformatorowa bez regulacji wystarczy?</h3>
+  <p>Technicznie tak, praktycznie ryzykownie: bez regulacji łatwo przegrzać PLA (od 190°C żółknie, od 220°C robi się „gumka”). Lutownica z regulacją 150–300°C i grot 5–8 mm to wydatek rzędu kilkudziesięciu złotych; przy seriach warto się zaopatrzyć.</p>
+  <h3>Czy insert można wyjąć i wtopić ponownie?</h3>
+  <p>Można, rozgrzewając tuleję grotem do tej samej temperatury i delikatnie wypychając. Warunek: ścianka gniazda nie została zerwana przy wyrywaniu. Realnie gniazdo znosi 2–3 takie operacje, potem trzeba je powiększyć do następnego rozmiaru tulei lub zastosować kołek z klejem epoksydowym.</p>
+  <h3>Co w TPU i innych gumach?</h3>
+  <p>Odradzamy wtapianie — miękki materiał otacza insert „na galarecie” i tuleja pracuje przy każdym dokręceniu. Stosuj wkręty samogwintujące przez otwór przelotowy z podkładką albo element mocujący wydrukowany w PETG/ABS z insertem.</p>
+
+  <div class="box cta">
+    <h3>Część z gwintem do serii? Wydrukujemy z gotowymi gniazdami</h3>
+    <p>Przygotujemy otwory dopasowane do Twoich insertów z dokładnością katalogową, a wydruk zmontujemy u nas — Ty tylko wtapiasz albo odbierasz gotowe.</p>
+    <a class="btn" href="/zamow">Zamów wydruk z gniazdami pod inserty</a>
+  </div>
+
+  <div class="related">
+    <h3>← Przeczytaj też</h3>
+    <div class="rel-grid">
+      <a class="rel" href="/blog/fuzja-360-pod-druk-3d.html"><img src="/asset/blog/cover-fuzja-360-pod-druk-3d.svg" alt=""><div class="b"><strong>Fusion 360 pod druk 3D</strong><span>ściany wokół otworów, eksport 3MF</span></div></a>
+      <a class="rel" href="/blog/tolerancje-i-dokladnosc-druku-3d.html"><img src="/asset/blog/printer3.jpg" alt=""><div class="b"><strong>Tolerancje i dokładność druku 3D</strong><span>skurcz i pasowania</span></div></a>
+      <a class="rel" href="/blog/jaki-filament-wybrac-3d.html"><img src="/asset/blog/prototype.jpg" alt=""><div class="b"><strong>Jaki filament wybrać</strong><span>PLA, PETG, ABS, PA</span></div></a>
+    </div>
+  </div>
+</div>
+<footer>© 2026 3DFILE.link — <a href="/drukuje">druk 3D na życzenie</a> · <a href="/blog.html">Blog</a> · <a href="/kontakt">Kontakt</a> · <a href="/prywatnosc.html">Prywatność</a></footer>
+<script>document.addEventListener('click',function(ev){var nl=document.querySelector('.nav-links');if(nl&&nl.classList.contains('open')&&ev.target.closest('.nav-links a')){nl.classList.remove('open');}});</script>
+</body>
+</html>

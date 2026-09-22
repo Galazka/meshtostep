@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SLA vs FDM vs SLS — którą technologię druku 3D wybrać? [2026] | 3DFILE.link</title>
+<meta name="description" content="Żywica, filament czy proszek? Dokładność w mikronach, jakość powierzchni, wytrzymałość, koszt za cm3, materiały i zastosowania FDM, SLA i SLS. Tabela decyzji przy wyborze technologii.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://3dfile.link/blog/sla-vs-fdm-vs-sls.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SLA vs FDM vs SLS — którą technologię druku 3D wybrać? [2026]">
+<meta property="og:description" content="Żywica, filament czy proszek? Dokładność w mikronach, jakość powierzchni, wytrzymałość, koszt za cm3, materiały i zastosowania FDM, SLA i SLS. Tabela decyzji przy wyborze technologii.">
+<meta property="og:image" content="https://3dfile.link/asset/blog/cover-sla-vs-fdm-vs-sls.svg">
+<meta property="og:site_name" content="3DFILE.link">
+<meta property="og:url" content="https://3dfile.link/blog/sla-vs-fdm-vs-sls.html">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#0f172a;--muted:#64748b;--accent:#0ea5e9;--accent2:#0b5394;--border:#e2e8f0;--card:#ffffff;--bg:#f8fafc}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);line-height:1.65}
+.nav{background:#0f172a;color:#fff;padding:14px 0;position:sticky;top:0;z-index:50}
+.nav-in{max-width:1120px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.nav a{color:#fff;text-decoration:none;font-weight:600;font-size:14px}
+.nav-links a{margin-left:18px;opacity:.85}
+.nav-links a:hover{opacity:1}
+.badge{background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.3px}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 20px 60px}
+.crumbs{font-size:13px;color:var(--muted);margin-bottom:18px}
+.crumbs a{color:var(--accent);text-decoration:none}
+.crumbs a:hover{text-decoration:underline}
+h1{font-size:34px;line-height:1.2;font-weight:800;letter-spacing:-.5px;margin-bottom:14px}
+.meta{color:var(--muted);font-size:14px;margin-bottom:22px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.hero-img{width:100%;border-radius:14px;margin-bottom:26px;box-shadow:0 6px 24px rgba(15,23,42,.12)}
+h2{font-size:24px;font-weight:800;margin:34px 0 12px;letter-spacing:-.3px;line-height:1.3}
+h3{font-size:19px;font-weight:700;margin:26px 0 10px}
+p{margin-bottom:16px}
+ul,ol{margin:0 0 18px 22px}
+li{margin-bottom:8px}
+.box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin:20px 0}
+.box.cta{background:linear-gradient(135deg,#0ea5e9,#0b5394);color:#fff;border:none;text-align:center;padding:28px}
+.box.cta h3{color:#fff;font-size:22px;margin-bottom:8px}
+.box.cta p{color:#e0f2fe;font-size:15px}
+.btn{display:inline-block;background:#fff;color:#0b5394;font-weight:800;padding:13px 30px;border-radius:10px;text-decoration:none;font-size:16px;margin-top:14px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.btn:hover{transform:translateY(-1px)}
+.tip table{width:100%;border-collapse:collapse;margin:14px 0}
+.tip td,.tip th{border:1px solid var(--border);padding:10px 12px;font-size:14px;text-align:left}
+.tip th{background:#f1f5f9;font-weight:700}
+blockquote{border-left:4px solid var(--accent);background:var(--card);padding:4px 20px;font-size:17px;margin:20px 0;font-style:italic}
+.tag{display:inline-block;background:#e0f2fe;color:#0369a1;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;margin-right:8px;margin-top:6px}
+.tag:hover{background:#bae6fd;text-decoration:none}
+.related h3{font-size:21px;margin:44px 0 16px}
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.rel{background:var(--card);border:1px solid var(--border);radius:12px;overflow:hidden;text-decoration:none;color:var(--fg);display:block;transition:transform .15s,box-shadow .15s}
+.rel:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(15,23,42,.1)}
+.rel img{width:100%;height:120px;object-fit:cover}
+.rel .b{padding:12px 14px}
+.rel .b strong{font-size:15px;display:block;margin-bottom:4px;line-height:1.4}
+.rel .b span{color:var(--muted);font-size:13px}
+footer{background:#0f172a;color:#94a3b8;text-align:center;padding:24px;font-size:13px}
+footer a{color:#cbd5e1;text-decoration:none}
+@media(max-width:600px){h1{font-size:26px}h2{font-size:20px}}
+.nav-burger{display:none;background:none;border:1px solid #334155;border-radius:8px;cursor:pointer;padding:8px 10px;font-size:19px;line-height:1;color:#fff}
+@media(max-width:760px){.nav-burger{display:inline-flex;align-items:center;gap:6px}.nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border-bottom:1px solid #334155;padding:10px 20px;flex-direction:column;align-items:stretch!important;z-index:60}.nav-links.open{display:flex}.nav{position:relative}.nav-links a{width:100%;text-align:left;margin-left:0!important;padding:12px 4px}}
+</style>
+</head>
+<body>
+<nav class="nav"><div class="nav-in">
+  <a href="/">3DFILE.link</a>
+  <button class="nav-burger" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">☰</button>
+  <div class="nav-links"><a href="/drukuje">Druk</a><a href="/">Hosting</a><a href="/blog.html">Blog</a></div>
+</div></nav>
+<div class="wrap">
+  <div class="crumbs"><a href="/drukuje">Strona główna</a> › <a href="/blog.html">Blog</a> › <span>sla-vs-fdm-vs-sls</span></div>
+  <h1>SLA vs FDM vs SLS — którą technologię druku 3D wybrać?</h1>
+  <div class="meta"><span>📅 22.09.2026</span><span>✍️ Zespół 3DFILE.link</span><span>⏱ 9 min czytania</span></div>
+  <img src="/asset/blog/cover-sla-vs-fdm-vs-sls.svg" alt="porównanie technologii druku 3d sla fdm sls żywica filament proszek" class="hero-img" loading="lazy">
+
+  <p>Trzy litery, trzy zupełnie różne światy. <strong>FDM</strong> topi i układa filament warstwa po warstwie — to koń roboczy druku 3D, tani i wszechstronny. <strong>SLA</strong> utwardza żywicę światłem lasera lub projekcji — powierzchnia jak z wtryskarki, ale materiał kruchy jak szkło... no, prawie. <strong>SLS</strong> spaja laserem proszek poliamidowy — części bez podpór, wytrzymałe i quasi-izotropowe, w cenie profesjonalnej usługi. Wybór między nimi to nie kwestia gustu: od technologii zależą tolerancje, wytrzymałość pod obciążeniem, jakość widocznej powierzchni i to, ile realnie zapłacisz za centymetr sześcienny. Poniżej liczby, którymi kierujemy się przy każdym zamówieniu.</p>
+
+  <h2>Teczenie technologi — porównanie liczb</h2>
+  <p>Zestawienie dla elementów o typowej wielkości dłoni (50–150 mm). Dokładności podajemy jako odchyłkę od modelu CAD, koszt — jako widełki rynkowe usług w Polsce w 2026 roku.</p>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Kryterium</th><th>FDM (filament)</th><th>SLA (żywica)</th><th>SLS (proszek PA)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Dokładność wymiarowa</td><td>±0,1–0,3 mm lub 0,2–0,5% wymiaru</td><td>±0,05–0,1 mm (50–100 µm)</td><td>±0,15–0,3 mm (100–300 µm)</td></tr>
+        <tr><td>Warstwa / detale</td><td>0,08–0,3 mm; detal ~0,4 mm</td><td>0,025–0,1 mm; detal ~0,1 mm</td><td>0,08–0,12 mm; detal ~0,3 mm</td></tr>
+        <tr><td>Powierzchnia</td><td>widoczne linie warstw, matowa</td><td>gładka, niemal „wtryskowa”</td><td>matowa, lekko ziarnista, porowata</td></tr>
+        <tr><td>Wytrzymałość / anizotropia</td><td>w płaszczyźnie XY dobra; oś Z: 10–30% wytrzymałości reszty</td><td>izotropowa, ale krucha (standardowa żywica wydłużenie ~5–10%)</td><td>quasi-izotropowa, udarna; PA12 trzyma w każdym kierunku</td></tr>
+        <tr><td>Odporność termiczna</td><td>PLA ~55 °C, ASA/ABS ~90 °C, PC ~110 °C</td><td>~50–70 °C (żywice specjalne do ~150 °C)</td><td>~80–90 °C długotrwale (topnienie PA ~180 °C)</td></tr>
+        <tr><td>Podpory</td><td>często konieczne</td><td>zawsze konieczne, drobne, punktowe</td><td>zbędne — część spoczywa w swoim lożysku z proszku</td></tr>
+        <tr><td>Powtarzalność serii</td><td>dobra, zależna od kalibracji</td><td>bardzo dobra</td><td>bardzo dobra (komora budowana warstwami)</td></tr>
+        <tr><td>Koszt materiału (ok.)</td><td>0,04–0,10 PLN/cm³</td><td>0,20–0,50 PLN/cm³</td><td>0,30–0,80 PLN/cm³ (z spoiwem i energetyką cyklu)</td></tr>
+        <tr><td>Cena usługi (ok.)</td><td>0,8–2,0 PLN/cm³</td><td>1,5–3,5 PLN/cm³</td><td>2,5–7,0 PLN/cm³ (serie obniżają)</td></tr>
+        <tr><td>Typowe pole budowy</td><td>220–385 mm</td><td>100–250 mm</td><td>250–400 mm</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Dokładność i powierzchnia — mikrony mają znaczenie</h2>
+  <p>Jeśli element ma wsuwać się w obudowę, klikać w zatrzask albo wyglądać jak produkt z półki, technologia decyduje za Ciebie. <strong>SLA wygrywa bez dyskusji</strong>: warstwa 25–50 mikronów i plamka światła mniejsza niż włos dają detale rzędu 0,1 mm — zębatki, miniaturowe zawiasy, litery o wysokości 3 mm, wzorniki biżuterii i modele dentystyczne. <strong>FDM</strong> przy dobierze dyszy i kalibracji trzyma ±0,1–0,2 mm na małych wymiarach (o realiach tolerancji FDM piszemy szerzej w poradniku <a href="/blog/tolerancje-i-dokladnosc-druku-3d.html">tolerancje i dokładność druku 3D</a>), ale powierzchni linii warstw nie oszuka — dysza to dysza, plasterek to plasterek. <strong>SLS</strong> jest dokładny wymiarowo w skali, ale jego ziarnista powierzchnia wymaga obróbki (piaskowanie, barwienie, ewentualnie szlifowanie i lakier), jeśli ma być „ładna”.</p>
+
+  <h2>Wytrzymałość — jak materiał, nie jak forma</h2>
+  <p>Tu układ sił się miesza. <strong>FDM jest najsilniejszy w płaszczyźnie warstw</strong>: uchwyt z ASA czy PA-CF drukowany z głową na geometrię obciążeń znosi zginanie lepiej niż niejeden odlew — ale zerwanie między warstwami to jego pięta achillesowa, bo granica między nimi to często 10–30% wytrzymałości materiału rodzimego. <strong>SLA odwrotnie</strong>: żywica jest izotropowa (jednakowa w każdym kierunku), za to standardowa krucha — pęka nagle, bez odkształcenia; żywice tough i elastyczne zmieniają reguły gry, ale nigdy nie dorównają PA jako tworzywu konstrukcyjnemu. <strong>SLS to klasa własna</strong>: spiekany PA12 zachowuje ~80–90% właściwości pełnego tworzywa, jest udarny, zmęczeniowo odporny i pracuje w zatrzaskach, obudowach silników czy elementach clip-on latami. Jeśli element ma realnie pracować mechanicznie, bez podpór i bez kierunku słabego — SLS wygrywa, dopóki budżet znosi stawkę.</p>
+
+  <h2>Postróbka: co czeka wydruk po wyjęciu z maszyny</h2>
+  <p>Każda technologia ma swój „rytuał wyjścia”. W <strong>FDM</strong>: usunięcie podpór, ewentualnie szlifowanie — cały katalog obróbki rozpisaliśmy w artykule <a href="/blog/post-processing-fdm.html">post-processing FDM</a>. W <strong>SLA</strong>: kąpiel w alkoholu izopropylowym lub zmywaniu w ultradźwiękach (wymycie niewywołanej żywicy z kanałów), potem <strong>post-cure</strong> — 5–20 minut pod UV, bez którego element jest lepki i miękki; dopiero utwardzenie światłem rozwija pełnię właściwości. W <strong>SLS</strong>: wydobycie bloku z proszku (depowdering), przedmuch sprężonym powietrzem, piaskowanie i ewentualnie barwienie — element „dojrzałości” nie wymaga, bo jest spiekany w wysokiej temperaturze.</p>
+
+  <h2>Macierz decyzyjna — wybierz po zdaniu</h2>
+  <div class="box tip">
+    <table>
+      <thead>
+        <tr><th>Zastosowanie</th><th>Wybór</th><th>Dlaczego</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Obudowa prototypu z zatrzaskami, duża (>200 mm)</td><td>FDM (ASA/PETG)</td><td>najniższy koszt wolumenu, pole budowy, wykończenie szlifowaniem</td></tr>
+        <tr><td>Detal z drobnymi znakami, biżuteria, model do odlewu</td><td>SLA</td><td>detal ~0,1 mm i powierzchnia bez obróbki</td></tr>
+        <tr><td>Część pracująca: uchwyt, obudowa serwomotoru, klapka</td><td>SLS (PA12)</td><td>izotropowość, udarność, brak podpór na skomplikowanej geometrii</td></tr>
+        <tr><td>Element elastyczny, amortyzator, osłona na zatrzask</td><td>FDM TPU lub SLS TPA</td><td>TPU drukuje się łatwo; SLS daje lepszą sprężystość w seriach</td></tr>
+        <tr><td>Wydruk dekoracyjny wielkogabarytowy (makieta, kostium)</td><td>FDM (PLA)</td><td>koszt za cm³ bezkonkurencyjny, pole 300–385 mm</td></tr>
+        <tr><td>Gwinty, otwory wciskowe, pasowania ścisłe</td><td>SLA</td><td>powtarzalność ±50 µm, czysty zarys gwintu</td></tr>
+        <tr><td>Sería 50–500 sztuk części nośnych</td><td>SLS</td><td>powtarzalność każdej sztuki z komory, cena jednostkowa spada przy gniazdach</td></tr>
+        <tr><td>Kontakt z wodą / ciśnieniem</td><td>SLA (żywica wodoodporna) lub SLS+uszczelnienie</td><td>FDM mikroporowaty bez uszczelnienia; żywica lita nie przepuszcza</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Koszt — pułapki „ceny za centymetr”</h2>
+  <p>Sucho porównane stawki z tabeli to jeszcze nie pełny obraz. FDM pozór taniości płaci dwoma walutami: podporem, którego nie da się ukryć na skomplikowanej geometrii (dokłada 10–40% czasu), i czasem człowieka na wykończenie. SLA dolicza stację myjąco-utwardzającą i żywice drożejące z każdym specjalnym dodatkiem (tough, mydlana, odlewnicza). SLS ma najwyższy pułap wejścia i minimalne zamówienie, ale przy skomplikowanych częściach bez podpór bywa w sumie... tańszy od FDM z dwudniowym sprzątaniem szpachlą. Przy przykładowym elemencie 120 cm³: FDM to ok. 100–240 zł, SLA ok. 180–420 zł, SLS ok. 300–840 zł, przy czym widełki przesuwają się w górę, gdy dochodzą podpory, wykończenie i tolerancje. Jeśli liczysz koszt przy seriach dziesięciokrotności, różnice procentowe są jeszcze wyraźniejsze — dlatego materiał i technologię wybieramy razem z klientem, nigdy „z cennika”.</p>
+
+  <blockquote>
+    Zasada z pracowni: FDM kupujesz za cenę, SLA za wygląd, SLS za pewność działania. Jeśli element ma być tani, ładny i wytrzymały naraz — czekają Cię kompromisy, a nie cud technologii.
+  </blockquote>
+
+  <h2>Najczęściej zadawane pytania (FAQ)</h2>
+  <div class="box">
+    <h3>Cześć wydruków SLA nadaje się do picia — czy są spożywcze?</h3>
+    <p>Standardowe żywice nie mają dopuszczenia do kontaktu z żywnością i po post-cure wciąż mogą migrować substancje. Element „pod kawę” to domena FDM ze sprawdzonego PETG z certyfikowaną powłoką epoksydową — albo gotowych produktów z atestem, nie druku na żądanie.</p>
+  </div>
+  <div class="box">
+    <h3>Czy SLS to wyłącznie przemysł, czy zamówię pojedynczą sztukę?</h3>
+    <p>Pojedynczą sztukę zamówisz w serwisie — po prostu zapłacisz minimalną opłatę za cykl i depowdering. Domowe drukarki SLS istnieją, ale kosztują tyle co dobry samochód i wymagają atmosfery ochronnej — jeśli planujesz tylko serię 30 zatrzasków, usługa wychodzi kilkukrotnie taniej.</p>
+  </div>
+  <div class="box">
+    <h3>Która technologia jest najszybsza?</h3>
+    <p>Na element: FDM na dużej maszynie wygrywa wolumenem, SLA drobnymi detalami (25 µm na warstwę), a przy partii stu małych części — SLS, bo „gniazdo” pełne elementów to jeden cykl niezależnie od ilości drobnych sztuk. Zamawiając przez <a href="/drukuje">druk 3D na życzenie</a>, dostaniesz harmonogram dla trzech scenariuszy przy każdej wycenie.</p>
+  </div>
+  <div class="box">
+    <h3>Czy mogę wybrać kolor w każdej z technologii?</h3>
+    <p>FDM: dowolny kolor filamentu i ich miks w jednym wydruku (moduły AMS). SLS: PA12 naturalna biel lub barwienie na czarno/grafit w serwisie. SLA: żywice przezroczyste, białe, szare, kolorowe; pigmenty mieszane, ale nie każdy odcień dostępny od ręki. Szczegóły wielokolorowości FDM tłumaczymy w poradniku <a href="/blog/druk-wielokolorowy-jak-to-dziala.html">druk wielokolorowy — jak to działa</a>.</p>
+  </div>
+
+  <h2>Wybór technologii to pierwsza decyzja przy zamówieniu</h2>
+  <p>Zamiast zgadywać, wyślij nam model — dobierzemy technologię do funkcji elementu, policzymy koszt za centymetr sześcienny i pokażemy widełki na dwóch-trzech alternatywach. Wycenę przez <a href="/zamow">formularz zamówienia</a> otrzymasz zwykle tego samego dnia, a gotowe części wrócą do Ciebie wykończone zgodnie z ustaleniami.</p>
+
+  <div class="box cta">
+    <h3>Nie wiesz, FDM, SLA czy SLS?</h3>
+    <p>Wyślij STL z opisem zastosowania — dobierzemy technologię i materiał, bez zobowiązań.</p>
+    <a class="btn" href="/zamow">Dobierz technologię do swojego modelu</a>
+  </div>
+
+  <div class="related">
+    <h3>← Przeczytaj też</h3>
+    <div class="rel-grid">
+      <a class="rel" href="/blog/jaki-filament-wybrac-3d.html"><img src="/asset/blog/printer3.jpg" alt=""><div class="b"><strong>PLA vs PETG vs ABS</strong></div></a>
+      <a class="rel" href="/blog/druk-3d-na-zamowienie-ile-kosztuje.html"><img src="/asset/blog/gadget.jpg" alt=""><div class="b"><strong>Druk 3D na zamówienie — ile kosztuje</strong></div></a>
+      <a class="rel" href="/blog/podpory-i-orientacja-czesci.html"><img src="/asset/blog/prototype.jpg" alt=""><div class="b"><strong>Podpory i orientacja części</strong></div></a>
+    </div>
+  </div>
+</div>
+<footer>© 2026 3DFILE.link — <a href="/drukuje">druk 3D na życzenie</a> · <a href="/blog.html">Blog</a> · <a href="/kontakt">Kontakt</a> · <a href="/prywatnosc.html">Prywatność</a></footer>
+<script>document.addEventListener('click',function(ev){var nl=document.querySelector('.nav-links');if(nl&&nl.classList.contains('open')&&ev.target.closest('.nav-links a')){nl.classList.remove('open');}});</script>
+</body>
+</html>
