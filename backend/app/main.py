@@ -262,6 +262,12 @@ def konto_page():
 @app.get("/blog/{slug}", response_class=HTMLResponse, include_in_schema=False)
 def blog_page(slug: str = ""):
     from fastapi.responses import FileResponse
+    if slug:
+        name = slug if slug.endswith(".html") else slug + ".html"
+        fp = FRONTEND_DIR / "blog" / name
+        # ochrona przed path traversal
+        if fp.is_file() and fp.resolve().parent == (FRONTEND_DIR / "blog").resolve():
+            return FileResponse(str(fp))
     return FileResponse(str(FRONTEND_DIR / "blog.html"))
 
 # ── Przyjazny 404 dla ludzi (JSON zostaje dla /api/*) ───────────────
