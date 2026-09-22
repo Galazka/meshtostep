@@ -22,7 +22,8 @@ function loadAccount() {
     });
     fetch('/api/quota', { headers: { 'Authorization': 'Bearer ' + tok } }).then(function (r) { return r.ok ? r.json() : {} }).then(function (q) {
         if (!q || !q.limit_bytes) return;
-        document.getElementById('kontoQuotaUsed').textContent = q.used_mb + ' MB';
+        var _fmt=function(b){return b<1048576?(b/1024).toFixed(1).replace('.',',')+' KB':Math.round(b/1048576)+' MB'};
+        document.getElementById('kontoQuotaUsed').textContent=(q.used_bytes!=null?_fmt(q.used_bytes):q.used_mb+' MB');
         document.getElementById('kontoQuotaLimit').textContent = q.limit_mb + ' MB';
         document.getElementById('kontoQuotaFill').style.width = Math.min(q.percent || 0, 100) + '%';
         var pc = document.getElementById('kontoQuotaPct'); if (pc) pc.textContent = Math.round(q.percent || 0) + '%';
