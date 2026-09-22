@@ -1,5 +1,5 @@
 // myfiles.js  -  jobs grid, folders, bulk, share modal, job modal, fullscreen, editor (verbatim).
-import { t } from './i18n.js?v=91';
+import { t } from './i18n.js?v=100';
 import { token } from './shared.js?v=56';
 import { toast } from './viewer3d.js?v=56';
 
@@ -308,56 +308,81 @@ async function mfInlineRename(id){
 function _filteredJobs(){
     const q=(document.getElementById('mfSearch').value||'').toLowerCase();
     var _ffs=document.getElementById('mfFolderFilter');var ff=_ffs?_ffs.value:'';
-    return _myJobsData.filter(function(j){
+    var vis=window._mfVis||'';
+    var jobs=_myJobsData.filter(function(j){
         if(q && !((j.filename||'').toLowerCase().includes(q) || (j.title||'').toLowerCase().includes(q))) return false;
         if(ff==='__none' && j.folder_id!=null) return false;
         if(ff && ff!=='__none' && String(j.folder_id||'')!==String(ff)) return false;
+        if(vis && (j.visibility||'private')!==vis) return false;
         return true;
     });
+    var sort=(document.getElementById('mfSort')||{}).value||'date';
+    jobs.sort(function(a,b){
+        if(sort==='name') return (a.title||a.filename||'').localeCompare(b.title||b.filename||'','pl');
+        if(sort==='size') return (b.file_size_bytes||0)-(a.file_size_bytes||0);
+        if(sort==='views') return (b.views||0)-(a.views||0);
+        if(sort==='oldest') return new Date(a.created_at||0)-new Date(b.created_at||0);
+        return new Date(b.created_at||0)-new Date(a.created_at||0);
+    });
+    return jobs;
 }
+function mfSetSort(v){mfRender();}
+function mfSetVis(v){
+    window._mfVis=v;
+    document.querySelectorAll('#mfVisChips .mf-vchip').forEach(function(b){b.classList.toggle('on',b.dataset.v===v)});
+    mfRender();
+}
+
 function mfRender(){
     if(typeof renderFolderChips==='function'){ try{renderFolderChips();}catch(e){} }
     const jobs=_filteredJobs();
     window.__mfJobs = jobs;
     const grid=document.getElementById('mfGrid');
     if(!jobs.length){
-        grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px">Brak plików dla filtra</div>';
+        grid.innerHTML='<div class="mf-empty-f"><b>'+(window._mfVis||document.getElementById('mfSearch').value||document.getElementById('mfFolderFilter').value?'Brak plików dla tych filtrów':'Nie masz jeszcze plików')+'</b>'
+        +(window._mfVis||document.getElementById('mfSearch').value?'<button class="mfc-a" style="margin-top:12px" onclick="mfResetFilters()">Wyczyść filtry</button>':'<button class="mfc-a" style="margin-top:12px;background:var(--accent);border-color:var(--accent);color:#fff" onclick="quickUpload()">↑ Wgraj pierwszy plik</button>')
+        +'</div>';
         return;
     }
     grid.innerHTML=jobs.map(function(j){
-        const visBadge=j.visibility==='public' ? '<span style="background:#f0fdf4;color:#16a34a;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600">public</span>' : j.visibility==='private' ? '<span style="background:#fef2f2;color:#dc2626;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600">private</span>' : '<span style="background:#fffbeb;color:#d97706;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600">unlisted</span>';
-        const is3mf=(j.filename||'').toLowerCase().endsWith('.3mf');
+        const vis=j.visibility||'private';
+        const visBadge='<span class="mfc-badge '+({public:'pub',unlisted:'unl'}[vis]||'pri')+'">'+({public:'public',unlisted:'link'}[vis]||'prywatny')+'</span>';
         const titleEsc=(j.title||j.filename||'').replace(/</g,'&lt;');
-        const fallbackUrl='/api/preview/'+j.uuid;
         const thumbUrl='/api/thumb/'+j.uuid;
-        const previewSrc=j.preview_image || fallbackUrl;
+        const previewSrc=j.preview_image || ('/api/preview/'+j.uuid);
         const folderOpts='<option value="">Bez folderu</option>'+_mfFolders.map(function(f){return '<option value="'+f.id+'"'+(String(j.folder_id||'')===String(f.id)?' selected':'')+'>'+String(f.name).replace(/</g,'&lt;')+'</option>'}).join('');
-        const thumb='<img src="'+previewSrc+'" style="width:100%;height:140px;object-fit:cover" onerror="if(this.dataset.step==\'0\'){this.dataset.step=\'1\';this.src=\''+thumbUrl+'\';}else{this.style.display=\'none\';if(this.nextElementSibling) this.nextElementSibling.style.display=\'flex\';}"><div style="display:none;height:140px;background:var(--bg-subtle);align-items:center;justify-content:center;flex-direction:column;gap:6px;color:var(--text-muted);font-size:12px;padding:8px;text-align:center"><div style="font-size:22px">📄</div><div style="font-weight:600;color:var(--text);font-size:12px;max-width:90%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+titleEsc+'</div><div style="font-size:11px">Podgląd niedostępny</div></div>';
-        return '<div draggable="true" ondragstart="event.dataTransfer.setData(\'text/jobid\','+j.id+')" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;transition:box-shadow .15s" onmouseover="this.style.boxShadow=\'var(--shadow-md)\'" onmouseout="this.style.boxShadow=\'none\'">'
-        + '<div style="position:relative;cursor:pointer" onclick="openJobModal('+j.id+')">'
-        + '<div style="height:140px;overflow:hidden">'+thumb+'</div>'
-        + '<input type="checkbox" class="mf-check" '+(_mfSelected.has(j.id)?'checked':'')+' onclick="event.stopPropagation()" onchange="if(this.checked)_mfSelected.add('+j.id+');else _mfSelected.delete('+j.id+');updateBulkBar()" style="position:absolute;top:8px;left:8px;width:16px;height:16px">'
-        + '<button onclick="event.stopPropagation();openPreviewFullscreen(\''+previewSrc+'\')" title="Powiększ podgląd" style="position:absolute;bottom:8px;right:8px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.9);border:1px solid var(--border);cursor:pointer;font-size:13px">🔍</button>'
+        const when=(j.created_at||'').slice(0,10);
+        const kb=j.file_size_bytes?Math.round(j.file_size_bytes/1024)+' KB':'';
+        const dims=j.dims_mm||'';
+        const thumb='<img src="'+previewSrc+'" alt="" loading="lazy" onerror="if(this.dataset.step==\'0\'){this.dataset.step=\'1\';this.src=\''+thumbUrl+'\';}else{this.style.display=\'none\';}">'
+        +'<div class="mfc-zoom" title="Powiększ" onclick="event.stopPropagation();openPreviewFullscreen(\''+previewSrc+'\')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M11 8v6M8 11h6"/></svg></div>';
+        return '<div class="mfc" draggable="true" ondragstart="event.dataTransfer.setData(\'text/jobid\','+j.id+')">'
+        + '<div class="mfc-thumb" onclick="openJobModal('+j.id+')">'+thumb
+        + '<input type="checkbox" class="mfc-check" '+(_mfSelected.has(j.id)?'checked':'')+' onclick="event.stopPropagation()" onchange="if(this.checked)_mfSelected.add('+j.id+');else _mfSelected.delete('+j.id+');updateBulkBar()">'
         + '</div>'
-        + '<div style="padding:12px;display:flex;flex-direction:column;gap:8px">'
-        + '<div style="font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="'+titleEsc+'">'+titleEsc+' '+visBadge+'</div>'
-        + '<div style="font-size:11px;color:var(--text-muted)">'+(j.created_at||'').slice(0,16)+' · '+(j.faces||'-')+' ścian · '+(j.mode||'hosting')+'</div>'
-        + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
-        + '<button onclick="mfInlineRename('+j.id+')" style="flex:1;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:inherit">Zmień nazwę</button>'
-        + '<select onchange="mfMoveJob('+j.id+',this.value)" onclick="event.stopPropagation()" style="padding:5px 6px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;max-width:110px;font-family:inherit" title="Folder">'+folderOpts+'</select>'
+        + '<div class="mfc-b">'
+        + '<div class="mfc-name" title="'+titleEsc+'"><span>'+titleEsc+'</span>'+visBadge+'</div>'
+        + '<div class="mfc-meta"><span>'+when+'</span>'+(kb?'<span>'+kb+'</span>':'')+(j.faces?'<span>'+j.faces+' ścian</span>':'')+(dims?'<span>'+dims+'</span>':'')+((j.views||0)>0?'<span>'+j.views+' odsłon</span>':'')+'</div>'
+        + '<div class="mfc-acts">'
+        + '<button class="mfc-a" onclick="event.stopPropagation();openEditor('+j.id+')" title="Edytuj opis / tagi / widoczność">Edytuj</button>'
+        + '<button class="mfc-a" onclick="event.stopPropagation();openShareModalFor('+j.id+')">Udostępnij</button>'
+        + '<button class="mfc-a" data-action="mfPrint" data-id="'+j.id+'" title="Wyślij do druku">Druk</button>'
+        + '<button class="mfc-a dgr" onclick="event.stopPropagation(); if(confirm(\'Usunąć ten plik?\')) deleteMyJob('+j.id+')">Usuń</button>'
+        + '<label class="mfc-fld" style="margin-left:auto"><select onchange="mfMoveJob('+j.id+',this.value)" onclick="event.stopPropagation()" title="Przenieś do folderu">'+folderOpts+'</select></label>'
         + '</div>'
-        + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
-        + '<button onclick="event.stopPropagation();openEditor('+j.id+')" style="padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:inherit" title="Edytuj">Edytuj</button>'
-        + '<button onclick="event.stopPropagation(); if(confirm(\'Usunąć?\')) deleteMyJob('+j.id+')" style="padding:6px 8px;background:var(--bg);color:var(--error);border:1px solid #fecaca;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:inherit">Usuń</button>'
-        + '</div>'
-        + '<div style="display:flex;gap:6px;flex-wrap:wrap">'
-        + '<button onclick="event.stopPropagation();showDownloadDialog(\''+j.uuid+'\',\''+(j.title||j.original_filename||'').replace(/'/g,"\\'")+'\')" style="flex:1;padding:7px 8px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Pobierz</button>'
-        + '<button data-action="mfPrint" data-id="'+j.id+'" style="flex:1;padding:7px 8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:inherit" title="Wyślij do druku">🖨</button>'
-        + '<button onclick="openShareModalFor('+j.id+')" style="flex:1;padding:7px 8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:inherit">Udostępnij</button>'
-        + '</div>'
+        + '<button class="mfc-a" style="justify-content:center;width:100%" onclick="event.stopPropagation();showDownloadDialog(\''+j.uuid+'\',\''+(j.title||j.original_filename||'').replace(/'/g,"\\'")+'\')">↓ Pobierz</button>'
+        + '<div style="display:flex;gap:6px;align-items:center;font-size:10.5px;color:var(--muted)"><span style="font-weight:700;text-transform:uppercase;letter-spacing:.08em">'+(j.mode||'hosting')+'</span><span style="font-family:var(--font-mono)">'+(j.status==='hosted'?'skopiuj link /s/…':(j.status==='done'?'STEP gotowy':'przetwarzanie…'))+'</span></div>'
         + '</div></div>';
     }).join('');
 }
+function mfResetFilters(){
+    document.getElementById('mfSearch').value='';
+    document.getElementById('mfFolderFilter').value='';
+    if(typeof mfSetVis==='function') mfSetVis('');
+    if(typeof renderFolderChips==='function'){try{renderFolderChips();}catch(e){}}
+    mfRender();
+}
+
 function openShareModalFor(jobId){
     doShare(jobId);
 }

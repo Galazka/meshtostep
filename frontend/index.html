@@ -444,7 +444,7 @@
         }
     </style>
     <script>try{var _t=localStorage.getItem("mt_theme")||"light";if(_t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}</script>
-    <link href="/asset/portal.css?v=53" rel="stylesheet">
+    <link href="/asset/portal.css?v=54" rel="stylesheet">
 <!-- Google AdSense (Auto ads) -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8919352846655813"
         crossorigin="anonymous"></script>
@@ -925,14 +925,27 @@
             <div style="display:flex;justify-content:space-between;color:var(--muted)"><span id="quotaLabel">Wykorzystano 0 / 100 MB</span><span id="quotaPct">0%</span></div>
             <div class="quota-track"><div class="quota-fill" id="quotaFill" style="width:0"></div></div>
         </div>
-        <div class="files-toolbar" id="myFilesToolbar" style="display:none">
+        <div class="mf-tools" id="myFilesToolbar" style="display:none">
             <input type="hidden" id="mfFolderFilter" value="">
-            <button class="nav-btn nav-btn-primary" onclick="quickUpload()" data-i18n="mfQuickUpload">↑ Wgraj</button>
+            <input type="text" id="mfSearch" class="acct-in" data-i18n-placeholder="mfSearchPh" placeholder="Szukaj po nazwie..." oninput="mfRender()">
+            <select id="mfSort" class="mf-sel" onchange="mfSetSort(this.value)" title="Sortowanie">
+              <option value="date" data-i18n="mfSortDate">Sortuj: najnowsze</option>
+              <option value="oldest" data-i18n="mfSortOldest">Najstarsze</option>
+              <option value="name" data-i18n="mfSortName">Nazwa A–Z</option>
+              <option value="size" data-i18n="mfSortSize">Rozmiar</option>
+              <option value="views" data-i18n="mfSortViews">Odsłony</option>
+            </select>
+            <div class="mf-vis" id="mfVisChips">
+              <button class="mf-vchip on" data-v="" onclick="mfSetVis('')" data-i18n="mfVisAll">Wszystkie</button>
+              <button class="mf-vchip" data-v="public" onclick="mfSetVis('public')" data-i18n="mfVisPub">Publiczne</button>
+              <button class="mf-vchip" data-v="unlisted" onclick="mfSetVis('unlisted')" data-i18n="mfVisUnl">Link</button>
+              <button class="mf-vchip" data-v="private" onclick="mfSetVis('private')" data-i18n="mfVisPri">Prywatne</button>
+            </div>
+            <label class="mfc-fld"><input type="checkbox" id="mfSelectAll" onchange="mfToggleAll(this.checked)"> <span data-i18n="mfSelectAll">Zaznacz</span></label>
+            <button id="mfBulkDelete" onclick="mfBulkDelete()" class="mfc-a dgr" style="display:none" data-i18n="mfBulkDelete">Usuń zaznaczone</button>
+            <button class="mfc-a" onclick="mfCreateFolder()" style="margin-left:auto">+ <span data-i18n="mfCreateFolder">Folder</span></button>
+            <button class="mfc-a" onclick="quickUpload()" style="background:var(--accent);border-color:var(--accent);color:#fff" data-i18n="mfQuickUpload">↑ Wgraj</button>
             <input type="file" id="mfFileInput" accept=".stl,.3mf,.obj" hidden>
-            <input type="text" id="mfSearch" data-i18n-placeholder="mfSearchPh" placeholder="Szukaj po nazwie..." oninput="mfRender()">
-            <button class="nav-btn nav-btn-primary" onclick="mfCreateFolder()" data-i18n="mfCreateFolder">+ Folder</button>
-            <label style="display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:11.5px;color:var(--muted);cursor:pointer;text-transform:uppercase;letter-spacing:.05em"><input type="checkbox" id="mfSelectAll" onchange="mfToggleAll(this.checked)"> <span data-i18n="mfSelectAll">Wszystkie</span></label>
-            <button id="mfBulkDelete" onclick="mfBulkDelete()" class="nav-btn" style="display:none;color:var(--danger);border-color:var(--danger)" data-i18n="mfBulkDelete">Usuń</button>
         </div>
         <div id="mfFolderChips" style="display:flex;gap:8px;overflow-x:auto;padding:16px 2px 4px;scrollbar-width:thin"></div>
         <div class="files-empty" id="myFilesEmpty">
@@ -980,45 +993,75 @@
 
 <!-- ═══ KONTO ═══ -->
 <div class="page" id="page-konto">
-    <div class="account">
+  <div class="acct-wrap">
+    <div class="acct-head">
+      <div>
+        <span class="prt-kicker" data-i18n="kontoKicker">Panel konta</span>
         <h2 data-i18n="kontoTitle">Moje konto</h2>
-        <div class="account-card">
-            <h3 data-i18n="kontoProfile">Profil</h3>
-            <div id="kontoEmail" style="font-size:14px"></div>
-            <div id="kontoAdmin" style="display:none;color:var(--primary);font-weight:600;margin-top:4px">ADMIN</div>
-            <div id="kontoCreated" style="font-size:13px;color:var(--text-secondary);margin-top:4px"></div>
-                    </div>
-                    <div class="account-card">
-                        <h3 data-i18n="kontoShipping">📦 Dane do wysyłki druku</h3>
-                        <p style="font-size:12.5px;color:var(--text-secondary);margin:0 0 10px">Te dane automatycznie wypełnią się w formularzu zamówienia druku — możesz je zmienić w każdej chwili.</p>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                            <input id="kontoName" placeholder="Imię i nazwisko" style="padding:10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px">
-                            <input id="kontoPhone" placeholder="Telefon" style="padding:10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px">
-                            <input id="kontoCity" placeholder="Kod pocztowy / Miasto" style="padding:10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px">
-                            <input id="kontoCountry" placeholder="Kraj (PL)" value="PL" style="padding:10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px">
-                        </div>
-                        <input id="kontoAddress" placeholder="Ulica i numer" style="padding:10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;width:100%;margin-top:10px">
-                        <button onclick="saveKontoShipping()" style="padding:10px 20px;background:var(--primary);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;margin-top:10px">Zapisz dane do wysyłki</button>
-                        <div id="kontoShipStatus" style="font-size:13px;color:var(--success);margin-top:6px"></div>
-                    </div>
-        <div class="account-card">
-            <h3 data-i18n="kontoQuota">Przechowywanie</h3>
-            <div class="quota-track"><div id="kontoQuotaFill" style="height:100%;background:var(--primary);border-radius:99px;transition:width .3s;width:0"></div></div>
-            <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary);margin-top:6px">
-                <span id="kontoQuotaUsed"></span>
-                <span id="kontoQuotaLimit"></span>
-            </div>
-        </div>
-        <div class="account-card" style="border:1px solid #fca5a5">
-            <h3 style="color:var(--error);font-size:14px">⚠️ Strefa niebezpieczna</h3>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-                <button onclick="if(confirm('Usunąć WSZYSTKIE moje modele?')) deleteAllMyFiles()" style="padding:8px 14px;background:#fff;color:var(--error);border:1px solid #fca5a5;border-radius:var(--radius-sm);cursor:pointer;font-size:13px">Usuń wszystkie moje modele</button>
-                <button onclick="if(confirm('Wylogować WSZYSTKIE sesje (telefon, inne przeglądarki)?')) logoutEverywhere()" style="padding:8px 14px;background:#fff;color:var(--error);border:1px solid #fca5a5;border-radius:var(--radius-sm);cursor:pointer;font-size:13px">Wyloguj wszędzie</button>
-                <button onclick="if(confirm('Na pewno usunąć konto? Ta operacja jest nieodwracalna.')) deleteMyAccount()" style="padding:8px 14px;background:var(--error);color:#fff;border:none;border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:600">Usuń konto</button>
-            </div>
-        </div>
-        <button onclick="logout()" style="padding:10px 20px;background:var(--error-light);color:var(--error);border:1px solid #fca5a5;border-radius:var(--radius-sm);cursor:pointer;font-weight:600;font-size:14px" data-i18n="navLogout">Wyloguj</button>
+        <p data-i18n="kontoSub">Profil, dane do wysyłki i przechowywanie — wszystko w jednym miejscu.</p>
+      </div>
+      <a class="acct-btn acct-btn--g" href="/konto" data-i18n="kontoOrdersBtn">Moje zamówienia →</a>
     </div>
+    <div class="acct-grid">
+      <div class="acct-card">
+        <div class="acct-k"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg> <span data-i18n="kontoProfile">Profil</span></div>
+        <div class="acct-id">
+          <div class="acct-avatar" id="kontoAvatar">?</div>
+          <div style="min-width:0">
+            <div class="acct-mail" id="kontoEmail">—</div>
+            <div class="acct-sub" id="kontoCreated"></div>
+          </div>
+        </div>
+        <div class="acct-rows">
+          <div class="acct-row"><b data-i18n="kontoRowRole">Rola</b><span><span class="acct-badge" id="kontoAdmin" style="display:none">ADMIN</span><span id="kontoRole" data-i18n="kontoRowUser">Użytkownik</span></span></div>
+          <div class="acct-row"><b data-i18n="kontoRowFiles">Twoje pliki</b><span id="kontoFileCount">—</span></div>
+          <div class="acct-row"><b data-i18n="kontoRowOrders">Zamówienia druku</b><span id="kontoOrderCount">—</span></div>
+        </div>
+      </div>
+      <div class="acct-card">
+        <div class="acct-k"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="1"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2M3 12h18"/></svg> <span data-i18n="kontoQuota">Przechowywanie</span></div>
+        <div class="quota-track"><div id="kontoQuotaFill" style="height:100%;background:var(--accent);border-radius:99px;transition:width .3s;width:0"></div></div>
+        <div class="acct-quota"><span><b id="kontoQuotaUsed">0 MB</b> / <span data-i18n="kontoOf">z</span> <b id="kontoQuotaLimit">100 MB</b></span><span id="kontoQuotaPct" class="acct-badge" style="letter-spacing:.04em">0%</span></div>
+        <div class="acct-foot">
+          <span class="acct-note" style="margin:0" data-i18n="kontoQuotaHint">Kliknięcia w reklamy i zamówienia wydłużają retencję plików.</span>
+          <a class="acct-btn acct-btn--g" href="#" onclick="go('files');return false" data-i18n="kontoManageFiles">Zarządzaj plikami →</a>
+        </div>
+      </div>
+      <div class="acct-card acct-card--wide">
+        <div class="acct-k"><svg viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5 9-5zM3 8v8l9 5 9-5V8M12 13v8"/></svg> <span data-i18n="kontoShipping">Dane do wysyłki druku</span></div>
+        <p class="acct-note" data-i18n="kontoShippingHint">Te dane automatycznie wypełnią formularz zamówienia druku — możesz je zmienić w każdej chwili.</p>
+        <div class="acct-f">
+          <div class="acct-2">
+            <div class="acct-field"><label data-i18n="fName">Imię i nazwisko</label><input id="kontoName" class="acct-in" placeholder="Jan Kowalski"></div>
+            <div class="acct-field"><label data-i18n="fPhone">Telefon</label><input id="kontoPhone" class="acct-in" placeholder="+48 600 000 000"></div>
+          </div>
+          <div class="acct-2">
+            <div class="acct-field"><label data-i18n="fAddr">Ulica i numer</label><input id="kontoAddress" class="acct-in" placeholder="ul. Przykładowa 12/3"></div>
+            <div class="acct-2" style="gap:12px">
+              <div class="acct-field"><label data-i18n="fCity">Kod / miasto</label><input id="kontoCity" class="acct-in" placeholder="80-299 Gdańsk"></div>
+              <div class="acct-field"><label data-i18n="fCountry">Kraj</label><input id="kontoCountry" class="acct-in" value="PL"></div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <button onclick="saveKontoShipping()" class="acct-btn acct-btn--p" data-i18n="kontoSave">Zapisz dane do wysyłki</button>
+            <span id="kontoShipStatus" class="acct-ok"></span>
+          </div>
+        </div>
+      </div>
+      <div class="acct-card acct-card--wide">
+        <div class="acct-k" style="color:#b91c1c"><svg viewBox="0 0 24 24" style="stroke:#dc2626"><path d="M12 3l9 17H3l9-17zM12 10v5M12 17.5v.5"/></svg> <span data-i18n="kontoDanger">Strefa niebezpieczna</span></div>
+        <p class="acct-note" data-i18n="kontoDangerHint">Operacje nieodwracalne. Usunięcie konta kasuje wszystkie pliki, foldery i linki natychmiast.</p>
+        <div class="acct-foot" style="border-top:none;margin-top:0;padding-top:0">
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button onclick="if(confirm('Usunąć WSZYSTKIE moje modele?')) deleteAllMyFiles()" class="acct-btn acct-btn--d" data-i18n="kontoDelFiles">Usuń wszystkie moje modele</button>
+            <button onclick="if(confirm('Wylogować WSZYSTKIE sesje (telefon, inne przeglądarki)?')) logoutEverywhere()" class="acct-btn acct-btn--d" data-i18n="kontoLogoutAll">Wyloguj wszędzie</button>
+            <button onclick="if(confirm('Na pewno usunąć konto? Ta operacja jest nieodwracalna.')) deleteMyAccount()" class="acct-btn acct-btn--red" data-i18n="kontoDelAccount">Usuń konto</button>
+          </div>
+          <button onclick="logout()" class="acct-btn acct-btn--g" data-i18n="navLogout">Wyloguj</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══ FOOTER ═══ -->
@@ -1290,13 +1333,13 @@
 </script>
 <script type="module">
     import './js/shared.js?v=81';
-    import './js/i18n.js?v=99';
+    import './js/i18n.js?v=100';
     import './js/viewer3d.js?v=81';
     import './js/auth.js?v=83';
     import './js/convert.js?v=83';
     import './js/discover.js?v=81';
-    import './js/myfiles.js?v=87';
-    import './js/account.js?v=82';
+    import './js/myfiles.js?v=61';
+    import './js/account.js?v=6';
     import './js/main.js?v=83';
 </script>
 
