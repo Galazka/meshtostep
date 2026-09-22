@@ -110,6 +110,14 @@ async function loadHomeRecent(){
       a.innerHTML=`<div style="height:120px;background:var(--bg-alt);display:flex;align-items:center;justify-content:center;overflow:hidden">${img?`<img src="${img}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;color:var(--text-muted);font-size:12px">Podglad 3D</div>`:`<span style="color:var(--text-muted);font-size:12px">Podglad 3D</span>`}</div><div style="padding:10px"><div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${(m.title||m.slug||'Model').replace(/</g,'&lt;')}</div><div style="font-size:11px;color:var(--text-secondary)">by ${(m.username||'anon').replace(/</g,'&lt;')} · ${(m.tags||[]).slice(0,2).join(', ').replace(/</g,'&lt;')}</div></div>`;
       grid.appendChild(a);
     }
+    // dolaczenie CTA-kart gdy publicznych modeli jest malo — sekcja nigdy nie wygląda na "urwana"
+    while (grid.children.length < 4) {
+      const cta = document.createElement('a');
+      cta.href = '#upload'; cta.onclick = function(){ scrollToUpload(); return false; };
+      cta.style.cssText = 'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:172px;border:1px dashed var(--border);border-radius:10px;text-decoration:none;color:var(--text-secondary);background:var(--bg-alt)';
+      cta.innerHTML = '<span style="font-size:22px">＋</span><span style="font-weight:700;font-size:13px;color:var(--text)">Wgraj swój model</span><span style="font-size:11px">tu mógłby być Twój projekt</span>';
+      grid.appendChild(cta);
+    }
   }catch(e){}
 }
 loadHomeRecent();
