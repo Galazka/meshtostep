@@ -300,7 +300,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
 .vnav a.vl.pr{color:#fff;background:#2B5CE6}
 .vnav a.vl.pr:hover{background:#1d4ed8}
 .vnav .vsp{flex:1}
-.vsub{background:#fff;border-bottom:1px solid #e2e8f0;display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 16px;position:sticky;top:56px;z-index:19;min-width:0}
+.vsub{background:#fff;border-bottom:1px solid #e2e8f0;display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 16px;position:sticky;top:56px;z-index:19;min-width:0} .vsub .pills{flex:1;justify-content:flex-start}
 .pills{display:flex;gap:8px;flex-wrap:wrap;flex:1;justify-content:center}
 .pill{font-size:12px;padding:4px 10px;border:1px solid #e2e8f0;border-radius:999px;background:#fff;color:#64748b}
 .btn{padding:9px 18px;border-radius:8px;font-weight:600;text-decoration:none;border:none;cursor:pointer}
@@ -318,7 +318,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
 .yt{margin-top:12px}
 .yt iframe{width:100%;height:220px;border:none;border-radius:8px}
 .side{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;height:fit-content}
-@media(max-width:900px){.vnav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent)}.vnav a.vl{padding:8px 7px;font-size:12px}.vsub{top:0;position:static}.vsub .pills{flex:1 1 100%;justify-content:flex-start}.vsub .btn{flex:1 1 0;white-space:normal;text-align:center;font-size:13px;padding:11px 12px;min-width:0;overflow-wrap:anywhere}.vfoot-grid{grid-template-columns:1fr 1fr!important}.vfoot-grid>div:first-child{grid-column:1/-1}}
+@media(max-width:900px){.vnav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent)}.vnav a.vl{padding:8px 7px;font-size:12px}.vsub{top:0;position:static}.vsub .pills{flex:1 1 100%;justify-content:flex-start;margin-bottom:2px}.vsub .btn{flex:1 1 100%;white-space:normal;text-align:center;font-size:13px;padding:12px;min-width:0;overflow-wrap:anywhere}.vfoot-grid{grid-template-columns:1fr 1fr!important}.vfoot-grid>div:first-child{grid-column:1/-1}}
 @media(max-width:480px){.vfoot-grid{grid-template-columns:1fr!important}}.wrap{grid-template-columns:1fr;min-width:0}#viewer{height:300px}.top .btn{padding:8px 12px;font-size:13px}.top select{font-size:12px;padding:6px}.top>div{min-width:0;flex-wrap:wrap;gap:6px}.wrap>div{min-width:0;overflow-wrap:anywhere}.desc{overflow-wrap:anywhere}}
 </style>
 <script type="importmap">{"imports":{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js"}}</script>
@@ -337,7 +337,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
   <a class="vl pr" href="/konto">Moje konto</a>
 </nav>
 <div class="vsub">
-  <div class="pills" style="flex:1;justify-content:flex-start">__PILLS__</div>
+  <div class="pills" style="justify-content:flex-start">__PILLS__</div>
   <a class="btn btn-primary" href="/zamow?job=__UUID__" style="text-decoration:none">🖨 Wydrukuj ten model — od 10 zł</a>
   <a class="btn btn-sec" href="#" onclick="showEmbed('__TOKEN__');return false">⧉ Embed</a>
 </div>
