@@ -104,7 +104,7 @@ footer a{color:#cbd5e1;text-decoration:none}
   <p><strong>Wipe (wycieranie przy retrakcji)</strong> to przedłużenie ostatniego ruchu ekstruzji o 0,2–1,0 mm „w powietrze”, poza obrys części: końcówka dyszy przejeżdża jeszcze kawałek bez podawania i zgarnia porcję, która inaczej wykapałaby na początku następnego przejazdu. Daje to mniejsze stringi bez zwiększania dystansu, a przy okazji redukuje „dzioby” na ścianach. W Orca/Bambu Studio to opcja „Wipe while retracting”, w Cura „Wipe while retracting” + „retraction wipe distance”.</p>
   <p><strong>Z-hop (podniesienie osi Z na czas przejazdu)</strong> podnosi dyszę o 0,15–0,4 mm, żeby nie zeskrobywała już położonych krawędzi. Pomocny nad dużymi przerwami, szkodliwy gdy nadużywany: każdy hop to drgania i punkt kapania w locie, a na wypełnieniach zostawia „dziurki od klucza”. Przy sprawnym combingu często zbędny.</p>
   <ul>
-    <li><strong>Kolejność poprawy stringów:</strong> suchy filament → temperatura w dół o 5°C → dystans prędkości → wipe on → dopiero na końcu Z-hop i combing.</li>
+    <li><strong>Kolejność poprawy stringów:</strong> suchy filament → temperatura −5°C → dystans → prędkość cofania → wipe on → na końcu Z-hop i combing.</li>
     <li>Prędkość przejazdów: 150–300 mm/s skraca czas, w którym stop może kapać — najtańszy zysk, zanim dotkniesz retrakcji.</li>
     <li>Przy AMS/MMU z wieżą czyszczącą priorytetem jest purge, nie retrakcja.</li>
   </ul>
@@ -129,10 +129,10 @@ footer a{color:#cbd5e1;text-decoration:none}
 
   <h2>OrcaSlicer i Klipper — co gdzie ustawiasz</h2>
   <p><strong>Orca / Bambu Studio</strong> (ten sam układ pól): Settings → Print settings → Other → Retraction: „Retraction distance”, „Retraction speed”, „Enable wipe”, „Retract on travel moves” (z progiem minimalnego przejazdu ~1,0–1,5 mm — krótsze ruchy nie mają sensu cofać), „Combing mode: In fill / Not in skin” i „Z hop when retracting”. Do auto-testu służy kreator <strong>Calibration → Flow Dynamics</strong>, który nadrukuje serię kolumn i dobiera retrakcję i pressure advance za Ciebie.</p>
-  <p><strong>Klipper</strong> (K1, KE, Voron, Prusa XL na Klipperze): w `printer.cfg` sekcja <code>[firmware_retract]</code> z <code>default_retract_length</code> / <code>default_retract_speed</code>; w slicerze gcode_flavor „klipper”, żeby G10/G11 szły do firmware zamiast być emulowane ruchem E. Dodatkowo <strong>pressure_advance 0,02–0,08</strong> redukuje „kapanie startowe” po wlocie w linię — pośrednio zdejmuje robotę retrakcji; testuj go przed cięciem wartości retrakcji w dół.</p>
+  <p><strong>Klipper</strong> (K1, KE, Voron, Prusa XL na Klipperze): w pliku <code>printer.cfg</code> sekcja <code>[firmware_retract]</code> z <code>default_retract_length</code> / <code>default_retract_speed</code>; w slicerze gcode_flavor „klipper”, żeby G10/G11 szły do firmware zamiast być emulowane ruchem E. Dodatkowo <strong>pressure_advance 0,02–0,08</strong> redukuje „kapanie startowe” po wlocie w linię — pośrednio zdejmuje robotę retrakcji; testuj go przed cięciem wartości retrakcji w dół.</p>
 
   <h2>Test na wieżę — jak czytać wyniki</h2>
-  <p>Protokół, który powtarzamy przy każdym nowym filamentie: dwie prostopadłościenne kolumny 20×20 mm, odstęp 30–50 mm, wysokość 60–100 mm, wypełnienie 10–15%, przejazdy wyłącznie po powietrzu. Warunki bazowe: suchy materiał, temperatura dolna z okna, startowa retrakcja z tabeli. Potem <strong>jedna zmienna na wydruk</strong>:</p>
+  <p>Protokół, który powtarzamy przy każdym nowym filamentie: dwie kolumny 20×20 mm, odstęp 30–50 mm, wysokość 60–100 mm, wypełnienie 10–15%, przejazdy wyłącznie po powietrzu. Warunki: suchy materiał, temperatura dolna, retrakcja startowa z tabeli. Potem <strong>jedna zmienna na wydruk</strong>:</p>
   <ol>
     <li><strong>Ciągłe, grube „liny” między kolumnami</strong> — za słaba retrakcja: dystans +0,2 mm (direct) / +0,5 mm (bowden) albo prędkość retrakcji +5 mm/s.</li>
     <li><strong>Włoskowate, przerwane nitki</strong> — zwykle temperatura: −5°C. Poniżej ~195°C PLA zaczyna niedodrukowywać — wróć wtedy o krok wyżej.</li>
@@ -143,14 +143,14 @@ footer a{color:#cbd5e1;text-decoration:none}
   <p>Prawidłowo ustawiona retrakcja wygląda tak: między kolumnami widać pojedyncze, napięte „włoski”, które odpadają pod palcem bez śladu na modelu. W PETG celuj w „prawie zero” — ideał okupisz niedodrukami.</p>
 
   <blockquote>
-    Zasada z pracowni: nici nie kalibruje się w nieskończoność. Trzy wydruki testowe per zmienna, a jak nie ma poprawy — problem jest w wilgoci, temperaturze albo zużytym hotendzie, nie w liczbie milimetrów cofnięcia.
+    Zasada z pracowni: nici nie kalibruje się w nieskończoność. Trzy wydruki testowe per zmienna, a jak nie ma poprawy — winna jest wilgoć, temperatura albo zużyty hotend, nie milimetry cofnięcia.
   </blockquote>
 
   <h2>Najczęściej zadawane pytania</h2>
   <h3>Czy direct drive potrzebuje w ogóle retrakcji?</h3>
-  <p>Tak, ale niewielkiej. Krótka kolumna stopu nadal utrzymuje ciśnienie resztkowe i kapie przy długich przejazdach przez puste obszary. 0,2–0,4 mm plus combing wystarcza w druku single-material.</p>
+  <p>Tak, ale niewielkiej. Krótka kolumna stopu nadal utrzymuje ciśnienie resztkowe i kapie przy długich przejazdach. 0,2–0,4 mm plus combing wystarcza w druku single-material.</p>
   <h3>Bowden na 0 mm — dlaczego nie?</h3>
-  <p>Bo samo cofnięcie nie jest problemem, problemem jest odpowiedź: przy 50 cm sprężystego łuku cofnięcie 1 mm zgasi ściśliwość filamentu, nie ciśnienie w hotendzie. Musisz nadrobić opóźnienie sprężyny większym dystansem; inaczej nici zostają, a przy okazji dostajesz niedodruk.</p>
+  <p>Bo samo cofnięcie nie jest problemem, problemem jest reakcja: przy 50 cm sprężystego łuku 1 mm cofnięcia znosi ściśliwość filamentu, nie ciśnienie w hotendzie. Trzeba nadrobić opóźnienie sprężyny dystansem, inaczej nici zostają i dokładają się niedodruki.</p>
   <h3>Czy większa prędkość przejazdów zastąpi retrakcję?</h3>
   <p>Częściowo tak — szybciej mijasz otwarte przestrzenie, mniej zdąży wykapać. Nie zastąpi jej przy materiałach niskolepkich (PETG) i dużych odstępach; zmieniaj oba parametry, ale po jednym naraz.</p>
   <h3>Mam zator — to wina retrakcji?</h3>

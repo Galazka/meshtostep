@@ -76,17 +76,17 @@ footer a{color:#cbd5e1;text-decoration:none}
   <div class="meta"><span>📅 20.09.2026</span><span>✍️ Zespół 3DFILE.link</span><span>⏱ 8 min czytania</span></div>
   <img src="/asset/blog/cover-podpory-i-orientacja-czesci.svg" alt="podpory i orientacja części przy druku 3d fdm" class="hero-img" loading="lazy">
 
-  <p>Drukarka FDM nie potrafi drukować w powietrzu — każda kropla stopionego plastiku musi na czymś wylądować. Stąd dwa nawzajem ze sobą splecione pojęcia, które decydują o jakości i koszcie wydruku więcej niż marka filamentu: <strong>orientacja części na stole</strong> i <strong>podpory</strong>. Dobra wiadomość: w 80 przypadków na 100 wystarczy obrócić model o kilka stopni, żeby zniknęła połowa podpór — a razem z nią cena, czas i brzydkie ślady na powierzchni. W tym poradniku podaję konkretne liczby: od jakiego kąta robi się niebezpiecznie, gdzie kończą się mostki i ile procent kosztują podpory.</p>
+  <p>Drukarka FDM nie drukuje w powietrzu — każda kropla stopionego plastiku musi na czymś wylądować. Stąd dwa splecione pojęcia, ważniejsze dla jakości i kosztu niż marka filamentu: <strong>orientacja części na stole</strong> i <strong>podpory</strong>. Dobra wiadomość: w 80 przypadków na 100 wystarczy obrócić model o kilka stopni, żeby zniknęła połowa podpór — a razem z nią cena, czas i brzydkie ślady na powierzchni. W tym poradniku podaję konkretne liczby: od jakiego kąta robi się niebezpiecznie, gdzie kończą się mostki i ile procent kosztują podpory.</p>
 
   <h2>Kąt samonośności: granica 45–55 stopni</h2>
   <p>Wyobraź sobie nawis — fragment modelu, który wychodzi poziomo z pionowej ściany. Drukarka układa kolejne warstwy tak, że każda opiera się na poprzedniej, mniej więcej tak jak cegły w cofanej wieżyczce. Póki nawis odchyla się od pionu o mniej niż 45 stopni, nowa warstwa ma solidne oparcie w starej i wszystko trzyma się formy. Powyżej 45 stopni zaczynają się problemy, a granicą praktyczną jest <strong>kąt 50–55 stopni od pionu</strong> — przy głębszym pochyleniu pasmo plastiku zwisa ku dołowi niczym spaghetti, rogi opadają, a powierzchnia zamienia się w drżącą sieć.</p>
-  <p>Wartości graniczne zależą od szerokości linii i wysokości warstwy: dysza 0,4 mm przy warstwie 0,2 mm utrzyma samonośnie nawis bliższy 55 stopni, a drobna dysza 0,25 mm z cienką warstwą nawet nieco więcej. Z kolei drukarki z mocnym chłodzeniem — na przykład Prusa MK4S z wentylacją 360° — potrafią przeciągnąć tę granicę o kilkanaście stopni. Zasada na projektowanie: <strong>jeśli możesz, tak obróć model, by żaden nawis nie przekraczał 45 stopni</strong> — wtedy nie potrzebujesz w ogóle podpór, o ile tylko.</p>
+  <p>Wartości graniczne zależą od szerokości linii i wysokości warstwy: dysza 0,4 mm przy warstwie 0,2 mm utrzyma samonośnie nawis bliższy 55 stopni, a drobna dysza 0,25 mm z cienką warstwą nawet nieco więcej. Z kolei drukarki z mocnym chłodzeniem — na przykład Prusa MK4S z wentylacją 360° — potrafią przeciągnąć tę granicę o kilkanaście stopni. Zasada projektowa: <strong>obróć model tak, by żaden nawis nie przekraczał 45 stopni</strong> — wtedy podpory w ogóle nie są potrzebne.</p>
 
   <h2>Mostki: wolny rozpięcie do około 5 mm</h2>
-  <p>Drugą bronią przeciw podporom jest mostkowanie — rozpięcie materiału między dwoma filarami bez podparcia od spodu. Chłodzony nawiewem plastik utrzymuje kształt niczym lina między dwoma drzewami, ale tylko na krótkim odcinku. W praktyce FDM: <strong>mostki do około 5 mm rozpiętości wychodzą gładkie, do 10 mm już zwykle widać obwis i ślad na spodzie, a powyżej 15–20 mm potrzebne są podpory albo zabawa w „drukuj pod kątem”</strong>. Warto pamiętać, że mostek to zawsze najsłabszy fragment powierzchni — tam, gdzie spód elementu jest widoczny lub ważny funkcjonalnie, często taniej jest dodać jedną podporę niż ratować estetykę prędkością i chłodzeniem.</p>
+  <p>Drugą bronią przeciw podporom jest mostkowanie — rozpięcie materiału między dwoma filarami bez podparcia od spodu. Chłodzony nawiewem plastik utrzymuje kształt niczym lina między dwoma drzewami, ale tylko na krótkim odcinku. W praktyce FDM: <strong>mostki do około 5 mm rozpiętości wychodzą gładkie, do 10 mm już zwykle widać obwis i ślad na spodzie, a powyżej 15–20 mm potrzebne są podpory albo zabawa w „drukuj pod kątem”</strong>. Pamiętaj też: mostek to najsłabszy fragment powierzchni — gdy spód elementu jest widoczny, taniej dodać jedną podporę niż ratować estetykę prędkością i chłodzeniem.</p>
 
   <h2>Podpory linearne versus drzewo — ile to naprawdę kosztuje</h2>
-  <p>Gdy podpór nie da się uniknąć, wybór pada dziś najczęściej na jeden z dwóch trybów. <strong>Podpory linearne (regularne)</strong> rosną jak grid z gęstą kratą pod każdym nawisem — są sztywne, pewnie trzymają duże powierzchnie, ale ciężko schodzą i zostawiają wyraźne blizny. <strong>Podpory drzewiaste (tree/organiczne)</strong> to gałęzie, które „wyrastają” ze stołu i podpierają tylko tam, gdzie trzeba — mniej materiału, łatwiejsze usuwanie, czystsza powierzchnia, ale dłuższe ścieżki ruchu i gorsza stabilność przy bardzo wąskich, wysokich zwisach.</p>
+  <p>Gdy podpór nie da się uniknąć, wybór pada dziś najczęściej na jeden z dwóch trybów. <strong>Podpory linearne (regularne)</strong> to gęsta krata pod każdym nawisem — sztywne i pewne na dużych powierzchniach, ale ciężko schodzą i zostawiają blizny. <strong>Podpory drzewiaste (tree/organiczne)</strong> to gałęzie wyrastające ze stołu, które podpierają tylko tam, gdzie trzeba — mniej materiału, łatwiejsze usuwanie, czystsza powierzchnia, ale gorsza stabilność przy wysokich, wąskich zwisach.</p>
   <div class="box tip">
     <table>
       <thead>
@@ -104,38 +104,38 @@ footer a{color:#cbd5e1;text-decoration:none}
   </div>
 
   <h2>Warstwa graniczna i szczelina 0,2 mm</h2>
-  <p>Sukces w usuwaniu podpór nie zależy od samej ich obecności, ale od tego, jak bardzo skleią się z modelem. Tu rządzą dwa parametry w slicerze: <strong>liczba warstw granicznych (interface layers)</strong> i <strong>szczelina pionowa między podporą a częścią (support Z distance)</strong>. Ustawiamy je tak, by podpora trzymała element mechanicznie, ale nie termicznie — dosłownie „dotykała, nie zrastała się”.</p>
+  <p>Sukces w usuwaniu podpór nie zależy od samej ich obecności, ale od tego, jak bardzo skleią się z modelem. Tu rządzą dwa parametry w slicerze: <strong>liczba warstw granicznych (interface layers)</strong> i <strong>szczelina pionowa między podporą a częścią (support Z distance)</strong>. Cel: podpora ma trzymać mechanicznie, a nie termicznie — „dotykać, nie zrastać się”.</p>
   <ul>
-    <li><strong>Szczelina Z 0,2 mm</strong> — to nasz standard dla PLA i PETG przy dyszy 0,4 mm; przy 1–2 pełnych warstwach granicznych daje powierzchnię z lekkimi rysami, którą da się wyczyścić palcami.</li>
-    <li><strong>Szczelina 0,10–0,15 mm</strong> — podpora niemal zrasta się z modelem; wybieraj tylko tam, gdzie geometria grozi odkształceniem i liczy się sztywność, nie estetyka.</li>
-    <li><strong>Szczelina 0,25–0,30 mm</strong> — podpora odpada prawie sama, ale górna warstwa elementu może opaść i wyglądać jak falowana blaszka.</li>
+    <li><strong>Szczelina Z 0,2 mm</strong> — standard dla PLA i PETG przy dyszy 0,4 mm; z 1–2 warstwami granicznymi daje lekkie rysy schodzące pod palcami.</li>
+    <li><strong>Szczelina 0,10–0,15 mm</strong> — podpora niemal zrasta się z modelem; wybieraj tam, gdzie liczy się sztywność, nie estetyka.</li>
+    <li><strong>Szczelina 0,25–0,30 mm</strong> — podpora odpada sama, ale górna warstwa może opaść i wyjść falowana.</li>
   </ul>
   <p>Warto też znać triki ograniczające kontakt: tryb „support on build plate only” (podpory tylko ze stołu, nie z modelu), blokada podpór w konkretnym obszarze oraz — przy drukarkach dwugłowicowych — <strong>rozpuszczalne podpory PVA lub HIPS</strong>, które znoszą problem kontaktu całkowicie. Rozpuszczalne podpory kosztują jednak sporo filamentu i cierpliwości (PVA wymaga suchego przechowywania), więc w produkcji seryjnej stosuje się je rzadko.</p>
 
   <h2>Sześć kształtów, sześć strategii orientacji</h2>
-  <p>Najlepsza teorią jest ta, którą da się zastosować do konkretnego przedmiotu, który leży na biurku. Poniżej sześć typowych elementów zlecanych do naszej pracowni i sposób, w jaki je kładziemy na stole — oraz czego ta decyzja nas kosztuje.</p>
+  <p>Najlepsza teoria to ta, którą da się zastosować do przedmiotu leżącego na biurku. Poniżej sześć typowych elementów z naszej pracowni i ich orientacje.</p>
   <div class="box tip">
     <table>
       <thead>
         <tr><th>Kształt</th><th>Orientacja</th><th>Podpory</th><th>Dlaczego tak</th></tr>
       </thead>
       <tbody>
-        <tr><td>Klips / zatrzask</td><td>Płasko, szerokość na stół</td><td>brak</td><td>Zginanie pracuje w płaszczyźnie warstw — najwytrzymalszej; druk w pionie złamałby klips na granicy warstw przy pierwszym zagięciu.</td></tr>
+        <tr><td>Klips / zatrzask (3–5 mm grubości)</td><td>Płasko, szerokość na stół</td><td>brak</td><td>Zginanie pracuje w płaszczyźnie warstw — najwytrzymalszej; w pionie klips o ściance 3 mm złamałby się na granicy warstw przy pierwszym zagięciu.</td></tr>
         <tr><td>Obudowa / pudełko</td><td>Ścianą na stół, otworem ku górze</td><td>minimalne, pod wewnętrznymi półkami</td><td>Pionowe ściany są samonośne, a otwory skierowane w górę wychodzą okrągłe; kładzenie obudowy „na plecach” mnoży podpory wewnątrz.</td></tr>
-        <tr><td>Kołek / wałek</td><td>Pionowo (oś Z)</td><td>brak</td><td>Położony na boku kołek to owalne przekrój i karbowana powierzchnia; pion daje pełną okrągłość, a średnice do 12 mm trzymają prostoliniowość bez problemu.</td></tr>
-        <tr><td>Litera / znak</td><td>Płasko, front do dołu</td><td>brak</td><td>Gładka lico z pierwszej warstwy, krawędzie ostre jak w szablonie; cienką literę zabezpiecza się brimem zamiast podpór.</td></tr>
-        <tr><td>Figurka</td><td>Pionowo, lekko pochylona</td><td>drzewo pod ramionami i brodą</td><td>Wysokość liczy się w warstwach, więc i tak druk trwa godzinami — drzewiaste podpory dodają najmniej materiału, a pochylenie głowy skraca zwisy twarzy.</td></tr>
-        <tr><td>Uchwyt / wspornik</td><td>Płasko, ramię wzdłuż osi X</td><td>brak lub minimum</td><td>Obciążenie idzie wzdłuż ciągłych linii, a nie przez granice warstw; podpora na grzbiecie ramienia osłabiłaby najbardziej naprężone miejsce.</td></tr>
+        <tr><td>Kołek / wałek</td><td>Pionowo, oś Z</td><td>brak</td><td>Położony na boku kołek to owalny przekrój i karbowana powierzchnia; pion daje okrągłość z tolerancją do ±0,05 mm na średnicy do 12 mm.</td></tr>
+        <tr><td>Litera / znak (min. 2 mm grubości)</td><td>Płasko, front do dołu</td><td>brak</td><td>Gładka lico z pierwszej warstwy, krawędzie ostre jak w szablonie; cienką literę zabezpiecza się brimem zamiast podpór.</td></tr>
+        <tr><td>Figurka</td><td>Pionowo, pochylona 5–10°</td><td>drzewo pod ramionami i brodą</td><td>Druk figurki i tak trwa godzinami — drzewo dodaje najmniej materiału, a pochylenie 5–10° skraca zwisy twarzy.</td></tr>
+        <tr><td>Uchwyt / wspornik</td><td>Płasko, ramię min. 2 mm wzdłuż osi X</td><td>brak lub minimum</td><td>Obciążenie idzie wzdłuż ciągłych linii, a nie przez granice warstw; podpora na grzbiecie ramienia osłabiłaby najbardziej naprężone miejsce.</td></tr>
       </tbody>
     </table>
   </div>
-  <p>Zauważ wspólny mianownik: <strong>warstwa to kierunek słabszy</strong>. Zawsze, gdy element przenosi siłę, kładziemy go tak, żeby siła szła wzdłuż linii, a nie między warstwami. O szczegółach wytrzymałości warstw pisaliśmy w poradniku <a href="/blog/tolerancje-i-dokladnosc-druku-3d.html">tolerancje i dokładność druku 3D</a> — tam też o tym, dlaczego otwór drukowany w osi Z będzie minimalnie za mały.</p>
+  <p>Zauważ wspólny mianownik: <strong>warstwa to kierunek słabszy</strong>. Zawsze, gdy element przenosi siłę, kładziemy go tak, żeby siła szła wzdłuż linii, a nie między warstwami. O szczegółach wytrzymałości warstw pisaliśmy w poradniku <a href="/blog/tolerancje-i-dokladnosc-druku-3d.html">tolerancje i dokładność druku 3D</a>.</p>
 
   <h2>Jak podpory wpływają na cenę — i jak tego uniknąć</h2>
   <p>Na <a href="/zamow">zamówienie w 3DFILE.link</a> cena to suma trzech składników: czasu druku, zużytego materiału i ręcznego wykończenia. Podpory podbijają wszystkie trzy naraz: dłuższy czas (nawet +40%), więcej filamentu, plus minuty dziabania kombinierkami, które ktoś musi opłacić. Dlatego przed wyceną każdy plik przechodzi przez nasz protokół orientacji — często wystarczy przechylić model o 20 stopni albo przeprojektować nawis w żeberka, żeby cena spadła o dziesiątki procent. Kilka sprawdzonych trików na start:</p>
   <ul>
     <li><strong>Fazy i żeberka zamiast gładkich zwisów</strong> — co kilka milimetrów „schodki” przywracają punkt podparcia i sprowadzają zwis pod granicę 45°.</li>
-    <li><strong>Wypustka technologiczna</strong> — mały mostek łączący dwie „nogi” podpory pod dużym nawisem skraca rozpiętość mostu poniżej magicznych 5 mm.</li>
+    <li><strong>Wypustka technologiczna</strong> — mały mostek łączący dwa słupki podpory skraca rozpiętość przęsła poniżej 5 mm.</li>
     <li><strong>Druk pod kątem</strong> — pochylenie całego modelu o 20–30 stopni zamienia część podpór w samonośne ścianki, kosztem kilku procent wysokości wydruku.</li>
     <li><strong>Rozbicie na części</strong> — dwie sklejone połowy z płaskimi czopami drukuje się szybciej i czyściej niż jeden model cały w podporach; klejenie epoxy trwa minutę.</li>
   </ul>
@@ -147,7 +147,7 @@ footer a{color:#cbd5e1;text-decoration:none}
   <h2>Najczęściej zadawane pytania (FAQ)</h2>
   <div class="box">
     <h3>Czy podpory zawsze zostawiają ślady?</h3>
-    <p>Przy FDM — praktycznie tak, tylko różną się głębokością. Szczelina 0,2 mm i dwie warstwy graniczne zostawiają lekkie rysy schodzące pod drobnym papierem ściernym. Śladów nie widać, jeśli skierujesz podpieraną powierzchnię do wewnątrz lub na spód elementu — stąd połowa sztuki to obrót modelu.</p>
+    <p>Przy FDM — tak, tylko różnią się głębokością. Szczelina 0,2 mm i dwie warstwy graniczne zostawiają lekkie rysy schodzące pod drobnym papierem ściernym. Śladów nie widać, jeśli skierujesz podpieraną powierzchnię do wewnątrz lub na spód elementu — stąd połowa sztuki to obrót modelu.</p>
   </div>
   <div class="box">
     <h3>Jakie podpory wybrać do figurek?</h3>
