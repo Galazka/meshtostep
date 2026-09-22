@@ -132,3 +132,11 @@ window.toggleTheme = toggleTheme;
 window.loadAdSlots = loadAdSlots;
 // go() and toggleFaq() are defined inline in index.html (navigation + FAQ accordion)
 window.toggleFaqCompat = null;
+// go() uruchamia sie z inline skryptu PRZED imports — dociagnij loader dla biezacego hasha
+(function(){
+    var h=(location.hash||'').replace('#','') || 'home';
+    if (h==='files' && token) loadMyJobs();
+    if (h==='konto' && token) loadAccount();
+    if (h==='discover' && window.doDiscover) window.doDiscover();
+})();
+
