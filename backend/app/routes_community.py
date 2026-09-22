@@ -318,7 +318,8 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
 .yt{margin-top:12px}
 .yt iframe{width:100%;height:220px;border:none;border-radius:8px}
 .side{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;height:fit-content}
-@media(max-width:900px){.vnav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.vnav a.vl{padding:8px 7px;font-size:12px}.vsub{top:0;position:static}.vsub .btn{flex:1 1 auto;white-space:normal;text-align:center;font-size:13px;padding:9px 12px;min-width:0;overflow-wrap:anywhere}.wrap{grid-template-columns:1fr;min-width:0}#viewer{height:300px}.top .btn{padding:8px 12px;font-size:13px}.top select{font-size:12px;padding:6px}.top>div{min-width:0;flex-wrap:wrap;gap:6px}.wrap>div{min-width:0;overflow-wrap:anywhere}.desc{overflow-wrap:anywhere}}
+@media(max-width:900px){.vnav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent)}.vnav a.vl{padding:8px 7px;font-size:12px}.vsub{top:0;position:static}.vsub .pills{flex:1 1 100%;justify-content:flex-start}.vsub .btn{flex:1 1 0;white-space:normal;text-align:center;font-size:13px;padding:11px 12px;min-width:0;overflow-wrap:anywhere}.vfoot-grid{grid-template-columns:1fr 1fr!important}.vfoot-grid>div:first-child{grid-column:1/-1}}
+@media(max-width:480px){.vfoot-grid{grid-template-columns:1fr!important}}.wrap{grid-template-columns:1fr;min-width:0}#viewer{height:300px}.top .btn{padding:8px 12px;font-size:13px}.top select{font-size:12px;padding:6px}.top>div{min-width:0;flex-wrap:wrap;gap:6px}.wrap>div{min-width:0;overflow-wrap:anywhere}.desc{overflow-wrap:anywhere}}
 </style>
 <script type="importmap">{"imports":{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js"}}</script>
 </head>
@@ -587,8 +588,8 @@ window.showEmbed = showEmbed;
   loadRating();
 })();
 </script>
-<footer style="background:#0B1730;color:#bcc9de;margin-top:34px">
-  <div style="max-width:1240px;margin:0 auto;display:grid;grid-template-columns:1.3fr repeat(3,1fr);gap:26px;padding:38px 20px 20px">
+<footer class="vfoot" style="background:#0B1730;color:#bcc9de;margin-top:34px">
+  <div class="vfoot-grid" style="max-width:1240px;margin:0 auto;display:grid;grid-template-columns:1.3fr repeat(3,1fr);gap:26px;padding:38px 20px 20px">
     <div><div style="background:#fff;border-radius:8px;padding:4px 8px;display:inline-flex"><img src="/logo.png?v=83" alt="3dfile" style="height:28px" onerror="this.remove()"></div>
       <p style="font-size:13px;line-height:1.6;margin-top:10px">Hosting i druk 3D. Wrzuć plik — odbierz wydruk pod drzwiami lub link do STEP-a.</p></div>
     <div><b style="color:#fff;font-size:13px">Usługi</b><div style="margin-top:10px;display:grid;gap:7px;font-size:13px"><a style="color:#bcc9de;text-decoration:none" href="/">Hosting STL &amp; STEP</a><a style="color:#bcc9de;text-decoration:none" href="/zamow">Druk 3D na żądanie</a><a style="color:#bcc9de;text-decoration:none" href="/#discover">Odkrywaj projekty</a></div></div>

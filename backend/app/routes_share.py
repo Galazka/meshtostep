@@ -201,7 +201,10 @@ __JSON_LD__
     .pills { display: none; }
     .file-block { max-width: 45vw; }
     .btn { padding: 8px 12px; font-size: 13px; }
-    .vnav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+    .vnav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg,#000 82%,transparent); }
+    .vfoot-grid { grid-template-columns: 1fr 1fr !important; }
+    .vfoot-grid > div:first-child { grid-column: 1 / -1; }
+    .topbar .actions .btn:last-child { flex: 1 1 100%; }
     .actions { width: 100%; }
     .actions .btn { white-space: normal; flex: 1; text-align: center; }
     .actions select { flex: 1; max-width: none; }
@@ -209,6 +212,10 @@ __JSON_LD__
     .vnav a.vl { padding: 8px 7px; font-size: 12px; }
     .topbar { top: 52px; }
     #viewer3d { height: 58dvh; }
+  }
+  @media (max-width: 520px) {
+    .vfoot-grid { grid-template-columns: 1fr !important; }
+    #shareColorBar { flex-wrap: wrap; }
   }
   #descBody img { max-width: 100%; border-radius: 8px; margin: 12px 0; }
   #descBody pre { background: #1e293b; color: #e2e8f0; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 13px; margin: 12px 0; }
@@ -564,8 +571,8 @@ loadComments();
 if (localStorage.getItem('mt_token')) document.getElementById('commentForm').style.display = 'block';
 __DESC_INIT__
 </script>
-<footer style="background:#0B1730;color:#bcc9de;margin-top:0">
-  <div style="max-width:1240px;margin:0 auto;display:grid;grid-template-columns:1.3fr repeat(3,1fr);gap:26px;padding:38px 20px 20px">
+<footer class="vfoot" style="background:#0B1730;color:#bcc9de;margin-top:0">
+  <div class="vfoot-grid" style="max-width:1240px;margin:0 auto;display:grid;grid-template-columns:1.3fr repeat(3,1fr);gap:26px;padding:38px 20px 20px">
     <div><div style="background:#fff;border-radius:8px;padding:4px 8px;display:inline-flex"><img src="/logo.png?v=83" alt="3dfile" style="height:28px" onerror="this.remove()"></div><p style="font-size:13px;line-height:1.6;margin-top:10px">Hosting i druk 3D. Wrzuć plik — odbierz wydruk pod drzwiami lub link do STEP-a.</p></div>
     <div><b style="color:#fff;font-size:13px">Usługi</b><div style="margin-top:10px;display:grid;gap:7px;font-size:13px"><a style="color:#bcc9de;text-decoration:none" href="/">Hosting STL &amp; STEP</a><a style="color:#bcc9de;text-decoration:none" href="/zamow">Druk 3D na żądanie</a><a style="color:#bcc9de;text-decoration:none" href="/#discover">Odkrywaj projekty</a></div></div>
     <div><b style="color:#fff;font-size:13px">Drukarnia</b><div style="margin-top:10px;display:grid;gap:7px;font-size:13px"><a style="color:#bcc9de;text-decoration:none" href="/drukuje">Bambu Lab P1S Farm</a><a style="color:#bcc9de;text-decoration:none" href="/drukuje#materials">Materiały</a><a style="color:#bcc9de;text-decoration:none" href="/kontakt">Odbiór: Gdańsk Osowa</a></div></div>
