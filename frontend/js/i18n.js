@@ -519,7 +519,7 @@ function t(key, replacements) {
 function applyI18n() {
     document.documentElement.lang = currentLang;
     document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n'); const val = t(key); if (val) el.innerHTML = val;
+        const key = el.getAttribute('data-i18n'); const val = t(key); if (val && val !== key) el.innerHTML = val;
     });
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
         const key = el.getAttribute('data-i18n-placeholder'); const val = t(key); if (val) el.placeholder = val;

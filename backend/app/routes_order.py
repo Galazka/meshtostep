@@ -1176,7 +1176,8 @@ class MultiOrderReq(BaseModel):
     address: str = None
     city: str = None
     postal_code: str = None
-    country: str = "PL"
+    country: str = "PL"
+    dry_run: bool = False
     shipping: str = "standard"
     shipping_region: str = "PL"
     discount_code: str = None
@@ -1276,6 +1277,19 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db)):
     cur = (req.currency or "PLN").upper()
     rate = {"USD": settings.currency_rate_usd, "EUR": settings.currency_rate_eur}.get(cur, 1.0)
     total_cur = _ceil05(total / rate if rate else total)
+
+    if req.dry_run:
+        # WYCENA — dokładnie te same liczby co tworzenie zamówienia, bez zapisu.
+        return {
+            "ok": True, "dry_run": True,
+            "total": total_cur, "currency": cur, "exchange_rate": rate,
+            "shipping_cost": round(shipping_cost, 2),
+            "discount_pln": round(discount_pln, 2),
+            "product_total_pln": round(product_pln, 2),
+            "item_count": len(req.items),
+            "items": [{"model_name": (r.model_name or "")[:60], "product_pln": round(r.subtotal - r.margin_pln, 2), "infill": r.infill} for r in items_rows],
+        }
+
 
     order = models.Order(
         user_id=None,

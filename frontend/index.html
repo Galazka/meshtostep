@@ -1331,7 +1331,7 @@
 </script>
 <script type="module">
     import './js/shared.js?v=81';
-    import './js/i18n.js?v=101';
+    import './js/i18n.js?v=102';
     import './js/viewer3d.js?v=81';
     import './js/auth.js?v=83';
     import './js/convert.js?v=83';
@@ -1491,7 +1491,7 @@ document.addEventListener('click',function(ev){var nl=document.getElementById('n
     slides[cur].classList.add('on'); if(dots&&dots[cur]) dots[cur].classList.add('on');
   };
   window.prtSlide=function(d){ window.prtGo(cur+d); restart(); };
-  function delay(){ return cur===0 ? 11000 : 6500; }
+  function delay(){ return cur===0 ? 18000 : 8000; }
   var paused=false, waitTimer=null;
   function tick(){ if(paused){ if(waitTimer)clearTimeout(waitTimer); waitTimer=setTimeout(function(){ if(!paused) restart(); },400); return; } window.prtGo(cur+1); timer=setTimeout(tick, delay()); }
   function restart(){ if(timer) clearTimeout(timer); timer=setTimeout(tick, delay()); }
