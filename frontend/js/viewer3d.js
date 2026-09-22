@@ -1,5 +1,5 @@
 // viewer3d.js — Three.js viewer, toast, setMeshColor, loadSTLIntoViewer (verbatim).
-import { token } from './shared.js?v=16';
+import { token } from './shared.js?v=81';
 
 function setMeshColor(hex) {
     if (!_threeScene) return;
