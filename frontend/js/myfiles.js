@@ -1184,3 +1184,8 @@ window.addEventListener('click', function(e){
         }
   }
 });
+window.mfSetVis = mfSetVis;
+window.mfSetSort = mfSetSort;
+window.mfResetFilters = mfResetFilters;
+window.mfRender = mfRender;
+window.openShareModalFor = openShareModalFor;
