@@ -451,6 +451,13 @@ html[data-theme="dark"] .why-table td.us{background:rgba(143,180,255,.07)}
   .door,.g-card,.eco-card,.step{min-width:0}
   .why-table table{min-width:520px}
 }
+/* header mobile: auth w burger-menu, nie w topbar */
+@media(max-width:760px){
+  .prt-actions .prt-lang,.prt-actions .ghost{display:none}
+  .prt-actions{gap:6px}
+  .prt-actions a.prt-btn{display:none}
+  .prt-nav.open ~ .prt-actions::after{content:"Zaloguj / Załóż konto — w menu ☰";font-family:var(--font-mono);font-size:9.5px;color:#7E93BE}
+}
 
 /* flex-body SPA: dzieci nie moga rozpedzac body do min-content (root-cause overflow mobile) */
 .page,.portal .page,.wrap,.prt-section-head,.why-wrap,.spec-wrap,.eco,.hgrid,.statline,.upload-wrap{min-width:0}
