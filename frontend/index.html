@@ -444,7 +444,7 @@
         }
     </style>
     <script>try{var _t=localStorage.getItem("mt_theme")||"light";if(_t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}</script>
-    <link href="/asset/portal.css?v=55" rel="stylesheet">
+    <link href="/asset/portal.css?v=56" rel="stylesheet">
 <!-- Google AdSense (Auto ads) -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8919352846655813"
         crossorigin="anonymous"></script>
@@ -1049,13 +1049,13 @@
       <div class="acct-card acct-card--wide">
         <div class="acct-k" style="color:#b91c1c"><svg viewBox="0 0 24 24" style="stroke:#dc2626"><path d="M12 3l9 17H3l9-17zM12 10v5M12 17.5v.5"/></svg> <span data-i18n="kontoDanger">Strefa niebezpieczna</span></div>
         <p class="acct-note" data-i18n="kontoDangerHint">Operacje nieodwracalne. Usunięcie konta kasuje wszystkie pliki, foldery i linki natychmiast.</p>
-        <div class="acct-foot" style="border-top:none;margin-top:0;padding-top:0">
+                <div class="acct-foot" style="border-top:none;margin-top:0;padding-top:0;justify-content:space-between">
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button onclick="if(confirm('Usunąć WSZYSTKIE moje modele?')) deleteAllMyFiles()" class="acct-btn acct-btn--d" data-i18n="kontoDelFiles">Usuń wszystkie moje modele</button>
             <button onclick="if(confirm('Wylogować WSZYSTKIE sesje (telefon, inne przeglądarki)?')) logoutEverywhere()" class="acct-btn acct-btn--g" data-i18n="kontoLogoutAll">Wyloguj wszędzie</button>
+            <button onclick="if(confirm('Usunąć WSZYSTKIE moje modele?')) deleteAllMyFiles()" class="acct-btn acct-btn--d" data-i18n="kontoDelFiles">Usuń wszystkie moje modele</button>
             <button onclick="if(confirm('Na pewno usunąć konto? Ta operacja jest nieodwracalna.')) deleteMyAccount()" class="acct-btn acct-btn--red" data-i18n="kontoDelAccount">Usuń konto</button>
           </div>
-          <button onclick="logout()" class="acct-btn acct-btn--g" data-i18n="navLogout">Wyloguj</button>
+          <button onclick="logout()" class="acct-btn acct-btn--g" data-i18n="navLogout">Wyloguj</button><button onclick="logout()" class="acct-btn acct-btn--g" data-i18n="navLogout">Wyloguj</button>
         </div>
       </div>
     </div>
@@ -1100,7 +1100,7 @@
   </div>
   <div class="prt-f-bottom">
     <span>© 2026 3dfile.link · Tolerancja ±0.3% · Realizacja 48h · Faktury VAT 23%</span>
-    <span><a href="/regulamin.html" style="color:#bcc9de">Regulamin</a> · <a href="/prywatnosc.html" style="color:#bcc9de">Polityka prywatności</a> · <a href="/kontakt" style="color:#bcc9de">Kontakt</a></span>
+    <span class="f-links"><a href="/regulamin.html" style="color:#bcc9de">Regulamin</a> · <a href="/prywatnosc.html" style="color:#bcc9de">Polityka prywatności</a> · <a href="/kontakt" style="color:#bcc9de">Kontakt</a></span>
   </div>
 </footer>
 

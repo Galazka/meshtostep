@@ -459,9 +459,10 @@ html[data-theme="dark"] .why-table td.us{background:rgba(143,180,255,.07)}
   .nav-auth-mobile{display:none;flex-direction:column;gap:8px;padding-top:12px;margin-top:4px;border-top:1px solid rgba(255,255,255,.12)}
 .prt-nav.open .nav-auth-mobile{display:flex}
 .nav-auth-mobile button{font-family:inherit;font-size:14px;font-weight:600;color:#C7D4EC;background:transparent;border:1px solid rgba(255,255,255,.22);border-radius:9px;padding:10px 12px;cursor:pointer;text-align:left;width:100%}
-.nav-auth-mobile button.solid{background:#2B5CE6;border-color:#2B5CE6;color:#fff}
+.nav-auth-mobile button.solid{background:#2B5CE6;border-color:#2B5CE6;color:#fff}}
+
+.nav-auth-mobile{display:none}
 @media(min-width:761px){.nav-auth-mobile{display:none !important}}
-}
 
 /* flex-body SPA: dzieci nie moga rozpedzac body do min-content (root-cause overflow mobile) */
 .page,.portal .page,.wrap,.prt-section-head,.why-wrap,.spec-wrap,.eco,.hgrid,.statline,.upload-wrap{min-width:0}
@@ -577,3 +578,8 @@ body.portal > *{min-width:0;max-width:100%}
 #mfGrid{grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr))}
 .mfc-fld select{font-family:'JetBrains Mono',var(--font);text-transform:uppercase;font-size:9.5px;letter-spacing:.06em;color:var(--muted)}
 .mfc-badge{font-family:'JetBrains Mono',var(--font)}
+
+.mf-tools .mf-vis{gap:6px}
+.acct-btn--g{font-weight:650}
+.prt-f-bottom .f-links{display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
+.mfc-fld{display:inline-flex;align-items:center;gap:6px}
