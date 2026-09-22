@@ -39,6 +39,15 @@
 
   // Aliasy kompatybilne (body z print.js używa tych nazw)
   window.getStoredToken = function () { return _tok(); };
+  window.fmtPL = function (iso) {
+    if (!iso) return '—';
+    try {
+      var t = String(iso);
+      var tz = /[zZ]|[+-]\d\d:?\d\d$/.test(t);           // czy ISO niesie strefe
+      var d = new Date(tz ? t : t + 'Z');                                        // bez strefy = UTC z bazy
+      return d.toLocaleString('pl-PL', { timeZone: 'Europe/Warsaw', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } catch (e) { return String(iso).slice(0, 16).replace('T', ' '); }
+  };
   var getStoredToken = _tok;
   window.currencySymbol = function () { return 'zł'; };
   var currencySymbol = function () { return 'zł'; };
@@ -65,7 +74,7 @@ window.adminSetSearch = function(v, f){ if(f) __adminQ.search=v; __adminQ.page=1
           var opts = ms.map(function(m) { return '<option value="' + m + '"' + (m === st ? ' selected' : '') + '>' + m + '</option>'; }).join('');
           tbody += '<tr style="border-bottom:1px solid #e5e7eb;vertical-align:top">' +
             '<td style="padding:8px;font-weight:600">#' + o.id + '</td>' +
-            '<td style="padding:8px;white-space:nowrap">' + new Date(o.created_at).toLocaleString('en-GB') + '</td>' +
+            '<td style="padding:8px;white-space:nowrap">' + (o.created_at ? new Date(o.created_at).toLocaleString('pl-PL', {timeZone:'Europe/Warsaw'}) : '') + '</td>' +
             '<td style="padding:8px"><strong>' + (o.customer_name || '') + '</strong><br><span style="color:#6b7280;font-size:11px">' + (o.customer_email || '') + (o.customer_phone ? '<br>' + o.customer_phone : '') + '</span><br><span style="color:#9ca3af;font-size:11px">' + (o.customer_city || '') + ' ' + (o.customer_country || '') + '</span></td>' +
             '<td style="padding:8px">' + (function(){
           var items = (o.items && o.items.length) ? o.items : (o.material ? [{ model_name: (o.job_uuid ? '' : ''), material: o.material, color: o.color, quantity: o.quantity || 1, job_uuid: o.job_uuid }] : []);
@@ -73,9 +82,9 @@ window.adminSetSearch = function(v, f){ if(f) __adminQ.search=v; __adminQ.page=1
             var dl = '';
             if (it.job_uuid) { var _tokq = (function(){ var t=localStorage.getItem('mt_token')||localStorage.getItem('token')||''; return t ? '&token=' + encodeURIComponent(t) : ''; })();
               dl = '<div style="margin-top:2px;white-space:nowrap">' +
-              '<a href="/download/' + it.job_uuid + '?format=stl' + _tokq + '" target="_blank" style="font-size:11px" title="Pobierz STL">⬇ STL</a> ' +
-              '<a href="/download/' + it.job_uuid + '?format=3mf' + _tokq + '" target="_blank" style="font-size:11px" title="Pobierz oryginalny 3MF">⬇ 3MF</a> ' +
-              '<a href="/download/' + it.job_uuid + '?format=obj' + _tokq + '" target="_blank" style="font-size:11px" title="Pobierz OBJ">⬇ OBJ</a></div>'; }
+              '<a href="/api/download/' + it.job_uuid + '?format=stl' + _tokq + '" target="_blank" style="font-size:11px" title="Pobierz STL">⬇ STL</a> ' +
+              '<a href="/api/download/' + it.job_uuid + '?format=3mf' + _tokq + '" target="_blank" style="font-size:11px" title="Pobierz oryginalny 3MF">⬇ 3MF</a> ' +
+              '<a href="/api/download/' + it.job_uuid + '?format=obj' + _tokq + '" target="_blank" style="font-size:11px" title="Pobierz OBJ">⬇ OBJ</a></div>'; }
             return '<div style="font-size:11px">' + (it.model_name ? '📄 ' + esc(it.model_name) + ' ' : '📦 model ') +
                    (it.material ? '<span style="color:#6b7280">' + esc(it.material) + (it.color ? ' / ' + esc(it.color) : '') + '</span>' : '') +
                    (it.quantity > 1 ? ' ×' + it.quantity : '') +
@@ -86,8 +95,13 @@ window.adminSetSearch = function(v, f){ if(f) __adminQ.search=v; __adminQ.page=1
         })() + '</td>' +
             '<td style="padding:8px">' + (o.filament_grams || 0) + 'g<br><span style="color:#9ca3af;font-size:11px">' + (o.printing_hours || 0) + 'h</span></td>' +
             '<td style="padding:8px" title="Koszt całkowity ' + ((o.cost_pln||0).toFixed(2)) + ' zł (filament+prąd+pakowanie) · wielokolor ' + ((o.multicolor_fee||0).toFixed(2)) + ' zł"><span style="color:#6b7280;font-size:11px">Fil ' + (o.filament_cost || 0).toFixed(0) + 'zł | Marża ' + (o.margin_pln || 0).toFixed(0) + 'zł' + ((o.surcharge_pln || 0) > 0 ? ' | Dopłaty ' + (o.surcharge_pln || 0).toFixed(0) + 'zł' : '') + '</span><br><strong>' + (o.total || 0).toFixed(2) + ' ' + (o.currency || 'PLN') + '</strong><br><span style="color:#10b981;font-size:11px">Profit ' + (o.profit_pln != null ? o.profit_pln : ((o.total || 0) - (o.filament_cost || 0) - (o.electricity_cost || 0) - (o.shipping_cost || 0))).toFixed(0) + 'zł</span></td>' +
-            '<td style="padding:8px"><select onchange="updateOrderStatus(' + o.id + ', this.value)" style="padding:4px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;color:' + (statusColor[st] || '#6b7280') + '">' + opts + '</select></td>' +
-            '<td style="padding:8px;text-align:center"><input type="checkbox" ' + (o.is_paid ? 'checked' : '') + ' onchange="toggleOrderPaid(' + o.id + ', this.checked)" title="Zapłacone"></td>' +
+            '<td style="padding:8px;white-space:nowrap"><select id="st_' + o.id + '" onchange="pendingStatus(' + o.id + ')" style="padding:4px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;color:' + (statusColor[st] || '#6b7280') + '">' + opts + '</select>' +
+              '<span id="stbtn_' + o.id + '" style="display:none;margin-left:4px">' +
+              '<button onclick="confirmStatus(' + o.id + ')" title="Zatwierdź zmianę statusu (wyśle maila do klienta)" style="padding:2px 7px;border:1px solid #10b981;background:#10b981;color:#fff;border-radius:4px;cursor:pointer;font-size:12px">✓</button>' +
+              '<button onclick="cancelStatus(' + o.id + ',\'' + st + '\')" title="Cofnij" style="padding:2px 7px;border:1px solid #d1d5db;background:#fff;border-radius:4px;cursor:pointer;font-size:12px">✗</button></span>' +
+              (o.tracking_code ? '<div style="font-size:10px;color:#0369a1;margin-top:2px">🚚 ' + esc(o.tracking_code) + '</div>' : '') + '</td>' +
+            '<td style="padding:8px;text-align:center"><input type="checkbox" ' + (o.is_paid ? 'checked' : '') + ' onchange="toggleOrderPaid(' + o.id + ', this.checked)" title="Zapłacone">' +
+              (!o.is_paid ? '<br><button onclick="syncPayment(' + o.id + ',this)" title="Odśwież status płatności ze Stripe" style="font-size:10px;border:1px solid #d1d5db;background:#fff;border-radius:4px;cursor:pointer;margin-top:3px;padding:1px 6px">↻ Stripe</button>' : '') + '</td>' +
             '<td style="padding:8px"><button data-action="exportOrder" data-id="' + o.id + '" style="padding:4px 8px;border:1px solid #d1d5db;border-radius:4px;cursor:pointer">CSV</button><br>' +
                         (o.job_id ? '<button onclick="window.open(\'/e/' + o.job_id + '\',\'_blank\')" style="padding:4px 8px;border:1px solid #3b82f6;color:#3b82f6;border-radius:4px;background:none;cursor:pointer;margin-top:4px">3D</button><br>' : '') +
                         '<button onclick="showOrderNotes(' + o.id + ')" style="padding:4px 8px;border:1px solid #d1d5db;border-radius:4px;cursor:pointer;margin-top:4px">Uwagi</button><br>' +
@@ -106,7 +120,8 @@ window.adminSetSearch = function(v, f){ if(f) __adminQ.search=v; __adminQ.page=1
                   '<strong>Zamówienia: ' + data.total + '</strong>' +
                   '<button onclick="exportAllOrders()" style="padding:8px 16px;border:1px solid #1d4ed8;background:#1d4ed8;color:#fff;border-radius:8px;cursor:pointer">Export Excel</button>' +
                   '</div>' +
-                  '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:2px solid #e5e7eb;text-align:left"><th style="padding:8px">ID</th><th style="padding:8px">Data</th><th style="padding:8px">Klient</th><th style="padding:8px">Model</th><th style="padding:8px">Fil.</th><th style="padding:8px">Cena</th><th style="padding:8px">Status</th><th style="padding:8px;text-align:center">Zapł.</th><th style="padding:8px">Akcje</th></tr></thead><tbody>' + tbody + '</tbody></table></div>' +
+                  '<div style="display:flex;gap:8px;align-items:center;margin:0 0 8px"><button onclick="resetOrderSeq()" title="Kolejne zamówienie dostanie ID = max+1 (bez luk po usuniętych). Istniejące numory się nie zmieniają." style="padding:4px 10px;border:1px solid #d1d5db;border-radius:6px;background:#fff;cursor:pointer;font-size:12px">⟲ Reset kolejności ID</button><span style="font-size:11px;color:#9ca3af">— gdy testowe zamówienia rozjechały numerację</span></div>' +
+              '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:2px solid #e5e7eb;text-align:left"><th style="padding:8px">ID</th><th style="padding:8px">Data</th><th style="padding:8px">Klient</th><th style="padding:8px">Model</th><th style="padding:8px">Fil.</th><th style="padding:8px">Cena</th><th style="padding:8px">Status</th><th style="padding:8px;text-align:center">Zapł.</th><th style="padding:8px">Akcje</th></tr></thead><tbody>' + tbody + '</tbody></table></div>' +
                   '<div style="margin-top:10px;display:flex;gap:8px;align-items:center">' +
                     '<button onclick="adminPage(-1)" ' + (__adminQ.page<=1?'disabled':'') + ' style="padding:6px 12px;border:1px solid #d1d5db;border-radius:8px;cursor:pointer">← Poprzednia</button>' +
                     '<span style="font-size:13px;color:#6b7280">Strona ' + __adminQ.page + '</span>' +
@@ -151,6 +166,39 @@ window.adminSetSearch = function(v, f){ if(f) __adminQ.search=v; __adminQ.page=1
       });
     };
 
+  window.pendingStatus = function(id) { document.getElementById('stbtn_' + id).style.display = 'inline'; };
+  window.cancelStatus = function(id, orig) { var s = document.getElementById('st_' + id); s.value = orig; document.getElementById('stbtn_' + id).style.display = 'none'; };
+  window.confirmStatus = function(id) {
+    var s = document.getElementById('st_' + id), v = s.value;
+    var trk = '';
+    if (v === 'wysłane') {
+      trk = prompt('Numer śledzenia / kod InPost (może być puste — klient i tak dostanie info o wysyłce):') || '';
+    }
+    var body = 'status=' + encodeURIComponent(v) + (trk ? '&tracking_code=' + encodeURIComponent(trk.trim()) : '');
+    fetch('/api/orders/' + id + '?' + Date.now(), {
+      method: 'PATCH',
+      headers: { 'Authorization': 'Bearer ' + getStoredToken(), 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body
+    }).then(function(r) {
+      if (r.ok) { showToast('Status #' + id + ' → ' + v + ' — klient powiadomiony mailem', 'success'); setTimeout(loadAdminOrders, 600); }
+      else { showToast('Błąd zmiany statusu', 'error'); }
+    });
+  };
+  window.syncPayment = function(id, btn) {
+    btn.disabled = true; btn.textContent = '…';
+    fetch('/api/orders/' + id + '/sync-payment?' + Date.now(), { method: 'POST', headers: { 'Authorization': 'Bearer ' + getStoredToken() } })
+      .then(function(r) { return r.json(); }).then(function(d) {
+        showToast('#' + id + (d.is_paid ? ' — zapłacone ✓ (checkbox zaznaczony)' : ' — nadal bez płatności'), d.is_paid ? 'success' : 'info');
+        setTimeout(loadAdminOrders, 700);
+      }).catch(function() { showToast('Błąd synchronizacji', 'error'); btn.disabled = false; btn.textContent = '↻ Stripe'; });
+  };
+  window.resetOrderSeq = function() {
+    if (!confirm('Ustawić kolejne ID zamówienia na max+1?\nIstniejące numery zamówień NIE zmienią się.')) return;
+    fetch('/api/admin/orders/reset-seq?' + Date.now(), { method: 'POST', headers: { 'Authorization': 'Bearer ' + getStoredToken() } })
+      .then(function(r) { return r.json(); }).then(function(d) {
+        showToast(d.ok ? ('Next ID będzie #' + d.next_id) : ('Błąd: ' + (d.error || '?')), d.ok ? 'success' : 'error');
+      });
+  };
   window.updateOrderStatus = function(id, status) {
     fetch('/api/orders/' + id + '?' + Date.now(), {
       method: 'PATCH',
@@ -548,7 +596,7 @@ window.loadAdminGallery = function() {
           '<div style="min-width:70px;color:#f59e0b">' + renderStars(rg.rating) + '</div>' +
           '<div style="flex:1"><b>' + esc(rg.name||'') + '</b>' + (rg.email? ' <span style="color:#94a3b8;font-size:12px">(' + esc(rg.email) + ')</span>':'') +
           '<div style="color:var(--muted);font-size:13px;margin-top:3px">' + esc(rg.text||'') + '</div>' +
-          '<div style="color:#94a3b8;font-size:11px;margin-top:4px">' + (rg.created_at||'') + (rg.approved===false ? ' · <span style="color:#ef4444">ukryta</span>':'') + '</div></div>' +
+          '<div style="color:#94a3b8;font-size:11px;margin-top:4px">' + fmtPL(rg.created_at) + (rg.approved===false ? ' · <span style="color:#ef4444">ukryta</span>':'') + '</div></div>' +
           '<div style="display:flex;flex-direction:column;gap:6px"><button onclick="toggleReview(' + rg.id + ')" style="padding:5px 12px;border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:12px">' + (rg.approved===false?'Pokaż':'Ukryj') + '</button>' +
           '<button onclick="delReview(' + rg.id + ')" style="padding:5px 12px;border:1px solid #dc2626;color:#dc2626;background:none;border-radius:7px;cursor:pointer;font-size:12px">Usuń</button></div></div>';
       }).join('');
@@ -668,7 +716,8 @@ window.loadAdminGallery = function() {
   // Download: GET /download/{job_uuid}?format=stl (alg/subst), lub 3mf (oryginał).
   window.downloadOrderItem = function (uuid, fmt) {
     if (!uuid) { _showToast('Brak pliku', 'error'); return; }
-    window.open('/download/' + uuid + '?format=' + fmt + '&t=' + Date.now(), '_blank');
+    var _tk = _tok();
+    window.open('/api/download/' + uuid + '?format=' + fmt + (_tk ? '&token=' + encodeURIComponent(_tk) : '') + '&t=' + Date.now(), '_blank');
   };
 
 

@@ -128,7 +128,7 @@ window.sendToPrinter = async function(e, jobId, uuid, title) {
     btn.textContent = '🔄';
     try {
       // Fetch source STL for auto-estimate
-      var r = await fetch('/download/' + encodeURIComponent(uuid) + '?format=stl&t=' + Date.now());
+      var r = await fetch('/api/download/' + encodeURIComponent(uuid) + '?format=stl&t=' + Date.now());
       if (r.ok) {
         var blob = await r.blob();
         var fd = new FormData();

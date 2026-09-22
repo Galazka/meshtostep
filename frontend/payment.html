@@ -164,7 +164,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#F6F7F9;color:#0A0F1E;min
     document.getElementById('mStatus').textContent='oczekuje';
     var tries=0;
     function poll(){
-      if(tries++>4) return;
+      if(tries++>20){ document.getElementById('mStatus').textContent='sprawdzenie w toku — odśwież stronę za chwilę'; return; }
       fetch('/api/orders/'+order+'/pay/ok?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
         if(d&&d.ok&&d.is_paid){ location.href='/platnosc?status=success&order='+order; return; }
         setTimeout(poll,3000);

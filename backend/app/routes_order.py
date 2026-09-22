@@ -10,7 +10,7 @@ Pricing logic:
   • All rates editable from admin panel via /api/admin/pricing (stored in
     PricingConfig table).
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Request, Form, status
 from fastapi.responses import JSONResponse, HTMLResponse, Response
@@ -625,6 +625,8 @@ def create_order(
     db.commit()
     db.refresh(order)
 
+    _notify_created(order)
+
     # —— bonus: +500 MB storage for paid orders >= 50 zł (K1.5 bonus quota) ——
     if order.total and order.total >= 50 and order.user_id:
         u = db.get(models.User, order.user_id)
@@ -726,7 +728,8 @@ def list_orders(
             "discount_pln": o.discount_pln, "print_parts": o.print_parts,
             "status": o.status, "is_paid": o.is_paid, "payment_method": o.payment_method,
             "notes": o.notes, "admin_notes": getattr(o, "admin_notes", None),
-            "created_at": o.created_at.isoformat() if o.created_at else None,
+            "created_at": _iso(o.created_at),
+            "tracking_code": getattr(o, "tracking_code", None),
         })
     return {"ok": True, "orders": rows, "total": total_count, "returned": len(rows), "page": page, "limit": limit}
 
@@ -761,12 +764,99 @@ def order_stats(
 
 
 # ── Powiadomienia email o zmianie statusu zamówienia ────────────────
+def _iso(dt):
+    return dt.replace(tzinfo=timezone.utc).isoformat() if dt else None
+
+def _warsaw(dt):
+    if not dt:
+        return None
+    try:
+        from zoneinfo import ZoneInfo
+        return dt.replace(tzinfo=timezone.utc).astimezone(ZoneInfo('Europe/Warsaw'))
+    except Exception:
+        pass
+    import datetime as _d
+    def _last_sun(y, mo, d0):
+        d = _d.date(y, mo, d0)
+        while d.weekday() != 6:
+            d -= _d.timedelta(days=1)
+        return d
+    dst = _last_sun(dt.year, 3, 31) <= dt.date() < _last_sun(dt.year, 10, 31)
+    return dt + _d.timedelta(hours=2 if dst else 1)
+
+def _tracking_url(code):
+    if not code:
+        return None
+    c = code.strip()
+    if c.startswith('http'):
+        return c
+    if c.replace(' ', '').isdigit():
+        return 'https://inpost.pl/sledzenie/' + c.replace(' ', '')
+    return None
+
+_FLOW = ["nowy", "wycena", "realizacja", "drukowane", "gotowe", "wysłane", "dostarczone"]
+_FLOW_LBL = {"nowy": "Nowe", "wycena": "Wycena", "realizacja": "Realizacja", "drukowane": "Druk", "gotowe": "Gotowe", "wysłane": "Wysłane", "dostarczone": "Dostarczone"}
+
+def _order_mail_html(o, subject_line, body_line, status=None, tracking=None):
+    """Markowy szablon maila statusowego (table-HTML, inline CSS)."""
+    import html as _h
+    esc = _h.escape
+    rows = ""
+    try:
+        for it in (o.items or [])[:6]:
+            q = (" \u00d7" + str(it.quantity)) if (it.quantity or 1) > 1 else ""
+            rows += ("<tr><td style='padding:6px 0;color:#334155;font-size:14px'>" + esc(it.model_name or "Model") +
+                     "</td><td style='padding:6px 0;color:#64748b;font-size:13px;text-align:right'>" +
+                     esc((it.material or "") + ((" / " + it.color) if it.color else "")) + q + "</td></tr>")
+    except Exception:
+        pass
+    tl = ""
+    if status and status in _FLOW:
+        ci = _FLOW.index(status)
+        cells = ""
+        for i, k in enumerate(_FLOW):
+            col = "#10b981" if i <= ci else "#e5e7eb"
+            wt = ";font-weight:700" if i == ci else ""
+            txt = "#0B1730" if i == ci else "#94a3b8"
+            cells += ("<td style='text-align:center;padding:2px'><div style='height:8px;width:8px;border-radius:50%;margin:0 auto;background:" + col + "'></div>"
+                      "<div style='font-size:9px;color:" + txt + wt + ";margin-top:4px'>" + _FLOW_LBL[k] + "</div></td>")
+        tl = "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' style='margin:14px 0'><tr>" + cells + "</tr></table>"
+    track = ""
+    if tracking:
+        tu = _tracking_url(tracking)
+        track = ("<div style='background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:12px 16px;margin:14px 0'>"
+                 "<span style='color:#0369a1;font-size:13px'>Śledzenie przesyłki:</span> <b style='color:#0B1730;font-size:14px'>" + esc(tracking) + "</b>"
+                 + ("&nbsp;&nbsp;<a href='" + tu + "' style='color:#1d4ed8;font-weight:600;font-size:13px'>Track paczkę \u2192</a>" if tu else "") + "</div>")
+    pay = ("<span style='background:#10b981;color:#fff;font-size:12px;padding:3px 10px;border-radius:999px'>\u2713 Opłacone</span>"
+           if o.is_paid else
+           "<span style='background:#fef3c7;color:#92400e;font-size:12px;padding:3px 10px;border-radius:999px'>Oczekuje na płatność</span>")
+    return ("<div style='background:#f1f5f9;padding:28px 12px;font-family:Inter,Arial,sans-serif'>"
+            "<div style='max-width:540px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:14px;overflow:hidden'>"
+            "<div style='background:#0B1730;padding:18px 24px'><span style='color:#fff;font-weight:800;font-size:16px;letter-spacing:.4px'>3DFILE<span style='color:#2B5CE6'>.LINK</span></span>"
+            "<span style='float:right;color:#94a3b8;font-size:12px'>Zamówienie #" + str(o.id) + "</span></div>"
+            "<div style='padding:22px 24px'>"
+            "<h2 style='margin:0 0 6px;color:#0B1730;font-size:19px'>" + subject_line + "</h2>" + tl +
+            "<p style='color:#334155;line-height:1.65;font-size:14px;margin:10px 0'>" + body_line + "</p>" + track +
+            "<table role='presentation' width='100%' style='border-top:1px solid #eef2f7;margin-top:10px'>" + rows + "</table>"
+            "<div style='margin-top:12px;padding-top:12px;border-top:1px solid #eef2f7'>"
+            "<table role='presentation' width='100%'><tr><td><b style='color:#0B1730;font-size:16px'>" + (("%.2f" % (o.total or 0)) + " " + esc(o.currency or "PLN")) + "</b></td>"
+            "<td style='text-align:right'>" + pay + "</td></tr></table></div>"
+            "<div style='margin-top:18px'><a href='https://3dfile.link/konto' style='display:inline-block;background:#2B5CE6;color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:11px 22px;border-radius:8px'>Moje zamówienia \u2192</a></div>"
+            "</div>"
+            "<div style='background:#f8fafc;border-top:1px solid #eef2f7;padding:14px 24px;color:#64748b;font-size:12px;line-height:1.7'>"
+            "hello@3dfile.link \u00b7 tomgal@3dfile.link \u00b7 tel. +48 790 824 762<br>3dfile.link \u2014 hosting i druk 3D \u00b7 ul. Międzygwiezdna 31/2, 80-299 Gdańsk Osowa</div>"
+            "</div></div>")
+
 _STATUS_MAIL = {
+    "wycena":      ("Wycena zamówienia #%s w toku",
+                  "Przygotowujemy wycenę Twojego zamówienia #%s. Dostaniesz maila, gdy będzie gotowa."),
+    "realizacja":  ("Zamówienie #%s przyjęte do realizacji",
+                  "Zamówienie #%s jest w kolejce druku. Będziemy meldować każdy etap."),
     "drukowane": ("Twój wydruk #%s jest w drukarce",
                   "Zaczęliśmy druk Twojego zamówienia #%s. Damy znać, gdy będzie gotowe."),
     "gotowe":    ("Wydruk #%s gotowy",
                   "Twoje zamówienie #%s jest wydrukowane i spakowane. %s"),
-    "wysłane":   ("Wydruk #%s wysłany",
+    "wysłane":   ("Wydruk #%s wysłany — śledź paczkę",
                   "Paczka z zamówieniem #%s jest w drodze. Jeśli to Paczkomat — kod odbioru wyśle InPost osobnym SMS/e-mailem."),
     "dostarczone": ("Dostarczone! Zamówienie #%s",
                   "Potwierdź proszę, że wszystko się zgadza — jeśli wydruk nie spełnia oczekiwań, napisz na hello@3dfile.link (druga próba lub zwrot)."),
@@ -774,17 +864,28 @@ _STATUS_MAIL = {
                   "Zamówienie #%s zostało anulowane. Ewentualna wpłata wróci na konto płatności do 14 dni."),
 }
 
+def _notify_created(o):
+    """Mail potwierdzajacy przyjecie zamowienia (niezaleznie od platnosci)."""
+    try:
+        if not o or not o.customer_email:
+            return
+        pay_line = ("Płatność zaksięgowana — zamówienie wchodzi do kolejki druku." if o.is_paid
+                    else "Płatność: <b>oczekuje</b> — dokończ ją w linku wyslanym przy zamówieniu lub na Twoim profilu. Po zaksięgowaniu status sam się zmieni, a Ty dostaniesz osobny e-mail.")
+        html = _order_mail_html(o, "Zamówienie przyjęte", pay_line, status=o.status, tracking=getattr(o, "tracking_code", None))
+        from .mail import send_mail
+        send_mail(o.customer_email, f"Zamówienie #{o.id} przyjęte — 3dfile.link", html)
+    except Exception as e:
+        print(f"[order-notify] created failed: {e}")
+
+
 def _notify_paid(o):
     try:
-        html = ("<div style='font-family:Inter,system-ui,sans-serif;max-width:520px;margin:0 auto;padding:24px;"
-                "border:1px solid #e5e7eb;border-radius:12px'>"
-                "<h2 style='margin:0 0 12px;color:#0B1730;font-size:18px'>3dfile.link — płatność przyjęta ✅</h2>"
-                "<p style='color:#334155;line-height:1.6;font-size:14px'>Dziękujemy! Zamówienie <b>#%s</b> na kwotę <b>%s %s</b> "
-                "jest opłacone i weszło do kolejki druku. Powiadomimy Cię o każdej zmianie statusu.</p>"
-                "<p style='color:#334155;font-size:14px'>Rachunek/potwierdzenie: <a href='https://3dfile.link/api/orders/%s/receipt'>pobierz online</a>%s</p>"
-                "<p style='color:#64748b;font-size:12px;margin-top:20px'>hello@3dfile.link · 3dfile.link — hosting i druk 3D</p></div>") % (
-                    o.id, (o.total or 0), (o.currency or "PLN"), o.id,
-                    " · <a href='" + o.stripe_receipt_url + "'>potwierdzenie Stripe</a>" if getattr(o, "stripe_receipt_url", None) else "")
+        extra = " Rachunek: <a href='https://3dfile.link/api/orders/%s/receipt'>pobierz online</a>%s" % (
+            o.id, " · <a href='" + o.stripe_receipt_url + "'>potwierdzenie Stripe</a>" if getattr(o, "stripe_receipt_url", None) else "")
+        html = _order_mail_html(
+            o, "Płatność przyjęta \u2705",
+            "Dziękujemy! Zamówienie <b>#%s</b> na kwotę <b>%.2f %s</b> jest opłacone i weszło do kolejki druku. Powiadomimy Cię o każdej zmianie statusu.%s" % (o.id, (o.total or 0), (o.currency or "PLN"), extra),
+            status=o.status, tracking=getattr(o, "tracking_code", None))
         from .mail import send_mail
         send_mail(o.customer_email, f"Zamówienie #{o.id} opłacone — 3dfile.link", html)
     except Exception as e:
@@ -803,11 +904,8 @@ def _notify_order_status(o, old_status: str, new_status: str):
                 body += " Odbiór osobisty: Gdańsk, ul. Międzygwiezdna 31/2 (Osowa) — odezwiemy się co do godziny."
             else:
                 body += " Nadajemy najszybciej jak to możliwe."
-        html = ("<div style='font-family:Inter,system-ui,sans-serif;max-width:520px;margin:0 auto;padding:24px;"
-                "border:1px solid #e5e7eb;border-radius:12px'>"
-                "<h2 style='margin:0 0 12px;color:#0B1730;font-size:18px'>3dfile.link</h2>"
-                "<p style='color:#334155;line-height:1.6;font-size:14px'>" + body + "</p>"
-                "<p style='color:#64748b;font-size:12px;margin-top:20px'>Pytania? hello@3dfile.link<br>3dfile.link — hosting i druk 3D</p></div>")
+        trk = getattr(o, "tracking_code", None)
+        html = _order_mail_html(o, subject.split(" — ")[0], body, status=new_status, tracking=trk)
         from .mail import send_mail
         send_mail(o.customer_email, subject, html)
     except Exception as e:
@@ -822,7 +920,11 @@ def update_order(
     shipping_method: str = Form(None),
     payment_method: str = Form(None),
     notes: str = Form(None),
+
     admin_notes: str = Form(None),
+
+    tracking_code: str = Form(None),
+
     admin=Depends(require_admin),
     db: Session = Depends(get_db),
 ):
@@ -847,12 +949,17 @@ def update_order(
         o.notes = notes[:2000] if notes else None
     if admin_notes is not None:
         o.admin_notes = admin_notes[:2000] if admin_notes else None
+    if tracking_code is not None:
+        o.tracking_code = tracking_code[:120].strip() or None
+    was_unpaid = not o.is_paid
     o.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(o)
+    if was_unpaid and o.is_paid:
+        _notify_paid(o)
     if status:
         _notify_order_status(o, old_status, status)
-    return {"ok": True, "order_id": o.id, "status": o.status, "is_paid": o.is_paid}
+    return {"ok": True, "order_id": o.id, "status": o.status, "is_paid": o.is_paid, "tracking_code": o.tracking_code}
 
 
 
@@ -871,7 +978,7 @@ def export_order(order_id: int, admin=Depends(require_admin), db: Session = Depe
     w.writerow(["Pole", "Wartość"])
     w.writerow(["ID", o.id])
     w.writerow(["UUID modelu", o.job_uuid])
-    w.writerow(["Data", o.created_at.isoformat()])
+    w.writerow(["Data", _warsaw(o.created_at).strftime("%Y-%m-%d %H:%M") if o.created_at else ""])
     w.writerow(["Klient", f"{o.customer_name} <{o.customer_email}>"])
     w.writerow(["Telefon", o.customer_phone or ""])
     w.writerow(["Adres", f"{o.customer_address or ''} {o.customer_city or ''} {o.customer_postal or ''} {o.customer_country}"])
@@ -916,7 +1023,8 @@ def export_orders(admin=Depends(require_admin), db: Session = Depends(get_db)):
                "Koszt całkowity (+pakowanie)", "Zysk (produkt - koszt)", "Notatki"])
     for o in db.query(models.Order).order_by(models.Order.id.desc()).all():
         ws.append([
-            o.id, o.created_at.strftime("%Y-%m-%d %H:%M"),
+            o.id, (_warsaw(o.created_at).strftime("%Y-%m-%d %H:%M") if o.created_at else ""),
+
             o.customer_name, o.customer_email, o.customer_phone,
             o.customer_address, o.customer_city, o.customer_country,
             o.material, o.color, o.quantity, o.shipping_method,
@@ -937,7 +1045,7 @@ def export_orders(admin=Depends(require_admin), db: Session = Depends(get_db)):
         items = list(o.items or [])
         if items:
             for it in items:
-                ws_m.append([o.id, o.created_at.strftime("%Y-%m-%d"), o.customer_name, o.customer_email,
+                ws_m.append([o.id, (_warsaw(o.created_at).strftime("%Y-%m-%d %H:%M") if o.created_at else ""), o.customer_name, o.customer_email,
                     it.model_name, it.quantity, it.material, it.color,
                     max(1, len(str(it.color or "").split(" + "))), it.volume_cm3 or "", getattr(it, "infill", 15) or 15, it.dims_mm or "",
                     it.filament_grams, it.filament_cost, it.subtotal, it.margin_pln, o.status, "Tak" if o.is_paid else "Nie"])
@@ -1176,8 +1284,10 @@ class MultiOrderReq(BaseModel):
     address: str = None
     city: str = None
     postal_code: str = None
-    country: str = "PL"
-    dry_run: bool = False
+    country: str = "PL"
+
+    dry_run: bool = False
+
     shipping: str = "standard"
     shipping_region: str = "PL"
     discount_code: str = None
@@ -1330,6 +1440,7 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db)):
         db.add(r)
     db.commit()
 
+    _notify_created(order)
     if req.discount_code:
         try:
             db.execute(text("UPDATE discount_codes SET uses = uses + 1 WHERE code = :c"), {"c": req.discount_code.upper()})
@@ -1382,8 +1493,10 @@ def account_orders(user=Depends(require_user), db: Session = Depends(get_db)):
          .order_by(models.Order.id.desc()).limit(100))
     out = []
     for o in q.all():
-        out.append({"id": o.id, "created_at": o.created_at.isoformat() if o.created_at else None,
+        out.append({"id": o.id, "created_at": _iso(o.created_at),
                     "status": o.status, "is_paid": bool(o.is_paid),
+                    "tracking_code": getattr(o, "tracking_code", None),
+                    "tracking_url": _tracking_url(getattr(o, "tracking_code", None)),
                     "total": o.total, "currency": o.currency or "PLN",
                     "shipping_method": o.shipping_method,
                     "items": [{"model_name": it.model_name, "material": it.material, "color": it.color,
@@ -1427,7 +1540,7 @@ td,th{{padding:6px 8px;border-bottom:1px solid #e2e8f0;font-size:14px;text-align
 @media print{{.noprint{{display:none}}}}</style></head><body>
 <h1>RACHUNEK nr {o.id}/{o.created_at.strftime('%Y') if o.created_at else ''}</h1>
 <p><b>Sprzedawca:</b> 3dfile.link (sprzedaż okazjonalna) · Gdańsk · hello@3dfile.link<br>
-<b>Data wystawienia:</b> {o.created_at.strftime('%Y-%m-%d %H:%M') if o.created_at else ''}<br>
+<b>Data wystawienia:</b> {_warsaw(o.created_at).strftime('%Y-%m-%d %H:%M') if o.created_at else ''}<br>
 <b>Nabywca:</b> {o.customer_name or ''} · {o.customer_email or ''}{(' · ' + o.customer_phone) if o.customer_phone else ''}<br>
 {('<b>Adres:</b> ' + (o.customer_address or '') + ', ' + (o.customer_city or '')) if o.customer_address else '<b>Odbiór:</b> osobisty / wg wyboru'}</p>
 <table><tr><th>Model</th><th>Materiał</th><th>Kolor</th><th>Ilość</th></tr>{rows}</table>

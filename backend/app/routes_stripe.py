@@ -81,6 +81,12 @@ def _stripe_build_session(order, db=None):
         cancel_url=success_url + f"/platnosc?status=cancel&order={order.id}",
     )
     session = stripe.checkout.Session.create(**checkout_params)
+    try:
+        order.stripe_session_id = session.get("id")
+        if db is not None:
+            db.commit()
+    except Exception as e:
+        print(f"[stripe] session id save: {e}")
     return session["url"] or None
 
 
@@ -115,13 +121,78 @@ def create_checkout(order_id: int, request: Request, db: Session = Depends(get_d
     return {"ok": True, "checkout_url": url, "blik_fallback": False, "order_id": o.id}
 
 
+def sync_payment(o, db):
+    """Czynna weryfikacja: pobieramy session z Stripe i sprawdzamy payment_status.
+    Działa nawet gdy webhook nie doleciał (piaskownica, wyciszony endpoint, retry)."""
+    if not o or o.is_paid or not _stripe_enabled():
+        return bool(o and o.is_paid)
+    try:
+        import stripe
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+        sid = getattr(o, "stripe_session_id", None)
+        sess = None
+        if sid:
+            try:
+                sess = stripe.checkout.Session.retrieve(sid)
+            except Exception:
+                sess = None
+        if sess is None and o.customer_email:
+            try:
+                found = stripe.checkout.Session.list(limit=20, customer_email=o.customer_email)
+                for cs in (found.get("data") or []):
+                    if (cs.get("metadata") or {}).get("order_id") == str(o.id) or cs.get("client_reference_id") == str(o.id):
+                        sess = cs
+                        o.stripe_session_id = cs.get("id")
+                        break
+            except Exception as e:
+                print(f"[stripe] sync list: {e}")
+        if sess and sess.get("payment_status") == "paid":
+            o.is_paid = True
+            o.payment_method = "stripe"
+            if o.status == "nowy":
+                o.status = "realizacja"
+            try:
+                if sess.get("receipt_url"):
+                    o.stripe_receipt_url = sess["receipt_url"]
+                elif sess.get("payment_intent"):
+                    intent = stripe.PaymentIntent.retrieve(sess["payment_intent"], expand=["charges.data"])
+                    chs = (intent.get("charges") or {}).get("data") or []
+                    if chs and chs[0].get("receipt_url"):
+                        o.stripe_receipt_url = chs[0]["receipt_url"]
+            except Exception:
+                pass
+            db.commit()
+            db.refresh(o)
+            try:
+                from .routes_order import _notify_paid
+                _notify_paid(o)
+            except Exception as e:
+                print(f"[stripe] paid mail: {e}")
+            return True
+    except Exception as e:
+        print(f"[stripe] sync error: {e}")
+    return bool(o and o.is_paid)
+
+
+@router.post("/api/orders/{order_id}/sync-payment")
+def sync_payment_ep(order_id: int, request: Request, db: Session = Depends(get_db)):
+    """Odśwież status płatności prosto ze Stripe (właściciel zamówienia lub admin)."""
+    o = db.get(models.Order, order_id)
+    if not o:
+        raise HTTPException(404, "Order not found")
+    paid = sync_payment(o, db)
+    return {"ok": True, "order_id": o.id, "is_paid": paid, "status": o.status}
+
+
 @router.get("/api/orders/{order_id}/pay/ok")
 def payment_ok(order_id: int, request: Request, db: Session = Depends(get_db)):
     o = db.get(models.Order, order_id)
-    shadow=o
     if not o:
         return {"ok": True, "notice": "order not found"}
-    return {"ok": True, "order_id": o.id, "status": o.status, "is_paid": o.is_paid, "redirect": "/print.html?paid=1"}
+    paid = sync_payment(o, db)
+    return {"ok": True, "order_id": o.id, "status": o.status, "is_paid": paid,
+            "tracking_code": getattr(o, "tracking_code", None),
+            "redirect": "/konto"}
 
 
 @router.post("/api/webhooks/stripe")

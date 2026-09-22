@@ -110,7 +110,8 @@ function render(orders){
       '<span class="ototal">' + (+o.total||0).toFixed(2) + ' ' + esc(o.currency||'PLN') + '</span></div>' +
       '<div style="margin-top:8px;display:flex;gap:9px;align-items:center;flex-wrap:wrap">' +
       '<span class="badge b-' + esc(o.status) + '">' + (ST[o.status]||esc(o.status)) + '</span>' +
-      (o.is_paid ? '<span class="paid">Opłacone</span>' : '<span class="unpaid">Oczekuje na płatność</span>') +
+      (o.is_paid ? '<span class="paid">Opłacone</span>' : '<span class="unpaid" title="Naciśnij odśwież — sprawdzimy w Stripe">Oczekuje na płatność <b style="cursor:pointer" onclick="acctSyncPay(' + o.id + ',this)">↻</b></span>') +
+      (o.tracking_code ? '<a class="odate" style="color:#0369a1;font-weight:600;text-decoration:none" href="' + (o.tracking_url || '#') + '" target="_blank" rel="noopener">🚚 ' + esc(o.tracking_code) + '</a>' : '') +
       (shipTxt ? '<span class="odate">' + esc(shipTxt) + '</span>' : '') +
       '</div>' + (items ? '<ul class="oitems">' + items + '</ul>' : '') +
       '<div class="obtns">' +
@@ -119,6 +120,13 @@ function render(orders){
       (!o.is_paid ? '<a href="/platnosc?status=pending&order=' + o.id + '">Dokończ płatność</a>' : '') +
       '</div></div>';
   }).join('');
+}
+function acctSyncPay(id, el){
+  el.textContent = '…';
+  fetch('/api/orders/' + id + '/sync-payment?' + Date.now(), { method:'POST', headers: H() })
+    .then(function(r){ return r.json(); })
+    .then(function(d){ if (d && d.ok) { load(); } else { el.textContent = '↻'; } })
+    .catch(function(){ el.textContent = '↻'; });
 }
 function load(){
   fetch(API + '/api/account/orders?t=' + Date.now(), { headers: H() })

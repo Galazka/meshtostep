@@ -15,6 +15,23 @@ from .database import get_db
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
+
+@router.post("/orders/reset-seq")
+def reset_order_seq(admin: models.User = Depends(require_admin), db: Session = Depends(get_db)):
+    """Uporzadkuj ID: kolejny order id = max(id)+1 (bez luk po usunietych). Nie renumeruje istniejacych."""
+    from sqlalchemy import text
+    from ..config import settings
+    try:
+        mx = db.execute(text("SELECT COALESCE(MAX(id),0) FROM orders")).scalar() or 0
+        if settings.DATABASE_URL.startswith("sqlite"):
+            db.execute(text("UPDATE sqlite_sequence SET seq = :v WHERE name = 'orders'"), {"v": int(mx)})
+        else:
+            db.execute(text("SELECT setval(pg_get_serial_sequence('orders','id'), :v, true)"), {"v": int(mx)})
+        db.commit()
+        return {"ok": True, "max_id": int(mx), "next_id": int(mx) + 1}
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:200]}
+
 def _delete_job(db: Session, job_id: int):
     job = db.query(models.Job).filter(models.Job.id == job_id).first()
     if not job:

@@ -108,6 +108,9 @@ def _migrate_columns():
             if is_pg: conn.execute(text("ALTER TABLE users ALTER COLUMN quota_limit_bytes TYPE BIGINT USING quota_limit_bytes::BIGINT"))
             conn.execute(text("UPDATE users SET quota_limit_bytes = 5368709120 WHERE quota_limit_bytes = 104857600"))
             add_col(conn, "users", "bonus_mb", "INTEGER DEFAULT 0", existing)
+            _oo = {c["name"] for c in insp.get_columns("orders")}
+            add_col(conn, "orders", "stripe_session_id", "VARCHAR(80)", _oo)
+            add_col(conn, "orders", "tracking_code", "VARCHAR(120)", _oo)
             add_col(conn, "users", "ship_full_name", "VARCHAR(100)", existing)
             add_col(conn, "users", "ship_phone", "VARCHAR(30)", existing)
             add_col(conn, "users", "ship_address", "VARCHAR(500)", existing)

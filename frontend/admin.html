@@ -1717,7 +1717,7 @@ const I18N = {
                     '<td><a href="#" onclick="openJobModal(' + c.job_id + ');return false">#' + c.job_id + '</a></td>' +
                     '<td style="max-width:300px;overflow:hidden;text-overflow:ellipsis">' + esc((c.body || '').slice(0,120)) + '</td>' +
                     '<td><span style="color:' + (c.is_hidden ? 'var(--warning)' : 'var(--success)') + '">' + (c.is_hidden ? 'UKRYTY' : 'WIDOCZNY') + '</span></td>' +
-                    '<td>' + (c.created_at || '').slice(0,16).replace('T',' ') + '</td>' +
+                    '<td>' + (window.fmtPL ? fmtPL(c.created_at) : ((c.created_at||'').slice(0,16).replace('T',' '))) + '</td>' +
                     '<td>' +
                         '<button class="btn-sm" onclick="toggleComment(' + c.id + ',' + (c.is_hidden ? 'false' : 'true') + ')">' + (c.is_hidden ? 'Pokaż' : 'Ukryj') + '</button> ' +
                         '<button class="btn-sm danger" onclick="deleteComment(' + c.id + ')">Usuń</button>' +
@@ -1817,7 +1817,7 @@ const I18N = {
     if (window.location.search.includes('tab=ads')) switchAdminTab('ads');
 
     </script>
-<script src="/asset/admin_print.js?v=38"></script>
+<script src="/asset/admin_print.js?v=40"></script>
 <script>
   try {
     var _qp = new URLSearchParams(window.location.search).get('ptab');
