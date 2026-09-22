@@ -46,3 +46,5 @@ pg.html
 
 # lokalne scratch probey
 _*.py
+
+railway_deploy.log
