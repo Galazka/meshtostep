@@ -1,5 +1,5 @@
 // main.js — entry: tabs/routing, theme, FAQ, ads, home-recent, modal glue, init.
-import { applyI18n } from './i18n.js?v=103';
+import { applyI18n } from './i18n.js?v=104';
 import { token } from './shared.js?v=81';
 import { refreshThreeTheme } from './viewer3d.js?v=81';
 import { fetchUser, showModal } from './auth.js?v=83';
@@ -107,7 +107,7 @@ async function loadHomeRecent(){
       a.href=m.vanity||'/s/'+m.uuid;
       a.style.cssText='display:block;border:1px solid var(--border);border-radius:10px;overflow:hidden;text-decoration:none;color:inherit;background:#fff';
       const img = m.slug ? `/api/preview/${m.uuid}` : '';
-      a.innerHTML=`<div style="height:120px;background:var(--bg-alt);display:flex;align-items:center;justify-content:center;overflow:hidden">${img?`<img src="${img}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;color:var(--text-muted);font-size:12px">Podglad 3D</div>`:`<span style="color:var(--text-muted);font-size:12px">Podglad 3D</span>`}</div><div style="padding:10px"><div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${(m.title||m.slug||'Model').replace(/</g,'&lt;')}</div><div style="font-size:11px;color:var(--text-secondary)">by ${(m.username||'anon').replace(/</g,'&lt;')} · ${(m.tags||[]).slice(0,2).join(', ').replace(/</g,'&lt;')}</div></div>`;
+      a.innerHTML=`<div style="height:120px;background:var(--bg-alt);display:flex;align-items:center;justify-content:center;overflow:hidden">${img?`<img src="${img}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div style="display:none;width:100%;height:100%;align-items:center;justify-content:center;color:var(--text-muted);font-size:12px">Podglad 3D</div>`:`<span style="color:var(--text-muted);font-size:12px">Podglad 3D</span>`}</div><div style="padding:10px"><div style="font-weight:700;font-size:13.5px;line-height:1.35;word-break:break-word">${(m.title||m.slug||'Model').replace(/</g,'&lt;')}</div><div style="font-size:11px;color:var(--text-secondary);line-height:1.4;word-break:break-word">by ${(m.username||'anon').replace(/</g,'&lt;')} · ${(m.tags||[]).slice(0,2).join(', ').replace(/</g,'&lt;')}</div></div>`;
       grid.appendChild(a);
     }
     // dolaczenie CTA-kart gdy publicznych modeli jest malo — sekcja nigdy nie wygląda na "urwana"

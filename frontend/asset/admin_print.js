@@ -418,8 +418,46 @@ document.addEventListener('click', function(e) {
       '<label>Marża narzut % (co-if)<br><input id="simMargin" type="number" step="0.1" placeholder="globalna" style="width:100px;padding:6px;border:1px dashed #b45309;border-radius:6px"></label>' +
       '<button onclick="runSim()" style="padding:8px 16px;background:#0B1730;color:#fff;border:none;border-radius:8px;cursor:pointer">Licz</button>' +
       '<button onclick="verifySim()" style="padding:8px 16px;background:#fff;color:#1d4ed8;border:1px solid #1d4ed8;border-radius:8px;cursor:pointer">Zweryfikuj z silnikiem API</button>' +
-      '</div><div id="simOut" style="margin-top:12px"></div></div>';
+      '</div>'
+      + '<div style="margin-top:14px;padding-top:14px;border-top:1px dashed #e5e7eb"><b style="font-size:13px">⚖️ Symulator na gramaturę</b></div>'
+      + '<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;font-size:13px;margin-top:8px">'
+      + '<label>Materiał<br><select id="simGMat" style="padding:6px;border:1px solid #d1d5db;border-radius:6px">' + opts + '</select></label>'
+      + '<label>Wypełnienie %<br><input id="simGInf" type="number" min="10" max="100" value="15" style="width:70px;padding:6px;border:1px solid #d1d5db;border-radius:6px"></label>'
+      + '<div style="display:flex;gap:6px"><button onclick="runGramSim(10)" style="padding:7px 12px;background:#fff;color:#0B1730;border:1px solid #cbd5e1;border-radius:8px;cursor:pointer;font-weight:600">10 g</button>'
+      + '<button onclick="runGramSim(100)" style="padding:7px 12px;background:#0B1730;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600">100 g</button>'
+      + '<button onclick="runGramSim(500)" style="padding:7px 12px;background:#fff;color:#0B1730;border:1px solid #cbd5e1;border-radius:8px;cursor:pointer;font-weight:600">500 g</button>'
+      + '<button onclick="runGramSim(1000)" style="padding:7px 12px;background:#fff;color:#0B1730;border:1px solid #cbd5e1;border-radius:8px;cursor:pointer;font-weight:600">cała szpula 1 kg</button></div>'
+      + '</div><div id="gramSimOut" style="margin-top:10px;font-size:13px"></div></div>'
+      + '<div id="simOut" style="margin-top:12px"></div></div>';
   }
+  window.runGramSim = function (G) {
+    window._lastG = G;
+    var rows = _matState || [];
+    var m = (document.getElementById('simGMat') || {}).value || 'PLA';
+    var inf = parseFloat((document.getElementById('simGInf') || {}).value || '15');
+    var price = _pf(rows, 'material:' + m, 100), dens = _pf(rows, 'density:' + m, 1.24), th = _pf(rows, 'throughput:' + m, 200);
+    var margin = _pf(rows, 'margin_percent', 68), kwh = _pf(rows, 'kwh_pln', 1.5), watts = _pf(rows, 'watts', 150);
+    var minp = _pf(rows, 'min_print_pln', 10), base = _pf(rows, 'infill_default', 15), shell = _pf(rows, 'infill_shell_share', 0.35);
+    var f = Math.min(Math.max(inf / 100, 0.1), 1); var fb = Math.min(Math.max(base / 100, 0.1), 1);
+    var factor = (shell + f * (1 - shell)) / (shell + fb * (1 - fb));
+    var vol = G / (dens * factor);                       // model zjadajacy G gramow
+    var hours = (Math.max(0.5, vol * 1000 / th / 3600) + 0.5) * factor;
+    var mcost = G / 1000 * price;
+    var pcost = watts / 1000 * hours * kwh * factor / factor; // power liczony od godzin (juz x factor)
+    pcost = watts / 1000 * hours * kwh;
+    var cost = mcost + pcost;
+    var client = Math.max(minp, Math.round(cost * (1 + margin / 100) * 100) / 100);
+    var profit = client - cost;
+    var out = document.getElementById('gramSimOut');
+    if (!out) return;
+    var pl = function (x, d) { return (+x).toFixed(d == null ? 2 : d).replace('.', ','); };
+    out.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px">'
+      + '<div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:10px"><div style="font-size:11px;color:#64748b">MODEL Z ' + G + ' g (' + m + ', ' + pl(inf, 0) + '%)</div><div style="font-size:17px;font-weight:700">' + pl(vol, 1) + ' cm³</div></div>'
+      + '<div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:10px"><div style="font-size:11px;color:#64748b">CZAS DRUKU</div><div style="font-size:17px;font-weight:700">' + pl(hours, 1) + ' h</div></div>'
+      + '<div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:10px"><div style="font-size:11px;color:#64748b">KOSZT (materiał ' + pl(mcost) + ' + prąd ' + pl(pcost) + ')</div><div style="font-size:17px;font-weight:700">' + pl(cost) + ' zł</div></div>'
+      + '<div style="background:#0B1730;color:#fff;border-radius:8px;padding:10px"><div style="font-size:11px;color:#94a3b8">CENA DLA KLIENTA</div><div style="font-size:17px;font-weight:700">' + pl(client) + ' zł</div><div style="font-size:11px;color:#34d399">zarobek ' + pl(profit) + ' zł' + (client === minp ? ' (min. druku)' : '') + '</div></div>'
+      + '</div><div style="font-size:11px;color:#9ca3af;margin-top:6px">100 g ' + m + ' = ' + pl(100 / (dens * factor), 1) + ' cm³ modelu · szpula 1 kg starcza na ~' + pl(1000 / (dens * factor), 0) + ' cm³. Zmiany z tabeli wyżej (zapisane) liczą się automatycznie.</div>';
+  };
   function _matVals(m) {
     var rows = _matState || [];
     return { price: _pf(rows, 'material:' + m, 100), dens: _pf(rows, 'density:' + m, 1.24), th: _pf(rows, 'throughput:' + m, 200) };
@@ -446,7 +484,8 @@ document.addEventListener('click', function(e) {
       tr.querySelector('.mc-p10').textContent = p10.price.toFixed(2) + ' zł';
       tr.querySelector('.mc-p50').textContent = p50.price.toFixed(2) + ' zł';
     });
-  }
+  
+    try { var go=document.getElementById('gramSimOut'); if(go&&go.innerHTML&&window._lastG) runGramSim(window._lastG); } catch(e){}}
   window.runSim = function() {
     if (!_matState) return;
     var vol = parseFloat(document.getElementById('simVol').value) || 0;

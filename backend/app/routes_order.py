@@ -40,12 +40,15 @@ def get_currencies():
     }
 
 # ── Material & cost constants (defaults; overridden by PricingConfig rows) ──
+# Ceny szpuli 1 kg (brutto PLN) — realny rynek PL wrzesien 2026, marki Bambu Lab / Extrudr:
+#   PLA Basic ~66-92 (refill/szpula) · PETG ~65-90 · ABS ~71-99 · ASA Bambu ~119-149
+#   PLA-CF ~149-199 · TPU ~119-149 · Silk/Matte ~99-129 · Glow ~129-149
 DEFAULT_MATERIAL_PRICES = {
-    "PLA": 79.0, "PLA HT": 120.0, "PLA CF": 199.0,
-    "PETG": 95.0, "PETG HF": 129.0, "PETG FR": 150.0,
-    "ABS": 89.0, "ASA": 159.0, "ASA CF": 299.0,
-    "TPU": 130.0,
-    "PLA Matte": 100.0, "PLA Silk": 110.0, "PLA Glow": 130.0,
+    "PLA": 82.0, "PLA HT": 109.0, "PLA CF": 175.0,
+    "PETG": 86.0, "PETG HF": 115.0, "PETG FR": 145.0,
+    "ABS": 85.0, "ASA": 139.0, "ASA CF": 259.0,
+    "TPU": 129.0,
+    "PLA Matte": 99.0, "PLA Silk": 115.0, "PLA Glow": 135.0,
 }
 
 # DOPŁATA KLIENCKA za szczególne pigmenty (srebrny/złoty/węglowy/przezroczysty).
@@ -481,6 +484,10 @@ def calculate_price_endpoint(
         "surcharge_pln": calc["surcharge_pln"],
         "color_premium_pln": calc["color_premium_pln"],
         "multicolor_fee_pln": calc["multicolor_fee_pln"],
+        "filament_grams": (calc.get("internal") or {}).get("filament_g"),
+        "printing_hours": (calc.get("internal") or {}).get("print_hours"),
+        "min_print_pln": float(_cfg(db, "min_print_pln", MIN_PRINT_PLN)),
+        "at_min_print": float(calc.get("product_subtotal_pln") or 0) <= float(_cfg(db, "min_print_pln", MIN_PRINT_PLN)) + 0.01,
         "total": calc["total"],
         "currency": calc["currency"],
         "exchange_rate": calc["exchange_rate"],
@@ -526,6 +533,13 @@ def public_pricing(db: Session = Depends(get_db)):
         "color_surcharge": {
             k: float(_cfg(db, f"color:{k}", v)) for k, v in DEFAULT_COLOR_PREMIUM.items()
         },
+        "materials": {m: {"price_kg": float(_cfg(db, f"material:{m}", DEFAULT_MATERIAL_PRICES.get(m, 110.0))),
+                           "density": DENSITIES.get(m, 1.24)} for m in DEFAULT_MATERIAL_PRICES},
+        "infill": _infill_cfg(db),
+        "margin_percent": float(_cfg(db, "margin_percent", MARGIN_PERCENT)),
+        "min_print_pln": float(_cfg(db, "min_print_pln", MIN_PRINT_PLN)),
+        "watts": float(_cfg(db, "watts", DEFAULT_WATTS)),
+        "kwh_pln": float(_cfg(db, "kwh_pln", DEFAULT_KWH)),
         "multicolor_first_extra_pln": float(_cfg(db, "multicolor_first_extra_pln", MULTICOLOR_FIRST_EXTRA_PLN)),
         "multicolor_next_extra_pln": float(_cfg(db, "multicolor_next_extra_pln", MULTICOLOR_NEXT_EXTRA_PLN)),
     }

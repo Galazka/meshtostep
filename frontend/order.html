@@ -106,7 +106,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 {"imports":{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js","three/addons/loaders/OBJLoader.js":"/vendor/three/loaders/OBJLoader.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js"}}
 </script>
 
-    <link href="/asset/portal.css?v=58" rel="stylesheet">
+    <link href="/asset/portal.css?v=59" rel="stylesheet">
 <!-- Google AdSense (Auto ads) -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8919352846655813"
         crossorigin="anonymous"></script>
@@ -298,7 +298,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
           <div><label data-i18n="fCode">Kod rabatowy</label>
             <div style="display:flex;gap:8px;align-items:center">
               <input id="fCode" data-i18n-ph="fCode" placeholder="np. LATO10" style="flex:1">
-              <button type="button" id="codeBtn" onclick="applyCoupon()" class="ghost-btn" style="padding:9px 14px;border:1px solid var(--border);border-radius:9px;background:#fff;cursor:pointer;font-weight:600;font-size:13px" data-i18n="couponApply">Zastosuj</button>
+              <button type="button" id="codeBtn" onclick="applyCoupon()" class="ghost-btn" style="padding:8px 14px;border:1px solid var(--border);border-radius:99px;background:#fff;cursor:pointer;font-weight:600;font-size:12.5px" data-i18n="couponApply">Zastosuj</button>
             </div>
             <div id="couponInfo" style="font-size:11.5px;margin-top:4px;min-height:15px"></div></div>
           <div><label>Waluta</label><div id="curBox" style="display:flex;gap:6px"></div></div>
@@ -361,6 +361,8 @@ var MATS={}; var CUR_ACTSYM=1; var selIdx=-1;
 function toast(m,ok){var t=document.createElement('div');t.className='toast';t.style.opacity=1;t.textContent=m;var col=(ok===false||ok==='')?'#dc2626':(ok==='w'?'#d97706':'#059669');t.style.background=col;document.body.appendChild(t);setTimeout(function(){t.style.opacity=0;setTimeout(function(){t.remove()},300);},2600);}
 function _colP(c){return {silver:20,gold:25,carbon:15,transparent:30}[c]||0;}
 var INFCFG={min:10,max:100,base:15,shell:0.35};
+var CFG=null;
+fetch('/api/pricing/public?t='+Date.now()).then(function(r){return r.json()}).then(function(d){if(d&&d.ok){CFG=d;}}).catch(function(){});
 fetch('/api/config/infill?t='+Date.now()).then(function(r){return r.json()}).then(function(d){
   if(d&&d.ok){INFCFG={min:d.min,max:d.max,base:d.base,shell:d.shell};
     var rg=document.getElementById('infillRange'); if(rg){rg.min=d.min;rg.max=d.max;rg.value=d.base;}
@@ -392,7 +394,8 @@ function reprice(i){ var it=CART[i]; if(!it||!it.vol)return;
   if(it.dims)fd.append('dims',String(it.dims));
   fd.append('infill',String(it.infill||INFCFG.base)); fd.append('currency','PLN');
   fetch('/api/calculate?t='+Date.now(),{method:'POST',body:fd}).then(function(r){return r.json()}).then(function(c){
-    if(c&&c.ok){ it.price=c.product_subtotal_pln; it.mfee=c.multicolor_fee_pln||0; it.cprem=c.color_premium_pln||0; calc(); }
+    if(c&&c.ok){ it.price=c.product_subtotal_pln; it.mfee=c.multicolor_fee_pln||0; it.cprem=c.color_premium_pln||0;
+      it.grams=c.filament_grams||0; it.hours=c.printing_hours||0; it.atMin=!!c.at_min_print; calc(); }
   }).catch(function(){});
 }
 function _colHex(c){
@@ -406,7 +409,8 @@ function fmt(v){return v.toFixed(2).replace('.',',')+' '+sym();}
 function loadMats(){
   fetch('/api/admin/materials?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
     var box=document.getElementById('mats');
-    if(d && d.materials){ Object.keys(d.materials).forEach(function(k){var p=d.materials[k];MATS[k]=k;var desc=(typeof p==='object'&&p.desc)?p.desc:'';var el=document.createElement('div');el.className='mat';el.dataset.mat=k;el.innerHTML='<b>'+k+'</b><span>'+desc+'</span>';el.onclick=function(){selectMat(k);};box.appendChild(el);}); }
+    if(d && d.materials){ Object.keys(d.materials).forEach(function(k){var p=d.materials[k];MATS[k]=k;var desc=(typeof p==='object'&&p.desc)?p.desc:'';var el=document.createElement('div');el.className='mat';el.dataset.mat=k;var p100=''; if(typeof p==='object'&&p.price_kg){ p100=' <b style="color:var(--accent);font-weight:700">'+((+p.price_kg/10).toFixed(1)).replace('.',',')+' zł/100 g · ~'+Math.round(100/(p.density||1.24))+' cm³/100 g</b>'; }
+el.innerHTML='<b>'+k+'</b><span>'+desc+p100+'</span>';el.onclick=function(){selectMat(k);};box.appendChild(el);}); }
   });
 }
 function selectMat(k){ if(selIdx<0){toast('Najpierw kliknij model w koszyku','');return;} CART[selIdx].material=k; drawCart(); refreshMatSel(); reprice(selIdx); calc(); }
@@ -447,7 +451,7 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
         it._multi.splice(i,1);
         if(it.colors>it._multi.length){ it.colors=Math.max(1,it._multi.length); var cc0=document.getElementById('colCount'); if(cc0) cc0.value=String(it.colors); }
         it.color=colPl(it._multi);
-        drawCart(); calc(); refreshCol(); renderMulti(); toast('Odznaczono: '+colPl([c]),true);
+        drawCart(); reprice(selIdx); calc(); refreshCol(); renderMulti(); toast('Odznaczono: '+colPl([c]),true);
         return;
       } else { toast('Przynajmniej 1 kolor zostaje',''); return; }
     }
@@ -460,7 +464,7 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
     }
     it._multi.push(c);
     it.color=colPl(it._multi);
-    drawCart(); calc(); refreshCol(); renderMulti(); toast('Kolory: '+it.color,true);
+    drawCart(); reprice(selIdx); calc(); refreshCol(); renderMulti(); toast('Kolory: '+it.color,true);
   }
   function setCustType(t){
     var p=document.getElementById('custTypePerson'),f=document.getElementById('custTypeFirm'),fr=document.getElementById('firmRow');
@@ -608,18 +612,26 @@ function calc(){
     var c=it.colors||1; var colTag=(c>1)?' · '+c+' kol.':'';
     var infTag=(it.infill&&it.infill!==INFCFG.base)?' · '+it.infill+'% wypełn.':'';
     rowsHTML+='<div class="summary-row" style="cursor:pointer" onclick="preview('+idx+');refreshCol()"><span style="font-weight:600">'+esc(it.model_name||('Model '+(idx+1)))+' ×'+it.qty+'</span><span>'+fmt(cx(prn*it.qty/rate))+'</span></div>';
+    var gl=''; if(it.grams){ gl=(+it.grams).toFixed(1).replace('.',',')+' g'; if(it.hours) gl+=' · ~'+(+it.hours).toFixed(1).replace('.',',')+' h'; if(it.atMin) gl+=' · cena min.'; }
+    if(gl){ rowsHTML+='<div class="summary-row" style="font-size:11.5px;color:var(--muted)"><span>'+esc(it.material||'PLA')+'</span><span>'+gl+'</span></div>'; }
     rowsHTML+='<div class="summary-row" style="font-size:12px;color:var(--muted);cursor:pointer" onclick="preview('+idx+');refreshCol()"><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:50%;background:'+_colHex(it.color)+';border:1px solid rgba(0,0,0,.15);display:inline-block"></span>'+esc(it.material||'PLA')+' · '+esc(it.color||'—')+colTag+infTag+'</span><span style="color:var(--accent);font-size:11px">edytuj</span></div>';
   });
-  var shipBase={standard:{PL:16.49,EU:35,GLOBAL:55},express:{PL:33,EU:70,GLOBAL:110},pickup:{PL:0,EU:0,GLOBAL:0},pickup_express:{PL:19,EU:19,GLOBAL:19}};
+  var shipBase=(CFG&&CFG.shipping_tiers)||{standard:{PL:16.49,EU:35,GLOBAL:55},express:{PL:33,EU:70,GLOBAL:110},pickup:{PL:0,EU:0,GLOBAL:0},pickup_express:{PL:19,EU:19,GLOBAL:19}};
+  var PACK=(CFG&&CFG.packing_pln!=null)?+CFG.packing_pln:3;
+  var MINP=(CFG&&CFG.min_print_pln!=null)?+CFG.min_print_pln:10;
+  var SOMAX=(CFG&&CFG.small_order_max_product_pln!=null)?+CFG.small_order_max_product_pln:40;
+  var SOFLAT=(CFG&&CFG.small_order_ship_flat_pln!=null)?+CFG.small_order_ship_flat_pln:9.9;
+  var FREEMIN=(CFG&&CFG.free_shipping_min_pln!=null)?+CFG.free_shipping_min_pln:200;
+  var PEFEE=(CFG&&CFG.pickup_express_fee_pln!=null)?+CFG.pickup_express_fee_pln:19;
   var reg=document.getElementById('fRegion').value, ship=document.getElementById('fShipping').value;
   var isPickup = ship==='pickup', isPkExp = ship==='pickup_express';
   var base=(shipBase[ship]||shipBase.standard)[reg]||0;
-  var shippingPLN = isPickup ? 0 : isPkExp ? 19 : (base+3);
-  var basePrint = Math.max(10, productsPLN); // minimum druku 10 zł (backend)
+  var shippingPLN = isPickup ? 0 : isPkExp ? PEFEE : (base+PACK);
+  var basePrint = Math.max(MINP, productsPLN); // minimum druku z cennika admina
     var adjPLN = basePrint;
-    var smallOrder = shippingPLN>0 && !isPkExp && adjPLN<40;
-    if(smallOrder) shippingPLN = Math.min(shippingPLN, 9.90);
-    var freeShip = !isPickup && !isPkExp && adjPLN>=200 && shippingPLN>0;
+    var smallOrder = shippingPLN>0 && !isPkExp && adjPLN<SOMAX;
+    if(smallOrder) shippingPLN = Math.min(shippingPLN, SOFLAT);
+    var freeShip = !isPickup && !isPkExp && adjPLN>=FREEMIN && shippingPLN>0;
     if(freeShip) shippingPLN=0;
   if(COUPON_PLN>adjPLN)COUPON_PLN=adjPLN;
     var totalPLN = adjPLN + shippingPLN - COUPON_PLN;
@@ -642,22 +654,26 @@ var discLine = COUPON_PLN>0 ? '<div class="summary-row"><span>Rabat '+(window.__
   var fn=document.getElementById('fxNote'); if(fn) fn.textContent = cur==='PLN'?'Waluta: PLN':'Waluta: '+cur+' · kurs 1 '+cur+' = '+(1/rate).toFixed(4)+' PLN';
 }
 
-function applyCoupon(){
+function applyCoupon(silent){
   var code=(document.getElementById('fCode').value||'').trim().toUpperCase();
+  var btn=document.getElementById('codeBtn');
   var info=document.getElementById('couponInfo');
   if(!code){ window.__COUPON=null; if(info)info.textContent=''; calc(); return; }
   var sub=0; CART.forEach(function(it){sub+=(+it.price)||0;});
   var fd=new FormData(); fd.append('code',code); fd.append('amount',String(Math.max(sub,10)));
   fetch('/api/discount/validate?t='+Date.now(),{method:'POST',body:fd}).then(function(r){return r.json()}).then(function(d){
     if(d&&d.valid){ window.__COUPON={code:code,pln:d.discount_pln};
+      if(btn){btn.textContent='✓ '+code;btn.style.background='#15803d';btn.style.color='#fff';btn.style.borderColor='#15803d';}
       if(info){info.innerHTML='<span style="color:#15803d;font-weight:700">OK — odjęte '+d.discount_pln.toFixed(2).replace('.',',')+' zł</span>';}
-      toast('Kupon zastosowany',true);
+      if(!silent) toast('Kupon zastosowany',true);
     } else { window.__COUPON=null;
+      if(btn){btn.textContent=(document.documentElement.lang==='en')?'Apply':'Zastosuj';btn.style.background='';btn.style.color='';btn.style.borderColor='';}
       if(info)info.innerHTML='<span style="color:#b91c1c">'+(d&&d.message?'Kod odrzucony: '+d.message:'Kod nieprawidłowy lub wygasły')+'</span>';
     }
     calc();
   }).catch(function(){ if(info)info.textContent='Sprawdź połączenie'; });
 }
+(function(){ var ci=document.getElementById('fCode'); if(ci){ var tmr=null; ci.addEventListener('input',function(){ clearTimeout(tmr); if(!ci.value.trim()){ window.__COUPON=null; var b=document.getElementById('codeBtn'); if(b){b.textContent='Zastosuj';b.style.background='';} var i2=document.getElementById('couponInfo'); if(i2)i2.textContent=''; calc(); return;} tmr=setTimeout(function(){ applyCoupon(true); },500); }); } })();
 
 function preview(i){
   selIdx=i; drawCart(); refreshMatSel(); syncInfillUI(); if(typeof refreshCol==='function') refreshCol();
@@ -867,7 +883,7 @@ window.__local3d = {
 };
 </script>
 
-<script src="/js/print_i18n.js?v=103"></script>
+<script src="/js/print_i18n.js?v=104"></script>
 <script>document.addEventListener('click',function(ev){var nb=document.getElementById('orderNav');if(nb&&nb.classList.contains('open')&&ev.target.closest('#orderNav a')){nb.classList.remove('open');}});</script>
 <footer class="prt-footer" id="siteFooter">
   <div class="prt-footer-inner">
