@@ -20,7 +20,7 @@ router = APIRouter(prefix="/api/admin", tags=["admin"])
 def reset_order_seq(admin: models.User = Depends(require_admin), db: Session = Depends(get_db)):
     """Uporzadkuj ID: kolejny order id = max(id)+1 (bez luk po usunietych). Nie renumeruje istniejacych."""
     from sqlalchemy import text
-    from ..config import settings
+    from .config import settings
     try:
         mx = db.execute(text("SELECT COALESCE(MAX(id),0) FROM orders")).scalar() or 0
         if settings.DATABASE_URL.startswith("sqlite"):
