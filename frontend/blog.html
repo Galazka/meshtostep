@@ -27,6 +27,11 @@ body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--
 .blog-hero h1{font-family:'Space Grotesk',sans-serif;font-size:clamp(28px,4vw,46px);font-weight:800;letter-spacing:-.02em;line-height:1.12;margin:14px 0 12px;color:#fff}
 .blog-hero p{color:#c4d2e8;font-size:17.5px;max-width:620px}
 .wrap{max-width:1180px;margin:-30px auto 0;padding:0 24px 80px;position:relative}
+.bcats{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 22px}
+.bchip{font:inherit;font-size:13px;font-weight:600;padding:7px 14px;border-radius:999px;border:1px solid #e2e8f0;background:#fff;color:#334155;cursor:pointer;display:inline-flex;align-items:center;gap:7px}
+.bchip .bn{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:#94a3b8}
+.bchip.active{background:#14284b;border-color:#14284b;color:#fff}
+.bchip.active .bn{color:#8fb4ff}
 .bgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px}
 .bcard{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;text-decoration:none;color:inherit;display:flex;flex-direction:column;transition:transform .18s,box-shadow .18s;box-shadow:0 1px 3px rgba(15,23,42,.06)}
 .bcard:hover{transform:translateY(-5px);box-shadow:0 18px 40px rgba(15,23,42,.16)}
@@ -102,59 +107,168 @@ body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--
 </div>
 
 <div class="wrap">
+  <div class="bcats"><button class="bchip active" onclick="bcf(this,'all')">Wszystkie<span class="bn">0</span></button><button class="bchip" onclick="bcf(this,'Biznes')">Biznes<span class="bn">1</span></button><button class="bchip" onclick="bcf(this,'CAD')">CAD<span class="bn">1</span></button><button class="bchip" onclick="bcf(this,'Diagnostyka')">Diagnostyka<span class="bn">1</span></button><button class="bchip" onclick="bcf(this,'Formaty')">Formaty<span class="bn">1</span></button><button class="bchip" onclick="bcf(this,'Kalibracja')">Kalibracja<span class="bn">3</span></button><button class="bchip" onclick="bcf(this,'Konstrukcja')">Konstrukcja<span class="bn">1</span></button><button class="bchip" onclick="bcf(this,'Materiały')">Materiały<span class="bn">1</span></button><button class="bchip" onclick="bcf(this,'Metrologia')">Metrologia<span class="bn">1</span></button><button class="bchip" onclick="bcf(this,'Multi-kolor')">Multi-kolor<span class="bn">1</span></button><button class="bchip" onclick="bcf(this,'Obróbka')">Obróbka<span class="bn">1</span></button><button class="bchip" onclick="bcf(this,'Okucia')">Okucia<span class="bn">1</span></button><button class="bchip" onclick="bcf(this,'Przygotowanie')">Przygotowanie<span class="bn">1</span></button><button class="bchip" onclick="bcf(this,'Sprzęt')">Sprzęt<span class="bn">1</span></button><button class="bchip" onclick="bcf(this,'Technologie')">Technologie<span class="bn">1</span></button><button class="bchip" onclick="bcf(this,'Wytrzymałość')">Wytrzymałość<span class="bn">1</span></button><button class="bchip" onclick="bcf(this,'Zamówienia')">Zamówienia<span class="bn">1</span></button></div>
   <div class="bgrid">
-      <a class="bcard featured" href="/blog/jaki-filament-wybrac-3d.html">
-      <img src="/asset/blog/printer3.jpg" alt="PLA vs PETG vs ABS vs ASA — jaki filament wybrać?" loading="lazy" style="height:300px">
+      <a class="bcard featured" href="/blog/drukarki-3d-2026-porownanie.html" data-cat="Sprzęt">
+      <img src="/asset/blog/cover-drukarki-3d-2026-porownanie.svg" alt="Drukarki 3D 2026 — porównanie 9 popularnych modeli FDM" loading="lazy" style="height:300px">
+      <div class="bb">
+        <span class="btag">Sprzęt</span>
+        <h2>Drukarki 3D 2026 — porównanie 9 popularnych modeli FDM</h2>
+        <p>Porównanie drukarek 3D 2026: Bambu Lab A1 mini, A1, P1S, X1C, Prusa MK4S, Creality K1C i K1 Max, Elegoo Neptune 4 Plus, Qidi Q2. Pole robocze, temperatury, realna pr</p>
+        <div class="bmeta">8 min czytania <span class="bmore">Czytaj →</span></div>
+      </div>
+    </a>
+      <a class="bcard" href="/blog/jaki-filament-wybrac-3d.html" data-cat="Materiały">
+      <img src="/asset/blog/cover-jaki-filament-wybrac-3d.svg" alt="PLA vs PETG vs ABS vs ASA — jaki filament wybrać? [Porównanie 2026]" loading="lazy" style="height:210px">
       <div class="bb">
         <span class="btag">Materiały</span>
-        <h2>PLA vs PETG vs ABS vs ASA — jaki filament wybrać?</h2>
-        <p>Porównanie wszystkich popularnych filamentów: właściwości, temperatury, zastosowanie, ceny. Tabela, która rozwieje wątpliwości.</p>
-        <div class="bmeta">🕒 8 min czytania <span class="bmore">Czytaj →</span></div>
+        <h2>PLA vs PETG vs ABS vs ASA — jaki filament wybrać? [Porównanie 2026]</h2>
+        <p>Porównanie filamentów do druku 3D: PLA, PETG, ABS, ASA, TPU. Właściwości, temperatury, zastosowanie, ceny, wady i zalety. Wybierz idealny materiał.</p>
+        <div class="bmeta">8 min czytania <span class="bmore">Czytaj →</span></div>
       </div>
     </a>
-      <a class="bcard" href="/blog/jak-przygotowac-plik-do-druku-3d.html">
-      <img src="/asset/blog/prototype.jpg" alt="Jak przygotować plik do druku 3D?" loading="lazy" style="height:210px">
+      <a class="bcard" href="/blog/fuzja-360-pod-druk-3d.html" data-cat="CAD">
+      <img src="/asset/blog/cover-fuzja-360-pod-druk-3d.svg" alt="Fusion 360 pod druk 3D — od szkicu do pliku 3MF/STL" loading="lazy" style="height:210px">
+      <div class="bb">
+        <span class="btag">CAD</span>
+        <h2>Fusion 360 pod druk 3D — od szkicu do pliku 3MF/STL</h2>
+        <p>Workflow Fusion 360 pod druk FDM: szkic ze współrzędnymi i parametrami, fugi, eksport Mesh 3MF/STL z odchyleniem cięciwowym 0,05 mm, minimalne ściany wokół otworów M</p>
+        <div class="bmeta">9 min czytania <span class="bmore">Czytaj →</span></div>
+      </div>
+    </a>
+      <a class="bcard" href="/blog/anizotropia-warstw-fdm.html" data-cat="Wytrzymałość">
+      <img src="/asset/blog/cover-anizotropia-warstw-fdm.svg" alt="Anizotropia warstw w druku FDM — dlaczego wydruk pęka między warstwami" loading="lazy" style="height:210px">
+      <div class="bb">
+        <span class="btag">Wytrzymałość</span>
+        <h2>Anizotropia warstw w druku FDM — dlaczego wydruk pęka między warstwami</h2>
+        <p>Wytrzymałość między warstwami FDM to 50-70% osi XY dla PLA. Tabela interlayer PLA, PETG, ABS, korekty parametrów, orientacja części i przykład zginania.</p>
+        <div class="bmeta">9 min czytania <span class="bmore">Czytaj →</span></div>
+      </div>
+    </a>
+      <a class="bcard" href="/blog/defects-druku-diagnostyka.html" data-cat="Diagnostyka">
+      <img src="/asset/blog/cover-defects-druku-diagnostyka.svg" alt="Defekty druku 3D — diagnostyka: od stringingu po z-banding" loading="lazy" style="height:210px">
+      <div class="bb">
+        <span class="btag">Diagnostyka</span>
+        <h2>Defekty druku 3D — diagnostyka: od stringingu po z-banding</h2>
+        <p>Stringing, warping, layer shift, over- i underextruzja, zebra, ringing, zatory — tabela symptom, przyczyna, naprawa z konkretnymi wartościami i kolejność diagnostyki</p>
+        <div class="bmeta">8 min czytania <span class="bmore">Czytaj →</span></div>
+      </div>
+    </a>
+      <a class="bcard" href="/blog/pierwsza-warstwa-kalibracja.html" data-cat="Kalibracja">
+      <img src="/asset/blog/cover-pierwsza-warstwa-kalibracja.svg" alt="Pierwsza warstwa — kalibracja Z-offset, temperatura i przyczepność" loading="lazy" style="height:210px">
+      <div class="bb">
+        <span class="btag">Kalibracja</span>
+        <h2>Pierwsza warstwa — kalibracja Z-offset, temperatura i przyczepność</h2>
+        <p>Kalibracja pierwszej warstwy w druku 3D FDM: test kartką i live-Z, tabela temperatur na pierwszą warstwę dla PLA, PETG, ABS, TPU, PA, słoniowa stopa, błędy przyczepn</p>
+        <div class="bmeta">8 min czytania <span class="bmore">Czytaj →</span></div>
+      </div>
+    </a>
+      <a class="bcard" href="/blog/retrakcja-druk-3d.html" data-cat="Kalibracja">
+      <img src="/asset/blog/cover-retrakcja-druk-3d.svg" alt="Retrakcja w druku 3D — ustawienia dla Bambu, Prusa, Creality i Endera" loading="lazy" style="height:210px">
+      <div class="bb">
+        <span class="btag">Kalibracja</span>
+        <h2>Retrakcja w druku 3D — ustawienia dla Bambu, Prusa, Creality i Endera</h2>
+        <p>Retrakcja FDM bez nici: direct vs bowden, dystans i prędkość dla Bambu A1/P1S, Prusa MK4, Creality K1, Ender 3 V3, wipe i Z-hop, ustawienia Orca/Klipper i odczyt tes</p>
+        <div class="bmeta">9 min czytania <span class="bmore">Czytaj →</span></div>
+      </div>
+    </a>
+      <a class="bcard" href="/blog/inserty-gwintowe-druk-3d.html" data-cat="Okucia">
+      <img src="/asset/blog/cover-inserty-gwintowe-druk-3d.svg" alt="Wkładki gwintowe w druku 3D — M2, M3, M4, M5 kompletny poradnik" loading="lazy" style="height:210px">
+      <div class="bb">
+        <span class="btag">Okucia</span>
+        <h2>Wkładki gwintowe w druku 3D — M2, M3, M4, M5 kompletny poradnik</h2>
+        <p>Inserty wtapiane M2–M5 w wydrukach FDM: katalogowe średnice otworów, temperatury wtapiania (PLA 160–180, PETG 190–210, ABS 220–240°C), siły wyrwania i wypchnięcia, k</p>
+        <div class="bmeta">9 min czytania <span class="bmore">Czytaj →</span></div>
+      </div>
+    </a>
+      <a class="bcard" href="/blog/podpory-i-orientacja-czesci.html" data-cat="Konstrukcja">
+      <img src="/asset/blog/cover-podpory-i-orientacja-czesci.svg" alt="Podpory i orientacja części w druku 3D — praktyczny poradnik" loading="lazy" style="height:210px">
+      <div class="bb">
+        <span class="btag">Konstrukcja</span>
+        <h2>Podpory i orientacja części w druku 3D — praktyczny poradnik</h2>
+        <p>Kiedy druk 3D potrzebuje podpór? Kąt samonośności 45–55°, mostki do 5 mm, podpory drzewo vs linearne, szczelina warstwy granicznej 0,2 mm. 6 kształtów i strategie or</p>
+        <div class="bmeta">8 min czytania <span class="bmore">Czytaj →</span></div>
+      </div>
+    </a>
+      <a class="bcard" href="/blog/3mf-vs-stl-vs-obj-vs-step.html" data-cat="Formaty">
+      <img src="/asset/blog/cover-3mf-vs-stl-vs-obj-vs-step.svg" alt="3MF, STL, OBJ czy STEP — który format pliku 3D wybrać" loading="lazy" style="height:210px">
+      <div class="bb">
+        <span class="btag">Formaty</span>
+        <h2>3MF, STL, OBJ czy STEP — który format pliku 3D wybrać</h2>
+        <p>STL vs 3MF vs OBJ vs STEP: tessellacja i odchylenie cięciwowe 0,01-0,05 mm, metadane 3MF, bryły STEP pod CAM, pułapka mm/cal i tabela rozmiarów plików.</p>
+        <div class="bmeta">9 min czytania <span class="bmore">Czytaj →</span></div>
+      </div>
+    </a>
+      <a class="bcard" href="/blog/kalibracja-flow-pressure-advance.html" data-cat="Kalibracja">
+      <img src="/asset/blog/cover-kalibracja-flow-pressure-advance.svg" alt="Kalibracja flow i Pressure Advance — ostre narożniki bez nadlewek" loading="lazy" style="height:210px">
+      <div class="bb">
+        <span class="btag">Kalibracja</span>
+        <h2>Kalibracja flow i Pressure Advance — ostre narożniki bez nadlewek</h2>
+        <p>Test liniowy przepływu, wieża Pressure Advance 0,02-0,06 s zależnie od hotendu, ringing a input shaping i workflow kalibracji w OrcaSlicer oraz Klipper.</p>
+        <div class="bmeta">8 min czytania <span class="bmore">Czytaj →</span></div>
+      </div>
+    </a>
+      <a class="bcard" href="/blog/sla-vs-fdm-vs-sls.html" data-cat="Technologie">
+      <img src="/asset/blog/cover-sla-vs-fdm-vs-sls.svg" alt="SLA vs FDM vs SLS — którą technologię druku 3D wybrać?" loading="lazy" style="height:210px">
+      <div class="bb">
+        <span class="btag">Technologie</span>
+        <h2>SLA vs FDM vs SLS — którą technologię druku 3D wybrać?</h2>
+        <p>Żywica, filament czy proszek? Dokładność w mikronach, jakość powierzchni, wytrzymałość, koszt za cm3, materiały i zastosowania FDM, SLA i SLS. Tabela decyzji przy wy</p>
+        <div class="bmeta">9 min czytania <span class="bmore">Czytaj →</span></div>
+      </div>
+    </a>
+      <a class="bcard" href="/blog/post-processing-fdm.html" data-cat="Obróbka">
+      <img src="/asset/blog/cover-post-processing-fdm.svg" alt="Post-processing FDM — jak zamienić wydruk w produkt" loading="lazy" style="height:210px">
+      <div class="bb">
+        <span class="btag">Obróbka</span>
+        <h2>Post-processing FDM — jak zamienić wydruk w produkt</h2>
+        <p>Jak wykończyć wydruk FDM? Gradacje papieru 120–2000, podkład wypełniający, wygładzanie acetonem ABS i ASA, ostrożnie z limoneną w PETG, lakier UV, klejenie epoxy i c</p>
+        <div class="bmeta">9 min czytania <span class="bmore">Czytaj →</span></div>
+      </div>
+    </a>
+      <a class="bcard" href="/blog/jak-przygotowac-plik-do-druku-3d.html" data-cat="Przygotowanie">
+      <img src="/asset/blog/cover-jak-przygotowac-plik-do-druku-3d.svg" alt="Jak przygotować plik do druku 3D? [Kompletny poradnik 2026]" loading="lazy" style="height:210px">
       <div class="bb">
         <span class="btag">Przygotowanie</span>
-        <h2>Jak przygotować plik do druku 3D?</h2>
-        <p>STL/OBJ/3MF, wodoszczelność, jednostki, grubość ścianek. Kompletny poradnik od pliku do udanego wydruku.</p>
-        <div class="bmeta">🕒 7 min czytania <span class="bmore">Czytaj →</span></div>
+        <h2>Jak przygotować plik do druku 3D? [Kompletny poradnik 2026]</h2>
+        <p>Jak przygotować STL/OBJ/3MF do druku 3D: wodoszczelność, jednostki, orientacja, grubość ścianek, wsporniki. Poradnik krok po kroku od pliku do wydruku.</p>
+        <div class="bmeta">7 min czytania <span class="bmore">Czytaj →</span></div>
       </div>
     </a>
-      <a class="bcard" href="/blog/druk-3d-na-zamowienie-ile-kosztuje.html">
-      <img src="/asset/blog/gadget.jpg" alt="Druk 3D na zamówienie — ile kosztuje?" loading="lazy" style="height:210px">
+      <a class="bcard" href="/blog/druk-3d-na-zamowienie-ile-kosztuje.html" data-cat="Zamówienia">
+      <img src="/asset/blog/cover-druk-3d-na-zamowienie-ile-kosztuje.svg" alt="Druk 3D na zamówienie — ile kosztuje i jak to działa? [2026]" loading="lazy" style="height:210px">
       <div class="bb">
-        <span class="btag">Ceny</span>
-        <h2>Druk 3D na zamówienie — ile kosztuje?</h2>
-        <p>Od czego zależy cena wydruku, orientacyjne kwoty, jak działa zamówienie krok po kroku. Wycenisz swój model w 30 sekund.</p>
-        <div class="bmeta">🕒 7 min czytania <span class="bmore">Czytaj →</span></div>
+        <span class="btag">Zamówienia</span>
+        <h2>Druk 3D na zamówienie — ile kosztuje i jak to działa? [2026]</h2>
+        <p>Druk 3D na zamówienie online: ile kosztuje wydruk, od czego zależy cena (filament, objętość, czas, marża), jak wycenić model. Poradnik dla klientów.</p>
+        <div class="bmeta">7 min czytania <span class="bmore">Czytaj →</span></div>
       </div>
     </a>
-      <a class="bcard" href="/blog/druk-wielokolorowy-jak-to-dziala.html">
-      <img src="/asset/blog/robot.jpg" alt="Druk wielokolorowy — jak to działa i ile kosztuje?" loading="lazy" style="height:210px">
+      <a class="bcard" href="/blog/tolerancje-i-dokladnosc-druku-3d.html" data-cat="Metrologia">
+      <img src="/asset/blog/cover-tolerancje-i-dokladnosc-druku-3d.svg" alt="Tolerancje i dokładność druku 3D — co musisz wiedzieć" loading="lazy" style="height:210px">
       <div class="bb">
-        <span class="btag">Kolory</span>
-        <h2>Druk wielokolorowy — jak to działa i ile kosztuje?</h2>
-        <p>AMS, kolory w 3MF, ceny ekstra kolorów, czas wydruku. Przewodnik po druku wielobarwnym.</p>
-        <div class="bmeta">🕒 6 min czytania <span class="bmore">Czytaj →</span></div>
+        <span class="btag">Metrologia</span>
+        <h2>Tolerancje i dokładność druku 3D — co musisz wiedzieć</h2>
+        <p>Jak dokładny jest druk 3D? Tolerancje wymiarowe FDM: PLA 0,3-0,5%, PETG 0,4-1%, ABS/ASA ~0,5%, nylon do 2%. Skurcz, odkształcenia, kalibracja. Poradnik.</p>
+        <div class="bmeta">7 min czytania <span class="bmore">Czytaj →</span></div>
       </div>
     </a>
-      <a class="bcard" href="/blog/prototypowanie-3d-dla-firm.html">
-      <img src="/asset/blog/prototype.jpg" alt="Prototypowanie 3D dla firm" loading="lazy" style="height:210px">
+      <a class="bcard" href="/blog/druk-wielokolorowy-jak-to-dziala.html" data-cat="Multi-kolor">
+      <img src="/asset/blog/cover-druk-wielokolorowy-jak-to-dziala.svg" alt="Druk wielokolorowy — jak to działa i ile kosztuje? [Przewodnik]" loading="lazy" style="height:210px">
+      <div class="bb">
+        <span class="btag">Multi-kolor</span>
+        <h2>Druk wielokolorowy — jak to działa i ile kosztuje? [Przewodnik]</h2>
+        <p>Druk 3D wielokolorowy: jak działa, obsługiwane formaty (3MF), ile kosztuje ekstra kolor, czas wydruku, wsporniki, naklejki. Przewodnik krok po kroku.</p>
+        <div class="bmeta">6 min czytania <span class="bmore">Czytaj →</span></div>
+      </div>
+    </a>
+      <a class="bcard" href="/blog/prototypowanie-3d-dla-firm.html" data-cat="Biznes">
+      <img src="/asset/blog/cover-prototypowanie-3d-dla-firm.svg" alt="Prototypowanie 3D dla firm — jak przyspieszyć rozwój produktu?" loading="lazy" style="height:210px">
       <div class="bb">
         <span class="btag">Biznes</span>
-        <h2>Prototypowanie 3D dla firm</h2>
-        <p>Jak szybkie prototypy przyspieszają rozwój produktu i obniżają koszty. Dla startupów, inżynierów i product designerów.</p>
-        <div class="bmeta">🕒 6 min czytania <span class="bmore">Czytaj →</span></div>
-      </div>
-    </a>
-      <a class="bcard" href="/blog/tolerancje-i-dokladnosc-druku-3d.html">
-      <img src="/asset/blog/printer3.jpg" alt="Tolerancje i dokładność druku 3D" loading="lazy" style="height:210px">
-      <div class="bb">
-        <span class="btag">Technika</span>
-        <h2>Tolerancje i dokładność druku 3D</h2>
-        <p>Skurcz materiałów, odchyłki wymiarowe, kalibracja. Tabela tolerancji dla PLA, PETG, ABS, nylonu.</p>
-        <div class="bmeta">🕒 7 min czytania <span class="bmore">Czytaj →</span></div>
+        <h2>Prototypowanie 3D dla firm — jak przyspieszyć rozwój produktu?</h2>
+        <p>Prototypowanie 3D dla firm i startupów: szybkie prototypy, iteracje, obniżanie kosztów, sprawdzanie formy i funkcji. Dlaczego druk 3D na zamówienie to najszybsza dro</p>
+        <div class="bmeta">6 min czytania <span class="bmore">Czytaj →</span></div>
       </div>
     </a>
   </div>
@@ -200,5 +314,9 @@ body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--
 
 <script src="/asset/theme.js?v=2"></script>
 <script src="/asset/reveal.js?v=2"></script>
+<script>
+function bcf(btn,c){document.querySelectorAll('.bchip').forEach(x=>x.classList.remove('active'));btn.classList.add('active');
+document.querySelectorAll('.bcard').forEach(card=>{card.style.display=(c==='all'||card.dataset.cat===c)?'':'none'});}
+</script>
 </body>
 </html>

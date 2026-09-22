@@ -33,6 +33,17 @@ def sitemap(request: Request, db: Session = Depends(get_db)):
         "/blog/prototypowanie-3d-dla-firm.html": 0.6, "/blog/tolerancje-i-dokladnosc-druku-3d.html": 0.6,
         "/prywatnosc.html": 0.3, "/regulamin.html": 0.3,
     }
+    # Wpisy blogowe: glob katalogu frontend/blog (auto-detect nowych)
+    try:
+        import os as _os, glob as _glob
+        blog_dir = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))), "frontend", "blog")
+        for fp in _glob.glob(_os.path.join(blog_dir, "*.html")):
+            slug = _os.path.splitext(_os.path.basename(fp))[0]
+            path = f"/blog/{slug}.html"
+            if path not in STATIC_PAGES:
+                STATIC_PAGES[path] = 0.7
+    except Exception:
+        pass
     for _path, _prio in STATIC_PAGES.items():
         urls.append(f"  <url><loc>{DOMAIN}{_path}</loc><changefreq>weekly</changefreq><priority>{_prio}</priority></url>")
 
