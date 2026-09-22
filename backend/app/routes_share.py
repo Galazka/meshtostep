@@ -118,16 +118,22 @@ __JSON_LD__
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='24' font-size='24'>📁</text></svg>">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; }
+  html, body { min-height: 100%; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: Inter, system-ui, sans-serif;
     background: #f7f9fc;
     color: #1e293b;
-    overflow: hidden;
   }
+  .vnav{position:sticky;top:0;z-index:30;background:#0B1730;display:flex;align-items:center;gap:6px;padding:0 16px;min-height:56px;flex-wrap:wrap}
+  .vnav .vlogo{background:#fff;border-radius:7px;padding:4px 8px;display:inline-flex;align-items:center;text-decoration:none;flex-shrink:0}
+  .vnav .vlogo img{height:26px}
+  .vnav a.vl{color:#bcc9de;text-decoration:none;font-size:13px;font-weight:600;padding:9px 11px;border-radius:6px;white-space:nowrap}
+  .vnav a.vl:hover{color:#fff;background:rgba(255,255,255,.07)}
+  .vnav a.vl.pr{color:#fff;background:#2B5CE6}
+  .vnav .vsp{flex:1}
   .topbar {
-    position: fixed;
-    top: 0; left: 0; right: 0;
+    position: sticky;
+    top: 56px; left: 0; right: 0;
     z-index: 15;
     display: flex;
     align-items: center;
@@ -183,10 +189,10 @@ __JSON_LD__
   .btn-primary { background: #1a56db; color: #fff; }
   .btn-secondary { background: #e5e7eb; color: #374151; }
   #viewer3d {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
+    position: relative;
+    width: 100%;
+    height: calc(100dvh - 170px);
+    min-height: 360px;
     background: #f0f2f5;
   }
   #viewer3d canvas { display: block; }
@@ -194,6 +200,10 @@ __JSON_LD__
     .pills { display: none; }
     .file-block { max-width: 45vw; }
     .btn { padding: 8px 12px; font-size: 13px; }
+    .vnav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+    .vnav a.vl { padding: 8px 7px; font-size: 12px; }
+    .topbar { top: 52px; }
+    #viewer3d { height: 58dvh; }
   }
   #descBody img { max-width: 100%; border-radius: 8px; margin: 12px 0; }
   #descBody pre { background: #1e293b; color: #e2e8f0; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 13px; margin: 12px 0; }
@@ -208,6 +218,18 @@ __JSON_LD__
 </style>
 </head>
 <body>
+<nav class="vnav">
+  <a class="vlogo" href="/"><img src="/logo.png?v=83" alt="3DFILE.link" onerror="this.remove()"></a>
+  <span style="width:10px"></span>
+  <a class="vl" href="/">Hosting 3D</a>
+  <a class="vl" href="/#discover">Odkrywaj</a>
+  <a class="vl" href="/drukuje">Wydrukuj u nas</a>
+  <a class="vl" href="/blog.html">Blog</a>
+  <a class="vl" href="/kontakt">Kontakt</a>
+  <span class="vsp"></span>
+  <a class="vl" href="/">Zaloguj</a>
+  <a class="vl pr" href="/konto">Moje konto</a>
+</nav>
 <header class="topbar">
   <div class="file-block">
     <a href="/" style="text-decoration:none;margin-right:8px;flex-shrink:0"><img src="/logo.png?v=2" alt="3DFILE" style="height:48px" onerror="this.style.display='none'"></a>
@@ -232,9 +254,12 @@ __JSON_LD__
     </select>
     <a class="btn btn-primary" href="#" id="dlBtn" onclick="convertAndDownload('__UUID__');return false">⬇ __DOWNLOAD_BTN__</a>
     <button class="btn btn-secondary" onclick="showEmbed('__TOKEN__')">⧉ __EMBED_BTN__</button>
+    <a class="btn" style="background:#2B5CE6;color:#fff" href="/zamow?job=__UUID__">🖨 __PRINT_CTA__</a>
   </div>
 </header>
-<div id="viewer3d" style="position:fixed;inset:0;top:0;left:0;right:0;bottom:0"></div>
+<div id="viewer3d"></div>
+<button id="btnFsS" onclick="fsS()" style="position:absolute;top:calc(56px + 66px + 10px);right:14px;z-index:16;background:rgba(255,255,255,.92);border:1px solid #e2e8f0;border-radius:8px;padding:7px 11px;font-size:15px;cursor:pointer" title="Pełny ekran">⛶</button>
+<script>function fsS(){var v=document.getElementById('viewer3d');if(!document.fullscreenElement){(v.requestFullscreen||v.webkitRequestFullscreen).call(v).catch(function(){});}else{document.exitFullscreen();}}</script>
 <button id="panelToggle" onclick="document.getElementById('sharePanel').classList.toggle('open')" style="position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:30;background:rgba(255,255,255,.95);border:1px solid #e2e8f0;border-radius:50%;width:44px;height:44px;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.15)">⚙️</button>
 <div id="sharePanel" style="position:fixed;right:-320px;top:0;bottom:0;width:300px;z-index:25;background:rgba(255,255,255,.97);border-left:1px solid #e2e8f0;transition:right .3s ease;overflow-y:auto;padding:16px;box-shadow:-4px 0 16px rgba(0,0,0,.1)">
 <style>#sharePanel.open{right:0!important}</style>
@@ -534,7 +559,16 @@ loadComments();
 if (localStorage.getItem('mt_token')) document.getElementById('commentForm').style.display = 'block';
 __DESC_INIT__
 </script>
-<div id="adBottom" style="position:fixed;bottom:0;left:0;right:0;z-index:20;display:flex;justify-content:center;background:rgba(255,255,255,.92);border-top:1px solid #e5e7eb;padding:8px 16px"><div class="ad-slot" data-slot="page_bottom" style="max-width:728px;min-height:90px;width:100%"></div></div>
+<footer style="background:#0B1730;color:#bcc9de;margin-top:0">
+  <div style="max-width:1240px;margin:0 auto;display:grid;grid-template-columns:1.3fr repeat(3,1fr);gap:26px;padding:38px 20px 20px">
+    <div><div style="background:#fff;border-radius:8px;padding:4px 8px;display:inline-flex"><img src="/logo.png?v=83" alt="3dfile" style="height:28px" onerror="this.remove()"></div><p style="font-size:13px;line-height:1.6;margin-top:10px">Hosting i druk 3D. Wrzuć plik — odbierz wydruk pod drzwiami lub link do STEP-a.</p></div>
+    <div><b style="color:#fff;font-size:13px">Usługi</b><div style="margin-top:10px;display:grid;gap:7px;font-size:13px"><a style="color:#bcc9de;text-decoration:none" href="/">Hosting STL &amp; STEP</a><a style="color:#bcc9de;text-decoration:none" href="/zamow">Druk 3D na żądanie</a><a style="color:#bcc9de;text-decoration:none" href="/#discover">Odkrywaj projekty</a></div></div>
+    <div><b style="color:#fff;font-size:13px">Drukarnia</b><div style="margin-top:10px;display:grid;gap:7px;font-size:13px"><a style="color:#bcc9de;text-decoration:none" href="/drukuje">Bambu Lab P1S Farm</a><a style="color:#bcc9de;text-decoration:none" href="/drukuje#materials">Materiały</a><a style="color:#bcc9de;text-decoration:none" href="/kontakt">Odbiór: Gdańsk Osowa</a></div></div>
+    <div><b style="color:#fff;font-size:13px">Kontakt</b><div style="margin-top:10px;display:grid;gap:7px;font-size:13px"><a style="color:#bcc9de;text-decoration:none" href="mailto:hello@3dfile.link">hello@3dfile.link</a><a style="color:#bcc9de;text-decoration:none" href="mailto:tomgal@3dfile.link">tomgal@3dfile.link</a><a style="color:#bcc9de;text-decoration:none" href="tel:+487****4762">+48 790 824 762</a><span style="font-size:12px">ul. Międzygwiezdna 31/2<br>80-299 Gdańsk Osowa</span></div></div>
+  </div>
+  <div style="border-top:1px solid rgba(255,255,255,.1);padding:14px 20px;text-align:center;font-size:12px;font-family:JetBrains Mono,monospace">© 2026 3dfile.link · Realizacja 48h · Faktury VAT 23%</div>
+</footer>
+<div id="adBottom" style="position:static;display:flex;justify-content:center;background:#fff;border-top:1px solid #e5e7eb;padding:12px 16px"><div class="ad-slot" data-slot="page_bottom" style="max-width:728px;min-height:90px;width:100%"></div></div>
 <script>
 (function(){
   fetch('/api/ads/slots').then(function(r){return r.ok?r.json():[]}).then(function(d){
@@ -654,6 +688,7 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
         downloads=downloads,
         times_word=times_word,
         token=token,
+        print_cta=("Wydrukuj ten model — od 10 zł" if is_pl else "Print this model — from 10 PLN"),
         download_btn="Pobierz STEP" if is_pl else "Download STEP",
         embed_btn="Osadź" if is_pl else "Embed",
         fmt_stl="STL (uniwersalny)" if is_pl else "STL (universal)",
