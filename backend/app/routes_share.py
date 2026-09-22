@@ -170,7 +170,8 @@ __JSON_LD__
     color: #475569;
     white-space: nowrap;
   }
-  .actions { display: flex; gap: 8px; margin-left: auto; flex-shrink: 0; }
+  .actions { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; min-width: 0; max-width: 100%; }
+  .actions select { max-width: 44vw; min-width: 0; }
   .btn {
     display: inline-flex;
     align-items: center;
@@ -201,6 +202,9 @@ __JSON_LD__
     .file-block { max-width: 45vw; }
     .btn { padding: 8px 12px; font-size: 13px; }
     .vnav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+    .actions { width: 100%; }
+    .actions select { flex: 1; max-width: none; }
+    #sharePanel { width: 86vw; }
     .vnav a.vl { padding: 8px 7px; font-size: 12px; }
     .topbar { top: 52px; }
     #viewer3d { height: 58dvh; }

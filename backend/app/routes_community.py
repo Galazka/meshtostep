@@ -317,7 +317,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
 .yt{margin-top:12px}
 .yt iframe{width:100%;height:220px;border:none;border-radius:8px}
 .side{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;height:fit-content}
-@media(max-width:900px){.vnav a.vl{padding:8px 7px;font-size:12px}.vsub{top:0;position:static}#btnPrintTxt{display:none}.wrap{grid-template-columns:1fr;min-width:0}#viewer{height:300px}.top .btn{padding:8px 12px;font-size:13px}.top select{font-size:12px;padding:6px}.top>div{min-width:0;flex-wrap:wrap;gap:6px}.wrap>div{min-width:0;overflow-wrap:anywhere}.desc{overflow-wrap:anywhere}}
+@media(max-width:900px){.vnav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.vnav a.vl{padding:8px 7px;font-size:12px}.vsub{top:0;position:static}.vsub .btn{flex:1;white-space:normal;text-align:center;font-size:13px;padding:9px 12px}.wrap{grid-template-columns:1fr;min-width:0}#viewer{height:300px}.top .btn{padding:8px 12px;font-size:13px}.top select{font-size:12px;padding:6px}.top>div{min-width:0;flex-wrap:wrap;gap:6px}.wrap>div{min-width:0;overflow-wrap:anywhere}.desc{overflow-wrap:anywhere}}
 </style>
 <script type="importmap">{"imports":{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js"}}</script>
 </head>
