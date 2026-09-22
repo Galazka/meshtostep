@@ -138,8 +138,12 @@ def sync_payment(o, db):
                 sess = None
         if sess is None and o.customer_email:
             try:
-                found = stripe.checkout.Session.list(limit=20, customer_email=o.customer_email)
+                # Session.list nie filtruje po email — pobieramy swieze sesje i filtrujemy w pythonie
+                found = stripe.checkout.Session.list(limit=100)
                 for cs in (found.get("data") or []):
+                    cd = ((cs.get("customer_details") or {}).get("email") or "").lower()
+                    if cd != (o.customer_email or "").lower():
+                        continue
                     if (cs.get("metadata") or {}).get("order_id") == str(o.id) or cs.get("client_reference_id") == str(o.id):
                         sess = cs
                         o.stripe_session_id = cs.get("id")
