@@ -138,7 +138,8 @@ async function loadQuota(){
         const q=await r.json();
         const bar=document.getElementById('quotaBar');
         bar.style.display='block';
-        document.getElementById('quotaLabel').textContent='Wykorzystano '+q.used_mb+' / '+q.limit_mb+' MB';
+        var _kb=function(b){return b<1048576?(b/1024).toFixed(1).replace('.',',')+' KB':(b/1048576).toFixed(1).replace('.',',')+' MB'};
+        document.getElementById('quotaLabel').textContent='Wykorzystano '+(q.used_bytes!=null?_kb(q.used_bytes):q.used_mb+' MB')+' / '+q.limit_mb+' MB';
         document.getElementById('quotaPct').textContent=q.percent+'%';
         const fill=document.getElementById('quotaFill');
         fill.style.width=Math.min(q.percent,100)+'%';
@@ -346,7 +347,7 @@ function mfRender(){
     }
     grid.innerHTML=jobs.map(function(j){
         const vis=j.visibility||'private';
-        const visBadge='<span class="mfc-badge '+({public:'pub',unlisted:'unl'}[vis]||'pri')+'">'+({public:'public',unlisted:'link'}[vis]||'prywatny')+'</span>';
+        const visBadge='<span class="mfc-badge '+({public:'pub',unlisted:'unl'}[vis]||'pri')+'">'+({public:'publiczny',unlisted:'link'}[vis]||'prywatny')+'</span>';
         const titleEsc=(j.title||j.filename||'').replace(/</g,'&lt;');
         const thumbUrl='/api/thumb/'+j.uuid;
         const previewSrc=j.preview_image || ('/api/preview/'+j.uuid);

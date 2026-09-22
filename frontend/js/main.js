@@ -4,7 +4,7 @@ import { token } from './shared.js?v=81';
 import { refreshThreeTheme } from './viewer3d.js?v=81';
 import { fetchUser, showModal } from './auth.js?v=83';
 import { setupDropZone } from './convert.js?v=83';
-import { loadMyJobs } from './myfiles.js?v=63';
+import { loadMyJobs } from './myfiles.js?v=64';
 import { loadAccount } from './account.js?v=7';
 
 // Expose window globals for onclick handlers in index.html
