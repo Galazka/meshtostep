@@ -118,13 +118,13 @@ __JSON_LD__
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='24' font-size='24'>📁</text></svg>">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { min-height: 100%; }
+  html, body { min-height: 100%; max-width: 100%; overflow-x: clip; }
   body {
     font-family: Inter, system-ui, sans-serif;
     background: #f7f9fc;
     color: #1e293b;
   }
-  .vnav{position:sticky;top:0;z-index:30;background:#0B1730;display:flex;align-items:center;gap:6px;padding:0 16px;min-height:56px;flex-wrap:wrap}
+  .vnav{position:sticky;top:0;z-index:30;background:#0B1730;display:flex;align-items:center;gap:6px;padding:0 16px;min-height:56px;flex-wrap:wrap;width:100%;min-width:0}
   .vnav .vlogo{background:#fff;border-radius:7px;padding:4px 8px;display:inline-flex;align-items:center;text-decoration:none;flex-shrink:0}
   .vnav .vlogo img{height:26px}
   .vnav a.vl{color:#bcc9de;text-decoration:none;font-size:13px;font-weight:600;padding:9px 11px;border-radius:6px;white-space:nowrap}
@@ -203,6 +203,7 @@ __JSON_LD__
     .btn { padding: 8px 12px; font-size: 13px; }
     .vnav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
     .actions { width: 100%; }
+    .actions .btn { white-space: normal; flex: 1; text-align: center; }
     .actions select { flex: 1; max-width: none; }
     #sharePanel { width: 86vw; }
     .vnav a.vl { padding: 8px 7px; font-size: 12px; }
