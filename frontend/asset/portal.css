@@ -482,3 +482,6 @@ body.portal > *{min-width:0;max-width:100%}
   .files-toolbar input[type="text"]{min-width:0;flex:1 1 140px}
   #myFilesTable{overflow-x:auto}
 }
+
+/* dotyk: eco-link jako pelny pasek */
+@media(hover:none){.eco-link{min-height:36px;padding:8px 0}.door-cta{padding:10px 0}}
