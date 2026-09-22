@@ -131,7 +131,7 @@ h1,h2,h3,h4{font-family:var(--font-display);letter-spacing:-.025em}
 .prt-section-head.center{margin-left:auto;margin-right:auto;text-align:center}
 
 /* siatka z hairline (Vercel-style) */
-.hgrid{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
+.hgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
 .hgrid .hcell{padding:30px 28px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);transition:background .15s}
 .hgrid .hcell:hover{background:var(--bg-soft)}
 .hgrid .hcell:nth-child(3n){border-right:none}
@@ -300,7 +300,7 @@ table.spec .dot{display:inline-block;width:8px;height:8px;border-radius:50%;marg
 .faq .fa-body code{font-family:var(--font-mono);font-size:12.5px;background:var(--bg-soft);padding:2px 6px;border-radius:4px;color:var(--accent)}
 
 /* kroki 01/02/03 */
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
 .step{padding:30px 26px;border-right:1px solid var(--line);position:relative}
 .step:last-child{border-right:none}
 .step .sn{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;color:var(--accent);font-weight:600}
@@ -451,3 +451,7 @@ html[data-theme="dark"] .why-table td.us{background:rgba(143,180,255,.07)}
   .door,.g-card,.eco-card,.step{min-width:0}
   .why-table table{min-width:520px}
 }
+
+/* flex-body SPA: dzieci nie moga rozpedzac body do min-content (root-cause overflow mobile) */
+.page,.portal .page,.wrap,.prt-section-head,.why-wrap,.spec-wrap,.eco,.hgrid,.statline,.upload-wrap{min-width:0}
+body.portal > *{min-width:0;max-width:100%}

@@ -36,8 +36,8 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--fg);line-he
 .logo img{height:30px}
 .steps{font-size:13px;color:var(--muted)}.steps b{color:var(--accent)}
 .wrap{max-width:1360px;margin:0 auto;padding:24px 28px}
-.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:28px;align-items:start}
-@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:28px;align-items:start}
+@media(max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;margin-bottom:18px}
 .card h2{font-size:17px;font-weight:700;margin:0 0 14px;display:flex;align-items:center;gap:8px}
 .card h2 .n{width:26px;height:26px;background:var(--accent);color:#fff;border-radius:50%;font-size:13px;display:flex;align-items:center;justify-content:center}
@@ -103,7 +103,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 {"imports":{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js","three/addons/loaders/OBJLoader.js":"/vendor/three/loaders/OBJLoader.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js"}}
 </script>
 
-    <link href="/asset/portal.css?v=41" rel="stylesheet">
+    <link href="/asset/portal.css?v=43" rel="stylesheet">
 <!-- Google AdSense (Auto ads) -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8919352846655813"
         crossorigin="anonymous"></script>
