@@ -599,6 +599,7 @@ function calc(){
   if(!CART.length){ box.style.display='none'; empty.style.display='block'; btn.disabled=true; return; }
   var rate=RATES[cur]||1;
   var productsPLN=0, colorExt=0, rowsHTML='';
+  var COUPON_PLN=0; try{COUPON_PLN=(window.__COUPON&&window.__COUPON.pln)||0;}catch(e){}
   CART.forEach(function(it, idx){
     // it.price = produkt z /api/calculate ( JUŻ z dopłatami i infill ) — nie dodajemy nic
     var prn=(+it.price)||0;
@@ -620,10 +621,9 @@ function calc(){
     if(smallOrder) shippingPLN = Math.min(shippingPLN, 9.90);
     var freeShip = !isPickup && !isPkExp && adjPLN>=200 && shippingPLN>0;
     if(freeShip) shippingPLN=0;
+  if(COUPON_PLN>adjPLN)COUPON_PLN=adjPLN;
     var totalPLN = adjPLN + shippingPLN - COUPON_PLN;
-  var COUPON_PLN=0; try{COUPON_PLN=(window.__COUPON&&window.__COUPON.pln)||0;}catch(e){}
-  if(COUPON_PLN>adjPLN)COUPON_PLN=adjPLN;
-  var discLine = COUPON_PLN>0 ? '<div class="summary-row"><span>Rabat '+(window.__COUPON.code||'')+'</span><span style="color:#15803d;font-weight:700">−'+fmt(cx(COUPON_PLN/rate))+'</span></div>' : '';
+var discLine = COUPON_PLN>0 ? '<div class="summary-row"><span>Rabat '+(window.__COUPON.code||'')+'</span><span style="color:#15803d;font-weight:700">−'+fmt(cx(COUPON_PLN/rate))+'</span></div>' : '';
   var colorLine = colorExt>0 ? '<div class="summary-row"><span>Kolory ekstra</span><span style="color:#B45309">+'+fmt(colorExt/rate)+'</span></div>' : '';
   var shipLabel = isPickup ? 'Odbiór osobisty' : isPkExp ? 'Ekspres przy odbiorze (2 dni)' : freeShip ? 'Wysyłka — GRATIS (≥200 zł)' : smallOrder ? 'Wysyłka + pakowanie — PROMOCJA' : 'Wysyłka + pakowanie';
   var freeLine='';
