@@ -353,7 +353,7 @@ function mfRender(){
         const folderOpts='<option value="">Bez folderu</option>'+_mfFolders.map(function(f){return '<option value="'+f.id+'"'+(String(j.folder_id||'')===String(f.id)?' selected':'')+'>'+String(f.name).replace(/</g,'&lt;')+'</option>'}).join('');
         const when=(j.created_at||'').slice(0,10);
         const kb=j.file_size_bytes?Math.round(j.file_size_bytes/1024)+' KB':'';
-        const dims=j.dims_mm||'';
+        const dims=(j.dims_mm||'').replace(/ ?x ?/g,' × ');
         const thumb='<img src="'+previewSrc+'" alt="" loading="lazy" onerror="if(this.dataset.step==\'0\'){this.dataset.step=\'1\';this.src=\''+thumbUrl+'\';}else{this.style.display=\'none\';}">'
         +'<div class="mfc-zoom" title="Powiększ" onclick="event.stopPropagation();openPreviewFullscreen(\''+previewSrc+'\')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M11 8v6M8 11h6"/></svg></div>';
         return '<div class="mfc" draggable="true" ondragstart="event.dataTransfer.setData(\'text/jobid\','+j.id+')">'
