@@ -390,12 +390,11 @@ html[data-theme="dark"] .eco-ico{background:#0B1220;border-color:var(--line)}
 @media (max-width:900px){ .prt-nav a[href="/drukuje"]{ margin:8px 0 0; } }
 
 /* ═══ DWA DRZWI — hero wybioru (hosting / druk) ═══ */
-.doors-slide{grid-template-columns:1fr !important;max-width:1200px}
 .doors-head{text-align:center;max-width:760px;margin:0 auto 8px}
 .doors-head h1{margin:14px 0 10px}
 .doors-head .prt-sub{margin-left:auto;margin-right:auto}
-.doors-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:26px}
-.door{display:flex;flex-direction:column;gap:10px;text-align:left;text-decoration:none;
+.doors-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:26px}
+.door{display:flex;flex-direction:column;gap:10px;text-align:left;text-decoration:none;min-width:0;
   background:#fff;color:var(--ink);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:26px 26px 22px;
   transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;position:relative;overflow:hidden}
 .door:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(2,8,23,.45)}
@@ -406,7 +405,7 @@ html[data-theme="dark"] .eco-ico{background:#0B1220;border-color:var(--line)}
 .door-chip{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
   background:var(--bg-soft);border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--muted)}
 .door h2{font-size:21px;font-weight:700;margin:2px 0 0;color:#0B1730;letter-spacing:-.01em}
-.door p{font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:0}
+.door p{font-size:13.5px;line-height:1.6;color:var(--ink-2);margin:0;overflow-wrap:anywhere}
 .door p code{font-family:var(--font-mono);font-size:12px;background:var(--bg-soft);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
 .door-metrics{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:auto;padding-top:10px;border-top:1px dashed var(--line)}
 .door-metrics span{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.04em;color:var(--muted)}
@@ -414,7 +413,7 @@ html[data-theme="dark"] .eco-ico{background:#0B1220;border-color:var(--line)}
 .door-cta{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:14.5px;color:var(--accent);margin-top:4px}
 .door-a .door-cta{color:#14325C}
 .door-b:hover .door-cta,.door-a:hover .door-cta{gap:9px}
-@media (max-width:860px){ .doors-grid{grid-template-columns:1fr} .prt-slide.doors-slide{padding:64px 20px 56px} }
+@media (max-width:860px){ .doors-grid{grid-template-columns:minmax(0,1fr)} .prt-slide.doors-slide{padding:64px 20px 56px} }
 html[data-theme="dark"] .door{background:#0F2140;border-color:#1E3A5F}
 html[data-theme="dark"] .door h2{color:#EAF1FB}
 html[data-theme="dark"] .door p{color:#9DACC9}
@@ -427,7 +426,7 @@ html[data-theme="dark"] .door-a{border-top-color:#8FB4FF}
 .why-head{max-width:720px;margin-bottom:34px}
 .why-head h2{font-size:clamp(22px,3vw,32px);font-weight:700;letter-spacing:-.02em;margin:10px 0;color:var(--ink)}
 .why-head .lead{font-size:14.5px;line-height:1.7;color:var(--ink-2)}
-.why-grid{display:grid;grid-template-columns:1.35fr .85fr;gap:26px;align-items:start}
+.why-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,.85fr);gap:26px;align-items:start}
 .why-table{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--card)}
 .why-table table{width:100%;border-collapse:collapse;font-size:13px;min-width:640px}
 .why-table th{font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-align:left;padding:13px 14px;border-bottom:1px solid var(--line);background:var(--bg-soft)}
@@ -444,4 +443,11 @@ html[data-theme="dark"] .why-table td.us{background:rgba(143,180,255,.07)}
 .g-card h3{font-size:16.5px;font-weight:700;margin:7px 0 6px;color:var(--ink);letter-spacing:-.01em}
 .g-card p{font-size:13px;line-height:1.6;color:var(--ink-2);margin:0}
 .g-strip{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.05em;color:var(--muted);text-transform:uppercase;padding:10px 2px}
-@media (max-width:960px){ .why-grid{grid-template-columns:1fr} }
+@media (max-width:960px){ .why-grid{grid-template-columns:minmax(0,1fr)} }
+
+/* mobilny safety-net: nic nie ma prawa byc szersze niz viewport */
+@media(max-width:640px){
+  .doors-slide,.doors-grid,.why-grid,.eco,.steps,.mgrid{grid-template-columns:minmax(0,1fr) !important}
+  .door,.g-card,.eco-card,.step{min-width:0}
+  .why-table table{min-width:520px}
+}
