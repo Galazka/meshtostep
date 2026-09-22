@@ -1,6 +1,6 @@
 """Database models: users, jobs, shares, comments, geo, ads. — 3dfile.link"""
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Float, DateTime, Boolean, ForeignKey, Text, UniqueConstraint
+from sqlalchemy import Column, Integer, BigInteger, String, Float, DateTime, Boolean, ForeignKey, Text, UniqueConstraint
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
@@ -36,7 +36,7 @@ class User(Base):
     register_user_agent = Column(String(512), nullable=True)
     bio = Column(Text, nullable=True)
     avatar_url = Column(String(512), nullable=True)
-    quota_limit_bytes = Column(Integer, default=5 * 1024 * 1024 * 1024, nullable=False)  # 5 GB
+    quota_limit_bytes = Column(BigInteger, default=5 * 1024 * 1024 * 1024, nullable=False)  # 5 GB (BigInteger — int4 nie mieści 5.36e9)
     bonus_mb = Column(Integer, default=0)  # bonus MB earned from print orders
     # — zapisane dane do wysyłki druku (profil klienta, auto-fill w zamówieniach) —
     ship_full_name = Column(String(100), nullable=True)
