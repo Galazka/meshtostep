@@ -49,3 +49,6 @@ _*.py
 
 railway_deploy.log
 _patch_helper.py
+_*.py
+_*.js
+_live_admin.html
