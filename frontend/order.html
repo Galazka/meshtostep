@@ -101,7 +101,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 {"imports":{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js","three/addons/loaders/OBJLoader.js":"/vendor/three/loaders/OBJLoader.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js"}}
 </script>
 
-    <link href="/asset/portal.css?v=38" rel="stylesheet">
+    <link href="/asset/portal.css?v=39" rel="stylesheet">
 <!-- Google AdSense (Auto ads) -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8919352846655813"
         crossorigin="anonymous"></script>
@@ -133,7 +133,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
   <nav class="prt-nav" id="navLinks">
     <a href="/">Hosting 3D</a>
     <a href="/#discover">Odkrywaj</a>
-    <a href="/drukuje">Druk 3D</a>
+    <a href="/drukuje">Wydrukuj u nas</a>
     <a href="/#hiw">Jak to działa</a>
     <a href="/#faq">Pomoc FAQ</a>
     <a href="/blog.html">Blog</a>
@@ -566,7 +566,7 @@ function calc(){
   var isPickup = ship==='pickup', isPkExp = ship==='pickup_express';
   var base=(shipBase[ship]||shipBase.standard)[reg]||0;
   var shippingPLN = isPickup ? 0 : isPkExp ? 19 : (base+3);
-  var basePrint = Math.max(3, productsPLN); // minimum druku 3 zł (backend)
+  var basePrint = Math.max(10, productsPLN); // minimum druku 10 zł (backend)
     var adjPLN = basePrint + colorExt;
     var smallOrder = shippingPLN>0 && !isPkExp && adjPLN<40;
     if(smallOrder) shippingPLN = Math.min(shippingPLN, 9.90);
@@ -799,7 +799,7 @@ window.__local3d = {
 };
 </script>
 
-<script src="/js/print_i18n.js?v=94"></script>
+<script src="/js/print_i18n.js?v=95"></script>
 <script>document.addEventListener('click',function(ev){var nb=document.getElementById('orderNav');if(nb&&nb.classList.contains('open')&&ev.target.closest('#orderNav a')){nb.classList.remove('open');}});</script>
 <footer class="prt-footer" id="siteFooter">
   <div class="prt-footer-inner">

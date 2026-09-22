@@ -43,3 +43,6 @@ frontend/partials/
 frontend/tw/
 frontend/asset/tw.css
 pg.html
+
+# lokalne scratch probey
+_*.py

@@ -347,7 +347,7 @@ document.addEventListener('click', function(e) {
             '<td style="padding:8px;font-weight:600" class="mc-p10"></td><td style="padding:8px;font-weight:600" class="mc-p50"></td>' +
             '<td><button data-action="saveMat" data-mat="' + esc(m) + '" style="padding:5px 12px;background:#1d4ed8;color:#fff;border:none;border-radius:6px;cursor:pointer">Zapisz</button></td></tr>';
         });
-        tbl += '</tbody></table></div><div style="font-size:11px;color:#9ca3af;margin-top:6px">* przy marży ' + margin + '%, prąd z ' + watts + 'W × ' + kwh + ' zł/kWh, bez wysyłki i bez minimum 3 zł (cena samego wydruku).</div>';
+        tbl += '</tbody></table></div><div style="font-size:11px;color:#9ca3af;margin-top:6px">* przy marży ' + margin + '%, prąd z ' + watts + 'W × ' + kwh + ' zł/kWh, bez wysyłki i bez minimum 10 zł (cena samego wydruku).</div>';
         box.innerHTML = head + tbl + _simHTML(mats);
         _recalcMatRows();
       })

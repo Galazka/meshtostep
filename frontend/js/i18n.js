@@ -46,7 +46,7 @@ const I18N = {
         userJobsTitle: 'Ostatnie przetworzenia',
         whyKicker: 'Dlaczego my',
 
-        navHome: 'Hosting 3D', navHosting: 'Odkrywaj', navPrint: 'Druk 3D', navHow: 'Jak to działa', navBlog: 'Blog', navContact: 'Kontakt', navConverter: 'Konwerter', navPricing: 'Cennik', navMyFiles: 'Moje pliki',
+        navHome: 'Hosting 3D', navHosting: 'Odkrywaj', navPrint: 'Wydrukuj u nas', btnPrint: 'Wydrukuj u nas', navHow: 'Jak to działa', navBlog: 'Blog', navContact: 'Kontakt', navConverter: 'Konwerter', navPricing: 'Cennik', navMyFiles: 'Moje pliki',
         navHowItWorks: 'Jak to dziala', navFAQ: 'Pomoc FAQ',
         navLogin: 'Zaloguj', navSignup: 'Zaloz konto',
         navMyConversions: 'Moje konwersje', navLogout: 'Wyloguj',
@@ -261,7 +261,7 @@ const I18N = {
         userJobsTitle: 'Recent conversions',
         whyKicker: 'Why us',
 
-        navHome: '3D Hosting', navHosting: 'Discover', navPrint: '3D Printing', navHow: 'How it works', navBlog: 'Blog', navContact: 'Contact',
+        navHome: '3D Hosting', navHosting: 'Discover', navPrint: 'Print with us', btnPrint: 'Print it here', navHow: 'How it works', navBlog: 'Blog', navContact: 'Contact',
         kontoProfile: 'Profile', kontoQuota: 'Storage', kontoTitle: 'My Account', navMyAccount: 'Account',
         navConverter: 'Converter', navPricing: 'Pricing', navMyFiles: 'My Files',
         navHowItWorks: 'How it works', navFAQ: 'Help FAQ',

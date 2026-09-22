@@ -86,7 +86,7 @@ DEFAULT_KWH = getattr(settings, "kwh_price", 1.50)  # Bamboo P1S ~1.5 zł/kWh
 PACKING_FEE_PLN = 3.0  # karton + etykieta + folia na przesyłkę (InPost Paczkomat), stałe niezależnie od liczby produktów
 PICKUP_EXPRESS_FEE_PLN = 19.00  # odbiór osobisty ekspres: priorytet w kolejce, gotowe do 2 dni roboczych (opłata all-inclusive)
 FREE_SHIPPING_MIN_PLN = 200.0  # zamówienia >=200 zł → wysyłka gratis (Tom pokrywa koszt)
-MIN_PRINT_PLN = 3.0  # minimalna cena samego wydruku (hero/order mówią "od 3 zł")
+MIN_PRINT_PLN = 10.0  # minimalna cena samego wydruku (hero/order mówią "od 10 zł")
 
 # ── Małe zamówienia: promocyjna wysyłka (Tom dopłaca różnicę z marży — konkurencyjny pricing) ──
 SMALL_ORDER_MAX_PRODUCT = 40.0   # poniżej tej kwoty PRODUKTU obowiązuje flat
@@ -325,7 +325,7 @@ def calculate_price(
     margin_pln = round(cost_pln * (margin_pct / 100), 2)
     product_base = round(cost_pln + margin_pln, 2)  # baza klienta: koszt + marża
 
-    # MINIMUM ZAMÓWIENIA (druk): baza zawsze >= min_print_pln (hero/order mówią "od 3 zł")
+    # MINIMUM ZAMÓWIENIA (druk): baza zawsze >= min_print_pln (hero/order mówią "od 10 zł")
     min_print = float(_cfg(db, "min_print_pln", MIN_PRINT_PLN))
     if product_base < min_print:
         product_base = min_print

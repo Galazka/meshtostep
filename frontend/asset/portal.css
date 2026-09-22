@@ -373,3 +373,18 @@ html[data-theme="dark"] .prt-print-btn{background:rgba(11,18,32,.9)}
 html[data-theme="dark"] .eco-card{background:#111C2E;border-color:var(--line)}
 html[data-theme="dark"] .eco-card h3{color:var(--ink)}
 html[data-theme="dark"] .eco-ico{background:#0B1220;border-color:var(--line)}
+
+/* ── "Wydrukuj u nas" — nav CTA (core biznesu, wyróżnione) ───────────── */
+.prt-nav a[href="/drukuje"], #printerNav.prt-nav-cta {
+  background: var(--accent);
+  color: #fff !important;
+  font-weight: 700;
+  border-radius: 7px;
+  padding: 8px 14px !important;
+  margin-left: 8px;
+  box-shadow: 0 1px 0 rgba(255,255,255,.15) inset;
+  transition: background .15s ease, transform .15s ease;
+}
+.prt-nav a[href="/drukuje"]:hover, #printerNav:hover { background: var(--accent-hov, #0EA5E9) !important; transform: translateY(-1px); }
+.prt-nav a[href="/drukuje"].active { background: var(--accent) !important; color:#fff !important; }
+@media (max-width:900px){ .prt-nav a[href="/drukuje"]{ margin:8px 0 0; } }

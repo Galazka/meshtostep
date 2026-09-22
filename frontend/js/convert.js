@@ -68,6 +68,7 @@ async function doConvert() {
             '<a class="btn-dl" href="/api/download/' + d.uuid + '?format=stl">' + t('downloadText') + ' oryginał</a>' +
             '<button class="btn-step" onclick="doConvertOnDemand(\'' + d.uuid + '\', ' + d.job_id + ')">Pobierz STEP</button>' +
             '<button class="btn-share" onclick="doShare(' + d.job_id + ')">' + t('shareText') + '</button>' +
+            '<a class="btn-print" href="/zamow?job=' + d.uuid + '" style="background:var(--primary);color:#fff;text-decoration:none">🖨 ' + (t('btnPrint') || 'Wydrukuj u nas') + ' →</a>' +
             (token ? '<button class="btn-publish" onclick="publishToDiscover(' + d.job_id + ',this)">🌍 ' + t('publishDiscover') + '</button>' : '') +
             '</div></div>';
         document.getElementById('result').style.display = 'block';
