@@ -93,17 +93,20 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 .warnbox{margin-top:10px;background:#fff7ed;border:1px solid #fdba74;border-left:4px solid #f97316;border-radius:10px;padding:10px 14px;font-size:12.5px;color:#7c3a1a}
 .toast{position:fixed;bottom:22px;right:22px;background:#0f172a;color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;z-index:9999;opacity:0;transition:opacity .25s;box-shadow:var(--shadow-lg)}
 .loading{position:absolute;inset:0;background:rgba(255,255,255,.75);display:none;align-items:center;justify-content:center;font-size:14px;color:var(--muted);z-index:5}
-.swatch{display:flex;align-items:center;gap:6px;padding:7px 9px;border-radius:9px;border:2px solid var(--border);background:var(--bg);cursor:pointer;font-size:12px;font-weight:600;color:var(--fg);font-family:inherit;transition:all .12s}
+.swatch{display:flex;align-items:center;gap:6px;min-width:0;padding:7px 9px;border-radius:9px;border:2px solid var(--border);background:var(--bg);cursor:pointer;font-size:12px;font-weight:600;color:var(--fg);font-family:inherit;transition:all .12s}
 .swatch::before{content:'';width:14px;height:14px;border-radius:50%;background:var(--sw,#ccc);flex:none;border:1px solid rgba(0,0,0,.12)}
+.swatch{overflow-wrap:anywhere}
 .swatch.sel{border-color:var(--accent,#2563eb);box-shadow:0 0 0 2px rgba(37,99,235,.18)}
 .nav-burger{display:none;background:none;border:1px solid var(--border);border-radius:8px;cursor:pointer;padding:8px 10px;font-size:19px;line-height:1;color:var(--fg);order:2}
+.prt-actions.nav-right{min-width:0}
+@media(max-width:900px){.prt-actions.nav-right .prt-lang,.prt-actions.nav-right a{display:none}
 @media(max-width:900px){.nav-burger{display:inline-flex;align-items:center;gap:6px}.order-nav{display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border-bottom:1px solid var(--border);box-shadow:var(--shadow-lg);padding:10px 16px;flex-direction:column;align-items:stretch!important;z-index:60}.order-nav.open{display:flex}.header-in{position:relative}.order-nav a,.order-nav button{width:100%;text-align:left;padding:12px 10px!important}}
 </style>
 <script type="importmap">
 {"imports":{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js","three/addons/loaders/OBJLoader.js":"/vendor/three/loaders/OBJLoader.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js"}}
 </script>
 
-    <link href="/asset/portal.css?v=45" rel="stylesheet">
+    <link href="/asset/portal.css?v=46" rel="stylesheet">
 <!-- Google AdSense (Auto ads) -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8919352846655813"
         crossorigin="anonymous"></script>
@@ -181,7 +184,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
         <p style="font-size:12.5px;color:var(--muted);margin:0 0 12px">Wybrany model: <b id="colFor">—</b>. Ustaw kolor i ile kolorów ma mieć wydruk.</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div><label data-i18n="col">Kolor</label>
-            <div id="colSwatches" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px">
+            <div id="colSwatches" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:8px;margin-top:6px">
               <button type="button" class="swatch" data-color="black" style="--sw:#1e293b" onclick="pickColor('black')">Czarny</button>
               <button type="button" class="swatch" data-color="white" style="--sw:#f1f5f9;border:1px solid #cbd5e1;color:#334155" onclick="pickColor('white')">Biały</button>
               <button type="button" class="swatch" data-color="gray" style="--sw:#94a3b8" onclick="pickColor('gray')">Szary</button>
