@@ -78,7 +78,10 @@ window.adminSetSearch = function(v, f){ if(f) __adminQ.search=v; __adminQ.page=1
               '<a href="/download/' + it.job_uuid + '?format=obj' + _tokq + '" target="_blank" style="font-size:11px" title="Pobierz OBJ">⬇ OBJ</a></div>'; }
             return '<div style="font-size:11px">' + (it.model_name ? '📄 ' + esc(it.model_name) + ' ' : '📦 model ') +
                    (it.material ? '<span style="color:#6b7280">' + esc(it.material) + (it.color ? ' / ' + esc(it.color) : '') + '</span>' : '') +
-                   (it.quantity > 1 ? ' ×' + it.quantity : '') + dl + '</div>';
+                   (it.quantity > 1 ? ' ×' + it.quantity : '') +
+                   (it.infill && it.infill !== 15 ? ' <b style="color:#B45309;font-size:10px">' + it.infill + '% wypełn.</b>' : '') +
+                   (it.volume_cm3 ? ' <span style="color:#9ca3af;font-size:10px">' + it.volume_cm3 + 'cm³</span>' : '') +
+                   dl + '</div>';
           }).join('');
         })() + '</td>' +
             '<td style="padding:8px">' + (o.filament_grams || 0) + 'g<br><span style="color:#9ca3af;font-size:11px">' + (o.printing_hours || 0) + 'h</span></td>' +

@@ -205,6 +205,13 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
           <div><label data-i18n="colCount">Ile kolorów w modelu</label>
             <select id="colCount"><option value="1">1 (standard)</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
           </div>
+          <div style="margin-top:10px"><label data-i18n="infillLbl">Wypełnienie modelu</label>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
+              <input type="range" id="infillRange" min="10" max="100" step="5" value="15" oninput="setInfill(this.value)" style="flex:1;accent-color:var(--accent)">
+              <b id="infillVal" style="font-family:'JetBrains Mono',monospace;font-size:13px;min-width:44px">15%</b>
+            </div>
+            <div id="infillInfo" style="font-size:11.5px;color:var(--muted);margin-top:4px"></div>
+          </div>
         </div>
         <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:9px 12px;margin:10px 0;font-size:12.5px;color:#1e40af" id="colPriceNote">Wydruk wielokolorowy (jako jeden model) jest droższy ze względu na dłuższy czas druku: 1. kolor ekstra +20 zł, każdy kolejny +10 zł.</div>
         <div id="multiInfo" style="margin:8px 0 4px"></div>
@@ -288,7 +295,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
                               <input id="fFirmAddr" placeholder="Adres firmy (do faktury): ulica, kod, miasto" style="padding:9px 12px;border:1px solid var(--border);border-radius:9px;width:100%;margin-top:6px">
                             </div>
         <div class="form-row" style="margin-top:10px">
-          <div><label data-i18n="fCode">Kod rabatowy</label><input id="fCode" data-i18n-ph="fCode" placeholder="opcjonalnie"></div>
+          <div><label data-i18n="fCode">Kod rabatowy</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input id="fCode" data-i18n-ph="fCode" placeholder="np. LATO10" style="flex:1">
+              <button type="button" id="codeBtn" onclick="applyCoupon()" class="ghost-btn" style="padding:9px 14px;border:1px solid var(--border);border-radius:9px;background:#fff;cursor:pointer;font-weight:600;font-size:13px" data-i18n="couponApply">Zastosuj</button>
+            </div>
+            <div id="couponInfo" style="font-size:11.5px;margin-top:4px;min-height:15px"></div></div>
           <div><label>Waluta</label><div id="curBox" style="display:flex;gap:6px"></div></div>
         </div>
         <div><label style="margin-top:10px" data-i18n="fNotes">Uwagi dla drukarza (opcjonalnie)</label>
@@ -348,6 +360,41 @@ var MATS={}; var CUR_ACTSYM=1; var selIdx=-1;
 
 function toast(m,ok){var t=document.createElement('div');t.className='toast';t.style.opacity=1;t.textContent=m;var col=(ok===false||ok==='')?'#dc2626':(ok==='w'?'#d97706':'#059669');t.style.background=col;document.body.appendChild(t);setTimeout(function(){t.style.opacity=0;setTimeout(function(){t.remove()},300);},2600);}
 function _colP(c){return {silver:20,gold:25,carbon:15,transparent:30}[c]||0;}
+var INFCFG={min:10,max:100,base:15,shell:0.35};
+fetch('/api/config/infill?t='+Date.now()).then(function(r){return r.json()}).then(function(d){
+  if(d&&d.ok){INFCFG={min:d.min,max:d.max,base:d.base,shell:d.shell};
+    var rg=document.getElementById('infillRange'); if(rg){rg.min=d.min;rg.max=d.max;rg.value=d.base;}
+    CART.forEach(function(it){if(!it.infill)it.infill=d.base;});
+    syncInfillUI(); calc();
+  }
+}).catch(function(){});
+function infFactor(f){var b=INFCFG.base/100,sr=INFCFG.shell;return (sr+(f/100)*(1-sr))/(sr+b*(1-sr));}
+function setInfill(v){ if(selIdx<0){toast('Najpierw kliknij model w koszyku','');return;}
+  v=Math.max(INFCFG.min,Math.min(INFCFG.max,parseInt(v)||INFCFG.base));
+  CART[selIdx].infill=v; syncInfillUI(); reprice(selIdx); calc(); }
+function syncInfillUI(){
+  var rg=document.getElementById('infillRange'); if(!rg)return;
+  var it=selIdx>=0?CART[selIdx]:null;
+  rg.value=it?(it.infill||INFCFG.base):INFCFG.base;
+  var vv=document.getElementById('infillVal'); if(vv)vv.textContent=(it?(it.infill||INFCFG.base):INFCFG.base)+'%';
+  var inf=document.getElementById('infillInfo');
+  if(inf){ var f=it?(it.infill||INFCFG.base):INFCFG.base;
+    if(f>INFCFG.base){ inf.textContent='+'+Math.round((infFactor(f)-1)*100)+'% ceny — więcej materiału i czasu druku'; inf.style.color='#B45309'; }
+    else if(f<INFCFG.base){ inf.textContent='−'+Math.round((1-infFactor(f))*100)+'% ceny — lżejszy wydruk'; inf.style.color='#15803d'; }
+    else { inf.textContent='Wypełnienie bazowe '+INFCFG.base+'% — w cenie podstawowej'; inf.style.color='var(--muted)'; } }
+}
+function reprice(i){ var it=CART[i]; if(!it||!it.vol)return;
+  var fd=new FormData();
+  fd.append('material',it.material||'PLA'); fd.append('color',(it.color||'natural').split(' + ')[0]);
+  fd.append('quantity',String(it.qty||1)); fd.append('colors',String(it.colors||1));
+  fd.append('shipping','pickup'); fd.append('shipping_region','PL');
+  fd.append('volume_cm3',String(it.vol)); fd.append('estimated_hours','0');
+  if(it.dims)fd.append('dims',String(it.dims));
+  fd.append('infill',String(it.infill||INFCFG.base)); fd.append('currency','PLN');
+  fetch('/api/calculate?t='+Date.now(),{method:'POST',body:fd}).then(function(r){return r.json()}).then(function(c){
+    if(c&&c.ok){ it.price=c.product_subtotal_pln; it.mfee=c.multicolor_fee_pln||0; it.cprem=c.color_premium_pln||0; calc(); }
+  }).catch(function(){});
+}
 function _colHex(c){
   var m={black:'#1e293b',white:'#f8fafc',gray:'#94a3b8',red:'#dc2626',orange:'#ea580c',yellow:'#eab308',green:'#16a34a',blue:'#2563eb',purple:'#7c3aed',pink:'#db2777',silver:'#cbd5e1',gold:'#facc15',carbon:'#0f172a',transparent:'linear-gradient(135deg,#e2e8f0,#f8fafc)'};
   return m[c]||'#cccccc';
@@ -362,14 +409,14 @@ function loadMats(){
     if(d && d.materials){ Object.keys(d.materials).forEach(function(k){var p=d.materials[k];MATS[k]=k;var desc=(typeof p==='object'&&p.desc)?p.desc:'';var el=document.createElement('div');el.className='mat';el.dataset.mat=k;el.innerHTML='<b>'+k+'</b><span>'+desc+'</span>';el.onclick=function(){selectMat(k);};box.appendChild(el);}); }
   });
 }
-function selectMat(k){ if(selIdx<0){toast('Najpierw kliknij model w koszyku','');return;} CART[selIdx].material=k; drawCart(); refreshMatSel(); calc(); }
+function selectMat(k){ if(selIdx<0){toast('Najpierw kliknij model w koszyku','');return;} CART[selIdx].material=k; drawCart(); refreshMatSel(); reprice(selIdx); calc(); }
 function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document.querySelectorAll('.mat').forEach(function(x){x.classList.toggle('sel',x.dataset.mat===m);}); document.getElementById('matFor').textContent=(selIdx>=0)?('#'+(selIdx+1)+' · '+(CART[selIdx].model_name||'Model')):'—'; }
   function refreshCol(){ var cnt=document.getElementById('colCount'); if(cnt&&selIdx>=0){ cnt.value=String(CART[selIdx].colors||1); } document.querySelectorAll('.swatch').forEach(function(x){var sel=(selIdx>=0)?(CART[selIdx]._multi||[]).indexOf(x.dataset.color)>=0:false;x.classList.toggle('sel',sel);}); document.getElementById('colFor').textContent=(selIdx>=0)?('#'+(selIdx+1)+' · '+(CART[selIdx].model_name||'Model')):'—'; if(typeof renderMulti==='function')renderMulti(); }
   function applyColor(){ if(selIdx<0){toast('Kliknij model w koszyku','');return;} var cnt=document.getElementById('colCount'); var n=parseInt(cnt?cnt.value:'1'); var it=CART[selIdx]; it.colors=(n>1)?n:1;
     if(!it._multi||!it._multi.length){ it._multi=[it.color? Object.keys(COL_PL).find(function(k){return COL_PL[k]===it.color;})||'black' : 'black']; }
     while(it._multi.length>it.colors){ it._multi.pop(); }
     it.color=colPl(it._multi);
-    drawCart(); calc(); refreshCol(); renderMulti(); toast('Kolory: '+it.colors+'x',true); }
+    drawCart(); reprice(selIdx); calc(); refreshCol(); renderMulti(); toast('Kolory: '+it.colors+'x',true); }
   var COL_PL={};
   document.querySelectorAll('#colSwatches .swatch').forEach(function(b){
     var code=b.dataset.color; var txt=b.textContent||'';
@@ -510,7 +557,7 @@ function drawCart(){
       h+='<div class="item" style="'+(active?'outline:2px solid '+MY_ACC()+';': '')+'cursor:pointer" onclick="preview('+i+')">'+
           '<div class="thumb '+(active?'active':'')+'" title="Podgląd 3D">🖼</div>'+
           '<div class="meta"><div class="nm">'+esc(it.model_name||('Model '+(i+1)))+'</div>'+
-          '<div class="sub"><span style="display:inline-flex;align-items:center;gap:6px">'+(it.material||'PLA')+' · '+it.qty+' szt · '+(it.vol?it.vol.toFixed(1):'?')+' cm³</span></div>'+
+          '<div class="sub"><span style="display:inline-flex;align-items:center;gap:6px">'+(it.material||'PLA')+' · '+(it.infill||INFCFG.base)+'% wypełn. · '+it.qty+' szt · '+(it.vol?it.vol.toFixed(1):'?')+' cm³</span></div>'+
           '<div class="sub" style="display:flex;align-items:center;gap:6px"><span style="width:14px;height:14px;border-radius:50%;background:'+colHex+';border:1px solid rgba(0,0,0,.15);display:inline-block"></span><span>'+esc(it.color||'—')+'</span><span style="color:var(--muted)">'+(it.colors&&it.colors>1?(' · '+it.colors+' kol.'):'')+'</span></div></div>'+
           '<div style="display:flex;gap:8px;align-items:center"><div class="qty">'+
           '<button onclick="event.stopPropagation();chg('+i+',-1)">−</button><span>'+it.qty+'</span><button onclick="event.stopPropagation();chg('+i+',1)">+</button></div>'+
@@ -520,7 +567,7 @@ function drawCart(){
 }
 function MY_ACC(){return '#2563eb';}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-function chg(i,d){ CART[i].qty=Math.max(1,CART[i].qty+d); drawCart(); calc(); }
+function chg(i,d){ CART[i].qty=Math.max(1,CART[i].qty+d); drawCart(); reprice(i); calc(); }
 function del(i){ CART.splice(i,1); if(selIdx>=CART.length) selIdx=CART.length-1; if(selIdx===-1) selIdx=-1; drawCart(); refreshMatSel(); calc(); if(!CART.length) document.getElementById('previewBox').innerHTML='Wybierz model z listy, żeby zobaczyć go tutaj.'; }
 
 document.getElementById('fileInput').addEventListener('change',function(){ var f=this.files[0]; if(!f)return; var fd=new FormData(); fd.append('file',f);
@@ -529,7 +576,7 @@ document.getElementById('fileInput').addEventListener('change',function(){ var f
     document.getElementById('loading').style.display='none';
     var vol=d.volume_cm3||0;
     var estPrice=(d.estimate && d.estimate.product_subtotal)?d.estimate.product_subtotal:0;
-    var item={job_id:null,job_uuid:d.uuid||null,model_name:f.name,material:'PLA',color:'natural',qty:1,vol:vol,dims:d.dimensions||'',desc:'',price:estPrice,_bytes:null};
+    var item={job_id:null,job_uuid:d.uuid||null,model_name:f.name,material:'PLA',color:'natural',qty:1,infill:INFCFG.base,vol:vol,dims:d.dimensions||'',desc:'',price:estPrice,_bytes:null};
     // read local bytes for instant 3D preview (no server round-trip)
     f.arrayBuffer().then(function(buf){
       item._bytes=new Uint8Array(buf);
@@ -539,8 +586,8 @@ document.getElementById('fileInput').addEventListener('change',function(){ var f
     // always get a hostable job for 3D preview (public /e/{job_id})
     var fd3=new FormData(); fd3.append('mode','auto'); fd3.append('file',f);
     fetch('/api/convert?t='+Date.now(),{method:'POST',body:fd3}).then(function(r){return r.json();}).then(function(cv){ if(cv&&cv.job_id){ item.job_id=cv.job_id; if(selIdx===CART.length-1){ preview(CART.length-1); } } }).catch(function(){});
-    var fd2=new FormData(); fd2.append('material','PLA'); fd2.append('color','natural'); fd2.append('quantity','1'); fd2.append('shipping','standard'); fd2.append('shipping_region','PL'); fd2.append('volume_cm3',String(vol)); fd2.append('estimated_hours','0'); fd2.append('dim',String(d.dimensions||'')); fd2.append('currency','PLN');
-    fetch('/api/calculate?t='+Date.now(),{method:'POST',body:fd2}).then(function(r){return r.json();}).then(function(c){if(c.ok){item.price=c.total; if(!item.desc) item.desc=''; calc();}}).catch(function(){});
+    var fd2=new FormData(); fd2.append('material','PLA'); fd2.append('color','natural'); fd2.append('quantity','1'); fd2.append('shipping','pickup'); fd2.append('shipping_region','PL'); fd2.append('volume_cm3',String(vol)); fd2.append('estimated_hours','0'); if(d.dimensions)fd2.append('dims',String(d.dimensions)); fd2.append('infill',String(INFCFG.base)); fd2.append('currency','PLN');
+    fetch('/api/calculate?t='+Date.now(),{method:'POST',body:fd2}).then(function(r){return r.json();}).then(function(c){if(c.ok){item.price=c.product_subtotal_pln; item.mfee=0; if(!item.desc) item.desc=''; calc();}}).catch(function(){});
     CART.push(item); selIdx=CART.length-1; drawCart(); refreshMatSel(); calc();
     if(item.vol) preview(selIdx); toast('Dodano: '+f.name,true);
   }).catch(function(){document.getElementById('loading').style.display='none';toast('Błąd przetwarzania pliku','');});
@@ -553,13 +600,14 @@ function calc(){
   var rate=RATES[cur]||1;
   var productsPLN=0, colorExt=0, rowsHTML='';
   CART.forEach(function(it, idx){
-    var colP=_colP(it.color);
-    var prn=((+it.price)||0)+colP;
-    productsPLN += prn*it.qty;
-    var c=it.colors||1; if(c>1) colorExt += 20+(c-2)*10;
-    var colTag=(c>1)?' · '+c+' kol.':'';
+    // it.price = produkt z /api/calculate ( JUŻ z dopłatami i infill ) — nie dodajemy nic
+    var prn=(+it.price)||0;
+    productsPLN += prn;
+    colorExt += (+it.mfee)||0;
+    var c=it.colors||1; var colTag=(c>1)?' · '+c+' kol.':'';
+    var infTag=(it.infill&&it.infill!==INFCFG.base)?' · '+it.infill+'% wypełn.':'';
     rowsHTML+='<div class="summary-row" style="cursor:pointer" onclick="preview('+idx+');refreshCol()"><span style="font-weight:600">'+esc(it.model_name||('Model '+(idx+1)))+' ×'+it.qty+'</span><span>'+fmt(cx(prn*it.qty/rate))+'</span></div>';
-    rowsHTML+='<div class="summary-row" style="font-size:12px;color:var(--muted);cursor:pointer" onclick="preview('+idx+');refreshCol()"><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:50%;background:'+_colHex(it.color)+';border:1px solid rgba(0,0,0,.15);display:inline-block"></span>'+esc(it.material||'PLA')+' · '+esc(it.color||'—')+colTag+'</span><span style="color:var(--accent);font-size:11px">edytuj</span></div>';
+    rowsHTML+='<div class="summary-row" style="font-size:12px;color:var(--muted);cursor:pointer" onclick="preview('+idx+');refreshCol()"><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:50%;background:'+_colHex(it.color)+';border:1px solid rgba(0,0,0,.15);display:inline-block"></span>'+esc(it.material||'PLA')+' · '+esc(it.color||'—')+colTag+infTag+'</span><span style="color:var(--accent);font-size:11px">edytuj</span></div>';
   });
   var shipBase={standard:{PL:16.49,EU:35,GLOBAL:55},express:{PL:33,EU:70,GLOBAL:110},pickup:{PL:0,EU:0,GLOBAL:0},pickup_express:{PL:19,EU:19,GLOBAL:19}};
   var reg=document.getElementById('fRegion').value, ship=document.getElementById('fShipping').value;
@@ -567,12 +615,15 @@ function calc(){
   var base=(shipBase[ship]||shipBase.standard)[reg]||0;
   var shippingPLN = isPickup ? 0 : isPkExp ? 19 : (base+3);
   var basePrint = Math.max(10, productsPLN); // minimum druku 10 zł (backend)
-    var adjPLN = basePrint + colorExt;
+    var adjPLN = basePrint;
     var smallOrder = shippingPLN>0 && !isPkExp && adjPLN<40;
     if(smallOrder) shippingPLN = Math.min(shippingPLN, 9.90);
     var freeShip = !isPickup && !isPkExp && adjPLN>=200 && shippingPLN>0;
     if(freeShip) shippingPLN=0;
-    var totalPLN = adjPLN + shippingPLN;
+    var totalPLN = adjPLN + shippingPLN - COUPON_PLN;
+  var COUPON_PLN=0; try{COUPON_PLN=(window.__COUPON&&window.__COUPON.pln)||0;}catch(e){}
+  if(COUPON_PLN>adjPLN)COUPON_PLN=adjPLN;
+  var discLine = COUPON_PLN>0 ? '<div class="summary-row"><span>Rabat '+(window.__COUPON.code||'')+'</span><span style="color:#15803d;font-weight:700">−'+fmt(cx(COUPON_PLN/rate))+'</span></div>' : '';
   var colorLine = colorExt>0 ? '<div class="summary-row"><span>Kolory ekstra</span><span style="color:#B45309">+'+fmt(colorExt/rate)+'</span></div>' : '';
   var shipLabel = isPickup ? 'Odbiór osobisty' : isPkExp ? 'Ekspres przy odbiorze (2 dni)' : freeShip ? 'Wysyłka — GRATIS (≥200 zł)' : smallOrder ? 'Wysyłka + pakowanie — PROMOCJA' : 'Wysyłka + pakowanie';
   var freeLine='';
@@ -584,15 +635,32 @@ function calc(){
   box.innerHTML=rowsHTML+
       '<div class="summary-row"><span>Druk ('+CART.length+' model'+(CART.length>1?'i':'')+')</span><span>'+fmt(cx(basePrint/rate))+'</span></div>'+
     '<div class="summary-row"><span>'+shipLabel+'</span><span>'+(shippingPLN===0?'0,00 zł':fmt(shippingPLN/rate))+'</span></div>'+
-    colorLine+freeLine+
+    colorLine+discLine+freeLine+
     '<div class="summary-total"><span>Do zapłaty (brutto)</span><span>'+fmt(brutto)+'</span></div>'+vatLine;
   empty.style.display='none'; box.style.display='block'; btn.disabled=false;
   var vn=document.getElementById('vatNote'); if(vn) vn.textContent='① Cena „do zapłaty" jest ostateczna — zawiera VAT 23%. Tyle obciąży Stripe, tyle zobaczysz na fakturze.';
   var fn=document.getElementById('fxNote'); if(fn) fn.textContent = cur==='PLN'?'Waluta: PLN':'Waluta: '+cur+' · kurs 1 '+cur+' = '+(1/rate).toFixed(4)+' PLN';
 }
 
+function applyCoupon(){
+  var code=(document.getElementById('fCode').value||'').trim().toUpperCase();
+  var info=document.getElementById('couponInfo');
+  if(!code){ window.__COUPON=null; if(info)info.textContent=''; calc(); return; }
+  var sub=0; CART.forEach(function(it){sub+=(+it.price)||0;});
+  var fd=new FormData(); fd.append('code',code); fd.append('amount',String(Math.max(sub,10)));
+  fetch('/api/discount/validate?t='+Date.now(),{method:'POST',body:fd}).then(function(r){return r.json()}).then(function(d){
+    if(d&&d.valid){ window.__COUPON={code:code,pln:d.discount_pln};
+      if(info){info.innerHTML='<span style="color:#15803d;font-weight:700">OK — odjęte '+d.discount_pln.toFixed(2).replace('.',',')+' zł</span>';}
+      toast('Kupon zastosowany',true);
+    } else { window.__COUPON=null;
+      if(info)info.innerHTML='<span style="color:#b91c1c">'+(d&&d.message?'Kod odrzucony: '+d.message:'Kod nieprawidłowy lub wygasły')+'</span>';
+    }
+    calc();
+  }).catch(function(){ if(info)info.textContent='Sprawdź połączenie'; });
+}
+
 function preview(i){
-  selIdx=i; drawCart(); refreshMatSel(); if(typeof refreshCol==='function') refreshCol();
+  selIdx=i; drawCart(); refreshMatSel(); syncInfillUI(); if(typeof refreshCol==='function') refreshCol();
   var it=CART[i], box=document.getElementById('previewBox');
   if(it && it._bytes && typeof window.__local3d!=='undefined'){ try{ window.__local3d.renderBytes(it.model_name,it._bytes,'previewBox'); return; }catch(e){ } }
   if(it.job_id){
@@ -630,7 +698,7 @@ function submitOrder(){
     if(nip){ shipAddr=(shipAddr?shipAddr+', ':'')+'NIP: '+nip; if(comp) shipAddr+=', ' + comp; }
   if(FULFILL==='pickup'){ shipAddr='ODBIÓR OSOBISTY — Gdańsk, ul. Międzygwiezdna 31/2 (Osowa), 80-299'; }
   var _fa=(document.getElementById('fFirmAddr')||{}).value||''; if(_fa.trim()) shipAddr=(shipAddr?shipAddr+' | ':'')+'FAKTURA: '+_fa.trim();
-  var body={name:nm,email:em,phone:document.getElementById('fPhone').value.trim(),address:shipAddr,city:(FULFILL==='pickup'?'80-299 Gdańsk':document.getElementById('fCity').value.trim()),country:(FULFILL==='pickup'?'PL':document.getElementById('fRegion').value),shipping:document.getElementById('fShipping').value,shipping_region:document.getElementById('fRegion').value,discount_code:document.getElementById('fCode').value.trim(),notes:document.getElementById('fNotes').value.trim(),payment_method:'stripe',currency:cur,items:CART.map(function(it){return {job_uuid:it.job_uuid,job_id:it.job_id,model_name:it.model_name,material:it.material,color:it.color,colors:it.colors||1,quantity:it.qty,volume_cm3:it.vol,estimated_hours:0,dims:it.dims};})};
+  var body={name:nm,email:em,phone:document.getElementById('fPhone').value.trim(),address:shipAddr,city:(FULFILL==='pickup'?'80-299 Gdańsk':document.getElementById('fCity').value.trim()),country:(FULFILL==='pickup'?'PL':document.getElementById('fRegion').value),shipping:document.getElementById('fShipping').value,shipping_region:document.getElementById('fRegion').value,discount_code:document.getElementById('fCode').value.trim(),notes:document.getElementById('fNotes').value.trim(),payment_method:'stripe',currency:cur,items:CART.map(function(it){return {job_uuid:it.job_uuid,job_id:it.job_id,model_name:it.model_name,material:it.material,color:it.color,colors:it.colors||1,quantity:it.qty,volume_cm3:it.vol,estimated_hours:0,dims:it.dims,infill:it.infill||INFCFG.base};})};
   var btn=document.getElementById('submitBtn'); btn.disabled=true; btn.textContent='Tworzę zamówienie…';
   fetch('/api/orders/multi?t='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};});})
@@ -679,7 +747,7 @@ function loadJobFromUrl(){
   var uuid=decodeURIComponent(m[1]); if(!uuid) return;
   fetch('/api/job/'+uuid+'/info?t='+Date.now()).then(function(r){return r.json();}).then(function(d){
     if(!(d&&d.ok)) return;
-    var item={job_id:d.id,job_uuid:d.uuid,model_name:d.name||'Model',material:'PLA',color:'black',qty:1,vol:+(d.volume_cm3||0),dims:d.dimensions||'',desc:'',price:(d.volume_cm3?0:0),_bytes:null,fromFile:d.id?true:false};
+    var item={job_id:d.id,job_uuid:d.uuid,model_name:d.name||'Model',material:'PLA',color:'black',qty:1,infill:INFCFG.base,vol:+(d.volume_cm3||0),dims:d.dimensions||'',desc:'',price:(d.volume_cm3?0:0),_bytes:null,fromFile:d.id?true:false};
     CART.push(item); selIdx=CART.length-1; drawCart(); refreshMatSel(); calc();
     toast('Załadowano model: '+(d.name||'Model'),true);
     history.replaceState(null,'','/zamow');
@@ -799,7 +867,7 @@ window.__local3d = {
 };
 </script>
 
-<script src="/js/print_i18n.js?v=100"></script>
+<script src="/js/print_i18n.js?v=102"></script>
 <script>document.addEventListener('click',function(ev){var nb=document.getElementById('orderNav');if(nb&&nb.classList.contains('open')&&ev.target.closest('#orderNav a')){nb.classList.remove('open');}});</script>
 <footer class="prt-footer" id="siteFooter">
   <div class="prt-footer-inner">

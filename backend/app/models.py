@@ -312,6 +312,7 @@ class OrderItem(Base):
     surcharge_pln = Column(Float, default=0.0)  # dopłata za pigment (jawna linia u klienta)
     margin_pln = Column(Float, default=0.0)
     print_parts = Column(Integer, default=1)
+    infill = Column(Integer, default=15)  # wypelnienie % (15 = cena bazowa)
     order = relationship("Order", back_populates="items")
 
 

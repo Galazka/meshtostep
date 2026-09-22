@@ -71,7 +71,18 @@ def multicolor_fee(n_colors: int) -> float:
         return 0.0
     return MULTICOLOR_FIRST_EXTRA_PLN + (n - 2) * MULTICOLOR_NEXT_EXTRA_PLN
 
-# InPost 2026: Paczkomat gabaryt A 16,49 zł. Standard = 5 dni (normalna cena).
+# WYPEŁNIENIE (infill) — bazowa cena druku = 15% (standard farmy).
+# Model masy: V_materialu(f) = (s + f*(1-s))*V_objetosci — s = udzial powlok
+# i sklepien (obrysy + gore/dol), niezalezny od infill. Normalizacja do bazy 15%
+# (cena podstawowa sie NIE zmienia). 10%~0.93, 25%~1.14, 50%~1.51, 100%~2.23x.
+INFILL_MIN_DEFAULT = 10
+INFILL_MAX_DEFAULT = 100
+INFILL_BASE_DEFAULT = 15
+INFILL_SHELL_SHARE_DEFAULT = 0.35
+
+
+# InPost 2026: Paczkomat gabaryt A 16,49 zł.
+# Standard = 5 dni (normalna cena).
 # Ekspres = 2 dni, ale x2 (Tom potrzebuje czasu na wydruki / kolejkowanie).
 DEFAULT_SHIPPING = {
     "standard":  {"PL": 16.49, "EU": 35.0, "GLOBAL": 55.0},
@@ -249,6 +260,31 @@ def _apply_discount(db, code, product_total):
     return round(amount, 2), {"code": code_val, "discount_pln": round(amount, 2), "discount_pct": dpct or 0.0}
 
 
+
+def _infill_cfg(db=None):
+    return {
+        "min": int(float(_cfg(db, "infill_min", INFILL_MIN_DEFAULT))),
+        "max": int(float(_cfg(db, "infill_max", INFILL_MAX_DEFAULT))),
+        "base": int(float(_cfg(db, "infill_default", INFILL_BASE_DEFAULT))),
+        "shell": float(_cfg(db, "infill_shell_share", INFILL_SHELL_SHARE_DEFAULT)),
+    }
+
+
+def _infill_factor(infill, db=None) -> float:
+    """Mnożnik kosztu (materiał+prąd+czas) wzgl. bazowego wypełnienia (15% = 1.00).
+    10% ≈ 0.93, 25% ≈ 1.14, 50% ≈ 1.51, 75% ≈ 1.86, 100% ≈ 2.23."""
+    c = _infill_cfg(db)
+    try:
+        f = float(infill if infill not in (None, "") else c["base"])
+    except (TypeError, ValueError):
+        f = float(c["base"])
+    f = min(max(f / 100.0, c["min"] / 100.0), c["max"] / 100.0)
+    base = min(max(c["base"] / 100.0, 0.05), 1.0)
+    sh = min(max(c["shell"], 0.05), 0.95)
+    return round((sh + f * (1.0 - sh)) / (sh + base * (1.0 - sh)), 4)
+
+
+
 def _ceil05(n: float) -> float:
     """Round up to nearest 0.5 (customer-facing pricing)."""
     import math
@@ -268,6 +304,7 @@ def calculate_price(
     db=None,
     currency: str = "PLN",
     colors: int = 1,
+    infill: int = None,
 ):
     """Calculate price. Returns dict with PUBLIC (customer-facing) + INTERNAL cost sheet.
 
@@ -316,6 +353,13 @@ def calculate_price(
     # KOSZT (to, co realnie płaci Tom): filament + prąd. Kolor NIE jest kosztem —
     # filament w każdym kolorze kosztuje tyle samo, więc dopłata za pigment/wielokolor
     # jest czystym przychodem i NIE jest mnożona marżą.
+    # WYPEŁNIENIE: materiał + prąd + czas skalowane fakorem (15% = 1.00, bez zmian cen)
+    infill_pct = int(infill) if infill not in (None, "") else _infill_cfg(db)["base"]
+    inf_factor = _infill_factor(infill_pct, db)
+    filament_cost = filament_cost * inf_factor
+    power_cost = power_cost * inf_factor
+    total_filament_g = total_filament_g * inf_factor
+    hours = hours * inf_factor
     cost_pln = filament_cost + power_cost
     color_premium = float(_cfg(db, f"color:{color}", DEFAULT_COLOR_PREMIUM.get(color, 0.0))) * quantity
     multi_fee = multicolor_fee(colors)
@@ -393,12 +437,17 @@ def calculate_price(
             "margin_percent": margin_pct,
             "margin_pln": margin_pln,                  # marża 68% od kosztu
             "profit_pln": round(product_total - cost_pln, 2),  # marża + dopłaty
+            "infill_percent": infill_pct,
+            "infill_factor": inf_factor,
             "print_parts": parts,
             "print_hours": round(hours, 2),
             "material_price_kg": mat_price_kg,
             "discount_info": discount_info,
         },
         "parts": parts,
+        "infill": infill_pct,
+        "infill_factor": inf_factor,
+        "infill_cfg": _infill_cfg(db),
     }
 
 
@@ -415,12 +464,13 @@ def calculate_price_endpoint(
     discount_code: str = Form(None),
     currency: str = Form("PLN"),
     colors: int = Form(1, ge=1),
+    infill: int = Form(None),
     db: Session = Depends(get_db),
 ):
     """Public price calculator — only shows shipping + total to customer."""
     calc = calculate_price(material, color, quantity, shipping, shipping_region,
                            volume_cm3, estimated_hours, dims, discount_code, db, currency,
-                           colors)
+                           colors, infill=infill)
     return {
         "ok": True,
         "product_subtotal": calc["product_subtotal"],
@@ -474,6 +524,12 @@ def public_pricing(db: Session = Depends(get_db)):
         "multicolor_first_extra_pln": float(_cfg(db, "multicolor_first_extra_pln", MULTICOLOR_FIRST_EXTRA_PLN)),
         "multicolor_next_extra_pln": float(_cfg(db, "multicolor_next_extra_pln", MULTICOLOR_NEXT_EXTRA_PLN)),
     }
+
+
+@router.get("/api/config/infill")
+def get_infill_config(db: Session = Depends(get_db)):
+    """Public: widełki wypełnienia dla konfiguratora (order.html)."""
+    return {"ok": True, **_infill_cfg(db)}
 
 
 @router.post("/api/discount/validate")
@@ -643,6 +699,7 @@ def list_orders(
                 "filament_grams": it.filament_grams, "subtotal": it.subtotal,
                 "margin_pln": it.margin_pln, "print_parts": it.print_parts,
                 "surcharge_pln": getattr(it, "surcharge_pln", 0.0) or 0.0,
+                "infill": getattr(it, "infill", 15) or 15,
                 "colors": max(1, len(str(it.color or "").split(" + "))),
             } for it in (o.items or [])],
             "customer_name": o.customer_name, "customer_email": o.customer_email,
@@ -870,18 +927,18 @@ def export_orders(admin=Depends(require_admin), db: Session = Depends(get_db)):
         ])
     # Sheet2: wszystkie modele (itemy) w zamówieniach — co drukować, ile razy
     ws_m = wb.create_sheet("Modele")
-    ws_m.append(["Zamówienie", "Data", "Klient", "Email", "Model", "Ilość (szt)", "Materiał", "Kolor", "Ile kolorów/Druk kol.", "Objętość cm³", "Wymiary", "Filament g", "Koszt filamentu", "Subtotal", "Marża", "Status", "Zapłacony"])
+    ws_m.append(["Zamówienie", "Data", "Klient", "Email", "Model", "Ilość (szt)", "Materiał", "Kolor", "Ile kolorów/Druk kol.", "Objętość cm³", "Wypełnienie %", "Wymiary", "Filament g", "Koszt filamentu", "Subtotal", "Marża", "Status", "Zapłacony"])
     for o in db.query(models.Order).order_by(models.Order.id.desc()).all():
         items = list(o.items or [])
         if items:
             for it in items:
                 ws_m.append([o.id, o.created_at.strftime("%Y-%m-%d"), o.customer_name, o.customer_email,
                     it.model_name, it.quantity, it.material, it.color,
-                    max(1, len(str(it.color or "").split(" + "))), it.volume_cm3 or "", it.dims_mm or "",
+                    max(1, len(str(it.color or "").split(" + "))), it.volume_cm3 or "", getattr(it, "infill", 15) or 15, it.dims_mm or "",
                     it.filament_grams, it.filament_cost, it.subtotal, it.margin_pln, o.status, "Tak" if o.is_paid else "Nie"])
         else:
             ws_m.append([o.id, o.created_at.strftime("%Y-%m-%d"), o.customer_name, o.customer_email,
-                o.job_uuid or "—", o.quantity, o.material, o.color, "", o.volume_cm3 or "", "",
+                o.job_uuid or "—", o.quantity, o.material, o.color, "", o.volume_cm3 or "", 15, "",
                 o.filament_grams, o.filament_cost, o.subtotal, o.margin_pln, o.status, "Tak" if o.is_paid else "Nie"])
 
     ws2 = wb.create_sheet("Statystyki")
@@ -938,6 +995,10 @@ def get_pricing(db: Session = Depends(get_db), admin=Depends(require_admin)):
             "small_order_ship_flat_pln": ("Flat wysyłki (małe)", "Wysyłka+pakowanie łącznie dla małych zamówień", "zł", "Wysyłka"),
             "max_part_area_mm2": ("Max pole wydruku", "Limit stołu Bambu P1S", "mm²", "Limity"),
             "min_print_pln": ("Minimum druku", "Minimalna cena samego wydruku", "zł", "Limity"),
+            "infill_default": ("Wypełnienie bazowe", "Procent wypełnienia wkalkulowany w cenę podstawową", "%", "Wypełnienie"),
+            "infill_min": ("Wypełnienie min.", "Najniższe wypełnienie w konfiguratorze", "%", "Wypełnienie"),
+            "infill_max": ("Wypełnienie maks.", "Najwyższe wypełnienie — elementy konstrukcyjne", "%", "Wypełnienie"),
+            "infill_shell_share": ("Udział powłok", "Część objętości przypadająca na obrysy+sklepienia (kalibracja krzywej ceny)", "0–1", "Wypełnienie"),
         }.get(key, (key, "", "", "Inne"))
 
     def _emit(key, default, kind="float"):
@@ -957,6 +1018,10 @@ def get_pricing(db: Session = Depends(get_db), admin=Depends(require_admin)):
     _emit("small_order_ship_flat_pln", SMALL_ORDER_SHIP_FLAT)
     _emit("max_part_area_mm2", MAX_PART_AREA_MM2)
     _emit("min_print_pln", MIN_PRINT_PLN)
+    _emit("infill_default", INFILL_BASE_DEFAULT)
+    _emit("infill_min", INFILL_MIN_DEFAULT)
+    _emit("infill_max", INFILL_MAX_DEFAULT)
+    _emit("infill_shell_share", INFILL_SHELL_SHARE_DEFAULT)
     for mat, price in sorted(DEFAULT_MATERIAL_PRICES.items()):
         _emit(f"material:{mat}", price)
     for mat, dens in sorted(DENSITIES.items()):
@@ -1096,6 +1161,7 @@ class OrderItemReq(BaseModel):
     volume_cm3: float = 0
     estimated_hours: float = 0
     dims: Optional[str] = None
+    infill: int = 15
 
 
 class MultiOrderReq(BaseModel):
@@ -1150,7 +1216,7 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db)):
             shipping=req.shipping, shipping_region=req.shipping_region,
             volume_cm3=it.volume_cm3 or 0, estimated_hours=it.estimated_hours or 0,
             dims=it.dims, discount_code=req.discount_code, db=db, currency="PLN",
-            colors=n_colors,
+            colors=n_colors, infill=int(it.infill or 15),
         )
         internal = calc["internal"]
         # Dopłaty (pigment + wielokolor) liczy SILNIK — jedno źródło prawdy, zero duplikacji.
@@ -1169,6 +1235,7 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db)):
             surcharge_pln=row_surcharge,
             margin_pln=internal["margin_pln"],
             print_parts=internal["print_parts"],
+            infill=int(internal.get("infill_percent") or 15),
         )
         subtotal_sum += row.subtotal
         margin_sum += row.margin_pln

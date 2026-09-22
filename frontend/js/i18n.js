@@ -248,6 +248,8 @@ const I18N = {
         'mfVisPub': 'Publiczne',
         'mfVisUnl': 'Link',
         'mfVisPri': 'Prywatne',
+        'infillLbl': 'Wypełnienie modelu',
+        'couponApply': 'Zastosuj',
     },
     en: {
         navMyOrders: 'My orders',
@@ -501,6 +503,8 @@ const I18N = {
         'mfVisPub': 'Public',
         'mfVisUnl': 'Link',
         'mfVisPri': 'Private',
+        'infillLbl': 'Model infill',
+        'couponApply': 'Apply',
     }
 };
 
