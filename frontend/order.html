@@ -106,7 +106,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 {"imports":{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js","three/addons/loaders/OBJLoader.js":"/vendor/three/loaders/OBJLoader.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js"}}
 </script>
 
-    <link href="/asset/portal.css?v=59" rel="stylesheet">
+    <link href="/asset/portal.css?v=60" rel="stylesheet">
 <!-- Google AdSense (Auto ads) -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8919352846655813"
         crossorigin="anonymous"></script>
@@ -633,7 +633,7 @@ function calc(){
     if(smallOrder) shippingPLN = Math.min(shippingPLN, SOFLAT);
     var freeShip = !isPickup && !isPkExp && adjPLN>=FREEMIN && shippingPLN>0;
     if(freeShip) shippingPLN=0;
-  if(COUPON_PLN>adjPLN)COUPON_PLN=adjPLN;
+  if(COUPON_PLN>adjPLN)COUPON_PLN=adjPLN;
     var totalPLN = adjPLN + shippingPLN - COUPON_PLN;
 var discLine = COUPON_PLN>0 ? '<div class="summary-row"><span>Rabat '+(window.__COUPON.code||'')+'</span><span style="color:#15803d;font-weight:700">−'+fmt(cx(COUPON_PLN/rate))+'</span></div>' : '';
   var colorLine = colorExt>0 ? '<div class="summary-row"><span>Kolory ekstra</span><span style="color:#B45309">+'+fmt(colorExt/rate)+'</span></div>' : '';

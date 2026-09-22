@@ -153,7 +153,7 @@ h1,h2,h3,h4{font-family:var(--font-display);letter-spacing:-.025em}
 
 /* ═══ STOPKA — tight, mono ═══ */
 .prt-footer{background:var(--bg-navy);color:#8FA3C8;padding:56px 32px 0;border-top:1px solid var(--line-dark)}
-.prt-footer-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:40px;padding-bottom:44px}
+.prt-footer-inner{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:1.3fr repeat(4,1fr);gap:26px;padding-bottom:44px}
 .prt-footer .prt-f-logo{background:#fff;border-radius:8px;padding:4px 7px;display:inline-flex}
 .prt-footer .prt-f-logo img{height:30px}
 .prt-footer h4{font-family:var(--font-mono);color:#6E82A8;font-size:10.5px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;margin-bottom:16px}
@@ -163,7 +163,8 @@ h1,h2,h3,h4{font-family:var(--font-display);letter-spacing:-.025em}
 .prt-f-bottom{max-width:1200px;margin:0 auto;padding:20px 0 24px;border-top:1px solid var(--line-dark);
   display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;
   font-family:var(--font-mono);font-size:11px;letter-spacing:.04em;color:#6E82A8}
-@media(max-width:900px){.prt-footer-inner{grid-template-columns:1fr 1fr}}
+@media(max-width:1024px){.prt-footer-inner{grid-template-columns:1fr 1fr 1fr}.prt-f-brand-col{grid-column:1/-1}}
+@media(max-width:680px){.prt-footer-inner{grid-template-columns:1fr 1fr}}
 
 /* puste ad-sloty */
 .ad-slot{min-height:0;margin:0}

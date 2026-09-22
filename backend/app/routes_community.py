@@ -291,8 +291,15 @@ __ROBOTS__
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;line-height:1.6}
-.top{position:sticky;top:0;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:10px 14px;z-index:10;min-width:0}
-.top a.logo{font-weight:800;color:#1a56db;text-decoration:none;font-size:18px}
+.vnav{position:sticky;top:0;z-index:20;background:#0B1730;display:flex;align-items:center;gap:6px;padding:0 16px;min-height:56px;flex-wrap:wrap}
+.vnav .vlogo{background:#fff;border-radius:7px;padding:4px 8px;display:inline-flex;align-items:center;text-decoration:none;flex-shrink:0}
+.vnav .vlogo img{height:26px}
+.vnav a.vl{color:#bcc9de;text-decoration:none;font-size:13px;font-weight:600;padding:9px 11px;border-radius:6px;white-space:nowrap}
+.vnav a.vl:hover{color:#fff;background:rgba(255,255,255,.07)}
+.vnav a.vl.pr{color:#fff;background:#2B5CE6}
+.vnav a.vl.pr:hover{background:#1d4ed8}
+.vnav .vsp{flex:1}
+.vsub{background:#fff;border-bottom:1px solid #e2e8f0;display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 16px;position:sticky;top:56px;z-index:19;min-width:0}
 .pills{display:flex;gap:8px;flex-wrap:wrap;flex:1;justify-content:center}
 .pill{font-size:12px;padding:4px 10px;border:1px solid #e2e8f0;border-radius:999px;background:#fff;color:#64748b}
 .btn{padding:9px 18px;border-radius:8px;font-weight:600;text-decoration:none;border:none;cursor:pointer}
@@ -310,31 +317,28 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
 .yt{margin-top:12px}
 .yt iframe{width:100%;height:220px;border:none;border-radius:8px}
 .side{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;height:fit-content}
-@media(max-width:900px){.wrap{grid-template-columns:1fr;min-width:0}#viewer{height:300px}.pills{display:none}.top .btn{padding:8px 12px;font-size:13px}.top select{font-size:12px;padding:6px}.top>div{min-width:0;flex-wrap:wrap;gap:6px}.wrap>div{min-width:0;overflow-wrap:anywhere}.desc{overflow-wrap:anywhere}}
+@media(max-width:900px){.vnav a.vl{padding:8px 7px;font-size:12px}.vsub{top:0;position:static}#btnPrintTxt{display:none}.wrap{grid-template-columns:1fr;min-width:0}#viewer{height:300px}.top .btn{padding:8px 12px;font-size:13px}.top select{font-size:12px;padding:6px}.top>div{min-width:0;flex-wrap:wrap;gap:6px}.wrap>div{min-width:0;overflow-wrap:anywhere}.desc{overflow-wrap:anywhere}}
 </style>
 <script type="importmap">{"imports":{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js"}}</script>
 </head>
 <body>
-<header class="top">
-  <a class="logo" href="/"><img src="/logo.png?v=2" alt="3DFILE" style="height:56px" onerror="this.style.display='none'"></a>
-  <div class="pills">__PILLS__</div>
-  <div style="display:flex;gap:6px;align-items:center">
-    <select id="dlFormat" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px">
-      <option value="step">STEP (CAD)</option>
-      <option value="stl">STL</option>
-      <option value="obj">OBJ</option>
-      <option value="3mf">3MF</option>
-    </select>
-    <select id="dlQuality" style="padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px">
-      <option value="auto" selected>Auto</option>
-      <option value="ultra">Ultra</option>
-      <option value="light">Light</option>
-      <option value="smooth">Smooth</option>
-      <option value="off">Off</option>
-    </select>
-  </div>
-  <a class="btn btn-primary" href="#" onclick="convertAndDownload('__UUID__');return false">⬇ Pobierz</a> <a class="btn btn-sec" href="/e/__JOBID__">Embed</a>
-</header>
+<nav class="vnav">
+  <a class="vlogo" href="/"><img src="/logo.png?v=83" alt="3DFILE.link" onerror="this.remove()"></a>
+  <span style="width:10px"></span>
+  <a class="vl" href="/">Hosting 3D</a>
+  <a class="vl" href="/#discover">Odkrywaj</a>
+  <a class="vl" href="/drukuje">Wydrukuj u nas</a>
+  <a class="vl" href="/blog.html">Blog</a>
+  <a class="vl" href="/kontakt">Kontakt</a>
+  <span class="vsp"></span>
+  <a class="vl" href="/">Zaloguj</a>
+  <a class="vl pr" href="/konto">Moje konto</a>
+</nav>
+<div class="vsub">
+  <div class="pills" style="flex:1;justify-content:flex-start">__PILLS__</div>
+  <a class="btn btn-primary" href="/zamow?job=__UUID__" style="text-decoration:none">🖨 Wydrukuj ten model — od 10 zł</a>
+  <a class="btn btn-sec" href="#" onclick="showEmbed('__TOKEN__');return false">⧉ Embed</a>
+</div>
 <div class="wrap">
   <div>
     <div id="viewer">
@@ -365,7 +369,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
       <option value="smooth">Smooth</option>
       <option value="off">Off</option>
     </select>
-    <a class="btn btn-primary" style="display:block;text-align:center" href="#" onclick="convertAndDownload('__UUID__');return false">Pobierz</a>
+    <a id="dlMainBtn" class="btn btn-primary" style="display:block;text-align:center" href="#" onclick="convertAndDownload('__UUID__');return false">Pobierz</a>
     <a class="btn btn-sec" style="display:block;text-align:center;margin-top:8px" href="#" onclick="showEmbed('__TOKEN__');return false">Kod osadzania</a>
     <div style="margin-top:16px;font-size:13px;color:#64748b">Wyświetlenia: <b id="viewsCount">__VIEWS__</b></div>
     <div style="margin-top:12px;display:flex;gap:12px;align-items:center">
@@ -405,7 +409,7 @@ function convertAndDownload(uuid){
   var fmt = fmtSel ? fmtSel.value : 'step';
   var qSel = document.getElementById('dlQuality2') || document.getElementById('dlQuality');
   var mode = qSel ? qSel.value : 'auto';
-  var btn = document.querySelector('.btn-primary[href]');
+  var btn = document.getElementById('dlMainBtn');
   if(btn) btn.textContent='Konwertowanie...';
   if(fmt === 'step'){
     fetch('/api/convert-on-demand/'+uuid+'?mode='+mode,{method:'POST'})
@@ -456,6 +460,7 @@ document.getElementById('btnColor').onclick=()=>{
   });
 })();
 function showEmbed(token){
+  if(!token) token='__JOBID__';
   var code='<div style="width:100%;max-width:512px;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden"><iframe src="'+window.location.origin+'/e/'+token+'" width="100%" height="500" style="border:0;border-radius:8px" loading="lazy" allowfullscreen></iframe><div style="padding:6px 12px;font-size:11px;color:#94a3b8;text-align:center">Osadzone z 3dfile.link</div></div>';
   if(window.clipboard && navigator.clipboard&&navigator.clipboard.writeText){
     navigator.clipboard.writeText(code).then(function(){alert('Kod osadzania skopiowany do schowka');});
@@ -581,6 +586,16 @@ window.showEmbed = showEmbed;
   loadRating();
 })();
 </script>
+<footer style="background:#0B1730;color:#bcc9de;margin-top:34px">
+  <div style="max-width:1240px;margin:0 auto;display:grid;grid-template-columns:1.3fr repeat(3,1fr);gap:26px;padding:38px 20px 20px">
+    <div><div style="background:#fff;border-radius:8px;padding:4px 8px;display:inline-flex"><img src="/logo.png?v=83" alt="3dfile" style="height:28px" onerror="this.remove()"></div>
+      <p style="font-size:13px;line-height:1.6;margin-top:10px">Hosting i druk 3D. Wrzuć plik — odbierz wydruk pod drzwiami lub link do STEP-a.</p></div>
+    <div><b style="color:#fff;font-size:13px">Usługi</b><div style="margin-top:10px;display:grid;gap:7px;font-size:13px"><a style="color:#bcc9de;text-decoration:none" href="/">Hosting STL &amp; STEP</a><a style="color:#bcc9de;text-decoration:none" href="/zamow">Druk 3D na żądanie</a><a style="color:#bcc9de;text-decoration:none" href="/#discover">Odkrywaj projekty</a></div></div>
+    <div><b style="color:#fff;font-size:13px">Drukarnia</b><div style="margin-top:10px;display:grid;gap:7px;font-size:13px"><a style="color:#bcc9de;text-decoration:none" href="/drukuje">Bambu Lab P1S Farm</a><a style="color:#bcc9de;text-decoration:none" href="/drukuje#materials">Materiały</a><a style="color:#bcc9de;text-decoration:none" href="/kontakt">Odbiór: Gdańsk Osowa</a></div></div>
+    <div><b style="color:#fff;font-size:13px">Kontakt</b><div style="margin-top:10px;display:grid;gap:7px;font-size:13px"><a style="color:#bcc9de;text-decoration:none" href="mailto:hello@3dfile.link">hello@3dfile.link</a><a style="color:#bcc9de;text-decoration:none" href="mailto:tomgal@3dfile.link">tomgal@3dfile.link</a><a style="color:#bcc9de;text-decoration:none" href="tel:+487****4762">+48 790 824 762</a><span style="font-size:12px">ul. Międzygwiezdna 31/2<br>80-299 Gdańsk Osowa</span></div></div>
+  </div>
+  <div style="border-top:1px solid rgba(255,255,255,.1);padding:14px 20px;text-align:center;font-size:12px;font-family:JetBrains Mono,monospace">© 2026 3dfile.link · Realizacja 48h · Faktury VAT 23%</div>
+</footer>
 </body>
 </html>
 """
