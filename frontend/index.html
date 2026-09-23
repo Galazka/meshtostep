@@ -444,7 +444,7 @@
         }
     </style>
     <script>try{var _t=localStorage.getItem("mt_theme")||"light";if(_t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}</script>
-    <link href="/asset/portal.css?v=66" rel="stylesheet">
+    <link href="/asset/portal.css?v=67" rel="stylesheet">
 <!-- Google AdSense (Auto ads) -->
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8919352846655813"
         crossorigin="anonymous"></script>
@@ -1445,7 +1445,7 @@ function cookieConsent(accept) {
 }
 (function() {
   var c = localStorage.getItem('mt_cookie_consent');
-  if (!c) document.getElementById('cookieBanner').style.display = 'block';
+  if (!c) { document.getElementById('cookieBanner').style.display = 'block'; document.body.classList.add('ck-on'); }
   else if (c === 'accepted' && window.loadAdSlots) { try { loadAdSlots(); } catch(e){} }
 })();
 </script>

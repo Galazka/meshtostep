@@ -147,6 +147,7 @@ h1,h2,h3,h4{font-family:var(--font-display);letter-spacing:-.025em}
 
 /* statystyki mono */
 .statline{display:flex;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;margin-bottom:14px}
+body.ck-on .statline{margin-top:-12px}
 .statline .st{flex:1;padding:7px 22px;border-right:1px solid var(--line)}
 .statline .st:last-child{border-right:none}
 .statline .st b{display:block;font-family:var(--font-mono);font-size:19px;font-weight:600;color:var(--ink);letter-spacing:-.02em}
