@@ -66,13 +66,30 @@ th,td{word-break:break-word}h1{font-size:24px}h2{font-size:19px}h3{font-size:16.
 .nav-burger{display:none;background:none;border:1px solid #334155;border-radius:8px;cursor:pointer;padding:8px 10px;font-size:19px;line-height:1;color:#fff}
 @media(max-width:760px){.nav-burger{display:inline-flex;align-items:center;gap:6px}.nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border-bottom:1px solid #334155;padding:10px 20px;flex-direction:column;align-items:stretch!important;z-index:60}.nav-links.open{display:flex}.nav{position:relative}.nav-links a{width:100%;text-align:left;margin-left:0!important;padding:12px 4px}}
 </style>
+<style>
+.tb{display:flex;align-items:center;gap:26px;background:#0B1730;border-bottom:1px solid rgba(255,255,255,.09);padding:0 28px;height:66px;position:sticky;top:0;z-index:900}
+.tb .brand{display:flex;align-items:center;gap:11px;text-decoration:none}
+.tb .chip{background:#fff;border-radius:8px;padding:5px 10px;display:flex;align-items:center}
+.tb .chip img{height:34px;width:auto;display:block}
+.tb nav.nk{display:flex;gap:1px;align-items:center;margin-left:10px;flex:1;flex-wrap:wrap}
+.tb nav.nk a{color:#93A5C6;text-decoration:none;font-weight:500;font-size:13.5px;padding:7px 13px;border-radius:7px;white-space:nowrap;font-family:-apple-system,'Segoe UI',Inter,Arial,sans-serif}
+.tb nav.nk a:hover{color:#fff;background:rgba(255,255,255,.06)}
+.tb nav.nk a.active{color:#fff;background:rgba(43,92,230,.28)}
+.tb .acts{display:flex;gap:8px;align-items:center;margin-left:auto}
+.tb a.btn{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:8px;font-weight:600;font-size:13px;border:1px solid rgba(255,255,255,.16);color:#DCE4F2;background:transparent;text-decoration:none;font-family:-apple-system,'Segoe UI',Inter,Arial,sans-serif}
+.tb a.btn:hover{border-color:rgba(255,255,255,.4);color:#fff}
+.tb a.btn.pri{background:#2B5CE6;border-color:#2B5CE6;color:#fff}
+.tb a.btn.pri:hover{background:#1E46B8}
+.tb button.bur{display:none;background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff;font-size:17px;border-radius:7px;cursor:pointer;padding:5px 11px}
+@media(max-width:1020px){.tb nav.nk{display:none;flex-direction:column;position:absolute;top:66px;left:0;right:0;background:#0B1730;padding:10px 20px 16px;box-shadow:0 30px 50px rgba(0,0,0,.4);z-index:901;gap:2px}
+.tb nav.nk.open{display:flex}.tb nav.nk a{width:100%;text-align:left;padding:11px 12px}.tb button.bur{display:inline-block}}
+</style>
 </head>
 <body>
-<nav class="nav"><div class="nav-in">
-  <a href="/">3DFILE.link</a>
-  <button class="nav-burger" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">☰</button>
-  <div class="nav-links"><a href="/drukuje">Druk</a><a href="/">Hosting</a><a href="/blog.html">Blog</a></div>
-</div></nav>
+<header class="tb"><a class="brand" href="/"><span class="chip"><img src="/logo.png?v=83" alt="3DFILE.link"></span></a>
+<nav class="nk" id="navLinks"><a href="/">Hosting 3D</a><a href="/#discover">Odkrywaj</a><a href="/drukuje">Wydrukuj u nas</a><a href="/#hiw">Jak to działa</a><a href="/#faq">Pomoc FAQ</a><a href="/blog.html" class="active">Blog</a><a href="/kontakt">Kontakt</a></nav>
+<div class="acts"><a class="btn" href="/">Zaloguj</a><a class="btn pri" href="/">Załóż konto</a><button class="bur" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">&#9776;</button></div>
+</header>
 <div class="wrap">
   <div class="crumbs"><a href="/">Strona główna</a> › <a href="/blog.html">Blog</a> › <span>Wiedza</span></div>
   <h1>Flow ratio test — kalibracja przepływu na kostce 100×100×4 mm</h1>
