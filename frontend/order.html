@@ -945,5 +945,6 @@ window.__local3d = {
 <script src="/asset/theme.js?v=2"></script>
 <script src="/asset/reveal.js?v=2"></script>
 <div id="ctaBar"><span>Razem</span><b id="ctaTot">—</b><button onclick="submitOrder()">Zamawiam</button></div>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js?v=20').then(function(sw){sw.update&&setInterval(function(){sw.update()},3*60*60*1000)});navigator.serviceWorker.addEventListener('controllerchange',function(){location.reload()})}</script>
 </body>
 </html>

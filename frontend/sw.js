@@ -1,11 +1,11 @@
-/* 3dfile.link Service Worker v19
+/* 3dfile.link Service Worker v20
    Strategy:
    - HTML (navigations): NETWORK-FIRST (świeże strony po każdym deployu), cache fallback offline
    - CSS/JS/img/assety: STALE-WHILE-REVALIDATE (szybko z cache, odświeżanie w tle)
    - /api/, /s/, /u/, /e/, /admin: bypass (nigdy nie przechwytujemy)
    - 503 tylko gdy naprawdę offline i nic w cache
 */
-const CACHE = '3dfile-v19';
+const CACHE = '3dfile-v20';
 const PRECACHE = ['/manifest.json', '/logo.png?v=83'];
 
 self.addEventListener('install', e => {

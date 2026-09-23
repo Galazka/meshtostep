@@ -217,5 +217,6 @@ function sendContact(ev){
 <script>document.addEventListener('click',function(ev){var nl=document.querySelector('.nav-links');if(nl&&nl.classList.contains('open')&&ev.target.closest('.nav-links a')){nl.classList.remove('open');}});</script>
 <script src="/asset/theme.js?v=2"></script>
 <script src="/asset/reveal.js?v=2"></script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js?v=20').then(function(sw){sw.update&&setInterval(function(){sw.update()},3*60*60*1000)});navigator.serviceWorker.addEventListener('controllerchange',function(){location.reload()})}</script>
 </body>
 </html>
