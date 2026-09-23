@@ -398,7 +398,7 @@ html[data-theme="dark"] .eco-ico{background:#0B1220;border-color:var(--line)}
 .doors-head .prt-sub{margin-left:auto;margin-right:auto;font-size:15px;max-width:760px}
 .doors-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:20px;max-width:1060px;margin-left:auto;margin-right:auto}
 .door{display:flex;flex-direction:column;gap:10px;text-align:left;text-decoration:none;min-width:0;
-  background:#fff;color:var(--ink);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:24px 26px 20px;
+  background:#fff;color:var(--ink);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:26px 34px 22px;
   transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;position:relative;overflow:hidden}
 .door:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(2,8,23,.45)}
 .door-a{border-top:3px solid #14325C}
