@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Podkład i malowanie PLA — od szlifowania po lakier, krok po kroku | 3DFILE.link</title>
+<meta name="description" content="Malowanie wydruków PLA: gradacje papieru 120-600, sprayfiller i szpachla natryskowa Xantex, akryl w 2-3 warstwach, lakier mat vs poliuretan 2K. Proces z czasami schniecia.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://3dfile.link/blog/podklad-i-malowanie-pla.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Podkład i malowanie PLA — od szlifowania po lakier, krok po kroku">
+<meta property="og:description" content="Malowanie wydruków PLA: gradacje papieru 120-600, sprayfiller i szpachla natryskowa Xantex, akryl w 2-3 warstwach, lakier mat vs poliuretan 2K. Proces z czasami schniecia.">
+<meta property="og:image" content="https://3dfile.link/asset/blog/cover-podklad-i-malowanie-pla.svg">
+<meta property="og:site_name" content="3DFILE.link">
+<meta property="og:url" content="https://3dfile.link/blog/podklad-i-malowanie-pla.html">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#0f172a;--muted:#64748b;--accent:#0ea5e9;--accent2:#0b5394;--border:#e2e8f0;--card:#ffffff;--bg:#f8fafc}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);line-height:1.65}
+.nav{background:#0f172a;color:#fff;padding:14px 0;position:sticky;top:0;z-index:50}
+.nav-in{max-width:1120px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.nav a{color:#fff;text-decoration:none;font-weight:600;font-size:14px}
+.nav-links a{margin-left:18px;opacity:.85}
+.nav-links a:hover{opacity:1}
+.badge{background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.3px}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 20px 60px}
+.crumbs{font-size:13px;color:var(--muted);margin-bottom:18px}
+.crumbs a{color:var(--accent);text-decoration:none}
+.crumbs a:hover{text-decoration:underline}
+h1{font-size:34px;line-height:1.2;font-weight:800;letter-spacing:-.5px;margin-bottom:14px}
+.meta{color:var(--muted);font-size:14px;margin-bottom:22px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.hero-img{width:100%;border-radius:14px;margin-bottom:26px;box-shadow:0 6px 24px rgba(15,23,42,.12)}
+h2{font-size:24px;font-weight:800;margin:34px 0 12px;letter-spacing:-.3px;line-height:1.3}
+h3{font-size:19px;font-weight:700;margin:26px 0 10px}
+p{margin-bottom:16px}
+ul,ol{margin:0 0 18px 22px}
+li{margin-bottom:8px}
+.box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin:20px 0}
+.box.cta{background:linear-gradient(135deg,#0ea5e9,#0b5394);color:#fff;border:none;text-align:center;padding:28px}
+.box.cta h3{color:#fff;font-size:22px;margin-bottom:8px}
+.box.cta p{color:#e0f2fe;font-size:15px}
+.btn{display:inline-block;background:#fff;color:#0b5394;font-weight:800;padding:13px 30px;border-radius:10px;text-decoration:none;font-size:16px;margin-top:14px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.btn:hover{transform:translateY(-1px)}
+.tip table{width:100%;border-collapse:collapse;margin:14px 0}
+.tip td,.tip th{border:1px solid var(--border);padding:10px 12px;font-size:14px;text-align:left}
+.tip th{background:#f1f5f9;font-weight:700}
+blockquote{border-left:4px solid var(--accent);background:var(--card);padding:4px 20px;font-size:17px;margin:20px 0;font-style:italic}
+.tag{display:inline-block;background:#e0f2fe;color:#0369a1;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;margin-right:8px;margin-top:6px}
+.tag:hover{background:#bae6fd;text-decoration:none}
+.related h3{font-size:21px;margin:44px 0 16px}
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.rel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;text-decoration:none;color:var(--fg);display:block;transition:transform .15s,box-shadow .15s}
+.rel:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(15,23,42,.1)}
+.rel img{width:100%;height:120px;object-fit:cover}
+.rel .b{padding:12px 14px}
+.rel .b strong{font-size:15px;display:block;margin-bottom:4px;line-height:1.4}
+.rel .b span{color:var(--muted);font-size:13px}
+footer{background:#0f172a;color:#94a3b8;text-align:center;padding:24px;font-size:13px}
+footer a{color:#cbd5e1;text-decoration:none}
+@media(max-width:600px){h1{font-size:26px}h2{font-size:20px}}
+@media(max-width:760px){table{display:block;overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
+th,td{word-break:break-word}h1{font-size:24px}h2{font-size:19px}h3{font-size:16.5px}.wrap{padding:0 16px}}
+
+.nav-burger{display:none;background:none;border:1px solid #334155;border-radius:8px;cursor:pointer;padding:8px 10px;font-size:19px;line-height:1;color:#fff}
+@media(max-width:760px){.nav-burger{display:inline-flex;align-items:center;gap:6px}.nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border-bottom:1px solid #334155;padding:10px 20px;flex-direction:column;align-items:stretch!important;z-index:60}.nav-links.open{display:flex}.nav{position:relative}.nav-links a{width:100%;text-align:left;margin-left:0!important;padding:12px 4px}}
+</style>
+</head>
+<body>
+<nav class="nav"><div class="nav-in">
+  <a href="/">3DFILE.link</a>
+  <button class="nav-burger" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">☰</button>
+  <div class="nav-links"><a href="/drukuje">Druk</a><a href="/">Hosting</a><a href="/blog.html">Blog</a></div>
+</div></nav>
+<div class="wrap">
+  <div class="crumbs"><a href="/">Strona główna</a> › <a href="/blog.html">Blog</a> › <span>Wiedza</span></div>
+  <h1>Podkład i malowanie PLA — od szlifowania po lakier, krok po kroku</h1>
+  <div class="meta"><span>22.09.2026</span><span>L4RV4</span><span>9 min czytania</span></div>
+  <img src="/asset/blog/cover-podklad-i-malowanie-pla.svg" alt="podklad malowanie pla szlifowanie sprayfiller xantex akryl lakier mat polski wydruk" class="hero-img" loading="lazy">
+
+<p>Sam wydruk PLA nigdy nie wygląda jak produkt: widać warstwy, a farba kładzie się na nich „paskami”. Gładki lakier robi się <strong>podkładem, nie farbą</strong> — poniżej pełna procedura, którą stosujemy do prototypów wystawowych: gradacje papieru, czasy schnięcia i konkretne produkty, bez marketingowego lania wody.</p>
+
+<h2>Krok 1: szlifowanie — warstwy znikają pod ziarnem</h2>
+<p>PLA jest miękkie i zapycha papier szybciej niż drewno, więc od gradacji 400 pracujemy na mokro. Nie przeskakuj o dwie gradacje naraz: rysa po 120 nie zejdzie na 600 — wyjdzie dopiero spod lakieru, gdzie widać ją dwa razy lepiej.</p>
+<div class="box tip">
+  <table>
+    <thead>
+      <tr><th>Gradacja</th><th>Cel</th><th>Metoda</th><th>Czas (element 10×10×5 cm)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>120</td><td>zdjęcie warstw i „schodków”</td><td>na sucho, lekko</td><td>10–15 min</td></tr>
+      <tr><td>240</td><td>wyrównanie rys po 120</td><td>na sucho</td><td>8–12 min</td></tr>
+      <tr><td>400</td><td>matowienie i wygładzenie</td><td>na mokro</td><td>6–10 min</td></tr>
+      <tr><td>600</td><td>pośrednie, między warstwami podkładu</td><td>na mokro</td><td>3–5 min</td></tr>
+    </tbody>
+  </table>
+  <p>Po każdym etapie: odpyl, odtłuść (IPA albo zmywacz silikonowy) i zostaw do wyschnięcia — pył pod podkładem to przyszłe „ziarnko” pod lakierem.</p>
+</div>
+
+<h2>Krok 2: podkład — sprayfiller albo szpachla natryskowa</h2>
+<p>Zadanie podkładu: wypełnić mikroory po szlifie i zrównać chłonność powierzchni. Z daleka wystarczy <strong>akrylowy sprayfiller</strong> (np. Xantex 710 lub równoważny podkład akrylowy w sprayu — 2–3 cienkie warstwy, 15–20 min przerwy, suszenie 2 h w 20°C). Elementy oglądane z bliska i krawędzie: <strong>szpachla natryskowa</strong> (Xantex 730), 2–3 warstwy cienko, potem szlif 600 na mokro. Grube „łaty” pękają, bo PLA pracuje pod ciepłem bardziej niż szpachla.</p>
+<p><strong>Krytyczne dla PLA:</strong> temperatura mięknięcia to ~55–60°C. Nie susz elementów ciepłym powietrzem powyżej 45°C i nie zostawiaj ciemnego lakieru na parapecie w słońcu — wydruk odkształci się razem z powłoką.</p>
+
+<h2>Krok 3: baza — akryl</h2>
+<p>Akryl w sprayu lub aerografem: 2–3 warstwy po 10–15 min przerwy. Ciemne kolory kryją po drugiej warstwie; jasne na ciemnym podkładzie potrzebują białej „podbitki”. Warstwa kładziona „na mokro, grubo” = zacieki do zrywki i restartu. Ostatnia warstwa bazy: pełne utwardzenie 24 h, zanim zamalujesz czymkolwiek innym (albo lakier „na mokro” w oknie do 4 h przy tym samym systemie akrylowym).</p>
+
+<h2>Krok 4: lakier — mat czy połysk?</h2>
+<p>Mat akrylowy maskuje niedoskonałości szlifu, ale ściera się na krawędziach i w uchwytach. Połysk akrylowy jest ładny i kruchy. <strong>Poliuretan 2K w sprayu</strong> (lakier samochodowy z utwardzaczem) — najlepsza odporność na zarysowania i chemię; wymaga 18–25°C, 2–3 warstw i pełnych 72 h do twardego finiszu. Utwardzacz aktywny jest ~2 h od zmieszania — mieszaj na jedno podejście.</p>
+<div class="box tip">
+  <table>
+    <thead>
+      <tr><th>Etapa</th><th>Produkt / narzędzie</th><th>Warstwy i odstępy</th><th>Schnięcie</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Odtłuszczenie</td><td>IPA / zmywacz silikonu</td><td>—</td><td>5 min</td></tr>
+      <tr><td>Podkład</td><td>sprayfiller akrylowy (Xantex 710)</td><td>2–3 × co 15–20 min</td><td>2 h, potem szlif 600 na mokro</td></tr>
+      <tr><td>Baza</td><td>akryl w sprayu / aerograf</td><td>2–3 × co 10–15 min</td><td>24 h przed lakierem</td></tr>
+      <tr><td>Lakier mat</td><td>akryl mat</td><td>2 × co 15 min</td><td>dotyk: 2 h, pełny: 24 h</td></tr>
+      <tr><td>Lakier 2K PU</td><td>poliuretan z utwardzaczem</td><td>2–3 × co 15–20 min</td><td>dotyk: 4 h, twardość: 72 h</td></tr>
+    </tbody>
+  </table>
+  <p>Budżet czasu: element 10×10×5 cm to ~1 h pracy rąk plus 24–72 h cierpliwości. Kto próbuje to skrócić, ten poleruje zacieki.</p>
+</div>
+
+<h2>BHP w dwóch zdaniach</h2>
+<p>Maska A2 + rękawice nitrylowe przy natrysku, wentylacja albo kabina z wyciągiem przy 2K. Pyłu z szlifowanego PLA nie wdychaj: na sucho tylko z maską P2 — mikroplastik z płuc nie wyjdzie sprężonym powietrzem.</p>
+
+<blockquote>
+  Zasada z pracowni: gładkość rodzi się na etapie podkładu. Jeśli po gruncie widać rysę — po lakierze widać ją dwa razy bardziej.
+</blockquote>
+
+<h2>Najczęściej zadawane pytania</h2>
+<h3>Czy sprayfiller „gryzie” PLA?</h3>
+<p>Rozpuszczalniki alifatyczne są dla PLA łagodne, ale agresywne rozpuszczalniki w tanich podkładach potrafią zmiękczać cienkie ścianki. Zawsze test na resztkach podpór z tego samego cięcia, nie na elemencie.</p>
+<h3>Pędzel zostawia smugi — co robić?</h3>
+<p>Akryl + szeroki syntetyk + drugie, lżejsze pociągnięcie „na wykończenie”, albo aerograf. Smugi to zwykle za gruba warstwa, nie zły pędzel.</p>
+<h3>Czy bez szlifowania da się obejść?</h3>
+<p>Wyłącznie przy częściach technicznych, które mają być czarne matowe i grube — podkład i tak musi mieć „co” złapać, inaczej schodzi płachtami.</p>
+<h3>Jak maskować otwory i gwinty?</h3>
+<p>Taśma modelarska o niskiej kleistości (Tamiya, 3M delikatna) i „wkręty” z maskownicy w otworach. Świeży lakier zrywa zwykłą taśmę malarską razem z bazą.</p>
+
+<div class="box cta">
+  <h3>Wolisz gotowe, pomalowane części?</h3>
+  <p>Prototypy wystawowe szlifujemy, gruntujemy i lakierujemy u nas — z gwarancją powtarzalności koloru.</p>
+  <a class="btn" href="/drukuje">Zamów wykończony prototyp</a>
+</div>
+
+<div class="related">
+  <h3>← Przeczytaj też</h3>
+  <div class="rel-grid">
+    <a class="rel" href="/blog/post-processing-fdm.html"><img src="/asset/blog/cover-post-processing-fdm.svg" alt=""><div class="b"><strong>Post-processing FDM</strong><span>wykończenie wydruku</span></div></a>
+    <a class="rel" href="/blog/jaki-filament-wybrac-3d.html"><img src="/asset/blog/cover-jaki-filament-wybrac-3d.svg" alt=""><div class="b"><strong>Jaki filament wybrać</strong><span>właściwości i ceny</span></div></a>
+    <a class="rel" href="/blog/prototypowanie-3d-dla-firm.html"><img src="/asset/blog/cover-prototypowanie-3d-dla-firm.svg" alt=""><div class="b"><strong>Prototypowanie 3D dla firm</strong><span>jak przyspieszyć rozwój</span></div></a>
+  </div>
+</div>
+</div>
+<footer>© 2026 3DFILE.link — <a href="/drukuje">druk 3D na życzenie</a> · <a href="/blog.html">Blog</a> · <a href="/kontakt">Kontakt</a> · <a href="/prywatnosc.html">Prywatność</a></footer>
+<script>document.addEventListener('click',function(ev){var nl=document.querySelector('.nav-links');if(nl&&nl.classList.contains('open')&&ev.target.closest('.nav-links a')){nl.classList.remove('open');}});</script>
+</body>
+</html>

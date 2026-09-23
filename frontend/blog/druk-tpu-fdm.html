@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Druk TPU w FDM — prędkości, retrakcja, wilgoć i prowadnica | 3DFILE.link</title>
+<meta name="description" content="TPU w FDM bez dramatu: prędkości 15-40 mm/s dla 95A-70A, retrakcja direct vs bowden, suszenie 45°C i prowadnica, która decyduje czy gumowy filament w ogóle wydrukujesz.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://3dfile.link/blog/druk-tpu-fdm.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Druk TPU w FDM — prędkości, retrakcja, wilgoć i prowadnica">
+<meta property="og:description" content="TPU w FDM bez dramatu: prędkości 15-40 mm/s dla 95A-70A, retrakcja direct vs bowden, suszenie 45°C i prowadnica, która decyduje czy gumowy filament w ogóle wydrukujesz.">
+<meta property="og:image" content="https://3dfile.link/asset/blog/cover-druk-tpu-fdm.svg">
+<meta property="og:site_name" content="3DFILE.link">
+<meta property="og:url" content="https://3dfile.link/blog/druk-tpu-fdm.html">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#0f172a;--muted:#64748b;--accent:#0ea5e9;--accent2:#0b5394;--border:#e2e8f0;--card:#ffffff;--bg:#f8fafc}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);line-height:1.65}
+.nav{background:#0f172a;color:#fff;padding:14px 0;position:sticky;top:0;z-index:50}
+.nav-in{max-width:1120px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.nav a{color:#fff;text-decoration:none;font-weight:600;font-size:14px}
+.nav-links a{margin-left:18px;opacity:.85}
+.nav-links a:hover{opacity:1}
+.badge{background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.3px}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 20px 60px}
+.crumbs{font-size:13px;color:var(--muted);margin-bottom:18px}
+.crumbs a{color:var(--accent);text-decoration:none}
+.crumbs a:hover{text-decoration:underline}
+h1{font-size:34px;line-height:1.2;font-weight:800;letter-spacing:-.5px;margin-bottom:14px}
+.meta{color:var(--muted);font-size:14px;margin-bottom:22px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.hero-img{width:100%;border-radius:14px;margin-bottom:26px;box-shadow:0 6px 24px rgba(15,23,42,.12)}
+h2{font-size:24px;font-weight:800;margin:34px 0 12px;letter-spacing:-.3px;line-height:1.3}
+h3{font-size:19px;font-weight:700;margin:26px 0 10px}
+p{margin-bottom:16px}
+ul,ol{margin:0 0 18px 22px}
+li{margin-bottom:8px}
+.box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin:20px 0}
+.box.cta{background:linear-gradient(135deg,#0ea5e9,#0b5394);color:#fff;border:none;text-align:center;padding:28px}
+.box.cta h3{color:#fff;font-size:22px;margin-bottom:8px}
+.box.cta p{color:#e0f2fe;font-size:15px}
+.btn{display:inline-block;background:#fff;color:#0b5394;font-weight:800;padding:13px 30px;border-radius:10px;text-decoration:none;font-size:16px;margin-top:14px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.btn:hover{transform:translateY(-1px)}
+.tip table{width:100%;border-collapse:collapse;margin:14px 0}
+.tip td,.tip th{border:1px solid var(--border);padding:10px 12px;font-size:14px;text-align:left}
+.tip th{background:#f1f5f9;font-weight:700}
+blockquote{border-left:4px solid var(--accent);background:var(--card);padding:4px 20px;font-size:17px;margin:20px 0;font-style:italic}
+.tag{display:inline-block;background:#e0f2fe;color:#0369a1;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;margin-right:8px;margin-top:6px}
+.tag:hover{background:#bae6fd;text-decoration:none}
+.related h3{font-size:21px;margin:44px 0 16px}
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.rel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;text-decoration:none;color:var(--fg);display:block;transition:transform .15s,box-shadow .15s}
+.rel:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(15,23,42,.1)}
+.rel img{width:100%;height:120px;object-fit:cover}
+.rel .b{padding:12px 14px}
+.rel .b strong{font-size:15px;display:block;margin-bottom:4px;line-height:1.4}
+.rel .b span{color:var(--muted);font-size:13px}
+footer{background:#0f172a;color:#94a3b8;text-align:center;padding:24px;font-size:13px}
+footer a{color:#cbd5e1;text-decoration:none}
+@media(max-width:600px){h1{font-size:26px}h2{font-size:20px}}
+@media(max-width:760px){table{display:block;overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
+th,td{word-break:break-word}h1{font-size:24px}h2{font-size:19px}h3{font-size:16.5px}.wrap{padding:0 16px}}
+
+.nav-burger{display:none;background:none;border:1px solid #334155;border-radius:8px;cursor:pointer;padding:8px 10px;font-size:19px;line-height:1;color:#fff}
+@media(max-width:760px){.nav-burger{display:inline-flex;align-items:center;gap:6px}.nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border-bottom:1px solid #334155;padding:10px 20px;flex-direction:column;align-items:stretch!important;z-index:60}.nav-links.open{display:flex}.nav{position:relative}.nav-links a{width:100%;text-align:left;margin-left:0!important;padding:12px 4px}}
+</style>
+</head>
+<body>
+<nav class="nav"><div class="nav-in">
+  <a href="/">3DFILE.link</a>
+  <button class="nav-burger" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">☰</button>
+  <div class="nav-links"><a href="/drukuje">Druk</a><a href="/">Hosting</a><a href="/blog.html">Blog</a></div>
+</div></nav>
+<div class="wrap">
+  <div class="crumbs"><a href="/">Strona główna</a> › <a href="/blog.html">Blog</a> › <span>Wiedza</span></div>
+  <h1>Druk TPU w FDM — prędkości, retrakcja, wilgoć i prowadnica</h1>
+  <div class="meta"><span>22.09.2026</span><span>L4RV4</span><span>8 min czytania</span></div>
+  <img src="/asset/blog/cover-druk-tpu-fdm.svg" alt="druk tpu fdm guma flexi 95a 85a predkos retrakcja direct bowden wilgoc prowadnica" class="hero-img" loading="lazy">
+
+<p>TPU to jedyny filament, który „psuje” dobre profile: to, co w PLA działa od pierwszego startu, w gumie daje zator, falę na ścianach albo pęcherze. Sekret nie leży w temperaturze (210–230°C, jak PETG), tylko w trzech rzeczach: <strong>prędkości podawania, retrakcji i ścieżce prowadnicy</strong>. Poniżej wartości, którymi drukujemy elementy użytkowe — od uszczelek po gumowe nóżki i zderzaki dronów.</p>
+
+<h2>Direct czy bowden — to decyduje, czy w ogóle wydrukujesz</h2>
+<p>W bowdenie gumowy filament ściska się jak sprężyna: cofnięcie retrakcji ginie w odkształceniu łuku, zamiast dotrzeć do strefy topnienia, a agresywne kółka zjadają średnicę. Zasada jest prosta: <strong>TPU 95A i twardsze</strong> da się jeszcze wydrukować bowdenem — z wyłączoną retrakcją i prędkościami do 15 mm/s. <strong>TPU 85A i miększe</strong> praktycznie tylko na direct drive (Bambu A1/P1S, Ender 3 V3 ze Sprite, Prusa MK4, Voron). Masz bowden i „musisz” 85A? Ustaw retrakcję 0,0 mm, 10–15 mm/s i licz się z niciami — to ograniczenie układu, nie Twoich rąk.</p>
+
+<h2>Prędkości, retrakcja i flow — tabela startowa</h2>
+<div class="box tip">
+  <table>
+    <thead>
+      <tr><th>Twardość (Shore A)</th><th>Zastosowania</th><th>Prędkość druku</th><th>Retrakcja (direct)</th><th>Flow</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>95A (najpopularniejsza)</td><td>uchwyty, obudowy, odbojniki, nóżki</td><td>25–40 mm/s</td><td>0,4–0,6 mm / 20–25 mm/s</td><td>100%</td></tr>
+      <tr><td>85A</td><td>kółka, stopy, uszczelki, amortyzatory</td><td>15–25 mm/s</td><td>0,3–0,5 mm / 20 mm/s</td><td>99–100%</td></tr>
+      <tr><td>70A i miększe</td><td>uszczelki płaskie, gumki, przeguby</td><td>5–12 mm/s</td><td>0 mm (wyłączona)</td><td>100–102%</td></tr>
+      <tr><td>95A na bowdenie</td><td>tylko awaryjnie</td><td>10–15 mm/s</td><td>0 mm (wyłączona)</td><td>100%</td></tr>
+    </tbody>
+  </table>
+  <p>Dla wszystkich wierszy: dysza 0,4 mm, szerokość linii 0,45–0,50 mm (guma „leje się” w szczeliny, cienka linia daje dziury), warstwa 0,20–0,28 mm, temperatura 210–230°C, chłodzenie 0–30%.</p>
+</div>
+
+<h2>Wilgoć — cichy zabójca gumy</h2>
+<p>TPU chłonie wodę szybciej niż nylon: rozpakowana szpula zostawiona na dwa tygodnie na stole łapie tyle wilgoci, że druk „strzela”, a powierzchnia wychodzi jak skórka pomarańczy. <strong>Susz: 45°C, 4–6 h</strong> w suszarce do filamentu — wyżej guma mięknie i zwoje scalają się w placek. Test bez suszarki: świeżo otwarta szpula vs ta sprzed dwóch tygodni — jeśli strzelanie i pęcherze znikają, problem był wilgotnościowy, nie w profilu.</p>
+
+<h2>Prowadnica i ekstruder — połowa sukcesu</h2>
+<ul>
+  <li><strong>Ścieżka najkrótsza i prosta:</strong> każdy ostry łuk na drodze do hotendu mnoży siły ściskające. Systemy AMS/multi-material z wieżami zwykle nie obsługują TPU — sprawdź kartę produktu.</li>
+  <li><strong>Docisk kół:</strong> zmniejsz o ~30% względem PLA. Za mocny docisk spłaszcza filament w kanale i średnica „na wyjściu” spada — ekstruder podaje za mało, mimo dobrych parametrów.</li>
+  <li><strong>Kółka:</strong> gładkie łożyskowane albo z drobnym karbowaniem; agresywne zębate nacinają gumę i robią ścier, który potem zatyka dyszę.</li>
+  <li><strong>Limit objętościowy:</strong> realnie ~4–8 mm³/s dla 95A. Jeśli ściany się „rozjeżdżają”, a warstwa topu jest puchata — to nie profil, tylko fizyka limitu flow.</li>
+</ul>
+
+<h2>Pierwszy udany wydruk: protokół</h2>
+<ol>
+  <li>Wysusz szpulę 4 h w 45°C, załóż na direct drive.</li>
+  <li>Ustaw start z tabeli dla Twojej twardości, wydrukuj waliec 20×20×10 mm i „klucz 6 mm”.</li>
+  <li>Fala na ścianach (wobble) = za szybko −5 mm/s. Dziury w topie = za zimno +5°C albo flow +1%. Nici = retrakcja +0,2 mm, ale przy górnym limencie tabeli.</li>
+  <li>Wydruki użytkowe trzymają wymiar ±0,2 mm dopiero po 2. korekcie — guma pracuje, mierz na zimno.</li>
+</ol>
+
+<blockquote>
+  Zasada z pracowni: TPU nie wybacza ambicji. 20 mm/s to nie wstyd — przy gumie to i tak dwa razy szybciej niż „na czuja” po pierwszym nieudanym wydruku.
+</blockquote>
+
+<h2>Najczęściej zadawane pytania</h2>
+<h3>Wydruki w TPU jako uszczelki — szczelne między warstwami?</h3>
+<p>Tak, ale tylko szeroka linia i flow ~100–102%: kanał między ścieżkami uszczelnia się sam pod dociskiem. Orientuj część tak, by siła ściskająca była prostopadła do warstw.</p>
+<h3>Da się skleić TPU?</h3>
+<p>Cyjanoakrylat trzyma słabo (odkształcenie zrywa spoinę). Najlepiej kontaktowy klej poliuretanowy albo zgrzewanie na gorąco.</p>
+<h3>Dysza 0,6 do guma — sens?</h3>
+<p>Tak: więcej materiału na przejazd, wyższy limit flow. Utrzymaj prędkości z tabeli i licz się z wolniejszym wykończeniem detali.</p>
+<h3>Dlaczego mój wydruk „puchnie” na krawędziach?</h3>
+<p>Nadciśnienie w komorze topnienia przez za szybkie podawanie miękkiego filamentu. Obniż prędkość o 20% i wyzeruj retrakcję — to zwykle kończy sprawę.</p>
+
+<div class="box cta">
+  <h3>Guma bez zatorów na naszej farmie</h3>
+  <p>TPU drukujemy na direct drive ze świeżymi prowadnicami — suszymy każdą szpulę przed startem.</p>
+  <a class="btn" href="/drukuje">Zamów wydruk z TPU</a>
+</div>
+
+<div class="related">
+  <h3>← Przeczytaj też</h3>
+  <div class="rel-grid">
+    <a class="rel" href="/blog/jaki-filament-wybrac-3d.html"><img src="/asset/blog/cover-jaki-filament-wybrac-3d.svg" alt=""><div class="b"><strong>PLA vs PETG vs ABS vs ASA</strong><span>porównanie materiałów</span></div></a>
+    <a class="rel" href="/blog/retrakcja-druk-3d.html"><img src="/asset/blog/cover-retrakcja-druk-3d.svg" alt=""><div class="b"><strong>Retrakcja w druku 3D</strong><span>dystans i prędkość per drukarka</span></div></a>
+    <a class="rel" href="/blog/czyszczenie-dyszy-fdm.html"><img src="/asset/blog/cover-czyszczenie-dyszy-fdm.svg" alt=""><div class="b"><strong>Czyszczenie dyszy w druku FDM</strong><span>cold pull, igła, wymiana</span></div></a>
+  </div>
+</div>
+</div>
+<footer>© 2026 3DFILE.link — <a href="/drukuje">druk 3D na życzenie</a> · <a href="/blog.html">Blog</a> · <a href="/kontakt">Kontakt</a> · <a href="/prywatnosc.html">Prywatność</a></footer>
+<script>document.addEventListener('click',function(ev){var nl=document.querySelector('.nav-links');if(nl&&nl.classList.contains('open')&&ev.target.closest('.nav-links a')){nl.classList.remove('open');}});</script>
+</body>
+</html>

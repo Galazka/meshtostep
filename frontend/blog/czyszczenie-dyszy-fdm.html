@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Czyszczenie dyszy w druku FDM — cold pull, igła, ultradźwięki i moment wymiany | 3DFILE.link</title>
+<meta name="description" content="Zatkana dysza FDM krok po kroku: objawy, metoda zimnego wyciągania cold pull 200 do 90°C, czyszczenie na gorąco igłą, kąpiel w acetonie, wanna ultradźwiękowa i kryteria wymiany dyszy.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://3dfile.link/blog/czyszczenie-dyszy-fdm.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Czyszczenie dyszy w druku FDM — cold pull, igła, ultradźwięki i moment wymiany">
+<meta property="og:description" content="Zatkana dysza FDM krok po kroku: objawy, metoda zimnego wyciągania cold pull 200 do 90°C, czyszczenie na gorąco igłą, kąpiel w acetonie, wanna ultradźwiękowa i kryteria wymiany dyszy.">
+<meta property="og:image" content="https://3dfile.link/asset/blog/cover-czyszczenie-dyszy-fdm.svg">
+<meta property="og:site_name" content="3DFILE.link">
+<meta property="og:url" content="https://3dfile.link/blog/czyszczenie-dyszy-fdm.html">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#0f172a;--muted:#64748b;--accent:#0ea5e9;--accent2:#0b5394;--border:#e2e8f0;--card:#ffffff;--bg:#f8fafc}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);line-height:1.65}
+.nav{background:#0f172a;color:#fff;padding:14px 0;position:sticky;top:0;z-index:50}
+.nav-in{max-width:1120px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.nav a{color:#fff;text-decoration:none;font-weight:600;font-size:14px}
+.nav-links a{margin-left:18px;opacity:.85}
+.nav-links a:hover{opacity:1}
+.badge{background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.3px}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 20px 60px}
+.crumbs{font-size:13px;color:var(--muted);margin-bottom:18px}
+.crumbs a{color:var(--accent);text-decoration:none}
+.crumbs a:hover{text-decoration:underline}
+h1{font-size:34px;line-height:1.2;font-weight:800;letter-spacing:-.5px;margin-bottom:14px}
+.meta{color:var(--muted);font-size:14px;margin-bottom:22px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.hero-img{width:100%;border-radius:14px;margin-bottom:26px;box-shadow:0 6px 24px rgba(15,23,42,.12)}
+h2{font-size:24px;font-weight:800;margin:34px 0 12px;letter-spacing:-.3px;line-height:1.3}
+h3{font-size:19px;font-weight:700;margin:26px 0 10px}
+p{margin-bottom:16px}
+ul,ol{margin:0 0 18px 22px}
+li{margin-bottom:8px}
+.box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin:20px 0}
+.box.cta{background:linear-gradient(135deg,#0ea5e9,#0b5394);color:#fff;border:none;text-align:center;padding:28px}
+.box.cta h3{color:#fff;font-size:22px;margin-bottom:8px}
+.box.cta p{color:#e0f2fe;font-size:15px}
+.btn{display:inline-block;background:#fff;color:#0b5394;font-weight:800;padding:13px 30px;border-radius:10px;text-decoration:none;font-size:16px;margin-top:14px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.btn:hover{transform:translateY(-1px)}
+.tip table{width:100%;border-collapse:collapse;margin:14px 0}
+.tip td,.tip th{border:1px solid var(--border);padding:10px 12px;font-size:14px;text-align:left}
+.tip th{background:#f1f5f9;font-weight:700}
+blockquote{border-left:4px solid var(--accent);background:var(--card);padding:4px 20px;font-size:17px;margin:20px 0;font-style:italic}
+.tag{display:inline-block;background:#e0f2fe;color:#0369a1;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;margin-right:8px;margin-top:6px}
+.tag:hover{background:#bae6fd;text-decoration:none}
+.related h3{font-size:21px;margin:44px 0 16px}
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.rel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;text-decoration:none;color:var(--fg);display:block;transition:transform .15s,box-shadow .15s}
+.rel:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(15,23,42,.1)}
+.rel img{width:100%;height:120px;object-fit:cover}
+.rel .b{padding:12px 14px}
+.rel .b strong{font-size:15px;display:block;margin-bottom:4px;line-height:1.4}
+.rel .b span{color:var(--muted);font-size:13px}
+footer{background:#0f172a;color:#94a3b8;text-align:center;padding:24px;font-size:13px}
+footer a{color:#cbd5e1;text-decoration:none}
+@media(max-width:600px){h1{font-size:26px}h2{font-size:20px}}
+@media(max-width:760px){table{display:block;overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
+th,td{word-break:break-word}h1{font-size:24px}h2{font-size:19px}h3{font-size:16.5px}.wrap{padding:0 16px}}
+
+.nav-burger{display:none;background:none;border:1px solid #334155;border-radius:8px;cursor:pointer;padding:8px 10px;font-size:19px;line-height:1;color:#fff}
+@media(max-width:760px){.nav-burger{display:inline-flex;align-items:center;gap:6px}.nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border-bottom:1px solid #334155;padding:10px 20px;flex-direction:column;align-items:stretch!important;z-index:60}.nav-links.open{display:flex}.nav{position:relative}.nav-links a{width:100%;text-align:left;margin-left:0!important;padding:12px 4px}}
+</style>
+</head>
+<body>
+<nav class="nav"><div class="nav-in">
+  <a href="/">3DFILE.link</a>
+  <button class="nav-burger" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">☰</button>
+  <div class="nav-links"><a href="/drukuje">Druk</a><a href="/">Hosting</a><a href="/blog.html">Blog</a></div>
+</div></nav>
+<div class="wrap">
+  <div class="crumbs"><a href="/">Strona główna</a> › <a href="/blog.html">Blog</a> › <span>Wiedza</span></div>
+  <h1>Czyszczenie dyszy w druku FDM — cold pull, igła, ultradźwięki i moment wymiany</h1>
+  <div class="meta"><span>22.09.2026</span><span>L4RV4</span><span>9 min czytania</span></div>
+  <img src="/asset/blog/cover-czyszczenie-dyszy-fdm.svg" alt="czyszczenie dyszy fdm cold pull igla aceton ultradzwieki wymiana zatkana dysza" class="hero-img" loading="lazy">
+
+<p>Zatkana dysza rzadko zatyka się nagle: najpierw niedodruk na trzeciej ściance, potem trzeszczenie ekstrudera, na końcu wydruk w ogóle nie rusza. W dziewięciu na dziesięć przypadków wystarczy dysza — oczyszczona albo wymieniona za 25–60 zł. Poniżej: jak rozpoznać, że to na pewno dysza, pięć metod czyszczenia z konkretnymi temperaturami i moment, w którym czyszczenie przestaje być opłacalne.</p>
+
+<h2>Najpierw wyklucz resztę: to na pewno dysza?</h2>
+<p>Zanim sięgniesz po igłę, sprawdź trzy rzeczy poza głowicą: <strong>filament</strong> (średnica na suwmiarce, wilgoć — „strzelanie” w hotendzie), <strong>ścieżkę PTFE</strong> (luz 1–2 mm przy dyszy tworzy kieszonkę, w której top się zapieka) i <strong>poślizg kół ekstrudera</strong>. Dopiero gdy te trzy punkty są sprawne — poniższe objawy wskazują na samą dyszę.</p>
+
+<h2>Objawy — tabela szybkiego rozpoznania</h2>
+<div class="box tip">
+  <table>
+    <thead>
+      <tr><th>Objaw na wydruku</th><th>Najbardziej prawdopodobna przyczyna</th><th>Pierwszy krok</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Niedodruk: rzadkie ściany, dziury w wypełnieniu, ubywa materiału z warstwy na warstwę</td><td>Częściowe zatkanie — zwęglony osad w kanale</td><td>Cold pull, 2–3 cykle</td></tr>
+      <tr><td>Ekstruder trzeszczy i cofa filament przy wjeździe w linię</td><td>Wzrost oporu w dyszy — ciśnienie rośnie za wysoko</td><td>Sprawdź ścieżkę PTFE, potem cold pull</td></tr>
+      <tr><td>Wydruk startuje normalnie, gaśnie po 20–60 minutach</td><td>Heat creep: ciepło ucieka do strefy chłodzenia, opór rośnie</td><td>Skróć PTFE do zera, obniż temp. o 5°C</td></tr>
+      <tr><td>Nici i krople na modelu mimo sprawnej retrakcji, ciemne smugi</td><td>Zdegradowany materiał na licu dyszy</td><td>Czyszczenie na gorąco + igła</td></tr>
+      <tr><td>Ścianki cieńsze o 3–6% względem kalibracji, wymiary „ucięte”</td><td>Dysza rozwiercona (średnica &gt;0,45 mm)</td><td>Pomiar suwmiarką, potem wymiana</td></tr>
+    </tbody>
+  </table>
+  <p>Jeśli ten sam objaw znika po założeniu innej szpuli — winowajcą jest filament, nie dysza.</p>
+</div>
+
+<h2>Metoda 1: zimny wyciąg (cold pull / atomic pull)</h2>
+<p>Najskuteczniejsza metoda na zwęglony osad <em>w środku</em> kanału — działa jak taśma klejąca, tylko z tworzywem. Potrzebujesz białego PLA lub Nylonu, rękawicy i 15 minut.</p>
+<ol>
+  <li>Rozgrzej hotend do temperatury roboczej wyciąganego materiału (PLA: 200°C, Nylon: 240°C).</li>
+  <li>Wprowadź filament ręcznie, aż zacznie normalnie wypływać — w ten sposób obotocz osad świeżym stopem.</li>
+  <li>Wyłącz grzanie i <strong>chłodź do 90°C (PLA) / 100–110°C (Nylon, PETG)</strong>. W tym przedziale stop stwardniał, ale wciąż trzyma się ścianki kanału.</li>
+  <li>Jednym, stanowczym ruchem wyciągnij filament — wyrwie ciemny „czop” z osadem.</li>
+  <li>Powtórz 2–5 razy, aż końcówka wyciągniętego tworzywa będzie jasna i gładka.</li>
+</ol>
+<p>Przy totalnym zatorze cold pull nie przejdzie — wtedy igła od zewnątrz albo wymiana.</p>
+
+<h2>Metoda 2: gorący czop + igła</h2>
+<p>Sprawdza się na osad zewnętrzny i przypaloną „czapkę” na licu dyszy — typową po zmianie jasnego PLA na ciemny PETG czy ASA. Rozgrzej dyszę do 200–230°C, przyłóż mosiężną szczotkę albo gąbkę mosiężną do końca dyszy i obróć kilka razy. Sam otwór przedź <strong>igłą o średnicy mniejszej niż dysza</strong> — 0,35 mm do dyszy 0,40, 0,50 mm do 0,60 — na gorąco, pod lekkim kątem, kilka ruchów. Stalową igłą nie szarp prostopadle „na ślepo”: porysujesz kanał od środka i wyhodujesz zaczep dla kolejnego osadu.</p>
+
+<h2>Metoda 3: kąpiel w acetonie</h2>
+<p>Rozpuszcza osady ABS/ASA, z PLA nie zrobi nic. Wykręć <strong>zimną</strong> dyszę kluczem, zamocz część kanałową na 4–8 h, po kąpieli przepuść kawałek filamentu na gorąco, żeby wypłukać resztki. Nie mocz dysz z uszczelkami silikonowymi ani montowanymi na klej termiczny. Po acetonie zrób przerwę wentylacyjną — opary są gęstsze od powietrza i zostają na stanowisku.</p>
+
+<h2>Metoda 4: wanna ultradźwiękowa</h2>
+<p>Ostatni stopień przed wymianą — gdy cold pull „wypluwa” czysty stożek, a niedodruk wraca po godzinie. Dysza wykręcona, wanna 30–40 kHz z dedykowanym medium czyszczącym, 10–15 minut. Domowa wanna na biżuterię ma za małą moc — jeśli nie masz przemysłowej, pomiń ten krok.</p>
+
+<h2>Kiedy wymienić dyszę — ostatnia tabela</h2>
+<div class="box tip">
+  <table>
+    <thead>
+      <tr><th>Sygnał</th><th>Co oznacza</th><th>Decyzja</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Średnica otworu &gt;0,45 mm dla dyszy „0,4” (średnia z 3 punktów)</td><td>Starta — kalibracja wymiarowa nie do odtworzenia</td><td>Wymiana</td></tr>
+      <tr><td>Otwór owalny, niesymetryczny</td><td>Erozja od materiałów ściernych (włókno, glow-in-the-dark)</td><td>Wymiana na hartowaną stal</td></tr>
+      <tr><td>Ciemne „okno” wzdłuż gwintu po 3. cold pullu</td><td>Osad carbonizuje się w hotendzie, nie na dyszy</td><td>Wymiana dyszy + serwis hotendu</td></tr>
+      <tr><td>Miękki, „puchaty” strumień stopu mimo temperatury norm.</td><td>Uszkodzona powłoka wewnętrzna, zadziory</td><td>Wymiana</td></tr>
+    </tbody>
+  </table>
+  <p>Brąz na ściernych materiałach traci kalibrację w 20–40 h — kto drukuje tak na stałe, ten bierze hartowaną stal: kosztuje 3×, żyje 10×.</p>
+</div>
+
+<h2>Czego nie robić</h2>
+<ul>
+  <li>Nie szlifuj końcówki na płasko — zerujesz kalibrację pierwszej warstwy.</li>
+  <li>Nie pchaj drutu w zimną dyszę „na siłę” — wygnasz miedź i zalejesz grzałkę.</li>
+  <li>Nie wypalaj osadu palnikiem — powłoka odpuszcza, otwór się owalizuje.</li>
+</ul>
+
+<blockquote>
+  Zasada z pracowni: dwa cykle cold pullu, a potem nowa dysza. Roboczogodzina walki „na granicy” kosztuje więcej niż końcówka za 25 zł, a niedodruk wraca po dwóch dniach.
+</blockquote>
+
+<h2>Najczęściej zadawane pytania</h2>
+<h3>Jak często czyścić dyszę profilaktycznie?</h3>
+<p>PLA/PETG: cold pull co 3–4 szpule lub przy zmianie jasnego koloru na ciemny; ABS/ASA i włókniste — przy każdej wymianie.</p>
+<h3>Zator „na amen” — cold pull nie wchodzi?</h3>
+<p>Rozgrzej do górnej granicy materiału, który zatyka, i spróbuj wycisnąć ręcznie krótki odcinek. Jeśli stop nie płynie nawet +20°C ponad normę — wykręć i wymień dyszę; siłowe metody upchną korek głębiej, w stronę termistora.</p>
+<h3>Czy igła uszkodzi dyszę?</h3>
+<p>Źle dobrana — tak. Zasada: igła co najmniej 0,05 mm cieńsza od otworu, ruchy krótkie, na gorąco. W zimnej dysze złamiesz igłę w kanale i wtedy naprawdę masz wymianę hotendu.</p>
+<h3>Świecący filament zatkał mi wszystko — czyszczyć?</h3>
+<p>Przy glow-in-the-dark i karbonie czyść tylko cold pullem i planuj wymianę na hartowaną stal — brąz ściera się o drobinki po kilkudziesięciu godzinach.</p>
+
+<div class="box cta">
+  <h3>Nie chcesz walczyć z zatorami?</h3>
+  <p>Drukujemy na świeżych, skalibrowanych dyszach — protokoły czyszczenia prowadzimy co 40 h pracy.</p>
+  <a class="btn" href="/drukuje">Zobacz druk z kalibrowanej pracowni</a>
+</div>
+
+<div class="related">
+  <h3>← Przeczytaj też</h3>
+  <div class="rel-grid">
+    <a class="rel" href="/blog/defects-druku-diagnostyka.html"><img src="/asset/blog/cover-defects-druku-diagnostyka.svg" alt=""><div class="b"><strong>Defekty druku 3D — diagnostyka</strong><span>od stringingu po z-banding</span></div></a>
+    <a class="rel" href="/blog/retrakcja-druk-3d.html"><img src="/asset/blog/cover-retrakcja-druk-3d.svg" alt=""><div class="b"><strong>Retrakcja w druku 3D</strong><span>dystans i prędkość per drukarka</span></div></a>
+    <a class="rel" href="/blog/pierwsza-warstwa-kalibracja.html"><img src="/asset/blog/cover-pierwsza-warstwa-kalibracja.svg" alt=""><div class="b"><strong>Pierwsza warstwa — kalibracja</strong><span>Z-offset i przyczepność</span></div></a>
+  </div>
+</div>
+</div>
+<footer>© 2026 3DFILE.link — <a href="/drukuje">druk 3D na życzenie</a> · <a href="/blog.html">Blog</a> · <a href="/kontakt">Kontakt</a> · <a href="/prywatnosc.html">Prywatność</a></footer>
+<script>document.addEventListener('click',function(ev){var nl=document.querySelector('.nav-links');if(nl&&nl.classList.contains('open')&&ev.target.closest('.nav-links a')){nl.classList.remove('open');}});</script>
+</body>
+</html>

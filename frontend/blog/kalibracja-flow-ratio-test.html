@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flow ratio test — kalibracja przepływu na kostce 100×100×4 mm | 3DFILE.link</title>
+<meta name="description" content="Test flow ratio na kostce 100x100x4 mm: pomiar scianki suwmiarka, tabela korekt 96-108% i odpowiedz, dlaczego przy sprawnym direct drive E-steps to rzadko wlasciwy trop.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://3dfile.link/blog/kalibracja-flow-ratio-test.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Flow ratio test — kalibracja przepływu na kostce 100×100×4 mm">
+<meta property="og:description" content="Test flow ratio na kostce 100x100x4 mm: pomiar scianki suwmiarka, tabela korekt 96-108% i odpowiedz, dlaczego przy sprawnym direct drive E-steps to rzadko wlasciwy trop.">
+<meta property="og:image" content="https://3dfile.link/asset/blog/cover-kalibracja-flow-ratio-test.svg">
+<meta property="og:site_name" content="3DFILE.link">
+<meta property="og:url" content="https://3dfile.link/blog/kalibracja-flow-ratio-test.html">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#0f172a;--muted:#64748b;--accent:#0ea5e9;--accent2:#0b5394;--border:#e2e8f0;--card:#ffffff;--bg:#f8fafc}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);line-height:1.65}
+.nav{background:#0f172a;color:#fff;padding:14px 0;position:sticky;top:0;z-index:50}
+.nav-in{max-width:1120px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.nav a{color:#fff;text-decoration:none;font-weight:600;font-size:14px}
+.nav-links a{margin-left:18px;opacity:.85}
+.nav-links a:hover{opacity:1}
+.badge{background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.3px}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 20px 60px}
+.crumbs{font-size:13px;color:var(--muted);margin-bottom:18px}
+.crumbs a{color:var(--accent);text-decoration:none}
+.crumbs a:hover{text-decoration:underline}
+h1{font-size:34px;line-height:1.2;font-weight:800;letter-spacing:-.5px;margin-bottom:14px}
+.meta{color:var(--muted);font-size:14px;margin-bottom:22px;display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.hero-img{width:100%;border-radius:14px;margin-bottom:26px;box-shadow:0 6px 24px rgba(15,23,42,.12)}
+h2{font-size:24px;font-weight:800;margin:34px 0 12px;letter-spacing:-.3px;line-height:1.3}
+h3{font-size:19px;font-weight:700;margin:26px 0 10px}
+p{margin-bottom:16px}
+ul,ol{margin:0 0 18px 22px}
+li{margin-bottom:8px}
+.box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin:20px 0}
+.box.cta{background:linear-gradient(135deg,#0ea5e9,#0b5394);color:#fff;border:none;text-align:center;padding:28px}
+.box.cta h3{color:#fff;font-size:22px;margin-bottom:8px}
+.box.cta p{color:#e0f2fe;font-size:15px}
+.btn{display:inline-block;background:#fff;color:#0b5394;font-weight:800;padding:13px 30px;border-radius:10px;text-decoration:none;font-size:16px;margin-top:14px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.btn:hover{transform:translateY(-1px)}
+.tip table{width:100%;border-collapse:collapse;margin:14px 0}
+.tip td,.tip th{border:1px solid var(--border);padding:10px 12px;font-size:14px;text-align:left}
+.tip th{background:#f1f5f9;font-weight:700}
+blockquote{border-left:4px solid var(--accent);background:var(--card);padding:4px 20px;font-size:17px;margin:20px 0;font-style:italic}
+.tag{display:inline-block;background:#e0f2fe;color:#0369a1;font-size:12px;font-weight:600;padding:4px 12px;border-radius:20px;margin-right:8px;margin-top:6px}
+.tag:hover{background:#bae6fd;text-decoration:none}
+.related h3{font-size:21px;margin:44px 0 16px}
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.rel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;text-decoration:none;color:var(--fg);display:block;transition:transform .15s,box-shadow .15s}
+.rel:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(15,23,42,.1)}
+.rel img{width:100%;height:120px;object-fit:cover}
+.rel .b{padding:12px 14px}
+.rel .b strong{font-size:15px;display:block;margin-bottom:4px;line-height:1.4}
+.rel .b span{color:var(--muted);font-size:13px}
+footer{background:#0f172a;color:#94a3b8;text-align:center;padding:24px;font-size:13px}
+footer a{color:#cbd5e1;text-decoration:none}
+@media(max-width:600px){h1{font-size:26px}h2{font-size:20px}}
+@media(max-width:760px){table{display:block;overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
+th,td{word-break:break-word}h1{font-size:24px}h2{font-size:19px}h3{font-size:16.5px}.wrap{padding:0 16px}}
+
+.nav-burger{display:none;background:none;border:1px solid #334155;border-radius:8px;cursor:pointer;padding:8px 10px;font-size:19px;line-height:1;color:#fff}
+@media(max-width:760px){.nav-burger{display:inline-flex;align-items:center;gap:6px}.nav-links{display:none;position:absolute;top:100%;left:0;right:0;background:#0f172a;border-bottom:1px solid #334155;padding:10px 20px;flex-direction:column;align-items:stretch!important;z-index:60}.nav-links.open{display:flex}.nav{position:relative}.nav-links a{width:100%;text-align:left;margin-left:0!important;padding:12px 4px}}
+</style>
+</head>
+<body>
+<nav class="nav"><div class="nav-in">
+  <a href="/">3DFILE.link</a>
+  <button class="nav-burger" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">☰</button>
+  <div class="nav-links"><a href="/drukuje">Druk</a><a href="/">Hosting</a><a href="/blog.html">Blog</a></div>
+</div></nav>
+<div class="wrap">
+  <div class="crumbs"><a href="/">Strona główna</a> › <a href="/blog.html">Blog</a> › <span>Wiedza</span></div>
+  <h1>Flow ratio test — kalibracja przepływu na kostce 100×100×4 mm</h1>
+  <div class="meta"><span>22.09.2026</span><span>L4RV4</span><span>8 min czytania</span></div>
+  <img src="/asset/blog/cover-kalibracja-flow-ratio-test.svg" alt="flow ratio test kalibracja przeplywu kostka 100x100x4 e-step scianka suwmiarka tabela korekt" class="hero-img" loading="lazy">
+
+<p>„Kalibruję E-steps i nic” — zdanie, które słyszymy co tydzień. Tymczasem w 2026 roku w sprawnej drukarce direct-drive błąd obrotów podawania to ułamek procenta, a cała reszta odchyłek grubości ścianki to <strong>flow ratio</strong> — mnożnik ilości materiału w slicerze. Poniżej: test na kostce 100×100×4 mm, tabela przeliczenia pomiaru na ustawienie i odpowiedź, kiedy E-steps faktycznie są potrzebne (spoiler: rzadziej, niż myślisz).</p>
+
+<h2>Flow ratio a E-steps — różnica w jednym akapicie</h2>
+<p><strong>E-steps</strong> kalibruje silnik ekstrudera: ile kroków wypada na milimetr podania — ustawiasz to raz przy składaniu maszyny. <strong>Flow ratio</strong> (OrcaSlicer/Bambu Studio: „Flow ratio”, Cura: „Flow”, PrusaSlicer: „Flow-rate”) to mnożnik w slicerze, 0,90–1,10. Na wynik wpływa wszystko, czego kroki nie widzą: pęcznienie stopu na wyjściu z dyszy (die swell), ciśnienie resztkowe w kanale, tolerancja średnicy filamentu ±0,03 mm. Dlatego koryguje się <em>efekt końcowy</em> — grubość ścianki — a nie podanie „na ucho”.</p>
+
+<h2>Test kostki 100×100×4 mm — protokół</h2>
+<ol>
+  <li>Model: prostopadłościan 100×100×4 mm (kostka), bez fazek i zaokrągleń.</li>
+  <li>Cięcie: <strong>100% wypełnienia, 3 obrysy, 3 warstwy góra/dół</strong>, szerokość linii = nominalna (dla dyszy 0,4: 0,40 mm), stałe temp. i prędkości, suchy filament.</li>
+  <li>Wydrukuj, ostudź do temperatury otoczenia (PLA stygnie ~20 min — na ciepło wymiary kłamią).</li>
+  <li>Suwmiarką elektroniczną (0,01 mm) zmierz <strong>grubość ścianki zewnętrznej w 12+ punktach</strong> — po 3 na każdą krawędź, środkowa warstwa.</li>
+  <li>Średnią pomiaru wstaw do przeliczenia: <strong>nowe flow = stare flow × (nominal / zmierzony)</strong>. Nominal to zadana szerokość linii, nie średnica dyszy — jeśli drukujesz na 0,42 mm dla dyszy 0,40, licz od 0,42.</li>
+  <li>Korekta powyżej ±3%? Powtórz test raz. Cel: ścianka w ±0,02 mm od nominale.</li>
+</ol>
+<p>Wariant wagowy: zważ wydruk i porównaj z masą z modelu CAD przy 100% wypełnienia (gęstość z karty filamentu). Błąd masy ≈ błąd flow — przyda się, gdy nie masz dobrego pomiaru grubości.</p>
+
+<h2>Tabela korekt — pomiar na gotowo</h2>
+<div class="box tip">
+  <table>
+    <thead>
+      <tr><th>Zmierzona ścianka (nominal 0,40)</th><th>Błąd</th><th>Korekta</th><th>Flow ratio przy starcie 1,00</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>0,370 mm</td><td>−7,5%</td><td>+8,1%</td><td>1,08</td></tr>
+      <tr><td>0,382 mm</td><td>−4,5%</td><td>+4,7%</td><td>1,05</td></tr>
+      <tr><td>0,391 mm</td><td>−2,3%</td><td>+2,3%</td><td>1,02</td></tr>
+      <tr><td>0,400 mm</td><td>0%</td><td>0%</td><td>1,00</td></tr>
+      <tr><td>0,409 mm</td><td>+2,3%</td><td>−2,2%</td><td>0,98</td></tr>
+      <tr><td>0,418 mm</td><td>+4,5%</td><td>−4,3%</td><td>0,96</td></tr>
+    </tbody>
+  </table>
+  <p>Ścianki 0,36–0,38 na PLA z taśmową szpulą to najczęściej wąska średnica filamentu (1,70–1,72 mm) albo resztkowy osad w dyszy — flow ratio to maskuje, ale najpierw wyklucz materiał i dyszę.</p>
+</div>
+
+<h2>E-steps przy direct drive — po co, skoro jest flow?</h2>
+<p>Nowoczesne direct drive (Bambu, Sprite, Bondtech, Nextruder) ma przełożenie 1:1 albo 3:1 z precyzyjnym kołem — błąd podań poniżej 1%, niewyczuwalny na wydruku i niewidoczny na suwmiarce. Dlatego: <strong>nie ruszaj E-steps, jeśli nie masz twardego dowodu</strong> (kółka nie obracają o pełną długość przy znakowanym pręcie = zużyta/źle dociśnięta mechanika). Objaw „za mało materiału” przy zdrowym napędzie to zawsze flow ratio, temperatura albo średnica filamentu — nie kroki silnika. Kalibracja kroków w modernych direct-drive to ostatni punkt serwisu, nie pierwszy kalibracji druku.</p>
+
+<h2>Gdzie ustawić i w jakiej kolejności</h2>
+<ul>
+  <li><strong>OrcaSlicer / Bambu Studio:</strong> Filament settings → Flow → „Filament flow ratio”. Kreator: Calibration → Flow (test na kolumnach obrysów) — szybki punkt wyjścia, kostka jest dokładniejsza.</li>
+  <li><strong>PrusaSlicer:</strong> Filament → Ustawienia szczegółowe → Multipliki → Flow-rate; osobno „Single extrusion width”.</li>
+  <li><strong>Cura:</strong> Materiał → Flow (%), korekta na profilu materiału.</li>
+  <li><strong>Klipper:</strong> flow ratio zostaje w slicerze; pressure advance naprawia narożniki, a nie grubość ściany — nie mylić.</li>
+  <li>Kolejność całego cyklu kalibracji: suszenie → pierwsza warstwa (Z) → temperatura → <strong>flow ratio</strong> → pressure advance → retrakcja → prędkości.</li>
+</ul>
+
+<blockquote>
+  Zasada z pracowni: błąd 2% w flow to ~0,1 mm na 16 ściankach elementu — dlatego korygujemy z pomiaru, nie „na oko”. I dlatego nie tykamy E-steps, dopóki pomiar ścianki nie zacznie kłamać w drugą stronę.
+</blockquote>
+
+<h2>Najczęściej zadawane pytania</h2>
+<h3>Czy E-steps trzeba w ogóle kalibrować?</h3>
+<p>Przy składaniu i po awarii napędu — tak. W eksploatacji direct-drive praktycznie nigdy; flow ratio na profilu filamentu załatwia 95% problemów wymiarowych.</p>
+<h3>Jedno flow ratio dla wszystkich filamentów?</h3>
+<p>Nie. Ustawia się je per materiał — różnice między markami i kolorami tego samego PLA to zwykle ±1–2%, między PLA a PETG nawet 5%.</p>
+<h3>Pomiary ścianki skaczą ±0,04 mm po obwodzie</h3>
+<p>To nie flow: wibracje, luzy pasków albo „elephant foot” na dnie. Flow koryguje średnią, nie rozrzut — najpierw wyzeruj geometrię.</p>
+<h3>Kostka 100×100 nie wchodzi na stół — mniejsza wersja?</h3>
+<p>40×40×4 wystarczy, ale mierz po 3 punkty na krawędź: na małych kostkach kurczliwość i first-layer squash fałszują średnią na brzegach.</p>
+
+<div class="box cta">
+  <h3>Wymiarowa partia bez kombinowania</h3>
+  <p>Każdą serię produkcyjną przepuszczamy przez test kostki i korektę flow — wydruk trzyma wymiar ±0,15 mm.</p>
+  <a class="btn" href="/zamow">Zamów wymiarowy wydruk</a>
+</div>
+
+<div class="related">
+  <h3>← Przeczytaj też</h3>
+  <div class="rel-grid">
+    <a class="rel" href="/blog/kalibracja-flow-pressure-advance.html"><img src="/asset/blog/cover-kalibracja-flow-pressure-advance.svg" alt=""><div class="b"><strong>Kalibracja flow i Pressure Advance</strong><span>narożniki bez nadlewek</span></div></a>
+    <a class="rel" href="/blog/retrakcja-druk-3d.html"><img src="/asset/blog/cover-retrakcja-druk-3d.svg" alt=""><div class="b"><strong>Retrakcja w druku 3D</strong><span>dystans i prędkość</span></div></a>
+    <a class="rel" href="/blog/tolerancje-i-dokladnosc-druku-3d.html"><img src="/asset/blog/cover-tolerancje-i-dokladnosc-druku-3d.svg" alt=""><div class="b"><strong>Tolerancje i dokładność druku 3D</strong><span>co z tego wynika</span></div></a>
+  </div>
+</div>
+</div>
+<footer>© 2026 3DFILE.link — <a href="/drukuje">druk 3D na życzenie</a> · <a href="/blog.html">Blog</a> · <a href="/kontakt">Kontakt</a> · <a href="/prywatnosc.html">Prywatność</a></footer>
+<script>document.addEventListener('click',function(ev){var nl=document.querySelector('.nav-links');if(nl&&nl.classList.contains('open')&&ev.target.closest('.nav-links a')){nl.classList.remove('open');}});</script>
+</body>
+</html>

@@ -216,7 +216,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
             </div>
             <div style="font-size:11.5px;color:var(--muted);margin-top:6px">Szczególne pigmenty (srebrny/złoty/węglowy/przezroczysty) mają dopłatę — dodawana do ceny modelu.</div>
           </div>
-          <details class="adv"><summary>Opcje modelu — liczba kolorów i wypełnienie</summary>
+          <details class="adv"><summary data-i18n="advModel">Opcje modelu — liczba kolorów i wypełnienie</summary>
           <div><label data-i18n="colCount">Ile kolorów w modelu</label>
             <select id="colCount"><option value="1">1 (standard)</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
           </div>
@@ -310,7 +310,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
                               <input id="fCompany" placeholder="Pełna nazwa firmy" style="padding:9px 12px;border:1px solid var(--border);border-radius:9px;width:100%;margin-top:6px">
                               <input id="fFirmAddr" placeholder="Adres firmy (do faktury): ulica, kod, miasto" style="padding:9px 12px;border:1px solid var(--border);border-radius:9px;width:100%;margin-top:6px">
                             </div>
-        <details class="adv" id="advExtra"><summary>Kod rabatowy, waluta, uwagi dla drukarza</summary>
+        <details class="adv" id="advExtra"><summary data-i18n="advExtra">Kod rabatowy, waluta, uwagi dla drukarza</summary>
         <div class="form-row" style="margin-top:10px">
           <div><label data-i18n="fCode">Kod rabatowy</label>
             <div style="display:flex;gap:8px;align-items:center">
@@ -668,7 +668,7 @@ var discLine = COUPON_PLN>0 ? '<div class="summary-row"><span>Rabat '+(window.__
     colorLine+discLine+freeLine+
     '<div class="summary-total"><span>Do zapłaty (brutto)</span><span>'+fmt(brutto)+'</span></div>'+vatLine;
   empty.style.display='none'; box.style.display='block'; btn.disabled=false;
-  try{ var sym=(cur==='PLN'?'zł':cur); btn.textContent='Zamawiam · '+fmt(brutto)+' '+sym+' \u2192'; var cb=document.getElementById('ctaTot'); if(cb)cb.textContent=fmt(brutto)+' '+sym; }catch(e){}
+  try{ var sym=(cur==='PLN'?'zł':cur); btn.textContent='Zamawiam · '+fmt(brutto)+' \u2192'; var cb=document.getElementById('ctaTot'); if(cb)cb.textContent=fmt(brutto); }catch(e){}
   var vn=document.getElementById('vatNote'); if(vn) vn.textContent='① Cena „do zapłaty" jest ostateczna — zawiera VAT 23%. Tyle obciąży Stripe, tyle zobaczysz na fakturze.';
   var fn=document.getElementById('fxNote'); if(fn) fn.textContent = cur==='PLN'?'Waluta: PLN':'Waluta: '+cur+' · kurs 1 '+cur+' = '+(1/rate).toFixed(4)+' PLN';
 }
@@ -902,7 +902,7 @@ window.__local3d = {
 };
 </script>
 
-<script src="/js/print_i18n.js?v=104"></script>
+<script src="/js/print_i18n.js?v=105"></script>
 <script>document.addEventListener('click',function(ev){var nb=document.getElementById('orderNav');if(nb&&nb.classList.contains('open')&&ev.target.closest('#orderNav a')){nb.classList.remove('open');}});</script>
 <footer class="prt-footer" id="siteFooter">
   <div class="prt-footer-inner">
