@@ -84,7 +84,21 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 .btn-main{width:100%;margin-top:16px;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:11px;font-size:15.5px;font-weight:600;cursor:pointer;transition:all .15s}
 .btn-main:hover{background:var(--accent2)}
 .btn-main:disabled{background:#cbd5e1;cursor:not-allowed}
-.note-field{border:1px solid var(--border);border-radius:10px;padding:9px;margin:6px 0;font-size:13px}
+..adv{margin-top:12px;border:1px solid var(--line,#e2e8f0);border-radius:8px;background:#fff}
+.adv>summary{cursor:pointer;list-style:none;padding:11px 14px;font-size:12.5px;font-weight:600;color:#475569;display:flex;align-items:center;gap:8px}
+.adv>summary::-webkit-details-marker{display:none}
+.adv>summary:before{content:'+';font-family:'JetBrains Mono',monospace;color:#2B5CE6;font-weight:700}
+.adv[open]>summary:before{content:'\2212'}
+.adv[open]>summary{border-bottom:1px dashed #e2e8f0}
+.adv>div,.adv>details{padding:0 14px}
+.adv[open]{padding-bottom:10px}
+#ctaBar{display:none;position:fixed;left:0;right:0;bottom:0;z-index:60;background:#0B1730;padding:10px 14px;align-items:center;gap:12px;box-shadow:0 -4px 18px rgba(11,23,48,.28)}
+#ctaBar span{color:#bcc9de;font-family:'JetBrains Mono',monospace;font-size:12.5px}
+#ctaBar b{color:#fff;font-size:14.5px}
+#ctaBar button{flex:1;background:#2B5CE6;color:#fff;border:0;border-radius:8px;padding:12px 14px;font-weight:700;font-size:14px;cursor:pointer}
+@media(max-width:860px){#ctaBar{display:flex}.ordwrap,#cart,#sumBody{padding-bottom:74px!important}}
+
+note-field{border:1px solid var(--border);border-radius:10px;padding:9px;margin:6px 0;font-size:13px}
 .thanks{max-width:640px;margin:60px auto;text-align:center;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:36px;box-shadow:var(--shadow-lg)}
 .thanks .ico{font-size:52px}
 .thanks h1{font-size:24px;margin:14px 0 8px}
@@ -202,6 +216,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
             </div>
             <div style="font-size:11.5px;color:var(--muted);margin-top:6px">Szczególne pigmenty (srebrny/złoty/węglowy/przezroczysty) mają dopłatę — dodawana do ceny modelu.</div>
           </div>
+          <details class="adv"><summary>Opcje modelu — liczba kolorów i wypełnienie</summary>
           <div><label data-i18n="colCount">Ile kolorów w modelu</label>
             <select id="colCount"><option value="1">1 (standard)</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
           </div>
@@ -212,6 +227,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
             </div>
             <div id="infillInfo" style="font-size:11.5px;color:var(--muted);margin-top:4px"></div>
           </div>
+          </details>
         </div>
         <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:9px 12px;margin:10px 0;font-size:12.5px;color:#1e40af" id="colPriceNote">Wydruk wielokolorowy (jako jeden model) jest droższy ze względu na dłuższy czas druku: 1. kolor ekstra +20 zł, każdy kolejny +10 zł.</div>
         <div id="multiInfo" style="margin:8px 0 4px"></div>
@@ -294,6 +310,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
                               <input id="fCompany" placeholder="Pełna nazwa firmy" style="padding:9px 12px;border:1px solid var(--border);border-radius:9px;width:100%;margin-top:6px">
                               <input id="fFirmAddr" placeholder="Adres firmy (do faktury): ulica, kod, miasto" style="padding:9px 12px;border:1px solid var(--border);border-radius:9px;width:100%;margin-top:6px">
                             </div>
+        <details class="adv" id="advExtra"><summary>Kod rabatowy, waluta, uwagi dla drukarza</summary>
         <div class="form-row" style="margin-top:10px">
           <div><label data-i18n="fCode">Kod rabatowy</label>
             <div style="display:flex;gap:8px;align-items:center">
@@ -305,7 +322,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
         </div>
         <div><label style="margin-top:10px" data-i18n="fNotes">Uwagi dla drukarza (opcjonalnie)</label>
                   <textarea id="fNotes" class="note-field" rows="2" data-i18n-ph="fNotes" placeholder="np. podkreśl nacięcia, kolor docelowy itp."></textarea></div>
-                <button class="btn-main" id="submitBtn" onclick="submitOrder()" data-i18n="fSubmit">Zamawiam — pełne podsumowanie poniżej</button>
+                </details>
+                <button class="btn-main" id="submitBtn" onclick="submitOrder()" data-i18n="fSubmit">Zamawiam →</button>
         <div style="font-size:11.5px;color:var(--muted);margin-top:10px">Płatność: Stripe (karta / BLIK). Podana cena jest ceną brutto (z VAT 23%) — nie doliczamy nic później.</div>
       </div>
     </div>
@@ -313,11 +331,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
     <!-- PRAWA: podgląd 3D + podsumowanie -->
     <div class="preview">
       <div class="card">
-        <h2>👁 Podgląd 3D</h2>
+        <h2>Podgląd 3D</h2>
         <div class="preview-box" id="previewBox">Wybierz model z listy, żeby zobaczyć go tutaj.</div>
       </div>
       <div class="card" id="summaryCard">
-        <h2 data-i18n="summary">🧾 Podsumowanie</h2>
+        <h2 data-i18n="summary">Podsumowanie</h2>
         <div id="sumEmpty" class="empty">Dodaj modele, a zobaczysz pełne zestawienie.</div>
         <div id="sumBody" style="display:none"></div>
         <div class="vat" id="vatNote">Cena „do zapłaty” jest ostateczna — zawiera VAT 23%. Tyle obciąży płatność, tyle zobaczysz na fakturze.</div>
@@ -600,7 +618,7 @@ document.getElementById('fileInput').addEventListener('change',function(){ var f
 
 function calc(){
   var box=document.getElementById('sumBody'), empty=document.getElementById('sumEmpty'), btn=document.getElementById('submitBtn');
-  if(!CART.length){ box.style.display='none'; empty.style.display='block'; btn.disabled=true; return; }
+  if(!CART.length){ box.style.display='none'; empty.style.display='block'; btn.disabled=true; try{btn.textContent='Zamawiam \u2192';var cb0=document.getElementById('ctaTot');if(cb0)cb0.textContent='—';}catch(e){} return; }
   var rate=RATES[cur]||1;
   var productsPLN=0, colorExt=0, rowsHTML='';
   var COUPON_PLN=0; try{COUPON_PLN=(window.__COUPON&&window.__COUPON.pln)||0;}catch(e){}
@@ -650,6 +668,7 @@ var discLine = COUPON_PLN>0 ? '<div class="summary-row"><span>Rabat '+(window.__
     colorLine+discLine+freeLine+
     '<div class="summary-total"><span>Do zapłaty (brutto)</span><span>'+fmt(brutto)+'</span></div>'+vatLine;
   empty.style.display='none'; box.style.display='block'; btn.disabled=false;
+  try{ var sym=(cur==='PLN'?'zł':cur); btn.textContent='Zamawiam · '+fmt(brutto)+' '+sym+' \u2192'; var cb=document.getElementById('ctaTot'); if(cb)cb.textContent=fmt(brutto)+' '+sym; }catch(e){}
   var vn=document.getElementById('vatNote'); if(vn) vn.textContent='① Cena „do zapłaty" jest ostateczna — zawiera VAT 23%. Tyle obciąży Stripe, tyle zobaczysz na fakturze.';
   var fn=document.getElementById('fxNote'); if(fn) fn.textContent = cur==='PLN'?'Waluta: PLN':'Waluta: '+cur+' · kurs 1 '+cur+' = '+(1/rate).toFixed(4)+' PLN';
 }
@@ -719,7 +738,7 @@ function submitOrder(){
   fetch('/api/orders/multi?t='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};});})
     .then(function(res){
-      if(!(res.ok&&res.d.ok)){ toast((res.d&&res.d.detail)||'Błąd zamówienia',''); btn.disabled=false; btn.textContent='Zamawiam — pełne podsumowanie poniżej'; return; }
+      if(!(res.ok&&res.d.ok)){ toast((res.d&&res.d.detail)||'Błąd zamówienia',''); btn.disabled=false; btn.textContent='Zamawiam \u2192'; return; }
       var orderId=res.d.order_id;
       if(typeof saveProfileShip==='function') saveProfileShip();
       btn.textContent='Przygotowuję płatność…';
@@ -753,7 +772,7 @@ function submitOrder(){
           window.location.href='/platnosc?status=error&order='+orderId;
         });
     })
-    .catch(function(){toast('Błąd sieci','');btn.disabled=false;btn.textContent='Zamawiam — pełne podsumowanie poniżej';});
+    .catch(function(){toast('Błąd sieci','');btn.disabled=false;btn.textContent='Zamawiam \u2192';});
 }
 
 buildCur(); loadMats(); drawCart(); calc(); autofillShipping();
@@ -925,5 +944,6 @@ window.__local3d = {
 
 <script src="/asset/theme.js?v=2"></script>
 <script src="/asset/reveal.js?v=2"></script>
+<div id="ctaBar"><span>Razem</span><b id="ctaTot">—</b><button onclick="submitOrder()">Zamawiam</button></div>
 </body>
 </html>
