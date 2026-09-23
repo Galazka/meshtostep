@@ -856,7 +856,8 @@ def _order_mail_html(o, subject_line, body_line, status=None, tracking=None):
             "<table role='presentation' width='100%'><tr><td><b style='color:#0B1730;font-size:16px'>" + (("%.2f" % (o.total or 0)) + " " + esc(o.currency or "PLN")) + "</b></td>"
             "<td style='text-align:right'>" + pay + "</td></tr></table></div>"
             "<div style='margin-top:18px'><a href='https://3dfile.link/konto' style='display:inline-block;background:#2B5CE6;color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:11px 22px;border-radius:8px'>Moje zamówienia \u2192</a></div>"
-            "</div>"
+            "</div>"
+            "<div style='margin:16px 0 0;padding:13px 16px;background:#eef3ff;border:1px solid #dbe4ff;border-radius:10px'><b style='color:#0B1730;font-size:13.5px'>Nie masz jeszcze konta na 3dfile.link?</b><p style='margin:5px 0 7px;color:#334155;font-size:13px;line-height:1.6'>Załóż je na ten sam e‑mail — całą historię wydruków, statusy i rachunki zobaczysz w jednym miejscu, a na start dorzucamy <b>+500 MB</b> na pliki.</p><a href='https://3dfile.link/#register' style='color:#1d4ed8;font-weight:700;font-size:13px;text-decoration:none'>Załóż konto za darmo →</a></div>"
             "<div style='background:#f8fafc;border-top:1px solid #eef2f7;padding:14px 24px;color:#64748b;font-size:12px;line-height:1.7'>"
             "hello@3dfile.link \u00b7 tomgal@3dfile.link \u00b7 tel. +48 790 824 762<br>3dfile.link \u2014 hosting i druk 3D \u00b7 ul. Międzygwiezdna 31/2, 80-299 Gdańsk Osowa</div>"
             "</div></div>")

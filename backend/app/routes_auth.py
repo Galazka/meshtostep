@@ -135,6 +135,13 @@ def register(body: RegisterReq, request: Request, db: Session = Depends(get_db))
         registered_ip=_get_ip(request),
         register_user_agent=(request.headers.get("user-agent") or "")[:512],
     )
+    # historyczny gost? dorzuc +500 MB za zaufanie
+    try:
+        _has = db.query(models.Order).filter(models.Order.customer_email == email_lower).count()
+        if _has:
+            user.bonus_mb = (user.bonus_mb or 0) + 500
+    except Exception:
+        pass
     db.add(user)
     db.commit()
     db.refresh(user)

@@ -315,15 +315,7 @@ def _conv_worker():
                 job.processing_time_s = round(time.time() - t0, 1)
                 job.completed_at = datetime.utcnow()
                 db.commit()
-                # notify owner
-                try:
-                    if job.user_id:
-                        owner = db.query(models.User).filter(models.User.id == job.user_id).first()
-                        if owner and owner.email:
-                            from .mail import send_ready
-                            send_ready(owner.email, job)
-                except Exception as e:
-                    print(f"[queue] notify failed: {e}")
+                # (bez maila o konwersji — klient widzi status na stronie joba)
             else:
                 job.status = "error"
                 job.error_msg = result["error"][:2000]

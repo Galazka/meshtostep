@@ -57,16 +57,22 @@ def _send_resend(to: str, subject: str, html_body: str) -> bool:
         return False
 
 
+def _site_foot():
+    return ("<div style='margin-top:22px;padding-top:14px;border-top:1px solid #eef2f7;color:#64748b;font-size:12px;line-height:1.7'>"
+            "3dfile.link — hosting i druk 3D · Twoja historia zamówień i rachunki: "
+            "<a href='https://3dfile.link/konto' style='color:#1d4ed8'>/konto</a> · 5 GB za darmo + dodatkowę 500 MB dostaniesz, jeśle miałeś już u nas zamówienia.</div>")
+
+
 def send_verification(to: str, token: str):
     url = f"{settings.APP_URL}/api/auth/verify/{token}"
     send_mail(to, "3dfile.link — potwierdź email",
-              f"<p>Kliknij link aby potwierdzić email:</p><p><a href='{url}'>{url}</a></p>")
+              f"<p>Kliknij link aby potwierdzić email:</p><p><a href='{url}'>{url}</a></p>" + _site_foot())
 
 
 def send_reset(to: str, token: str):
     url = f"{settings.APP_URL}/api/auth/reset?token={token}"
     send_mail(to, "3dfile.link — reset hasła",
-              f"<p>Kliknij link aby ustawić nowe hasło (ważny {settings.PASSWORD_RESET_HOURS}h):</p><p><a href='{url}'>{url}</a></p>")
+              f"<p>Kliknij link aby ustawić nowe hasło (ważny {settings.PASSWORD_RESET_HOURS}h):</p><p><a href='{url}'>{url}</a></p>" + _site_foot())
 
 def send_share_link(to: str, token: str, sender_email: str = "", job_title: str = "", job_uuid: str = ""):
     url = f"{settings.APP_URL}/s/{token}"
@@ -91,4 +97,4 @@ def send_ready(to: str, job) -> bool:
     url = f"{_s.APP_URL}/api/download/{job.uuid}?format=step"
     return send_mail(to, f"3dfile.link — STEP gotowy: {title}",
         f"<p>Twój plik <strong>{title}</strong> został przekonwertowany do STEP ({kb} KB).</p>"
-        f"<p><a href='{url}'>Pobierz STEP</a></p>")
+        f"<p><a href='{url}'>Pobierz STEP</a></p>" + _site_foot())
