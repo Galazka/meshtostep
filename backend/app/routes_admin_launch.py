@@ -58,15 +58,65 @@ def _rm_tree(path: str) -> bool:
 
 
 def _delete_job_row(db: Session, job: models.Job, remove_files: bool = True):
+    """Kasuje model wraz ze wszystkim co na niego wskazuje.
+
+    UWAGA: najpierw ODPINAMY miekkie referencje (kolumny nullable bez FK),
+    bo Postgres ma tu NO ACTION i DELETE wywala sie na violation.
+    """
     jid = job.id
     db.query(models.ShareLink).filter(models.ShareLink.job_id == jid).delete()
     db.query(models.Comment).filter(models.Comment.job_id == jid).delete()
     db.query(models.JobRating).filter(models.JobRating.job_id == jid).delete()
     db.query(models.UserLike).filter(models.UserLike.job_id == jid).delete()
-    db.query(models.JobReview).filter(models.JobReview.job_id == jid).delete()
+    for sql in (
+        "UPDATE print_requests SET job_id=NULL WHERE job_id=:j",
+        "UPDATE orders SET job_id=NULL WHERE job_id=:j",
+        "UPDATE order_items SET job_id=NULL WHERE job_id=:j",
+        "UPDATE jobs SET folder_id=NULL WHERE id=:j",
+    ):
+        db.execute(text(sql), {"j": jid})
     if remove_files and job.uuid:
         _rm_tree(_job_dir(job.uuid))
     db.delete(job)
+    db.flush()
+
+
+def _purge_user_deps(db: Session, uid: int):
+    """Odepnij/usun WSZYSTKO co wskazuje na konto, zanim je skasujemy (FK NO ACTION).
+
+    Kolejnosc ma znaczenie: oferty -> prosby o druk, opinie -> oferty.
+    Historia zamowien NIE jest kasowana, tylko odpinana od konta (user_id=NULL).
+    """
+    steps = (
+        "DELETE FROM comments WHERE user_id=:u",
+        "DELETE FROM job_ratings WHERE user_id=:u",
+        "DELETE FROM user_likes WHERE user_id=:u",
+        "DELETE FROM geo_logs WHERE user_id=:u",
+        "DELETE FROM share_links WHERE user_id=:u",
+        "DELETE FROM job_reviews WHERE reviewer_id=:u",
+        "DELETE FROM job_reviews WHERE offer_id IN (SELECT id FROM print_offers WHERE user_id=:u)",
+        "DELETE FROM print_offers WHERE user_id=:u",
+        "DELETE FROM print_offers WHERE request_id IN (SELECT id FROM print_requests WHERE user_id=:u)",
+        "UPDATE print_requests SET job_id=NULL WHERE user_id=:u",
+        "DELETE FROM print_requests WHERE user_id=:u",
+        "UPDATE orders SET user_id=NULL WHERE user_id=:u",
+        "UPDATE page_events SET user_id=NULL WHERE user_id=:u",
+        # modele tego usera: wpisy spolecznosciowe po job_id
+        "DELETE FROM comments WHERE job_id IN (SELECT id FROM jobs WHERE user_id=:u)",
+        "DELETE FROM job_ratings WHERE job_id IN (SELECT id FROM jobs WHERE user_id=:u)",
+        "DELETE FROM user_likes WHERE job_id IN (SELECT id FROM jobs WHERE user_id=:u)",
+        "DELETE FROM share_links WHERE job_id IN (SELECT id FROM jobs WHERE user_id=:u)",
+        "UPDATE print_requests SET job_id=NULL WHERE job_id IN (SELECT id FROM jobs WHERE user_id=:u)",
+        "UPDATE orders SET job_id=NULL WHERE job_id IN (SELECT id FROM jobs WHERE user_id=:u)",
+        "UPDATE order_items SET job_id=NULL WHERE job_id IN (SELECT id FROM jobs WHERE user_id=:u)",
+        "UPDATE jobs SET folder_id=NULL WHERE user_id=:u",
+        "DELETE FROM folders WHERE user_id=:u",
+    )
+    for sql in steps:
+        try:
+            db.execute(text(sql), {"u": uid})
+        except Exception as e:  # kolumna/tabela moze nie istniec na starszej bazie
+            print(f"[launch] purge user {uid}: pomijam ({type(e).__name__}: {e})")
 
 
 def _gather(db: Session):
@@ -195,23 +245,27 @@ def cleanup_test(
         return report
 
     removed_files = 0
-    for j in g["junk_jobs"]:
-        if remove_files and j.uuid and _rm_tree(_job_dir(j.uuid)):
-            removed_files += 1
-        _delete_job_row(db, j, remove_files=False)
-    db.flush()
+    try:
+        for j in g["junk_jobs"]:
+            if remove_files and j.uuid and _rm_tree(_job_dir(j.uuid)):
+                removed_files += 1
+            _delete_job_row(db, j, remove_files=False)
+        db.flush()
 
-    for u in g["junk_users"]:
-        db.query(models.ShareLink).filter(models.ShareLink.user_id == u.id).delete()
-        db.query(models.Folder).filter(models.Folder.user_id == u.id).delete()
-        db.query(models.UserLike).filter(models.UserLike.user_id == u.id).delete()
-        db.query(models.JobRating).filter(models.JobRating.user_id == u.id).delete()
-        db.delete(u)
+        for u in g["junk_users"]:
+            _purge_user_deps(db, u.id)
+            db.execute(text("DELETE FROM users WHERE id=:u"), {"u": u.id})
+        db.flush()
 
-    for a in g["junk_ads"]:
-        db.delete(a)
+        for a in g["junk_ads"]:
+            db.delete(a)
 
-    db.commit()
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(500, detail=f"cleanup nieudany: {type(e).__name__}: {e}")
     report["ok"] = True
     report["removed"] = {"users": len(g["junk_users"]), "models": len(g["junk_jobs"]),
                          "ads": len(g["junk_ads"]), "file_dirs": removed_files}
@@ -244,10 +298,16 @@ def launch_reset(
     if scope in ("users", "all"):
         q = db.query(models.User)
         users = [u for u in q.all() if not (keep_admin and getattr(u, "is_admin", False))]
-        for u in users:
-            db.query(models.ShareLink).filter(models.ShareLink.user_id == u.id).delete()
-            db.query(models.Folder).filter(models.Folder.user_id == u.id).delete()
-            db.delete(u)
+        try:
+            for u in users:
+                _purge_user_deps(db, u.id)
+                db.execute(text("DELETE FROM users WHERE id=:u"), {"u": u.id})
+            db.flush()
+        except Exception as e:
+            db.rollback()
+            import traceback
+            traceback.print_exc()
+            raise HTTPException(500, detail=f"reset users nieudany: {type(e).__name__}: {e}")
         out["users"] = len(users)
 
     if scope in ("orders", "all"):
