@@ -596,7 +596,7 @@ function openJobFullscreen() {
     container.appendChild(_fsRenderer.domElement);
     _fsScene.add(new THREE.AmbientLight(0xffffff, 0.7));
     const dl = new THREE.DirectionalLight(0xffffff, 0.9); dl.position.set(1,1,1); _fsScene.add(dl);
-    const dl2 = new THREE.DirectionalLight(0x1a56db, 0.3); dl2.position.set(-1,0.5,-1); _fsScene.add(dl2);
+    const dl2 = new THREE.DirectionalLight(0xdfe5f0, 0.35); dl2.position.set(-1,0.5,-1); _fsScene.add(dl2);
     _fsControls = new window._OrbitControls(_fsCamera, _fsRenderer.domElement);
     _fsControls.enableDamping = true;
     _fsCamera.position.set(80, 60, 80);
@@ -657,7 +657,7 @@ function closeJobFullscreen() {
 function loadFsSTL(url) {
     if (!_fsScene) return;
     const ext = url.split('.').pop().toLowerCase().split('?')[0];
-    const mat = new THREE.MeshPhongMaterial({ color: 0x1a56db, specular: 0x93b8ea, shininess: 40 });
+    const mat = new THREE.MeshPhongMaterial({ color: 0xc9ced6, specular: 0x8a94a6, shininess: 28 });
     function addMeshObj(obj) {
         obj.traverse(function(c) { if (c.isMesh) c.material = mat; });
         obj.rotation.x = -Math.PI / 2;
@@ -775,7 +775,7 @@ function loadJobModalSTL(url) {
             _job3Renderer = renderer;
             _job3Controls = controls;
             try {
-                const mat = new T.MeshPhongMaterial({ color: 0x1a56db, specular: 0x111111, shininess: 30 });
+                const mat = new T.MeshPhongMaterial({ color: 0xc9ced6, specular: 0x8a94a6, shininess: 28 });
                 function addMeshObj(obj) {
                     obj.traverse(function(c) { if (c.isMesh) c.material = mat; });
                     obj.rotation.x = -Math.PI / 2;

@@ -92,7 +92,7 @@ function init3DViewer(container) {
     _threeControls.enableDamping = true;
     _threeScene.add(new THREE.AmbientLight(0xffffff, 0.8));
     const d1 = new THREE.DirectionalLight(0xffffff, 0.8); d1.position.set(30,50,30); _threeScene.add(d1);
-    const d2 = new THREE.DirectionalLight(0x1a56db, 0.3); d2.position.set(-20,10,-30); _threeScene.add(d2);
+    const d2 = new THREE.DirectionalLight(0xdfe5f0, 0.35); d2.position.set(-20,10,-30); _threeScene.add(d2);
     function animate() { _threeAnim = requestAnimationFrame(animate); _threeControls.update(); _threeRenderer.render(_threeScene, _threeCamera); }
     animate();
 }
