@@ -5,7 +5,7 @@
    - /api/, /s/, /u/, /e/, /admin: bypass (nigdy nie przechwytujemy)
    - 503 tylko gdy naprawdę offline i nic w cache
 */
-const CACHE = '3dfile-v20';
+const CACHE = '3dfile-v21';
 const PRECACHE = ['/manifest.json', '/logo.png?v=83'];
 
 self.addEventListener('install', e => {
