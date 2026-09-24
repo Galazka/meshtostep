@@ -116,7 +116,7 @@ def _purge_user_deps(db: Session, uid: int):
         try:
             db.execute(text(sql), {"u": uid})
         except Exception as e:  # kolumna/tabela moze nie istniec na starszej bazie
-            print(f"[launch] purge user {uid}: pomijam ({type(e).__name__}: {e})")
+            print(f"[launch] purge user {uid}: pomijam ({type(e).__name__}: {e})", flush=True)
 
 
 def _gather(db: Session):
@@ -245,30 +245,42 @@ def cleanup_test(
         return report
 
     removed_files = 0
-    try:
-        for j in g["junk_jobs"]:
-            if remove_files and j.uuid and _rm_tree(_job_dir(j.uuid)):
-                removed_files += 1
-            _delete_job_row(db, j, remove_files=False)
-        db.flush()
+    errors: list = []
 
-        for u in g["junk_users"]:
+    def _sp(label: str, fn):
+        """Wykonaj w SAVEPOINCIE: blad jednego kroku nie zabija calej transakcji."""
+        try:
+            with db.begin_nested():
+                fn()
+        except Exception as e:  # noqa: BLE001
+            errors.append(f"{label}: {type(e).__name__}: {e}")
+            print(f"[launch] cleanup {label}: {type(e).__name__}: {e}", flush=True)
+
+    for j in g["junk_jobs"]:
+        if remove_files and j.uuid and _rm_tree(_job_dir(j.uuid)):
+            removed_files += 1
+        _sp(f"model {j.id} ({j.slug})", lambda j=j: _delete_job_row(db, j, remove_files=False))
+
+    for u in g["junk_users"]:
+        def _kill_user(u=u):
             _purge_user_deps(db, u.id)
             db.execute(text("DELETE FROM users WHERE id=:u"), {"u": u.id})
-        db.flush()
+        _sp(f"konto {u.id} ({u.username})", _kill_user)
 
-        for a in g["junk_ads"]:
-            db.delete(a)
+    for a in g["junk_ads"]:
+        _sp(f"reklama {a.id}", lambda a=a: db.delete(a))
 
+    try:
         db.commit()
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         db.rollback()
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(500, detail=f"cleanup nieudany: {type(e).__name__}: {e}")
-    report["ok"] = True
+        errors.append(f"commit: {type(e).__name__}: {e}")
+        print(f"[launch] cleanup commit: {type(e).__name__}: {e}", flush=True)
+
+    report["ok"] = not errors
     report["removed"] = {"users": len(g["junk_users"]), "models": len(g["junk_jobs"]),
                          "ads": len(g["junk_ads"]), "file_dirs": removed_files}
+    report["errors"] = errors
     return report
 
 
