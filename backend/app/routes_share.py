@@ -627,7 +627,6 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
         q_smooth="Gładki — wygładzanie" if is_pl else "Smooth — smoothing",
         q_off="Bez optymalizacji" if is_pl else "No optimization",
         uuid=job.uuid,
-        lang=lang,
         print_info=_print_info(job, db),
         def_mat="PLA",
         job_id=job.id,
