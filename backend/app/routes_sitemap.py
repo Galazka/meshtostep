@@ -13,6 +13,24 @@ router = APIRouter()
 
 DOMAIN = "https://3dfile.link"
 
+# ── Filtry testowych smieci (nie indeksujemy naszych wlasnych testow) ──
+import re as _re
+_JUNK_USER_RE = _re.compile(r"^(uitest|e2e|demouser|testuser|test\d|demo\d|smtptest|admin\d)", _re.I)
+_JUNK_TAGS = {"test", "demo", "asdf", "qwerty", "abc", "xxx", "tmp"}
+
+
+def _junk_user(name) -> bool:
+    if not name:
+        return False
+    return bool(_JUNK_USER_RE.match(str(name).strip()))
+
+
+def _junk_slug(slug) -> bool:
+    s = str(slug or "").strip().lower()
+    if not s:
+        return True
+    return any(t in s for t in ("uitest", "-test-", "test-")) or s in ("test", "demo", "model")
+
 
 def _fmt_date(dt) -> str:
     if not dt:
@@ -60,12 +78,15 @@ def sitemap(request: Request, db: Session = Depends(get_db)):
         .limit(5000)
         .all()
     )
+    _tag_counter = {}
     for j in jobs:
         username = "anon"
         if j.user:
             username = j.user.username or "anon"
         if username == "anon":
             continue  # no PII prefixes in sitemap
+        if _junk_user(username) or _junk_slug(j.slug):
+            continue  # nasze wlasne testy — nie dla Google
         slug = j.slug or f"model-{j.id}"
         loc = f"{DOMAIN}/u/{_html.escape(username)}/{_html.escape(slug)}"
         lastmod = _fmt_date(j.completed_at or j.created_at)
@@ -75,23 +96,15 @@ def sitemap(request: Request, db: Session = Depends(get_db)):
             f"  <url><loc>{loc}</loc><lastmod>{lastmod}</lastmod>"
             f"<changefreq>weekly</changefreq><priority>{prio}</priority></url>"
         )
+        for _t in (j.tags or "").split(","):
+            _t = _t.strip().lower()
+            if _t and _t not in _JUNK_TAGS:
+                _tag_counter[_t] = _tag_counter.get(_t, 0) + 1
 
-    # Tag landing pages: /tag/{tag} (top 50 by usage)
+    # Tag landing pages: /tag/{tag} (top 50 by usage — liczone TYLKO z niezasmieconych modeli)
     try:
-        tag_rows = db.query(models.Job.tags).filter(
-            models.Job.status.in_(["done", "hosted"]),
-            models.Job.visibility == "public",
-        ).all()
-        _counter = {}
-        for (tags,) in tag_rows:
-            if not tags:
-                continue
-            for _t in tags.split(","):
-                _t = _t.strip().lower()
-                if _t:
-                    _counter[_t] = _counter.get(_t, 0) + 1
-        for _t, _c in sorted(_counter.items(), key=lambda x: -x[1])[:50]:
-            import urllib.parse as _up
+        import urllib.parse as _up
+        for _t, _c in sorted(_tag_counter.items(), key=lambda x: -x[1])[:50]:
             urls.append(
                 f"  <url><loc>{DOMAIN}/tag/{_up.quote(_t)}</loc>"
                 f"<changefreq>weekly</changefreq><priority>0.6</priority></url>"

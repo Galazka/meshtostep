@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -25,6 +25,7 @@ from .routes_order import router as order_router
 from .routes_print import router as print_router
 from .routes_folders import router as folders_router
 from .routes_sitemap import router as sitemap_router
+from .routes_admin_launch import router as launch_router
 from .routes_interstitial import router as interstitial_router
 from .routes_stripe import router as stripe_router
 from .routes_gallery import router as gallery_router
@@ -152,6 +153,7 @@ app.include_router(order_router)
 app.include_router(print_router)
 app.include_router(folders_router)
 app.include_router(sitemap_router)
+app.include_router(launch_router)
 app.include_router(interstitial_router)
 app.include_router(stripe_router)
 app.include_router(gallery_router)
@@ -270,6 +272,8 @@ def blog_page(slug: str = ""):
         # ochrona przed path traversal
         if fp.is_file() and fp.resolve().parent == (FRONTEND_DIR / "blog").resolve():
             return FileResponse(str(fp))
+        # nieznany artykul = PRAWDZIWE 404 (bez soft-404, Google to karze)
+        raise HTTPException(status_code=404, detail="not found")
     return FileResponse(str(FRONTEND_DIR / "blog.html"))
 
 # ── Przyjazny 404 dla ludzi (JSON zostaje dla /api/*) ───────────────
@@ -279,7 +283,7 @@ from fastapi.responses import HTMLResponse as _HTML
 @app.exception_handler(_StarHTTP)
 async def _friendly_404(request, exc):
     path = request.url.path
-    if exc.status_code == 404 and not path.startswith(("/api/", "/js/", "/asset/", "/vendor/", "/blog/")):
+    if exc.status_code == 404 and not path.startswith(("/api/", "/js/", "/asset/", "/vendor/")):
         accept = request.headers.get("accept", "")
         if "text/html" in accept:
             return _HTML(
