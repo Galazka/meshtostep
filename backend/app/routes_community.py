@@ -357,7 +357,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
   </div>
   <div class="side">
     <div style="font-weight:700;margin-bottom:8px">Pliki</div>
-    <div style="font-size:13px;color:#64748b;margin-bottom:12px">__FILENAME__ · __FACES__ ścianek · __SIZE__</div>
+    <div style="font-size:13px;color:#64748b;margin-bottom:12px">__FILES_META__</div>
     <select id="dlFormat2" style="width:100%;padding:6px 8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;margin-bottom:6px">
       <option value="step">STEP (CAD)</option>
       <option value="stl">STL</option>
@@ -398,10 +398,10 @@ const controls=new OrbitControls(camera, renderer.domElement);controls.enableDam
 scene.add(new THREE.AmbientLight(0x404060,1.2));const d1=new THREE.DirectionalLight(0x3b82f6,1.0);d1.position.set(30,50,30);scene.add(d1);
 const d2=new THREE.DirectionalLight(0x8888ff,0.5);d2.position.set(-20,10,-30);scene.add(d2);
 let viewerMesh=null;
-new STLLoader().load('/api/stl-preview/__UUID__', g=>{g.computeBoundingBox();const c=new THREE.Vector3();g.boundingBox.getCenter(c);g.translate(-c.x,-c.y,-c.z);const s=new THREE.Vector3();g.boundingBox.getSize(s);const mx=Math.max(s.x,s.y,s.z);if(mx>0)g.scale(30/mx,30/mx,30/mx);viewerMesh=new THREE.Mesh(g,new THREE.MeshPhongMaterial({color:0x3b82f6,specular:0x6666aa,shininess:40}));viewerMesh.rotation.x=-Math.PI/2;scene.add(viewerMesh);},undefined,()=>{
+new STLLoader().load('/api/stl-preview/__UUID__', g=>{g.computeBoundingBox();const c=new THREE.Vector3();g.boundingBox.getCenter(c);g.translate(-c.x,-c.y,-c.z);const s=new THREE.Vector3();g.boundingBox.getSize(s);const mx=Math.max(s.x,s.y,s.z);if(mx>0)g.scale(30/mx,30/mx,30/mx);const _fd=18/Math.tan(camera.fov*Math.PI/360)*1.08;camera.position.set(_fd*0.45,_fd*0.55,_fd*0.70);camera.lookAt(0,0,0);controls.target.set(0,0,0);controls.update();viewerMesh=new THREE.Mesh(g,new THREE.MeshPhongMaterial({color:0x3b82f6,specular:0x6666aa,shininess:40}));viewerMesh.rotation.x=-Math.PI/2;scene.add(viewerMesh);},undefined,()=>{
     var img=new Image();
     img.onload=function(){el.innerHTML='';img.style.cssText='max-width:100%;height:auto;object-fit:contain;border-radius:12px';el.appendChild(img);};
-    img.onerror=function(){el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#64748b;font-size:14px;flex-direction:column;gap:8px"><span style="font-size:32px">△</span>Podglad 3D niedostepny</div>';};
+    img.onerror=function(){el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#64748b;font-size:14px;flex-direction:column;gap:8px"><span style="font-size:32px">△</span>Podgląd 3D niedostępny</div>';};
     img.src='/api/preview/__UUID__';
 });
 function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera);}animate();
@@ -448,7 +448,7 @@ const bgColors=['#f7f9fc','#f0f2f5','#ffffff','#1e293b','#000000','#e2e8f0'];
 let colorIdx=0;
 document.getElementById('btnColor').onclick=()=>{
   colorIdx=(colorIdx+1)%colors.length;
-  document.getElementById('btnColor').style.background=colors[colorIdx];
+  document.getElementById('btnColor').style.background=colors[colorIdx];document.getElementById('btnColor').style.boxShadow='inset 0 0 0 1px #cbd5e1';
   if(viewerMesh)viewerMesh.material.color.set(colors[colorIdx]);
 };
 (function(){
@@ -467,7 +467,7 @@ function showEmbed(token){
   if(window.clipboard && navigator.clipboard&&navigator.clipboard.writeText){
     navigator.clipboard.writeText(code).then(function(){alert('Kod osadzania skopiowany do schowka');});
   } else {
-    prompt('Ctrl+C aby skopiowac kod osadzania:', code);
+    prompt('Ctrl+C aby skopiować kod osadzania:', code);
   }
 }
 window.convertAndDownload = convertAndDownload;
@@ -486,7 +486,7 @@ window.showEmbed = showEmbed;
     <div id="commentsList"></div>
     <div id="commentForm" style="margin-top:12px;display:none">
       <textarea id="commentBody" rows="3" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;resize:vertical" placeholder="Napisz komentarz..."></textarea>
-      <button onclick="postComment()" style="margin-top:8px;padding:8px 16px;background:#1a56db;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer">Wyslij</button>
+      <button onclick="postComment()" style="margin-top:8px;padding:8px 16px;background:#1a56db;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer">Wyślij</button>
     </div>
   </div>
 </div>
@@ -629,7 +629,11 @@ def vanity_page(username: str, slug: str, request: Request, db: Session = Depend
     vis_label = {"public": "Publiczny", "unlisted": "Niepubliczny (link)", "private": "Prywatny"}.get(job.visibility, job.visibility)
     robots = '<meta name="robots" content="noindex, nofollow">' if job.visibility == "unlisted" else ""
     faces = job.result_faces or "?"
-    size_kb = f"{(job.result_size_bytes or 0)//1024} KB" if job.result_size_bytes else "?"
+    size_kb = f"{(job.result_size_bytes or 0)//1024} KB" if job.result_size_bytes else ""
+    faces_txt = f"{job.result_faces} ścianek" if job.result_faces else "—"
+    _fname = html.escape(job.original_filename or "")
+    files_meta = " · ".join(_x for _x in [_fname, faces_txt, size_kb] if _x)
+    faces_pill = f'<span class="pill">{job.result_faces} ścian</span>' if job.result_faces else ""
     # find a share token if exists
     token_share = job.shares[0].token if job.shares else ""
     # determine author visibility from active share link
@@ -644,7 +648,7 @@ def vanity_page(username: str, slug: str, request: Request, db: Session = Depend
         author_line = f'<div style="color:#64748b;font-size:13px">by <a href="/u/{u}">{u}</a> · {str(job.created_at)[:10] if job.created_at else ""} · {vis_label}</div>'
     paid_box = ""  # payments removed — free hosting, ads only
     likes = job.likes or 0
-    html_page = _VANITY_HTML.replace("__LANG__","pl").replace("__TITLE__",title).replace("__META_DESC__", (desc[:150] or title)).replace("__ROBOTS__", robots).replace("__CANONICAL__", f"https://3dfile.link/u/{html.escape(username)}/{html.escape(slug)}").replace("__PILLS__", f'<span class="pill">{faces} ścian</span><span class="pill">{html.escape(job.mode or "auto")}</span><span class="pill">{vis_label}</span>').replace("__UUID__", job.uuid).replace("__JOBID__", str(job.id)).replace("__USERNAME__", html.escape(username)).replace("__DATE__", str(job.created_at)[:10] if job.created_at else "").replace("__VIS_LABEL__", vis_label).replace("__TAG_HTML__", tag_html).replace("__YOUTUBE__", yt_html).replace("__FILENAME__", html.escape(job.original_filename or "")).replace("__FACES__", str(faces)).replace("__SIZE__", size_kb).replace("__TOKEN__", token_share).replace("__VIEWS__", str(job.views or 0)).replace("__LIKES__", str(likes)).replace("__PAID_BOX__", paid_box).replace("__AUTHOR_LINE__", author_line).replace("__DESCTITLE__", json.dumps(html.escape(job.title or job.original_filename or ""))).replace("__DESCBODY__", json.dumps(_md_to_html(job.description or ""))).replace("__DESCTAGS__", json.dumps(tags)).replace("__DESCYOUTUBE__", json.dumps(str(job.youtube_url or ""))).replace("__OG_IMAGE__", f"https://3dfile.link/api/og/{job.uuid}")
+    html_page = _VANITY_HTML.replace("__LANG__","pl").replace("__TITLE__",title).replace("__META_DESC__", (desc[:150] or title)).replace("__ROBOTS__", robots).replace("__CANONICAL__", f"https://3dfile.link/u/{html.escape(username)}/{html.escape(slug)}").replace("__PILLS__", faces_pill + f'<span class="pill">{html.escape(job.mode or "auto")}</span><span class="pill">{vis_label}</span>').replace("__UUID__", job.uuid).replace("__JOBID__", str(job.id)).replace("__USERNAME__", html.escape(username)).replace("__DATE__", str(job.created_at)[:10] if job.created_at else "").replace("__VIS_LABEL__", vis_label).replace("__TAG_HTML__", tag_html).replace("__YOUTUBE__", yt_html).replace("__FILENAME__", html.escape(job.original_filename or "")).replace("__FILES_META__", files_meta).replace("__TOKEN__", token_share).replace("__VIEWS__", str(job.views or 0)).replace("__LIKES__", str(likes)).replace("__PAID_BOX__", paid_box).replace("__AUTHOR_LINE__", author_line).replace("__DESCTITLE__", json.dumps(html.escape(job.title or job.original_filename or ""))).replace("__DESCBODY__", json.dumps(_md_to_html(job.description or ""))).replace("__DESCTAGS__", json.dumps(tags)).replace("__DESCYOUTUBE__", json.dumps(str(job.youtube_url or ""))).replace("__OG_IMAGE__", f"https://3dfile.link/api/og/{job.uuid}")
     return HTMLResponse(html_page)
 
 @router.get("/u/{username}", response_class=HTMLResponse)
@@ -683,7 +687,7 @@ def user_profile(username: str, db: Session = Depends(get_db)):
             f'<img src="{preview_url}" alt="{title}" loading="lazy">'
             f'<div class="card-body">'
             f'<div class="card-title">{title}</div>'
-            f'<div class="card-meta">{faces} faces · {views} views</div>'
+            f'<div class="card-meta">{faces} ścian · {views} wyśw.</div>'
             f'</div></a>'
         )
     if not cards:
@@ -772,7 +776,7 @@ def tag_page(tag: str, db: Session = Depends(get_db)):
             f'<img src="/api/preview/{j.uuid}" alt="{title}" loading="lazy">'
             f'<div class="card-body">'
             f'<div class="card-title">{title}</div>'
-            f'<div class="card-meta">{faces} faces · {views} views · {html.escape(uname)}</div>'
+            f'<div class="card-meta">{faces} ścian · {views} wyśw. · {html.escape(uname)}</div>'
             f'</div></a>'
         )
     if not cards:

@@ -64,8 +64,7 @@ function doDiscover(more){
             +   '<div class="pm-meta"><span class="pm-author">👤 '+safeUser+'</span>'+ vw + lk + fc +'</div>'
             + '</div></a>';
         }).join('');
-        if(more) grid.innerHTML += html; else
-if(more) grid.innerHTML += html; else grid.innerHTML = html || '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px">Brak wyników</div>';
+        if(more) grid.innerHTML += html; else grid.innerHTML = html || '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px">Brak wyników</div>';
         document.getElementById('discoverMore').style.display = (items.length >= 24) ? 'block' : 'none';
         updateTagHighlight();
     }).catch(function(e){

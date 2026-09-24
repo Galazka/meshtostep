@@ -762,7 +762,8 @@ def embed_page(job_id: str, db: Session = Depends(get_db)) -> HTMLResponse:
                 break
     except Exception:
         _tok = ""
-    size_kb = job.result_size_bytes // 1024 if job.result_size_bytes else "?"
+    size_kb = job.result_size_bytes // 1024 if job.result_size_bytes else ""
+    _sz_txt = ", %s KB" % size_kb if size_kb else ""
     filename = html.escape(job.original_filename or "model")
     uuid = job.uuid
 
@@ -796,7 +797,7 @@ def embed_page(job_id: str, db: Session = Depends(get_db)) -> HTMLResponse:
 <body>
 <div class="top">
   <h1>{filename}</h1>
-  <a href="/api/download/{uuid}">Download STEP ({faces} faces, {size_kb} KB)</a>
+  <a href="/api/download/{uuid}">Pobierz STEP ({faces} ścian{_sz_txt})</a>
   <a href="{('/s/' + _tok) if _tok else 'https://3dfile.link'}" style="background:#6366f1;font-size:11px;padding:5px 12px" target="_blank">Pełna strona ↗</a>
 </div>
 <div id="viewer3d"></div>
@@ -838,6 +839,9 @@ new STLLoader().load('/api/stl-preview/{uuid}', g => {{
   const s = new THREE.Vector3(); g.boundingBox.getSize(s);
   const mx = Math.max(s.x, s.y, s.z);
   if(mx > 0) g.scale(30/mx, 30/mx, 30/mx);
+  const _fd = 18/Math.tan(camera.fov*Math.PI/360)*1.08;
+  camera.position.set(_fd*0.45, _fd*0.55, _fd*0.70);
+  camera.lookAt(0,0,0); controls.target.set(0,0,0); controls.update();
   const m = new THREE.Mesh(g, new THREE.MeshPhongMaterial({{ color: 0x3b82f6, specular: 0x6666aa, shininess: 40 }}));
   m.rotation.x = -Math.PI/2;
   scene.add(m);
