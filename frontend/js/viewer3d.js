@@ -116,7 +116,7 @@ function loadSTLIntoViewer(url, jobUuid) {
         var mcb=document.getElementById('meshColorBar');if(mcb)mcb.style.display='flex';
         init3DViewer(container);
         const ext = url.split('.').pop().toLowerCase().split('?')[0];
-        const mat = new THREE.MeshPhongMaterial({ color: 0x1a56db, specular: 0x93b8ea, shininess: 40 });
+        const mat = new THREE.MeshPhongMaterial({ color: 0xc9ced6, specular: 0x8a94a6, shininess: 28 });
 
         function addMesh(obj) {
             var ldd = document.getElementById('viewer3d-loading');
@@ -134,7 +134,7 @@ function loadSTLIntoViewer(url, jobUuid) {
             var img=new Image();
             img.onload=function(){ container.innerHTML=''; img.style.cssText='width:100%;height:100%;object-fit:contain;border-radius:12px'; container.appendChild(img); };
             img.onerror=function(){ container.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">Podglad 3D niedostepny</div>'; };
-            img.src='/api/preview/'+jobUuid;
+            img.src='/api/thumb/'+jobUuid;
         }
         function onErr(e){
             console.error('loadSTLIntoViewer error', e);

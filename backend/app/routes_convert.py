@@ -27,6 +27,17 @@ def _slugify(s: str) -> str:
     return s[:80] or 'model'
 
 
+# ── neutralna paleta miniaturek (gray mesh, bez niebieskiego tintu) ──
+THUMB_BG = "#f0f2f5"
+THUMB_FACE = "#c9ced6"
+THUMB_EDGE = "#6b7280"
+THUMB_VERSION = "v2"  # bump → nowa nazwa pliku cache, stare PNG przestają być serwowane
+
+
+def _thumb_name(job_uuid: str, versioned: bool = True) -> str:
+    return f"thumb_{THUMB_VERSION}.png" if versioned else "thumb.png"
+
+
 def _auto_thumb(mesh_file: str, thumb_path):
     """Render mesh to 500x375 PNG via trimesh+matplotlib (Agg)."""
     import matplotlib; matplotlib.use("Agg")
@@ -45,12 +56,17 @@ def _auto_thumb(mesh_file: str, thumb_path):
             raise
     fig = plt.figure(figsize=(4, 3), dpi=125)
     ax = fig.add_subplot(111, projection="3d")
-    ax.set_facecolor("#f0f2f5"); fig.patch.set_facecolor("#f0f2f5")
+    ax.set_facecolor(THUMB_BG); fig.patch.set_facecolor(THUMB_BG)
     verts = mesh.vertices; faces = mesh.faces
     if len(faces) > 8000:
         import numpy as np
         faces = faces[np.random.choice(len(faces), 8000, replace=False)]
-    poly = Poly3DCollection(verts[faces], alpha=0.9, facecolor="#3b82f6", edgecolor="#1e40af", linewidths=0.1)
+    try:
+        poly = Poly3DCollection(verts[faces], alpha=1.0, facecolor=THUMB_FACE,
+                                edgecolor=THUMB_EDGE, linewidths=0.08, shade=True)
+    except TypeError:
+        poly = Poly3DCollection(verts[faces], alpha=1.0, facecolor=THUMB_FACE,
+                                edgecolor=THUMB_EDGE, linewidths=0.08)
     ax.add_collection3d(poly)
     # Respect mesh aspect ratio: compute extents, set box_aspect
     import numpy as np
@@ -61,7 +77,7 @@ def _auto_thumb(mesh_file: str, thumb_path):
     ax.auto_scale_xyz(verts[:,0], verts[:,1], verts[:,2])
     ax.view_init(elev=20, azim=45); ax.set_axis_off()
     plt.tight_layout(pad=0)
-    fig.savefig(str(thumb_path), dpi=125, facecolor="#f0f2f5", bbox_inches="tight", pad_inches=0)
+    fig.savefig(str(thumb_path), dpi=125, facecolor=THUMB_BG, bbox_inches="tight", pad_inches=0)
     plt.close(fig)
 
 def _quota_used(db: Session, user_id: int) -> int:
@@ -220,7 +236,7 @@ async def convert_file(
             pass
     except Exception: pass
     try:
-        thumb_out = job_dir / "thumb.png"
+        thumb_out = job_dir / _thumb_name(job_uuid)
         if not thumb_out.exists():
             _auto_thumb(stl_file, thumb_out)
     except Exception: pass
@@ -512,18 +528,11 @@ def preview_image(job_uuid: str, db: Session = Depends(get_db)):
     job = db.query(models.Job).filter(models.Job.uuid == job_uuid).first()
     if not job:
         raise HTTPException(404, "Job nie znaleziony")
-    # 1) stored preview
-    if job.preview_image and os.path.exists(job.preview_image):
-        return FileResponse(job.preview_image, media_type="image/jpeg")
-    # 2) preview.jpg in job dir
-    jp = JOBS_DIR / job_uuid / "preview.jpg"
-    if jp.exists():
-        return FileResponse(str(jp), media_type="image/jpeg")
-    # 3) cached thumb.png
-    tp = JOBS_DIR / job_uuid / "thumb.png"
+    # 1) cached thumb (gray render server-side) — spójny kolor na wszystkich kartach
+    tp = JOBS_DIR / job_uuid / _thumb_name(job_uuid)
     if tp.exists():
         return FileResponse(str(tp), media_type="image/png")
-    # 4) auto-generate thumb from mesh on the fly (trimesh+matplotlib)
+    # 2) auto-generate thumb from mesh on the fly (trimesh+matplotlib, gray)
     src_dir = JOBS_DIR / job_uuid
     if src_dir.exists():
         mesh_file = None
@@ -538,6 +547,12 @@ def preview_image(job_uuid: str, db: Session = Depends(get_db)):
                 return FileResponse(str(tp), media_type="image/png")
             except Exception:
                 pass
+    # 3) stored canvas preview (fallback: user screenshot / stary upload)
+    if job.preview_image and os.path.exists(job.preview_image):
+        return FileResponse(job.preview_image, media_type="image/jpeg")
+    jp = JOBS_DIR / job_uuid / "preview.jpg"
+    if jp.exists():
+        return FileResponse(str(jp), media_type="image/jpeg")
     # 5) 1x1 placeholder PNG so img tag doesn't break
     import io
     placeholder = io.BytesIO(b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc\xf8\x0f\x00\x00\x01\x01\x00\x05\x18\xd8N\x00\x00\x00\x00IEND\xaeB`\x82')
@@ -549,11 +564,11 @@ def preview_image(job_uuid: str, db: Session = Depends(get_db)):
 # --- Server-side STL thumbnail (trimesh + matplotlib) ---
 @router.get("/thumb/{job_uuid}")
 def stl_thumbnail(job_uuid: str, db: Session = Depends(get_db)):
-    """Render STL to PNG thumbnail server-side. Cached as thumb.png in JOBS_DIR/uuid/."""
+    """Render STL to PNG thumbnail server-side. Cached as thumb_v2.png in JOBS_DIR/uuid/."""
     job = db.query(models.Job).filter(models.Job.uuid == job_uuid).first()
     if not job:
         raise HTTPException(404, "Job nie znaleziony")
-    thumb_path = JOBS_DIR / job_uuid / "thumb.png"
+    thumb_path = JOBS_DIR / job_uuid / _thumb_name(job_uuid)
     if thumb_path.exists():
         return FileResponse(str(thumb_path), media_type="image/png")
     # find mesh file
@@ -578,39 +593,8 @@ def stl_thumbnail(job_uuid: str, db: Session = Depends(get_db)):
             return FileResponse(logo, media_type="image/png")
         raise HTTPException(404, "Mesh niedostepny")
     try:
-        import matplotlib
-        matplotlib.use("Agg")
-        import matplotlib.pyplot as plt
-        from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-        import trimesh
-        mesh = trimesh.load(mesh_file, force="mesh")
-        fig = plt.figure(figsize=(4, 3), dpi=100)
-        ax = fig.add_subplot(111, projection="3d")
-        ax.set_facecolor("#f0f2f5")
-        fig.patch.set_facecolor("#f0f2f5")
-        verts = mesh.vertices
-        faces = mesh.faces
-        # downsample for speed
-        if len(faces) > 8000:
-            import numpy as np
-            idx = np.random.choice(len(faces), 8000, replace=False)
-            faces = faces[idx]
-        poly = Poly3DCollection(verts[faces], alpha=0.9, facecolor="#3b82f6", edgecolor="#1e40af", linewidths=0.1)
-        ax.add_collection3d(poly)
-        # Respect mesh aspect ratio
-        import numpy as np
-        extents = np.ptp(verts, axis=0)
-        max_ext = extents.max()
-        if max_ext > 0:
-            ax.set_box_aspect(extents / max_ext)
-        # auto-scale
-        ax.auto_scale_xyz(verts[:,0], verts[:,1], verts[:,2])
-        ax.view_init(elev=20, azim=45)
-        ax.set_axis_off()
-        plt.tight_layout(pad=0)
         thumb_path.parent.mkdir(parents=True, exist_ok=True)
-        plt.savefig(str(thumb_path), dpi=100, bbox_inches="tight", facecolor="#f0f2f5", pad_inches=0.1)
-        plt.close(fig)
+        _auto_thumb(mesh_file, str(thumb_path))
         return FileResponse(str(thumb_path), media_type="image/png")
     except Exception as e:
         raise HTTPException(500, f"Thumbnail error: {e}")
@@ -932,7 +916,7 @@ def og_image(job_uuid: str, db: Session = Depends(get_db)):
     if og_path.exists():
         return FileResponse(str(og_path), media_type="image/png")
     # find thumb or mesh
-    thumb_path = JOBS_DIR / job_uuid / "thumb.png"
+    thumb_path = JOBS_DIR / job_uuid / _thumb_name(job_uuid)
     if not thumb_path.exists():
         # try to generate thumb from mesh
         src_dir = JOBS_DIR / job_uuid

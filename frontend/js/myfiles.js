@@ -1,7 +1,7 @@
 // myfiles.js  -  jobs grid, folders, bulk, share modal, job modal, fullscreen, editor (verbatim).
 import { t } from './i18n.js?v=104';
 import { token } from './shared.js?v=81';
-import { toast } from './viewer3d.js?v=81';
+import { toast } from './viewer3d.js?v=83';
 
 let _shareJobId = null;
 let _shareVanityUrl = '';
@@ -351,7 +351,7 @@ function mfRender(){
         const visBadge='<span class="mfc-badge '+({public:'pub',unlisted:'unl'}[vis]||'pri')+'">'+({public:'publiczny',unlisted:'link'}[vis]||'prywatny')+'</span>';
         const titleEsc=(j.title||j.filename||'').replace(/</g,'&lt;');
         const thumbUrl='/api/thumb/'+j.uuid;
-        const previewSrc=j.preview_image || ('/api/preview/'+j.uuid);
+        const previewSrc='/api/thumb/'+j.uuid;
         const folderOpts='<option value="">Bez folderu</option>'+_mfFolders.map(function(f){return '<option value="'+f.id+'"'+(String(j.folder_id||'')===String(f.id)?' selected':'')+'>'+String(f.name).replace(/</g,'&lt;')+'</option>'}).join('');
         const when=(j.created_at||'').slice(0,10);
         const kb=j.file_size_bytes?Math.round(j.file_size_bytes/1024)+' KB':'';
@@ -511,7 +511,7 @@ function openJobModal(jobId) {
     delBtn.onclick = () => deleteMyJob(j.id);
     const heroSection = document.getElementById('jobPreviewHero');
     const heroImg = document.getElementById('jobPreviewHeroImg');
-    const jp = j.preview_image || '/api/preview/' + j.uuid;
+    const jp = '/api/thumb/' + j.uuid;
     heroImg.src = jp;
     // JPG hero = fallback only (shown by showJobModalErr when 3D fails).
     heroSection.style.display = 'none';

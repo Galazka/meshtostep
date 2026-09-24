@@ -346,7 +346,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
     <div id="viewer">
       <div class="viewer-toolbar">
         <button id="btnFs" title="Pełny ekran">⛶</button>
-        <button id="btnColor" title="Kolor modelu" style="width:28px;height:28px;border-radius:50%;background:#3b82f6"></button>
+        <button id="btnColor" title="Kolor modelu" style="width:28px;height:28px;border-radius:50%;background:#c9ced6"></button>
         <div class="bg-dots" id="bgDots"></div>
       </div>
     </div>
@@ -395,14 +395,14 @@ const scene=new THREE.Scene();scene.background=new THREE.Color(0xf0f2f5);
 const camera=new THREE.PerspectiveCamera(50, cw / ch, 0.1, 1000);camera.position.set(0,40,60);
 const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(cw, ch);renderer.setPixelRatio(window.devicePixelRatio);el.appendChild(renderer.domElement);
 const controls=new OrbitControls(camera, renderer.domElement);controls.enableDamping=true;controls.enableRotate=true;controls.enablePan=true;controls.enableZoom=true;controls.minDistance=5;controls.maxDistance=500;controls.minPolarAngle=0.1;controls.maxPolarAngle=Math.PI-0.1;
-scene.add(new THREE.AmbientLight(0x404060,1.2));const d1=new THREE.DirectionalLight(0x3b82f6,1.0);d1.position.set(30,50,30);scene.add(d1);
+scene.add(new THREE.AmbientLight(0x555560,1.25));const d1=new THREE.DirectionalLight(0x9aa3b2,1.05);d1.position.set(30,50,30);scene.add(d1);
 const d2=new THREE.DirectionalLight(0x8888ff,0.5);d2.position.set(-20,10,-30);scene.add(d2);
 let viewerMesh=null;
-new STLLoader().load('/api/stl-preview/__UUID__', g=>{g.computeBoundingBox();const c=new THREE.Vector3();g.boundingBox.getCenter(c);g.translate(-c.x,-c.y,-c.z);const s=new THREE.Vector3();g.boundingBox.getSize(s);const mx=Math.max(s.x,s.y,s.z);if(mx>0)g.scale(30/mx,30/mx,30/mx);const _fd=18/Math.tan(camera.fov*Math.PI/360)*1.08;camera.position.set(_fd*0.45,_fd*0.55,_fd*0.70);camera.lookAt(0,0,0);controls.target.set(0,0,0);controls.update();viewerMesh=new THREE.Mesh(g,new THREE.MeshPhongMaterial({color:0x3b82f6,specular:0x6666aa,shininess:40}));viewerMesh.rotation.x=-Math.PI/2;scene.add(viewerMesh);},undefined,()=>{
+new STLLoader().load('/api/stl-preview/__UUID__', g=>{g.computeBoundingBox();const c=new THREE.Vector3();g.boundingBox.getCenter(c);g.translate(-c.x,-c.y,-c.z);const s=new THREE.Vector3();g.boundingBox.getSize(s);const mx=Math.max(s.x,s.y,s.z);if(mx>0)g.scale(30/mx,30/mx,30/mx);const _fd=18/Math.tan(camera.fov*Math.PI/360)*1.08;camera.position.set(_fd*0.45,_fd*0.55,_fd*0.70);camera.lookAt(0,0,0);controls.target.set(0,0,0);controls.update();viewerMesh=new THREE.Mesh(g,new THREE.MeshPhongMaterial({color:0xc9ced6,specular:0x8a94a6,shininess:28}));viewerMesh.rotation.x=-Math.PI/2;scene.add(viewerMesh);},undefined,()=>{
     var img=new Image();
     img.onload=function(){el.innerHTML='';img.style.cssText='max-width:100%;height:auto;object-fit:contain;border-radius:12px';el.appendChild(img);};
     img.onerror=function(){el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#64748b;font-size:14px;flex-direction:column;gap:8px"><span style="font-size:32px">△</span>Podgląd 3D niedostępny</div>';};
-    img.src='/api/preview/__UUID__';
+    img.src='/api/thumb/__UUID__';
 });
 function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera);}animate();
 window.addEventListener('resize',()=>{const w=Math.min(el.clientWidth||640,1200),h=el.clientHeight||420;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h);});
@@ -443,7 +443,7 @@ document.addEventListener('fullscreenchange',()=>{
   setTimeout(()=>{camera.aspect=viewerWrap.clientWidth/viewerWrap.clientHeight;camera.updateProjectionMatrix();renderer.setSize(viewerWrap.clientWidth,viewerWrap.clientHeight);},100);
 });
 // Color picker
-const colors=['#ffffff','#9ca3af','#3b82f6','#22c55e','#ef4444','#f97316','#a855f7','#06b6d3'];
+const colors=['#c9ced6','#ffffff','#9ca3af','#3b82f6','#22c55e','#ef4444','#f97316','#a855f7'];
 const bgColors=['#f7f9fc','#f0f2f5','#ffffff','#1e293b','#000000','#e2e8f0'];
 let colorIdx=0;
 document.getElementById('btnColor').onclick=()=>{
@@ -681,7 +681,7 @@ def user_profile(username: str, db: Session = Depends(get_db)):
         title = html.escape(j.title or j.original_filename or "model")
         faces = j.result_faces or "?"
         views = j.views or 0
-        preview_url = f"/api/preview/{j.uuid}"
+        preview_url = f"/api/thumb/{j.uuid}"
         cards += (
             f'<a href="/u/{html.escape(username)}/{html.escape(j.slug)}" class="card">'
             f'<img src="{preview_url}" alt="{title}" loading="lazy">'
@@ -773,7 +773,7 @@ def tag_page(tag: str, db: Session = Depends(get_db)):
         views = j.views or 0
         cards += (
             f'<a href="/u/{html.escape(uname)}/{html.escape(j.slug)}" class="card">'
-            f'<img src="/api/preview/{j.uuid}" alt="{title}" loading="lazy">'
+            f'<img src="/api/thumb/{j.uuid}" alt="{title}" loading="lazy">'
             f'<div class="card-body">'
             f'<div class="card-title">{title}</div>'
             f'<div class="card-meta">{faces} ścian · {views} wyśw. · {html.escape(uname)}</div>'

@@ -62,7 +62,7 @@ export function initViewerPro(opts) {
   const cfg = Object.assign({
     container: null, stlUrl: '', fallbackImg: '', uuid: '', token: '',
     lang: 'pl', printInfo: null, defaultMaterial: 'PLA', defaultColor: 'szary',
-    bg: '#f0f2f5', meshHex: '#9ca3af', toolbar: true, printBar: true,
+    bg: '#f0f2f5', meshHex: '#c9ced6', toolbar: true, printBar: true,
     printBarTarget: null, compact: false, noEdges: false
   }, opts || {});
   const L = T[cfg.lang] || T.pl;
