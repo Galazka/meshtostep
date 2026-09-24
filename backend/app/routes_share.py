@@ -101,6 +101,7 @@ _SHARE_HTML_TEMPLATE = """<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script type="importmap">{"imports":{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js","three/addons/loaders/OBJLoader.js":"/vendor/three/loaders/OBJLoader.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js"}}</script>
 __ROBOTS__
 <title>__FILENAME__ — 3dfile.link</title>
 <meta property="og:type" content="website">
@@ -215,8 +216,7 @@ __JSON_LD__
   }
   @media (max-width: 520px) {
     .vfoot-grid { grid-template-columns: 1fr !important; }
-    #shareColorBar { flex-wrap: wrap; }
-  }
+    }
   #descBody img { max-width: 100%; border-radius: 8px; margin: 12px 0; }
   #descBody pre { background: #1e293b; color: #e2e8f0; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 13px; margin: 12px 0; }
   #descBody code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
@@ -270,19 +270,6 @@ __JSON_LD__
   </div>
 </header>
 <div id="viewer3d"></div>
-<button id="btnFsS" onclick="fsS()" style="position:absolute;top:calc(56px + 66px + 10px);right:14px;z-index:16;background:rgba(255,255,255,.92);border:1px solid #e2e8f0;border-radius:8px;padding:7px 11px;font-size:15px;cursor:pointer" title="Pełny ekran">⛶</button>
-<script>function fsS(){var v=document.getElementById('viewer3d');if(!document.fullscreenElement){(v.requestFullscreen||v.webkitRequestFullscreen).call(v).catch(function(){});}else{document.exitFullscreen();}}</script>
-<button id="panelToggle" onclick="document.getElementById('sharePanel').classList.toggle('open')" style="position:fixed;right:16px;top:50%;transform:translateY(-50%);z-index:30;background:rgba(255,255,255,.95);border:1px solid #e2e8f0;border-radius:50%;width:44px;height:44px;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.15)">⚙️</button>
-<div id="sharePanel" style="position:fixed;right:-320px;top:0;bottom:0;width:300px;z-index:25;background:rgba(255,255,255,.97);border-left:1px solid #e2e8f0;transition:right .3s ease;overflow-y:auto;padding:16px;box-shadow:-4px 0 16px rgba(0,0,0,.1)">
-<style>#sharePanel.open{right:0!important}</style>
-<div id="shareColorBar" style="display:flex;gap:6px;background:#fff;padding:8px 10px;border-radius:10px;border:1px solid #e2e8f0;align-items:center;flex-wrap:wrap;margin-bottom:12px">
-  <span style="font-size:10px;color:#94a3b8;margin-right:2px">Tło:</span>
-  <div id="bgSwatches"></div>
-  <div style="width:1px;height:20px;background:#e2e8f0;margin:0 4px"></div>
-  <span style="font-size:10px;color:#94a3b8;margin-right:2px">Model:</span>
-  <div id="meshSwatches"></div>
-  <button id="wireBtn" style="border:none;background:#f1f5f9;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;margin-left:4px" onclick="(function(){var m=window._shareMesh;if(!m)return;m.material.wireframe=!m.material.wireframe;this.textContent=m.material.wireframe?'__WIRE_ON__':'__WIRE_OFF__';}).call(this)">__WIRE_OFF__</button>
-</div>
 <div id="descriptionPanel" style="display:none;position:fixed;bottom:48px;left:0;right:0;z-index:15;background:rgba(255,255,255,0.95);border-top:1px solid #e5e7eb;max-height:45vh;overflow-y:auto;padding:24px 32px;font-size:14px;line-height:1.7">
   <div style="max-width:800px;margin:0 auto">
     <div id="descTitle" style="font-size:20px;font-weight:700;margin-bottom:12px"></div>
@@ -301,156 +288,41 @@ __JSON_LD__
 </div>
 <button id="descToggle" onclick="toggleDescPanel()" style="position:fixed;bottom:56px;right:16px;z-index:20;background:#1a56db;color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.3);display:none">📝</button>
 
-<script type="importmap">
-{
-  "imports": {
-    "three": "/vendor/three/three.module.js",
-    "three/addons/controls/OrbitControls.js": "/vendor/three/controls/OrbitControls.js",
-    "three/addons/loaders/STLLoader.js": "/vendor/three/loaders/STLLoader.js",
-    "three/addons/loaders/OBJLoader.js": "/vendor/three/loaders/OBJLoader.js",
-    "three/addons/loaders/3MFLoader.js": "/vendor/three/loaders/3MFLoader.js"
-  }
-}
-</script>
 <script type="module">
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { STLLoader } from 'three/addons/loaders/STLLoader.js';
-
-const el = document.getElementById('viewer3d');
-if (!el) throw new Error('no viewer3d element');
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xf0f2f5);
-const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 40, 60);
-
-const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });  /* 3dfile share viewer */;
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-function fitViewer() {
-  const w = el.clientWidth || 640, h = el.clientHeight || 420;
-  camera.aspect = w / h;
-  camera.updateProjectionMatrix();
-  renderer.setSize(w, h);
-  renderer.domElement.style.width = '100%';
-  renderer.domElement.style.height = '100%';
-}
-fitViewer();
-el.appendChild(renderer.domElement);
-
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.08;
-controls.enableRotate = true;
-controls.enablePan = true;
-controls.enableZoom = true;
-controls.minDistance = 5;
-controls.maxDistance = 500;
-controls.minPolarAngle = 0.1;
-controls.maxPolarAngle = Math.PI - 0.1;
-
-scene.add(new THREE.AmbientLight(0x404060, 1.2));
-const d1 = new THREE.DirectionalLight(0x3b82f6, 1.0);
-d1.position.set(30, 50, 30);
-scene.add(d1);
-const d2 = new THREE.DirectionalLight(0x8888ff, 0.5);
-d2.position.set(-20, 10, -30);
-scene.add(d2);
-
-// STEP/IGES B-Rep via OCCT WASM (client-side, zero server cost). STL/3MF/OBJ skip WASM.
-window.__shareStatus = '__SHARE_STATUS__';
-window.__shareFilename = '__SHARE_FILENAME__';
-var _fn = (window.__shareFilename || '').toLowerCase();
-var _isStep = _fn.endsWith('.step') || _fn.endsWith('.stp') || _fn.endsWith('.iges') || _fn.endsWith('.igs');
-if (window.loadStepWithOcct && window.__shareStatus === "done" && _isStep) {
-  fetch('/api/stl-preview/__UUID__').then(function(r){return r.arrayBuffer();}).then(function(buf){
-    window.loadStepWithOcct(buf).then(function(mesh){
-      if(!mesh){ loadStlFallback(); return; }
-      const geo = new THREE.BufferGeometry();
-      geo.setAttribute('position', new THREE.BufferAttribute(mesh.positions, 3));
-      if(mesh.normals.length) geo.setAttribute('normal', new THREE.BufferAttribute(mesh.normals, 3));
-      geo.computeBoundingSphere();
-      const m = new THREE.Mesh(geo, new THREE.MeshPhongMaterial({ color: 0x3b82f6, specular: 0x6666aa, shininess: 40 }));
-      m.rotation.x = -Math.PI/2;
-      scene.add(m);
-      document.getElementById('shareColorBar').style.display='flex';
-      window._shareMesh = m;
-    }).catch(loadStlFallback);
-  }).catch(loadStlFallback);
-} else { loadStlFallback(); }
-function loadStlFallback() {
-  new STLLoader().load('/api/stl-preview/__UUID__', (g) => {
-  g.computeBoundingBox();
-  const c = new THREE.Vector3();
-  g.boundingBox.getCenter(c);
-  g.translate(-c.x, -c.y, -c.z);
-  const s = new THREE.Vector3();
-  g.boundingBox.getSize(s);
-  const mx = Math.max(s.x, s.y, s.z);
-  if (mx > 0) g.scale(30 / mx, 30 / mx, 30 / mx);
-  document.getElementById('shareColorBar').style.display='flex';
-  window._shareMesh = new THREE.Mesh(g, new THREE.MeshPhongMaterial({
-    color: 0x3b82f6,
-    specular: 0x6666aa,
-    shininess: 40
-  }));
-  window._shareMesh.rotation.x = -Math.PI / 2;
-  scene.add(window._shareMesh);
-  }, undefined, (err) => {
-  console.error('STL load error:', err);
-  var img=new Image();
-  img.onload=function(){el.innerHTML='';img.style.cssText='width:100%;height:100%;object-fit:contain';el.appendChild(img);};
-  img.onerror=function(){el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#64748b;font-size:14px;flex-direction:column;gap:8px"><span style="font-size:32px">△</span>Podglad 3D niedostepny</div>';};
-  img.src='/api/preview/__UUID__';
+import { initViewerPro } from '/asset/viewer_pro.js?v=1';
+window.__shareViewer = initViewerPro({
+  container: 'viewer3d',
+  stlUrl: '/api/stl-preview/__UUID__',
+  fallbackImg: '/api/preview/__UUID__',
+  uuid: '__UUID__',
+  filename: '__SHARE_FILENAME__',
+  lang: '__LANG__',
+  toolbar: true,
+  printBar: true,
+  printInfo: __PRINT_INFO__,
+  defaultMaterial: '__DEF_MAT__',
+  defaultColor: 'gray'
 });
-}
-
-function animate() {
-  requestAnimationFrame(animate);
-  controls.update();
-  renderer.render(scene, camera);
-}
-animate();
-
-// Color picker for share viewer — bg + mesh swatches
-(function(){
-  var bgColors=['#f0f2f5','#ffffff','#000000','#f7f9fc','#e2e8f0','#1e293b'];
-  var meshColors=['#3b82f6','#ffffff','#9ca3af','#22c55e','#ef4444','#f97316','#a855f7','#06b6d3'];
-  var bgBar=document.getElementById('bgSwatches');
-  var meshBar=document.getElementById('meshSwatches');
-  var bar=document.getElementById('shareColorBar');
-  if(!bar)return;
-  bar.style.display='none';
-  bgColors.forEach(function(hex){
-    var d=document.createElement('div');
-    d.style.cssText='width:32px;height:32px;border-radius:50%;cursor:pointer;border:2px solid transparent;background:'+hex+';flex-shrink:0';
-    d.className='bg-swatch';
-    d.onclick=function(){
-      scene.background=new THREE.Color(hex);
-      var kids=bgBar.querySelectorAll('.bg-swatch');
-      for(var i=0;i<kids.length;i++) kids[i].style.borderColor='transparent';
-      d.style.borderColor='#333';
-    };
-    bgBar.appendChild(d);
-  });
-  meshColors.forEach(function(hex){
-    var d=document.createElement('div');
-    d.style.cssText='width:32px;height:32px;border-radius:50%;cursor:pointer;border:2px solid transparent;background:'+hex+';flex-shrink:0';
-    d.className='m-swatch';
-    d.onclick=function(){
-      if(window._shareMesh) window._shareMesh.material.color.set(hex);
-      var kids=meshBar.querySelectorAll('.m-swatch');
-      for(var i=0;i<kids.length;i++) kids[i].style.borderColor='transparent';
-      d.style.borderColor='#333';
-    };
-    meshBar.appendChild(d);
-  });
+/* STEP/IGES: swap the faceted preview for the true B-Rep mesh (OCCT WASM, client-side) */
+(function () {
+  var fn = String('__SHARE_FILENAME__').toLowerCase();
+  var isStep = fn.indexOf('.step') >= 0 || fn.indexOf('.stp') >= 0 || fn.indexOf('.iges') >= 0 || fn.indexOf('.igs') >= 0;
+  if (!isStep || '__SHARE_STATUS__' !== 'done' || !window.loadStepWithOcct) return;
+  fetch('/api/stl-preview/__UUID__')
+    .then(function (r) { return r.arrayBuffer(); })
+    .then(function (buf) { return window.loadStepWithOcct(buf); })
+    .then(function (m) {
+      var api = window.__shareViewer;
+      if (!m || !m.positions || !m.positions.length || !api || !api.attachMesh) return;
+      var THREE = api.three;
+      var geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(m.positions, 3));
+      if (m.normals && m.normals.length) geo.setAttribute('normal', new THREE.BufferAttribute(m.normals, 3));
+      geo.computeBoundingSphere();
+      api.attachMesh(geo);
+    })
+    .catch(function () {});
 })();
-
-window.addEventListener('resize', fitViewer);
-window.addEventListener('orientationchange', function(){ setTimeout(fitViewer, 300); });
-document.addEventListener('fullscreenchange', function(){ setTimeout(fitViewer, 300); });
-
 </script>
 <script>
 (function(){
@@ -599,6 +471,31 @@ __DESC_INIT__
 </html>"""
 
 
+def _print_info(job, db=None) -> str:
+    """Per-material print estimate (grams + hours) for the shared viewer's live print bar.
+
+    Mirrors the /zamow pricing engine so the numbers shown while browsing match checkout.
+    """
+    try:
+        from .routes_order import (DEFAULT_MATERIAL_PRICES, estimate_filament_grams,
+                                   estimate_print_time_hours, _split_into_parts,
+                                   _infill_cfg, _infill_factor)
+        vol = float(getattr(job, "volume_cm3", None) or 0)
+        if vol <= 0:
+            return "{}"
+        parts = _split_into_parts(vol, getattr(job, "dims_mm", None), db) or 1
+        inf = int(_infill_cfg(db)["base"])
+        f = _infill_factor(inf, db)
+        mats = {}
+        for m in DEFAULT_MATERIAL_PRICES:
+            mats[m] = {"g": round(estimate_filament_grams(vol / parts, m, db) * parts * f, 1),
+                       "h": round(estimate_print_time_hours(vol, m, parts, db) * f, 2)}
+        return json.dumps({"volume_cm3": round(vol, 2), "infill": inf, "materials": mats})
+    except Exception:
+        return "{}"
+
+
+
 def _render_share(template: str, **kwargs) -> str:
     """Replace __KEY__ placeholders — safe for JS curly braces."""
     html_out = template
@@ -690,6 +587,22 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
     _js_body = json.dumps(_desc_body_html)
     _js_youtube = json.dumps(_yt)
     _desc_init_js = f"renderDescription({_js_title},{_js_tags},{_js_body},{_js_youtube});"
+    # Structured data for search engines: build a real dict, dumps() it — never hand-write JSON
+    _jsonld = {
+        "@context": "https://schema.org",
+        "@type": "3DModel",
+        "name": job.title or job.original_filename or "",
+        "description": (getattr(job, "description", None) or "")[:300],
+        "encoding": {
+            "@type": "MediaObject",
+            "fileFormat": "STEP/STL",
+            "contentUrl": f"https://3dfile.link/api/download/{job.uuid}",
+        },
+        "image": f"https://3dfile.link/api/og/{job.uuid}",
+        "url": f"https://3dfile.link/s/{token}",
+    }
+    json_ld = '<script type="application/ld+json">' + json.dumps(_jsonld, ensure_ascii=False) + "</script>"
+
     html_page = _render_share(
         _SHARE_HTML_TEMPLATE,
         lang=lang,
@@ -714,6 +627,9 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
         q_smooth="Gładki — wygładzanie" if is_pl else "Smooth — smoothing",
         q_off="Bez optymalizacji" if is_pl else "No optimization",
         uuid=job.uuid,
+        lang=lang,
+        print_info=_print_info(job, db),
+        def_mat="PLA",
         job_id=job.id,
         conv_info=conv_info,
         author_info=author_info,
@@ -733,8 +649,7 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
         og_url=f"https://3dfile.link/s/{token}",
         share_status=job.status,
         share_filename=job.original_filename or "",
-        json_ld=f"""<script type="application/ld+json">
-{{"@context":"https://schema.org","@type":"3DModel","name":{json.dumps(html.escape(job.title or job.original_filename or ""))},"description":{json.dumps((getattr(job, "description", None) or "")[:300])},"encoding":{{"@type":"MediaObject","fileFormat":"STEP/STL","contentUrl":"https://3dfile.link/api/download/{job.uuid}"}},"image":"https://3dfile.link/api/og/{job.uuid}","url":"https://3dfile.link/s/{token}"}}</script>""",
+        json_ld=json_ld,
     )
 
     return HTMLResponse(html_page)
@@ -771,6 +686,7 @@ def embed_page(job_id: str, db: Session = Depends(get_db)) -> HTMLResponse:
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script type="importmap">{{"imports":{{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js","three/addons/loaders/OBJLoader.js":"/vendor/three/loaders/OBJLoader.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js"}}}}</script>
 <meta property="og:title" content="{filename} — 3dfile.link">
 <meta property="og:description" content="Podgląd 3D — {faces} ścian STEP">
 <meta property="og:image" content="https://3dfile.link/api/preview/{uuid}">
@@ -802,58 +718,10 @@ def embed_page(job_id: str, db: Session = Depends(get_db)) -> HTMLResponse:
 </div>
 <div id="viewer3d"></div>
 <div class="brandbar">Model 3D hostowany za darmo przez <a href="{('https://3dfile.link/s/' + _tok) if _tok else 'https://3dfile.link'}" target="_blank">3dfile.link</a> · <a href="https://3dfile.link" target="_blank">wgraj własny</a></div>
-<script type="importmap">
-{{"imports":{{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js"}}}}
-</script>
 <script type="module">
-import * as THREE from 'three';
-import {{ OrbitControls }} from 'three/addons/controls/OrbitControls.js';
-import {{ STLLoader }} from 'three/addons/loaders/STLLoader.js';
-const el = document.getElementById('viewer3d');
-// cap canvas to prevent horizontal scroll blowout (mobile 1920px issue)
-const _cw = Math.min(el.clientWidth || 640, 1200), _ch = el.clientHeight || 420;
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xf0f2f5);
-const camera = new THREE.PerspectiveCamera(50, _cw / _ch, 0.1, 1000);
-camera.position.set(0, 40, 60);
-const renderer = new THREE.WebGLRenderer({{ antialias: true }});
-renderer.setSize(_cw, _ch);
-renderer.setPixelRatio(window.devicePixelRatio);
-el.appendChild(renderer.domElement);
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.enableRotate = true;
-controls.enablePan = true;
-controls.enableZoom = true;
-controls.minDistance = 5;
-controls.maxDistance = 500;
-controls.minPolarAngle = 0.1;
-controls.maxPolarAngle = Math.PI - 0.1;
-scene.add(new THREE.AmbientLight(0x404060, 1.2));
-const d1 = new THREE.DirectionalLight(0x3b82f6, 1.0); d1.position.set(30,50,30); scene.add(d1);
-const d2 = new THREE.DirectionalLight(0x8888ff, 0.5); d2.position.set(-20,10,-30); scene.add(d2);
-new STLLoader().load('/api/stl-preview/{uuid}', g => {{
-  g.computeBoundingBox();
-  const c = new THREE.Vector3(); g.boundingBox.getCenter(c);
-  g.translate(-c.x, -c.y, -c.z);
-  const s = new THREE.Vector3(); g.boundingBox.getSize(s);
-  const mx = Math.max(s.x, s.y, s.z);
-  if(mx > 0) g.scale(30/mx, 30/mx, 30/mx);
-  const _fd = 18/Math.tan(camera.fov*Math.PI/360)*1.08;
-  camera.position.set(_fd*0.45, _fd*0.55, _fd*0.70);
-  camera.lookAt(0,0,0); controls.target.set(0,0,0); controls.update();
-  const m = new THREE.Mesh(g, new THREE.MeshPhongMaterial({{ color: 0x3b82f6, specular: 0x6666aa, shininess: 40 }}));
-  m.rotation.x = -Math.PI/2;
-  scene.add(m);
-}});
-function animate() {{ requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); }}
-animate();
-window.addEventListener('resize', () => {{
-  const w = Math.min(el.clientWidth || 640, 1200);
-  camera.aspect = w / el.clientHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(w, el.clientHeight);
-}});
+import {{ initViewerPro }} from '/asset/viewer_pro.js?v=1';
+initViewerPro({{ container: 'viewer3d', stlUrl: '/api/stl-preview/{uuid}', fallbackImg: '/api/preview/{uuid}',
+  uuid: '{uuid}', filename: {json.dumps(job.original_filename or "model")}, toolbar: false, printBar: false }});
 </script>
 </body></html>"""
 
