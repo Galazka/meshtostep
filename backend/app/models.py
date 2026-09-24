@@ -401,4 +401,22 @@ PRICING_SEED = {
     "color:yellow": "5",
     "color:silver": "10",
     "color:brass": "25",
+
 }
+
+
+class PageEvent(Base):
+    """Analityka wlasna (bez cookies) - pageview + mikro-eventy lejka."""
+    __tablename__ = "page_events"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(64), nullable=False, index=True)
+    path = Column(String(255), nullable=True)
+    referrer = Column(String(255), nullable=True)
+    session_id = Column(String(64), nullable=True, index=True)
+    ip_hash = Column(String(32), nullable=True)
+    user_id = Column(Integer, nullable=True)
+    country = Column(String(8), nullable=True)
+    device = Column(String(16), nullable=True)
+    meta = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)

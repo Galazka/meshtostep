@@ -304,7 +304,8 @@
                                     <button class="admin-tab" onclick="switchAdminTab('geo')" data-tab="geo" data-i18n="tabGeo">Geo</button>
                                     <button class="admin-tab" onclick="switchAdminTab('export')" data-tab="export" data-i18n="tabExport">Eksport</button>
                                     <button class="admin-tab" onclick="switchAdminTab('ads')" data-tab="ads">Reklamy</button>
-                                    <button class="admin-tab" onclick="switchAdminTab('comments')" data-tab="comments">Komentarze</button>
+                                                                        <button class="admin-tab" onclick="switchAdminTab('comments')" data-tab="comments">Komentarze</button>
+                                                                        <button class="admin-tab" onclick="switchAdminTab('analytics')" data-tab="analytics">Analityka</button>
                                     <span style="color:var(--text-muted);padding:0 6px;font-size:12px;opacity:.6">| Drukarnia</span>
                                     <button class="print-tab-btn admin-tab" onclick="switchPrintTab('orders')" data-tabs="print" data-tab="orders">Zamówienia</button>
                                     <button class="print-tab-btn admin-tab" onclick="switchPrintTab('stats')" data-tabs="print" data-tab="stats">Statystyki druku</button>
@@ -598,6 +599,9 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- ANALITYKA -->
+                <div class="tab-content" id="tab-analytics"><div id="adminAnalytics" class="print-panel"></div></div>
 
                 <!-- DRUKARNIA ZAKLADKI (print shop) -->
                 <div class="tab-content" id="tab-orders"><div id="adminOrders" class="print-panel"></div></div>
@@ -903,6 +907,7 @@ const I18N = {
         if (name === 'queue' && !_queueLoaded) { loadQueue(); _queueLoaded = true; }
         if (name === 'export' && !_exportLoaded) { loadExport(); loadBackups(); _exportLoaded = true; }
         if (name === 'comments' && !_commentsLoaded) { loadComments(); _commentsLoaded = true; }
+        if (name === 'analytics' && typeof window.loadAnalytics === 'function') window.loadAnalytics();
         // Drukarnia version B — taby w admin_print.js via switchPrintTab (nie lazy tutaj)
         if (['orders','pstats','pricing','codes','gallery','reviews','reports'].includes(name)) { switchPrintTab(name); return; }
     }
@@ -1818,6 +1823,7 @@ const I18N = {
 
     </script>
 <script src="/asset/admin_print.js?v=42"></script>
+    <script src="/asset/admin_analytics.js?v=1"></script>
 <script>
   try {
     var _qp = new URLSearchParams(window.location.search).get('ptab');
