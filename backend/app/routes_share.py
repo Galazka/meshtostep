@@ -289,7 +289,7 @@ __JSON_LD__
 <button id="descToggle" onclick="toggleDescPanel()" style="position:fixed;bottom:56px;right:16px;z-index:20;background:#1a56db;color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.3);display:none">📝</button>
 
 <script type="module">
-import { initViewerPro } from '/asset/viewer_pro.js?v=2';
+import { initViewerPro } from '/asset/viewer_pro.js?v=3';
 window.__shareViewer = initViewerPro({
   container: 'viewer3d',
   stlUrl: '/api/stl-preview/__UUID__',
@@ -718,7 +718,7 @@ def embed_page(job_id: str, db: Session = Depends(get_db)) -> HTMLResponse:
 <div id="viewer3d"></div>
 <div class="brandbar">Model 3D hostowany za darmo przez <a href="{('https://3dfile.link/s/' + _tok) if _tok else 'https://3dfile.link'}" target="_blank">3dfile.link</a> · <a href="https://3dfile.link" target="_blank">wgraj własny</a></div>
 <script type="module">
-import {{ initViewerPro }} from '/asset/viewer_pro.js?v=2';
+import {{ initViewerPro }} from '/asset/viewer_pro.js?v=3';
 initViewerPro({{ container: 'viewer3d', stlUrl: '/api/stl-preview/{uuid}', fallbackImg: '/api/thumb/{uuid}?v=3',
   uuid: '{uuid}', filename: {json.dumps(job.original_filename or "model")}, toolbar: false, printBar: false }});
 </script>

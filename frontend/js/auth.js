@@ -118,6 +118,13 @@ async function fetchUser() {
     const r = await fetch('/api/auth/me', {headers:{'Authorization':'Bearer '+token}});
     if (!r.ok) { setToken(null); localStorage.removeItem('mt_token'); return; }
     const d = await r.json();
+    if (window.__navAuth && window.__navAuth.refresh) {
+        /* nav-auth.js jest jedynym właścicielem bloku logowania w nawigacji */
+        document.getElementById('authBtns').style.display = 'none';
+        var up = document.getElementById('userPanel'); if (up) up.style.display = 'none';
+        window.__navAuth.refresh();
+        return;
+    }
     document.getElementById('authBtns').style.display='none';
     document.getElementById('userPanel').style.display='inline';
     document.getElementById('navFiles').style.display='';

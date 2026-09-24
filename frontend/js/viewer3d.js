@@ -92,7 +92,7 @@ function init3DViewer(container) {
     _threeControls.enableDamping = true;
     _threeScene.add(new THREE.AmbientLight(0xffffff, 0.8));
     const d1 = new THREE.DirectionalLight(0xffffff, 0.8); d1.position.set(30,50,30); _threeScene.add(d1);
-    const d2 = new THREE.DirectionalLight(0xdfe5f0, 0.35); d2.position.set(-20,10,-30); _threeScene.add(d2);
+    const d2 = new THREE.DirectionalLight(0xffffff, 0.35); d2.position.set(-20,10,-30); _threeScene.add(d2);
     function animate() { _threeAnim = requestAnimationFrame(animate); _threeControls.update(); _threeRenderer.render(_threeScene, _threeCamera); }
     animate();
 }
@@ -116,7 +116,7 @@ function loadSTLIntoViewer(url, jobUuid) {
         var mcb=document.getElementById('meshColorBar');if(mcb)mcb.style.display='flex';
         init3DViewer(container);
         const ext = url.split('.').pop().toLowerCase().split('?')[0];
-        const mat = new THREE.MeshPhongMaterial({ color: 0xc9ced6, specular: 0x8a94a6, shininess: 28 });
+        const mat = new THREE.MeshPhongMaterial({ color: 0xc9ced6, specular: 0x9aa0a6, shininess: 24 });
 
         function addMesh(obj) {
             var ldd = document.getElementById('viewer3d-loading');

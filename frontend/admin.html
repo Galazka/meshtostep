@@ -1486,7 +1486,7 @@ const I18N = {
                     const size = new T.Vector3();
                     box.getSize(size);
                     const maxDim = Math.max(size.x, size.y, size.z) || 1;
-                    const mat = new T.MeshPhongMaterial({ color: 0xc9ced6, specular: 0x8a94a6, shininess: 28 });
+                    const mat = new T.MeshPhongMaterial({ color: 0xc9ced6, specular: 0x9aa0a6, shininess: 24 });
                     const mesh = new T.Mesh(geometry, mat);
                     mesh.scale.setScalar(100 / maxDim);
                     scene.add(mesh);

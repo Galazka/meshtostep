@@ -841,7 +841,7 @@ window.__local3d = {
     var onMesh = function(mesh){
       try{
         var m = mesh;
-        if (mesh && mesh.geometry) { m = new THREE.Mesh(mesh.geometry, new THREE.MeshStandardMaterial({color:0x94a3b8, metalness:0.2, roughness:0.55, flatShading:true})); }
+        if (mesh && mesh.geometry) { m = new THREE.Mesh(mesh.geometry, new THREE.MeshStandardMaterial({color:0xc9ced6, metalness:0.2, roughness:0.55, flatShading:true})); }
         if (!(m && m.isObject3D)) m = new THREE.Object3D();
         scene.add(m);
         // frame object
@@ -884,7 +884,7 @@ window.__local3d = {
       if (isStl) {
         var stlLoader = new STLLoader();
         var geo = stlLoader.parse(ab);   // auto-detects binary vs ASCII STL
-        var m = new THREE.Object3D(); m.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({color:0x94a3b8, metalness:0.2, roughness:0.55, flatShading:true})));
+        var m = new THREE.Object3D(); m.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({color:0xc9ced6, metalness:0.2, roughness:0.55, flatShading:true})));
         onMesh(m);
       } else if (isObj) {
         var objLoader = new OBJLoader();
@@ -948,5 +948,6 @@ window.__local3d = {
 <div id="ctaBar"><span>Razem</span><b id="ctaTot">—</b><button onclick="submitOrder()">Zamawiam</button></div>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js?v=21').then(function(sw){sw.update&&setInterval(function(){sw.update()},3*60*60*1000)});navigator.serviceWorker.addEventListener('controllerchange',function(){location.reload()})}</script>
 <script src="/asset/ev.js?v=3" defer></script>
+<script src="/asset/nav-auth.js?v=1" defer></script>
 </body>
 </html>

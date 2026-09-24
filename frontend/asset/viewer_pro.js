@@ -32,12 +32,13 @@ export const FILAMENT_COLORS = [
 ];
 
 const BGS = [
+  { id:'stage', hex:'#101a2e', label:'Granatowe (domyślne)' },
+  { id:'dark',  hex:'#1e293b', label:'Ciemne' },
+  { id:'black', hex:'#0b1120', label:'Czarne' },
+  { id:'mid',   hex:'#cfd6de', label:'Szare' },
   { id:'light', hex:'#f0f2f5', label:'Jasne' },
   { id:'white', hex:'#ffffff', label:'Białe' },
-  { id:'warm',  hex:'#f7f5f0', label:'Ciepłe' },
-  { id:'mid',   hex:'#cfd6de', label:'Szare' },
-  { id:'dark',  hex:'#1e293b', label:'Ciemne' },
-  { id:'black', hex:'#0b1120', label:'Czarne' }
+  { id:'warm',  hex:'#f7f5f0', label:'Ciepłe' }
 ];
 
 function el(tag, css, html) {
@@ -61,9 +62,11 @@ export { fmtHours, fmtGrams };
 export function initViewerPro(opts) {
   const cfg = Object.assign({
     container: null, stlUrl: '', fallbackImg: '', uuid: '', token: '',
-    lang: 'pl', printInfo: null, defaultMaterial: 'PLA', defaultColor: 'szary',
-    bg: '#f0f2f5', meshHex: '#c9ced6', toolbar: true, printBar: true,
-    printBarTarget: null, compact: false, noEdges: false
+    lang: 'pl', printInfo: null, defaultMaterial: 'PLA', defaultColor: 'gray',
+    /* v3 defaults: dark navy stage + floor grid on, gray mesh — same look everywhere */
+    bg: '#101a2e', meshHex: '#c9ced6', toolbar: true, printBar: true,
+    printBarTarget: null, compact: false, noEdges: false,
+    grid: true, swatches: true
   }, opts || {});
   const L = T[cfg.lang] || T.pl;
   const isPL = (cfg.lang || 'pl') === 'pl';
@@ -156,6 +159,18 @@ export function initViewerPro(opts) {
   function layoutGrid() {
     if (!grid) return;
     grid.position.set(0, -halfH - 1.5, 0);
+  }
+
+  /* floor grid: built once, visibility driven by cfg.grid + toolbar button */
+  function ensureGrid(show) {
+    if (show && !grid) {
+      grid = new THREE.GridHelper(90, 36, 0x8fa0b8, 0x3b4a63);
+      const gm = Array.isArray(grid.material) ? grid.material : [grid.material];
+      gm.forEach(function (m) { m.transparent = true; m.opacity = 0.55; });
+      scene.add(grid);
+    }
+    if (grid) { grid.visible = !!show; if (show) layoutGrid(); }
+    return grid;
   }
 
   // ---------- toolbar ----------

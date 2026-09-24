@@ -543,7 +543,8 @@ function toggleLang() {
     currentLang = currentLang === 'pl' ? 'en' : 'pl';
     localStorage.setItem('mt_lang', currentLang);
     applyI18n();
-    if (document.getElementById('userPanel').style.display !== 'none') {
+    var upEl = document.getElementById('userPanel');
+    if (upEl && upEl.style.display !== 'none') {
         const nb = document.getElementById('navLinks');
         const admLink = nb.querySelector('a[href="/admin"]');
         if (admLink) admLink.textContent = 'Admin';
