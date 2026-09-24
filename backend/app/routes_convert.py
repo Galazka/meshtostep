@@ -31,7 +31,17 @@ def _slugify(s: str) -> str:
 THUMB_BG = "#f0f2f5"
 THUMB_FACE = "#c9ced6"
 THUMB_EDGE = "#6b7280"
-THUMB_VERSION = "v2"  # bump → nowa nazwa pliku cache, stare PNG przestają być serwowane
+THUMB_VERSION = "v3"  # bump → nowa nazwa pliku cache, stare PNG (niebieskie) przestają być serwowane
+THUMB_CACHE_HEADERS = {"Cache-Control": "no-cache, must-revalidate"}
+
+
+def _thumb_path(job_uuid: str) -> Path:
+    return JOBS_DIR / job_uuid / _thumb_name(job_uuid)
+
+
+def _thumb_response(path) -> FileResponse:
+    """Thumb/preview response with revalidation, so browsers stop showing the old blue render."""
+    return FileResponse(str(path), media_type="image/png", headers=dict(THUMB_CACHE_HEADERS))
 
 
 def _thumb_name(job_uuid: str, versioned: bool = True) -> str:
@@ -61,12 +71,14 @@ def _auto_thumb(mesh_file: str, thumb_path):
     if len(faces) > 8000:
         import numpy as np
         faces = faces[np.random.choice(len(faces), 8000, replace=False)]
+    # matplotlib >=3.9: shade=True requires the PLURAL kwargs (facecolors/edgecolors),
+    # the singular ones land in **kwargs and raise ValueError -> 500 on /api/thumb.
     try:
-        poly = Poly3DCollection(verts[faces], alpha=1.0, facecolor=THUMB_FACE,
-                                edgecolor=THUMB_EDGE, linewidths=0.08, shade=True)
-    except TypeError:
-        poly = Poly3DCollection(verts[faces], alpha=1.0, facecolor=THUMB_FACE,
-                                edgecolor=THUMB_EDGE, linewidths=0.08)
+        poly = Poly3DCollection(verts[faces], alpha=1.0, facecolors=THUMB_FACE,
+                                edgecolors=THUMB_EDGE, linewidths=0.08, shade=True)
+    except (TypeError, ValueError):
+        poly = Poly3DCollection(verts[faces], alpha=1.0, facecolors=THUMB_FACE,
+                                edgecolors=THUMB_EDGE, linewidths=0.08)
     ax.add_collection3d(poly)
     # Respect mesh aspect ratio: compute extents, set box_aspect
     import numpy as np
@@ -531,7 +543,7 @@ def preview_image(job_uuid: str, db: Session = Depends(get_db)):
     # 1) cached thumb (gray render server-side) — spójny kolor na wszystkich kartach
     tp = JOBS_DIR / job_uuid / _thumb_name(job_uuid)
     if tp.exists():
-        return FileResponse(str(tp), media_type="image/png")
+        return _thumb_response(tp)
     # 2) auto-generate thumb from mesh on the fly (trimesh+matplotlib, gray)
     src_dir = JOBS_DIR / job_uuid
     if src_dir.exists():
@@ -544,7 +556,7 @@ def preview_image(job_uuid: str, db: Session = Depends(get_db)):
         if mesh_file:
             try:
                 _auto_thumb(mesh_file, str(tp))
-                return FileResponse(str(tp), media_type="image/png")
+                return _thumb_response(tp)
             except Exception:
                 pass
     # 3) stored canvas preview (fallback: user screenshot / stary upload)
@@ -570,7 +582,7 @@ def stl_thumbnail(job_uuid: str, db: Session = Depends(get_db)):
         raise HTTPException(404, "Job nie znaleziony")
     thumb_path = JOBS_DIR / job_uuid / _thumb_name(job_uuid)
     if thumb_path.exists():
-        return FileResponse(str(thumb_path), media_type="image/png")
+        return _thumb_response(thumb_path)
     # find mesh file
     src_dir = JOBS_DIR / job_uuid
     if not src_dir.exists():
@@ -595,7 +607,7 @@ def stl_thumbnail(job_uuid: str, db: Session = Depends(get_db)):
     try:
         thumb_path.parent.mkdir(parents=True, exist_ok=True)
         _auto_thumb(mesh_file, str(thumb_path))
-        return FileResponse(str(thumb_path), media_type="image/png")
+        return _thumb_response(thumb_path)
     except Exception as e:
         raise HTTPException(500, f"Thumbnail error: {e}")
 
