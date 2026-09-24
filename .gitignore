@@ -52,3 +52,8 @@ _patch_helper.py
 _*.py
 _*.js
 _live_admin.html
+scratch/
+_shots/
+_vfy/
+demo_models/
+scratch_sharetest*.png
