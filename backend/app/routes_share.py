@@ -593,6 +593,8 @@ __DESC_INIT__
   }).catch(function(){});
 })();
 </script>
+<script src="/asset/ev.js?v=1"></script>
+<script>try{window.ev&&window.ev('model_view',{uuid:'__UUID__',token:'__TOKEN__'})}catch(e){}</script>
 </body>
 </html>"""
 

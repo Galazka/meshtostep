@@ -18,6 +18,7 @@ function setupDropZone() {
 
 function pickFile(f) {
     if (!f) return;
+    try { window.ev && window.ev('upload_start', { size: f.size, ext: (f.name.split('.').pop()||'').toLowerCase(), src: 'drop' }); } catch(_){}
     selectedFile = f;
     document.getElementById('fileName').textContent = f.name;
     document.getElementById('fileSize').textContent = (f.size/1024/1024).toFixed(2) + ' MB';
@@ -54,6 +55,7 @@ async function doConvert() {
         document.getElementById('progressFill').style.width = '100%';
         if (!r.ok) { const e = await r.json(); throw new Error(e.detail || 'Error'); }
         const d = await r.json();
+        try { window.ev && window.ev('convert_ok', { uuid: d.uuid, job: d.job_id, faces: d.faces, time_s: d.time_s, size: selectedFile ? selectedFile.size : 0 }); } catch(_){}
         const fileSz = (selectedFile.size/1024/1024).toFixed(2);
         document.getElementById('result').className = 'result show';
         document.getElementById('result').innerHTML =
@@ -91,6 +93,7 @@ function quickUpload(){
     input.onchange=function(){
         if(!input.files.length) return;
         const file = input.files[0];
+        try { window.ev && window.ev('upload_start', { size: file.size, ext: (file.name.split('.').pop()||'').toLowerCase(), src: 'myfiles' }); } catch(_){}
         selectedFile = file;
         document.getElementById('fileName').textContent = file.name;
         document.getElementById('fileSize').textContent = (file.size/1048576).toFixed(1) + ' MB';

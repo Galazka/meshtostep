@@ -954,6 +954,7 @@ def update_order(
         if status not in valid:
             raise HTTPException(status_code=400, detail=f"Invalid status: {status}")
         o.status = status
+    was_unpaid = not bool(o.is_paid)
     if is_paid is not None:
         o.is_paid = is_paid.lower() in ("1", "true", "yes")
     if shipping_method:
@@ -966,12 +967,16 @@ def update_order(
         o.admin_notes = admin_notes[:2000] if admin_notes else None
     if tracking_code is not None:
         o.tracking_code = tracking_code[:120].strip() or None
-    was_unpaid = not o.is_paid
     o.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(o)
     if was_unpaid and o.is_paid:
         _notify_paid(o)
+        try:
+            from .routes_analytics import record_paid
+            record_paid(db, o)
+        except Exception:
+            pass
     if status:
         _notify_order_status(o, old_status, status)
     return {"ok": True, "order_id": o.id, "status": o.status, "is_paid": o.is_paid, "tracking_code": o.tracking_code}
@@ -1313,11 +1318,11 @@ class MultiOrderReq(BaseModel):
 
 
 @router.post("/api/orders/multi")
-def create_multi_order(req: MultiOrderReq, db: Session = Depends(get_db)):
+def create_multi_order(req: MultiOrderReq, request: Request, db: Session = Depends(get_db)):
     """Create an order with multiple models. Each item priced via calculate_price,
     one shared shipping + packing. Returns order_id, item_count, totals."""
     try:
-        return _create_multi_order_impl(req, db)
+        return _create_multi_order_impl(req, db, request)
     except HTTPException:
         raise
     except Exception as e:
@@ -1326,7 +1331,7 @@ def create_multi_order(req: MultiOrderReq, db: Session = Depends(get_db)):
         raise HTTPException(500, detail=f"multi order failed: {e}")
 
 
-def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db)):
+def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db), request: Request = None):
     if not req.items:
         raise HTTPException(400, detail="Brak modeli w zamówieniu")
     shipping_cost = round(_cfg_value(db, req.shipping, req.shipping_region), 2)
@@ -1456,6 +1461,16 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db)):
     db.commit()
 
     _notify_created(order)
+    try:
+        from .routes_analytics import record
+        record(db, "order_start", request, {
+            "order_id": order.id, "items": len(items_rows),
+            "total": round(total, 2), "currency": cur,
+            "shipping": req.shipping, "region": req.shipping_region,
+            "colors": sum(max(1, getattr(it, "colors", 1) or 1) for it in req.items),
+        }, path="/zamow")
+    except Exception:
+        pass
     if req.discount_code:
         try:
             db.execute(text("UPDATE discount_codes SET uses = uses + 1 WHERE code = :c"), {"c": req.discount_code.upper()})

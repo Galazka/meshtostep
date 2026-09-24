@@ -15,6 +15,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Request
+from jose import jwt
 from pydantic import BaseModel
 from sqlalchemy import case, func
 from sqlalchemy.orm import Session
@@ -22,7 +23,7 @@ from sqlalchemy.orm import Session
 from . import models
 from .config import settings
 from .database import get_db
-from .auth import require_admin, get_current_user
+from .auth import require_admin, ALGORITHM
 
 router = APIRouter()
 
@@ -97,6 +98,20 @@ def _rate_ok(ip_hash: str) -> bool:
     return True
 
 
+def _uid_from_request(request: Request) -> Optional[int]:
+    """user_id z naglowka Bearer bez zaleznosci FastAPI (funckja sync).
+    Niepoprawny/brak tokenu -> None (anonim)."""
+    try:
+        h = (request.headers.get("authorization") or "").strip()
+        if not h.lower().startswith("bearer "):
+            return None
+        payload = jwt.decode(h[7:].strip(), settings.SECRET_KEY,
+                             algorithms=[ALGORITHM])
+        return int(payload.get("sub"))
+    except Exception:
+        return None
+
+
 def _ref_domain(ref: str) -> str:
     if not ref:
         return "(bezposrednie)"
@@ -136,10 +151,7 @@ def collect(req: EvIn, request: Request, db: Session = Depends(get_db)):
             meta = json.dumps(req.meta, ensure_ascii=False)[:1000]
         except Exception:
             meta = ""
-    try:
-        uid = getattr(get_current_user(request, db), "id", None)
-    except Exception:
-        uid = None
+    uid = _uid_from_request(request)
     ev = models.PageEvent(
         name=name,
         path=_clean_path(req.path),
@@ -260,3 +272,68 @@ def purge_old_events(db: Session, days: int = 180) -> int:
     n = db.query(models.PageEvent).filter(models.PageEvent.created_at < cutoff).delete()
     db.commit()
     return int(n or 0)
+
+
+# ── zdarzenia serwerowe (lejek: order_start / order_paid) ───────────
+def record(db: Session, name: str, request: Request = None, meta: dict = None,
+           path: str = "/", user_id: int = None):
+    """Zapis eventu po stronie serwera (bez JS, bez cookie).
+    UA bota -> odrzucone. Blad zapisu nigdy nie psuje zamowienia."""
+    try:
+        if name not in ALLOWED:
+            return None
+        ua = ""
+        iph = "srv"
+        country = ""
+        if request is not None:
+            ua = (request.headers.get("user-agent") or "")[:300]
+            if BOT_RE.search(ua):
+                return None
+            try:
+                iph = _ip_hash(_client_ip(request))
+                country = (request.headers.get("cf-ipcountry") or "")[:8]
+            except Exception:
+                iph = "srv"
+        m = ""
+        if meta:
+            try:
+                m = json.dumps(meta, ensure_ascii=False)[:1000]
+            except Exception:
+                m = ""
+        ev = models.PageEvent(
+            name=name, path=_clean_path(path), referrer="", session_id="",
+            ip_hash=iph, user_id=user_id, country=country,
+            device=_device(ua) if ua else "server", meta=m,
+        )
+        db.add(ev)
+        db.commit()
+        return ev.id
+    except Exception:
+        try:
+            db.rollback()
+        except Exception:
+            pass
+        return None
+
+
+def record_paid(db: Session, order, request: Request = None, path: str = "/platnosc"):
+    """order_paid dokladnie raz na zamowienie (dedupe po meta.order_id)."""
+    try:
+        oid = int(order.id)
+    except Exception:
+        return None
+    try:
+        dup = db.query(models.PageEvent.id).filter(
+            models.PageEvent.name == "order_paid",
+            models.PageEvent.meta.like(f'%"order_id": {oid}%'),
+        ).first()
+        if dup:
+            return None
+    except Exception:
+        pass
+    return record(db, "order_paid", request, {
+        "order_id": oid,
+        "total": float(getattr(order, "total", 0) or 0),
+        "currency": (getattr(order, "currency", None) or "PLN"),
+        "method": (getattr(order, "payment_method", None) or ""),
+    }, path=path)

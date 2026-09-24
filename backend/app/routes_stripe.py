@@ -172,6 +172,11 @@ def sync_payment(o, db):
                 _notify_paid(o)
             except Exception as e:
                 print(f"[stripe] paid mail: {e}")
+            try:
+                from .routes_analytics import record_paid
+                record_paid(db, o)
+            except Exception:
+                pass
             return True
     except Exception as e:
         print(f"[stripe] sync error: {e}")
@@ -243,6 +248,11 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
                 except Exception as e:
                     print(f"[stripe] receipt_url fetch failed: {e}")
                 db.commit()
+                try:
+                    from .routes_analytics import record_paid
+                    record_paid(db, o, request, path="/api/webhooks/stripe")
+                except Exception:
+                    pass
                 if was_unpaid and o.customer_email:
                     try:
                         from .routes_order import _notify_paid

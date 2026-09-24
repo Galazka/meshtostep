@@ -111,6 +111,7 @@ function copyShareUrl() {
     const el = document.getElementById('shareUrl');
     el.select();
     navigator.clipboard.writeText(el.value);
+    try { if (window.ev) window.ev('share_click', { href: String(el.value).slice(0, 120) }); } catch (e) {}
     toast(t('shareLinkPrompt'), 'success');
 }
 function doEmbed(jobId) {

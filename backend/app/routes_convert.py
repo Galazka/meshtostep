@@ -113,6 +113,14 @@ async def convert_file(
     ext = Path(file.filename).suffix.lower() if file.filename else ""
     if ext not in (".stl", ".3mf", ".obj"):
         raise HTTPException(400, "Obsługiwane: .stl, .3mf, .obj")
+    try:
+        from .routes_analytics import record as _rec
+        _rec(db, "upload_start", request, {
+            "ext": ext, "size": _cl, "mode": mode,
+            "logged": bool(user),
+        }, path="/api/convert")
+    except Exception:
+        pass
 
     # quota check for logged users only
     if user:
@@ -220,6 +228,15 @@ async def convert_file(
     job.processing_time_s = round(time.time() - t0, 1)
     job.completed_at = datetime.utcnow()
     db.commit()
+    try:
+        from .routes_analytics import record as _rec
+        _rec(db, "convert_ok", request, {
+            "job_id": job.id, "faces": job.result_faces or 0,
+            "cm3": float(job.volume_cm3 or 0), "time_s": job.processing_time_s,
+            "logged": bool(user),
+        }, path="/api/convert", user_id=(user.id if user else None))
+    except Exception:
+        pass
     return {
         "ok": True, "job_id": job.id, "uuid": job_uuid,
         "faces": job.result_faces or 0, "step_size_kb": 0,
