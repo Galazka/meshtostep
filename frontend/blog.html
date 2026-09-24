@@ -367,7 +367,7 @@ body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--
 function bcf(btn,c){document.querySelectorAll('.bchip').forEach(x=>x.classList.remove('active'));btn.classList.add('active');
 document.querySelectorAll('.bcard').forEach(card=>{card.style.display=(c==='all'||card.dataset.cat===c)?'':'none'});}
 </script>
-<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js?v=21').then(function(sw){sw.update&&setInterval(function(){sw.update()},3*60*60*1000)});navigator.serviceWorker.addEventListener('controllerchange',function(){location.reload()})}</script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js?v=22').then(function(sw){sw.update&&setInterval(function(){sw.update()},3*60*60*1000)});navigator.serviceWorker.addEventListener('controllerchange',function(){location.reload()})}</script>
 <script src="/asset/ev.js?v=3" defer></script>
 <script src="/asset/nav-auth.js?v=1" defer></script>
 </body>
