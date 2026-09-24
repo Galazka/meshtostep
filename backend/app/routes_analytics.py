@@ -36,12 +36,12 @@ ALLOWED = {
 
 # kolejnosc lejka (do panelu admina)
 FUNNEL = [
-    ("pageview", "Wejscia"),
+    ("pageview", "Wejścia"),
     ("upload_start", "Start uploadu"),
     ("convert_ok", "Konwersja OK"),
     ("click_print", "Klik 'Wydrukuj u nas'"),
-    ("order_start", "Zamowienie rozpoczęte"),
-    ("order_paid", "Zamowienie oplacone"),
+    ("order_start", "Zamówienie rozpoczęte"),
+    ("order_paid", "Zamówienie opłacone"),
 ]
 
 BOT_RE = re.compile(

@@ -1,7 +1,7 @@
 /* ============================================================
    admin_analytics.js — zakładka "Analityka" w panelu admina.
    Czyta /api/admin/analytics/{summary,live}, renderuje KPIs,
-   wykres dniowy, lejek, zrodla, urzadzenia, kraje, feed live.
+   wykres dniowy, lejek, źródła, urządzenia, kraje, feed live.
    Auth: JWT Bearer z localStorage 'mt_token' (wspolny z admin.html).
    ============================================================ */
 (function () {
@@ -52,7 +52,7 @@
       '<div class="an-wrap">' +
       '  <div class="an-head">' +
       '    <strong>Analityka wlasna</strong>' +
-      '    <span class="an-muted">bez cookies &middot; bez zewnetrznych skryptow &middot; dane w naszej bazie</span>' +
+      '    <span class="an-muted">bez cookies &middot; bez zewnętrznych skryptów &middot; dane w naszej bazie</span>' +
       '    <div class="an-ctrl">' +
       '      <select id="anDays">' +
       '        <option value="1">24 h</option>' +
@@ -61,7 +61,7 @@
       '        <option value="90">90 dni</option>' +
       '      </select>' +
       '      <button class="an-btn" id="anReload" type="button">&#8635; Odswiez</button>' +
-      '      <button class="an-btn an-danger" id="anPurge" type="button">Wyczysc &gt;180 dni</button>' +
+      '      <button class="an-btn an-danger" id="anPurge" type="button">Wyczyść &gt;180 dni</button>' +
       '    </div>' +
       '  </div>' +
       '  <div id="anKpis" class="an-kpis"></div>' +
@@ -82,10 +82,10 @@
   /* ── KPI ──────────────────────────────────────────────────── */
   function kpiHtml(t) {
     var items = [
-      ['Odwiedzajacy', t.visitors, 'unikalne IP'],
+      ['Odwiedzający', t.visitors, 'unikalne IP'],
       ['Sesje', t.sessions, 'sid w sessionStorage'],
       ['Odslony', t.pageviews, 'pageview'],
-      ['Zdarzen', t.events, 'wszystkie typy']
+      ['Zdarzeń', t.events, 'wszystkie typy']
     ];
     return items.map(function (i) {
       return '<div class="an-kpi"><span class="an-kpi-v">' + esc(i[1]) + '</span>' +
@@ -109,7 +109,7 @@
       if (rows.length > 14 && i % 3 !== 0) return '';
       return '<span style="width:' + w + '%">' + esc((r.date || '').slice(5)) + '</span>';
     }).join('');
-    return '<h3>Ruch dzienny <span class="an-muted">maks ' + max + ' odslon/dzien</span></h3>' +
+    return '<h3>Ruch dzienny <span class="an-muted">maks ' + max + ' odsłon/dzień</span></h3>' +
       '<svg class="an-chart" viewBox="0 0 100 100" preserveAspectRatio="none">' + bars + '</svg>' +
       '<div class="an-axis">' + labels + '</div>';
   }
@@ -196,7 +196,7 @@
       var set = function (id, html) { var e = document.getElementById(id); if (e) e.innerHTML = html; };
       set('anChart', chartByDay(d.by_day));
       set('anFunnel', funnelHtml(d.funnel));
-      set('anRefs', listHtml('Zrodla ruchu', d.top_refs, 'source', 'views', ''));
+      set('anRefs', listHtml('Źródła ruchu', d.top_refs, 'source', 'views', ''));
       set('anPaths', listHtml('Najczestsze strony', d.top_paths, 'path', 'views', ''));
       set('anDev', devicesHtml(d.devices, d.countries, d.events));
     }).catch(function (e) {
