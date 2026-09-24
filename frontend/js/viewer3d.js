@@ -1,5 +1,5 @@
 // viewer3d.js — Three.js viewer, toast, setMeshColor, loadSTLIntoViewer (verbatim).
-import { token } from './shared.js?v=81';
+import { token } from './shared.js?v=105';
 
 function setMeshColor(hex) {
     if (!_threeScene) return;
@@ -134,7 +134,7 @@ function loadSTLIntoViewer(url, jobUuid) {
             var img=new Image();
             img.onload=function(){ container.innerHTML=''; img.style.cssText='width:100%;height:100%;object-fit:contain;border-radius:12px'; container.appendChild(img); };
             img.onerror=function(){ container.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">Podglad 3D niedostepny</div>'; };
-            img.src='/api/thumb/'+jobUuid;
+            img.src='/api/thumb/'+jobUuid+'?v=3';
         }
         function onErr(e){
             console.error('loadSTLIntoViewer error', e);

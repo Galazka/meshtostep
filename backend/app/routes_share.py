@@ -293,7 +293,7 @@ import { initViewerPro } from '/asset/viewer_pro.js?v=2';
 window.__shareViewer = initViewerPro({
   container: 'viewer3d',
   stlUrl: '/api/stl-preview/__UUID__',
-  fallbackImg: '/api/thumb/__UUID__',
+  fallbackImg: '/api/thumb/__UUID__?v=3',
   uuid: '__UUID__',
   filename: '__SHARE_FILENAME__',
   lang: '__LANG__',
@@ -688,7 +688,7 @@ def embed_page(job_id: str, db: Session = Depends(get_db)) -> HTMLResponse:
 <script type="importmap">{{"imports":{{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js","three/addons/loaders/OBJLoader.js":"/vendor/three/loaders/OBJLoader.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js"}}}}</script>
 <meta property="og:title" content="{filename} — 3dfile.link">
 <meta property="og:description" content="Podgląd 3D — {faces} ścian STEP">
-<meta property="og:image" content="https://3dfile.link/api/thumb/{uuid}">
+<meta property="og:image" content="https://3dfile.link/api/thumb/{uuid}?v=3">
 <meta name="twitter:card" content="summary_large_image">
 <title>{filename} — 3dfile.link</title>
 <style>
@@ -719,7 +719,7 @@ def embed_page(job_id: str, db: Session = Depends(get_db)) -> HTMLResponse:
 <div class="brandbar">Model 3D hostowany za darmo przez <a href="{('https://3dfile.link/s/' + _tok) if _tok else 'https://3dfile.link'}" target="_blank">3dfile.link</a> · <a href="https://3dfile.link" target="_blank">wgraj własny</a></div>
 <script type="module">
 import {{ initViewerPro }} from '/asset/viewer_pro.js?v=2';
-initViewerPro({{ container: 'viewer3d', stlUrl: '/api/stl-preview/{uuid}', fallbackImg: '/api/thumb/{uuid}',
+initViewerPro({{ container: 'viewer3d', stlUrl: '/api/stl-preview/{uuid}', fallbackImg: '/api/thumb/{uuid}?v=3',
   uuid: '{uuid}', filename: {json.dumps(job.original_filename or "model")}, toolbar: false, printBar: false }});
 </script>
 </body></html>"""
