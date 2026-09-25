@@ -28,9 +28,12 @@ from .routes_analytics import record
 
 router = APIRouter()
 
-TARGET_PARTNERS = 20                      # pierwszy rzut sieci
+# Statusy — JEDEN zestaw (backend i admin). Poziomy progresu leada.
 STATUSES = ("new", "waiting", "vetted", "active", "rejected")
 ACTIVE_STATUSES = ("new", "waiting", "vetted", "active")
+
+DEFAULT_PARTNER_TARGET = 20
+DEFAULT_PARTNER_PROGRESS = 18
 
 
 def _notify_email() -> str:
@@ -40,6 +43,16 @@ def _notify_email() -> str:
 def _h(s) -> str:
     return (str(s or "")
             .replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
+
+
+def _norm_website(s) -> str:
+    """Normalizuje adres WWW: dodaje https:// gdy brak i przycina do 200 znaków."""
+    s = (s or "").strip()
+    if not s:
+        return None
+    if not re.match(r"^https?://", s, re.I):
+        s = "https://" + s
+    return s[:200]
 
 
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$")
@@ -150,7 +163,7 @@ def partner_apply(req: PartnerApply, request: Request, db: Session = Depends(get
     lead.phone = (req.phone or "").strip()[:40] or None
     lead.city = (req.city or "").strip()[:120] or None
     lead.region = (req.region or "").strip()[:80] or None
-    lead.website = (req.website or "").strip()[:200] or None
+    lead.website = _norm_website(req.website)
     lead.printers = (req.printers or "").strip()[:300] or None
     lead.count_printers = req.count_printers if (req.count_printers or 0) > 0 else None
     lead.build_volume = (req.build_volume or "").strip()[:80] or None
@@ -202,14 +215,34 @@ def partner_apply(req: PartnerApply, request: Request, db: Session = Depends(get
     except Exception:
         pass
 
+    # potwierdzenie do zgłaszającego — "jesteś na liście, odezwiemy się"
+    if not already:
+        try:
+            ack_body = (
+                "<h2>Dziękujemy za zgłoszenie do sieci partnerskiej 3dfile.link</h2>"
+                "<p>Twoje zgłoszenie dotarło. Jesteś na liście oczekujących na "
+                "dostęp do zamówień z naszej sieci partnerskiej druku 3D.</p>"
+                f"<p><b>Zgłoszona pracownia:</b> {_h(lead.company)}</p>"
+                "<p>Jak tylko zwolnimy miejsce w sieci — lub będziemy mieć pierwsze "
+                "zamówienia w Twojej okolicy — napiszemy na ten adres email.</p>"
+                "<p style='color:#64748b;font-size:12px'>Pozdrawiamy,<br>"
+                "zespół <a href='https://3dfile.link'>3dfile.link</a></p>"
+            )
+            send_mail(lead.email, "Zgłoszenie przyjęte — sieć partnerska 3dfile.link", ack_body)
+        except Exception:
+            pass
+
     return {"ok": True, "position": position, "score": lead.score, "already": already}
 
 
 @router.get("/api/partner/stats")
 def partner_stats(db: Session = Depends(get_db)):
     waiting = _queue_count(db)
-    return {"ok": True, "waiting": waiting, "target": TARGET_PARTNERS,
-            "spots_left": max(0, TARGET_PARTNERS - waiting)}
+    target_v = int(models.SiteSetting.get(db, "partner_target", DEFAULT_PARTNER_TARGET))
+    progress_v = int(models.SiteSetting.get(db, "partner_display", DEFAULT_PARTNER_PROGRESS))
+    return {"ok": True, "waiting": waiting, "target": target_v,
+            "progress": progress_v,
+            "spots_left": max(0, target_v - progress_v)}
 
 
 # ── ADMIN ────────────────────────────────────────────────────────────
@@ -260,9 +293,30 @@ def admin_partners_list(status: str = None, q: str = None, limit: int = 200,
     counts = {}
     for st in STATUSES:
         counts[st] = db.query(models.PartnerLead).filter(models.PartnerLead.status == st).count()
+    target_v = int(models.SiteSetting.get(db, "partner_target", DEFAULT_PARTNER_TARGET))
+    progress_v = int(models.SiteSetting.get(db, "partner_display", DEFAULT_PARTNER_PROGRESS))
     return {"ok": True, "items": [_lead_row(r) for r in rows],
-            "counts": counts, "target": TARGET_PARTNERS,
+            "counts": counts, "target": target_v, "progress": progress_v,
             "total": sum(counts.values())}
+
+
+class PartnerSettings(BaseModel):
+    target: int = None
+    progress: int = None
+
+
+@router.post("/api/admin/partners/settings")
+def admin_partner_settings(body: PartnerSettings,
+                           admin=Depends(require_admin), db: Session = Depends(get_db)):
+    if body.target is not None:
+        target_v = max(1, min(int(body.target), 100000))
+        models.SiteSetting.set(db, "partner_target", target_v)
+    if body.progress is not None:
+        progress_v = max(0, min(int(body.progress), 100000))
+        models.SiteSetting.set(db, "partner_display", progress_v)
+    return {"ok": True,
+            "target": int(models.SiteSetting.get(db, "partner_target", DEFAULT_PARTNER_TARGET)),
+            "progress": int(models.SiteSetting.get(db, "partner_display", DEFAULT_PARTNER_PROGRESS))}
 
 
 class PartnerPatch(BaseModel):

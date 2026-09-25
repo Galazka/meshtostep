@@ -175,7 +175,11 @@ html[data-theme="dark"] .pwarn{background:var(--bg-soft)}
       <p data-p="s2Sub">Nie szukamy największej farmy w Polsce. Szukamy warsztatu, który dowozi to, co obiecuje, i odpisuje tego samego dnia.</p>
     </div>
     <div class="pcols">
-      <ul class="plist">
+      <div>
+        <div class="psec-head" style="margin-bottom:14px">
+          <h2 style="font-size:22px" data-p="s2aTitle">Wymagania</h2>
+        </div>
+        <ul class="plist">
         <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg><span data-p="r1">Działalność gospodarcza albo firma, która wystawi fakturę lub rachunek. To warunek konieczny, sieć chodzi w modelu podwykonawstwa.</span></li>
         <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg><span data-p="r2">Minimum jedna drukarka FDM z polem roboczym od 200 x 200 mm. Większe pole to szybsza kolejka zleceń.</span></li>
         <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg><span data-p="r3">PLA i PETG w standardzie. ASA, TPU, materiały z włóknem albo żywica to dodatkowe punkty i droższe zlecenia.</span></li>
@@ -183,6 +187,7 @@ html[data-theme="dark"] .pwarn{background:var(--bg-soft)}
         <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg><span data-p="r5">Termin 48 do 72 godzin na drobne zlecenia i odpowiedź na wiadomość w ciągu doby.</span></li>
         <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg><span data-p="r6">Wysyłka InPost albo odbiór osobisty w Twoim mieście. Jedno z dwóch wystarczy.</span></li>
       </ul>
+      </div>
       <div>
         <div class="psec-head" style="margin-bottom:14px">
           <h2 style="font-size:22px" data-p="s2bTitle">Co dajemy w zamian</h2>
@@ -367,7 +372,7 @@ var PK={
   r4:"Powtarzalna jakość. Kalibracja stołu i przepływu, tolerancja rzędu 0,3 procent, brak nitek na gotowym elemencie.",
   r5:"Termin 48 do 72 godzin na drobne zlecenia i odpowiedź na wiadomość w ciągu doby.",
   r6:"Wysyłka InPost albo odbiór osobisty w Twoim mieście. Jedno z dwóch wystarczy.",
-  s2bTitle:"Co dajemy w zamian",
+  s2bTitle:"Co dajemy w zamian",s2aTitle:"Wymagania",
   g1:"Zlecenia z 3dfile.link. Klienta, wycenę i płatność ogarniamy my, 70 procent stawki zostaje u Ciebie.",
   g2:"Automatyczną wycenę liczoną z objętości modelu, materiału i czasu druku. Bez targowania się z klientem o stawkę.",
   g3:"Pliki klienta i specyfikację w jednym miejscu, w formacie STL, 3MF albo OBJ, z policzoną objętością.",
@@ -420,7 +425,7 @@ var PK={
   r4:"Repeatable quality. Bed and flow calibrated, tolerance around 0.3 percent, no stringing on the finished part.",
   r5:"48 to 72 hour lead time on small jobs and a reply to messages within a day.",
   r6:"InPost shipping or local pickup in your city. Either one is fine.",
-  s2bTitle:"What you get in return",
+  s2bTitle:"What you get in return",s2aTitle:"Requirements",
   g1:"Orders from 3dfile.link. We handle the customer, the quote and the payment, 70 percent of the rate stays with you.",
   g2:"Automatic quoting based on model volume, material and print time. No haggling with the customer about the rate.",
   g3:"Customer files and spec in one place, STL, 3MF or OBJ, with the volume already calculated.",

@@ -439,6 +439,30 @@ class PartnerLead(Base):
     updated_at = Column(DateTime, default=datetime.utcnow)
 
 
+class SiteSetting(Base):
+    """Proste ustawienia typu klucz-wartosc (target sieci partnerskiej itd.)."""
+    __tablename__ = "site_settings"
+
+    key = Column(String(64), primary_key=True)
+    value = Column(String(500), nullable=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    @staticmethod
+    def get(db, key, default=None):
+        row = db.query(SiteSetting).filter(SiteSetting.key == key).first()
+        return row.value if row and row.value is not None else default
+
+    @staticmethod
+    def set(db, key, value):
+        row = db.query(SiteSetting).filter(SiteSetting.key == key).first()
+        if row:
+            row.value = str(value)
+        else:
+            db.add(SiteSetting(key=key, value=str(value)))
+        db.commit()
+        return value
+
+
 class PageEvent(Base):
     """Analityka wlasna (bez cookies) - pageview + mikro-eventy lejka."""
     __tablename__ = "page_events"
