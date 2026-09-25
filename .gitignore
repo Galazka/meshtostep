@@ -57,3 +57,6 @@ _shots/
 _vfy/
 demo_models/
 scratch_sharetest*.png
+_probe*.out
+shot_*.png
+scratch_shots/
