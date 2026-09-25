@@ -405,6 +405,40 @@ PRICING_SEED = {
 }
 
 
+class PartnerLead(Base):
+    """Zgloszenie do sieci partnerskiej druku 3D (lista oczekujacych + leady).
+
+    Zbierane z landingu /partner (formularz zapisu do sieci). Status:
+    new -> waiting -> vetted -> active | rejected.
+    """
+    __tablename__ = "partner_leads"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    company = Column(String(160), nullable=False)
+    contact_name = Column(String(120), nullable=True)
+    email = Column(String(200), nullable=False, index=True)
+    phone = Column(String(40), nullable=True)
+    city = Column(String(120), nullable=True)
+    region = Column(String(80), nullable=True)
+    website = Column(String(200), nullable=True)
+    printers = Column(String(300), nullable=True)        # "Bambu P1S x2, Prusa MK4"
+    count_printers = Column(Integer, nullable=True)
+    build_volume = Column(String(80), nullable=True)     # "256 x 256 x 256 mm"
+    materials = Column(String(300), nullable=True)       # CSV: PLA,PETG,ASA
+    monthly_capacity = Column(String(80), nullable=True) # "50 szt / mies"
+    has_jdg = Column(Boolean, default=False)
+    offer_shipping = Column(Boolean, default=False)
+    message = Column(Text, nullable=True)
+    status = Column(String(20), default="new", index=True)
+    notes = Column(Text, nullable=True)
+    score = Column(Integer, nullable=True)               # ranking wg kompletnosci
+    source = Column(String(40), default="partner_landing")
+    consent = Column(Boolean, default=False)
+    ip_hash = Column(String(32), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+
 class PageEvent(Base):
     """Analityka wlasna (bez cookies) - pageview + mikro-eventy lejka."""
     __tablename__ = "page_events"

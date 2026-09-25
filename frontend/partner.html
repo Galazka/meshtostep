@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sieć partnerska druku 3D — drukuj zlecenia z 3DFILE.link</title>
+<meta name="description" content="Prowadzisz pracownię druku 3D i masz wolne moce? Wejdź do sieci partnerskiej 3DFILE.link: my dajemy zlecenia i wycenę, Ty drukujesz. Podział 70/30, zero opłat wstępnych.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://3dfile.link/partner">
+<link rel="alternate" hreflang="pl" href="https://3dfile.link/partner">
+<link rel="alternate" hreflang="en" href="https://3dfile.link/en/partner">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="3DFILE.link">
+<meta property="og:url" content="https://3dfile.link/partner">
+<meta property="og:title" content="Sieć partnerska druku 3D — 3DFILE.link">
+<meta property="og:description" content="Zlecenia z 3dfile.link dla Twojej pracowni. Podział 70/30, zero opłat wstępnych, faktury i podwykonawstwo.">
+<meta property="og:image" content="https://3dfile.link/asset/hero_printer.png">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"Czy muszę mieć firmę, żeby wejść do sieci partnerskiej?","acceptedAnswer":{"@type":"Answer","text":"Tak. Sieć działa w modelu podwykonawstwa, więc potrzebna jest działalność gospodarcza albo firma, która może wystawić fakturę lub rachunek."}},
+{"@type":"Question","name":"Ile kosztuje wejście do sieci?","acceptedAnswer":{"@type":"Answer","text":"Zero. Nie ma opłaty wstępnej, abonamentu ani prowizji od wdrożenia. Rozliczamy się z podziału 70/30 od zrealizowanego zlecenia."}},
+{"@type":"Question","name":"Kto wycenia wydruk dla klienta?","acceptedAnswer":{"@type":"Answer","text":"My. Kalkulator 3dfile.link liczy objętość modelu, materiał, czas druku i wysyłkę. Ty dostajesz gotowe zlecenie ze specyfikacją i stawką."}},
+{"@type":"Question","name":"Jak wygląda wypłata?","acceptedAnswer":{"@type":"Answer","text":"Po potwierdzeniu dostawy przez klienta wystawiamy rozliczenie, a Twoje 70% trafia na konto w ciągu 7 dni. Na życzenie wystawiamy dokument podwykonawczy."}}]}
+</script>
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="/asset/portal.css?v=70">
+<style>
+.pwrap{max-width:1300px;margin:0 auto;padding:0 16px}
+.phero{background:var(--bg-navy);color:#fff;padding:64px 0 56px;border-bottom:1px solid var(--line-dark)}
+.phero .peyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#7fb0ff}
+.phero h1{font-family:var(--font-display);font-size:clamp(30px,4.4vw,52px);line-height:1.05;margin:16px 0 0;font-weight:700;letter-spacing:-.03em;max-width:900px}
+.phero h1 em{font-style:normal;color:#7fb0ff}
+.phero p.psub{color:#c3cfdf;font-size:17px;line-height:1.6;max-width:680px;margin:18px 0 0}
+.pcta-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}
+.pcta{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;font-size:15px;padding:13px 26px;border-radius:var(--radius)}
+.pcta:hover{background:var(--accent-hov)}
+.pcta.ghost{background:transparent;border:1px solid rgba(255,255,255,.28);color:#fff}
+.pcta.ghost:hover{background:rgba(255,255,255,.08)}
+.pstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:1px;background:var(--line-dark);border:1px solid var(--line-dark);margin-top:38px}
+.pstat{background:var(--bg-navy);padding:16px 18px}
+.pstat b{display:block;font-family:var(--font-mono);font-size:22px;color:#fff;font-weight:600;line-height:1.2}
+.pstat span{font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#8FA3C8}
+.psec{padding:64px 0}
+.psec.soft{background:var(--bg-soft);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.psec-head{margin-bottom:28px}
+.psec-head .pnum{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;color:var(--accent);text-transform:uppercase}
+.psec-head h2{font-family:var(--font-display);font-size:clamp(23px,2.6vw,32px);margin:8px 0 0;letter-spacing:-.02em;color:var(--ink)}
+.psec-head p{color:var(--muted);margin:10px 0 0;max-width:760px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+.pcard{background:var(--bg);padding:24px}
+.pcard .pstep{font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:.12em}
+.pcard h3{font-family:var(--font-display);font-size:17px;margin:10px 0 8px;color:var(--ink)}
+.pcard p{color:var(--muted);font-size:14.5px;line-height:1.65;margin:0}
+.plist{list-style:none;padding:0;margin:0}
+.plist li{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-bottom:1px solid var(--line);font-size:15px;color:var(--ink);line-height:1.55}
+.plist li:last-child{border-bottom:none}
+.plist svg{flex:none;margin-top:3px}
+.pcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(330px,100%),1fr));gap:32px}
+.pwarn{border-left:3px solid var(--accent);background:var(--bg-soft);padding:14px 18px;font-size:14.5px;color:var(--ink);line-height:1.6;margin-top:18px}
+.pform{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:16px}
+.pform .pfull{grid-column:1/-1}
+.pf label{display:block;font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:6px}
+.pf input[type=text],.pf input[type=email],.pf input[type=url],.pf input[type=number],.pf input[type=tel],.pf select,.pf textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--bg);color:var(--ink);font-family:var(--font);font-size:15px}
+.pf input:focus,.pf select:focus,.pf textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(2,132,199,.14)}
+.pf textarea{min-height:110px;resize:vertical}
+.pchips{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
+.pchips label{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:var(--radius-sm);padding:8px 12px;font-family:var(--font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink);cursor:pointer;background:var(--bg);margin:0}
+.pchips label:hover{border-color:var(--accent)}
+.pchips input{accent-color:var(--accent);margin:0}
+.pchk{display:flex;gap:10px;align-items:flex-start;font-size:14.5px;color:var(--ink);line-height:1.55;margin-top:4px}
+.pchk input{margin-top:3px;accent-color:var(--accent)}
+.pbtn{background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-family:var(--font);font-weight:600;font-size:15px;padding:13px 30px;cursor:pointer}
+.pbtn:hover{background:var(--accent-hov)}
+.pbtn:disabled{opacity:.55;cursor:not-allowed}
+.pstatus{margin-top:14px;font-size:14px;font-weight:600;min-height:20px}
+.pstatus.ok{color:var(--ok)}
+.pstatus.err{color:var(--danger)}
+.phide{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.pdone{border:1px solid var(--line);background:var(--bg);padding:32px}
+.pdone h3{font-family:var(--font-display);font-size:22px;margin:12px 0 8px;color:var(--ink)}
+.pdone p{color:var(--muted);font-size:15px;line-height:1.65;margin:0}
+.pdone .pqueue{font-family:var(--font-mono);font-size:34px;color:var(--accent);font-weight:600;margin:16px 0 0}
+details.pfaq{border-bottom:1px solid var(--line);padding:16px 0}
+details.pfaq summary{cursor:pointer;font-weight:600;font-size:16px;color:var(--ink);list-style:none}
+details.pfaq summary::-webkit-details-marker{display:none}
+details.pfaq summary:after{content:"+";float:right;color:var(--accent);font-family:var(--font-mono)}
+details.pfaq[open] summary:after{content:"–"}
+details.pfaq p{color:var(--muted);font-size:14.5px;line-height:1.7;margin:12px 0 0;max-width:900px}
+html[data-theme="dark"] .psec.soft{background:var(--bg-soft)}
+html[data-theme="dark"] .pwarn{background:var(--bg-soft)}
+@media(max-width:760px){
+  .phero{padding:44px 0 40px}
+  .psec{padding:46px 0}
+  .pstat b{font-size:19px}
+}
+</style>
+</head>
+<body>
+
+<nav class="prt-topbar" id="partnerNav">
+  <a class="prt-brand" href="/"><span class="prt-logo-chip"><img src="/logo.png?v=83" alt="3DFILE.link"></span></a>
+  <nav class="prt-nav" id="partnerNavLinks">
+    <a href="/" data-p="navHome">Hosting 3D</a>
+    <a href="/#discover" data-p="navDiscover">Odkrywaj</a>
+    <a href="/drukuje" data-p="navPrint">Wydrukuj u nas</a>
+    <a href="/#hiw" data-p="navHow">Jak to działa</a>
+    <a href="/#faq" data-p="navFAQ">Pomoc FAQ</a>
+    <a href="/blog.html" data-p="navBlog">Blog</a>
+    <a href="/kontakt" data-p="navContact">Kontakt</a>
+  </nav>
+  <div class="prt-actions nav-right" style="margin-left:auto">
+    <button class="prt-lang" id="partnerLang" onclick="__ppLang()">EN</button>
+    <a class="prt-btn ghost" href="/" data-p="navLogin">Zaloguj</a>
+    <a class="prt-btn primary" href="/" data-p="navSignup">Załóż konto</a>
+    <button class="prt-burger" onclick="document.getElementById('partnerNavLinks').classList.toggle('open')" aria-label="Menu">&#9776;</button>
+  </div>
+</nav>
+
+<header class="phero">
+  <div class="pwrap">
+    <span class="peyebrow" data-p="heroEyebrow">Sieć partnerska · podwykonawstwo druku 3D</span>
+    <h1 data-p="heroH1">Twoje wolne moce drukarek <em>zarabiają</em> na zleceniach z 3dfile.link</h1>
+    <p class="psub" data-p="heroSub">My przyprowadzamy klienta i liczymy wycenę. Ty drukujesz i wysyłasz. Bez opłat wstępnych, bez abonamentu, bez szukania zleceń na grupach.</p>
+    <div class="pcta-row">
+      <a class="pcta" href="#zgloszenie" data-p="heroCta1">Zapisz pracownię do sieci</a>
+      <a class="pcta ghost" href="#proces" data-p="heroCta2">Jak to działa</a>
+    </div>
+    <div class="pstats">
+      <div class="pstat"><b id="stQueue">– / 20</b><span data-p="statQueue">Kolejka pierwszego rzutu</span></div>
+      <div class="pstat"><b>70 / 30</b><span data-p="statSplit">Podział na Twoją korzyść</span></div>
+      <div class="pstat"><b>7 dni</b><span data-p="statPayout">Rozliczenie po dostawie</span></div>
+      <div class="pstat"><b>0 zł</b><span data-p="statFee">Opłata wstępna</span></div>
+    </div>
+  </div>
+</header>
+
+<section class="psec" id="proces">
+  <div class="pwrap">
+    <div class="psec-head">
+      <div class="pnum" data-p="s1Kicker">01 / Proces</div>
+      <h2 data-p="s1Title">Od zgłoszenia do pierwszego wydruku</h2>
+      <p data-p="s1Sub">Cztery kroki, żadnych ukrytych etapów. Weryfikacja jest po to, żeby klient nie dostał krzywej ściany, a Ty nie dostał reklamacji.</p>
+    </div>
+    <div class="pgrid">
+      <div class="pcard">
+        <span class="pstep">01</span>
+        <h3 data-p="k1T">Zgłoszenie</h3>
+        <p data-p="k1D">Wypełniasz formularz poniżej. Dwa, trzy pola istotne: czym drukujesz, co możesz drukować i czy masz firmę. Zajmuje to dwie minuty.</p>
+      </div>
+      <div class="pcard">
+        <span class="pstep">02</span>
+        <h3 data-p="k2T">Weryfikacja</h3>
+        <p data-p="k2D">Rozmawiamy piętnaście minut: faktury, kalibracja, czasy realizacji, wysyłka. Prosimy o jedno zdjęcie wydruku, żeby nie zgadywać jakości.</p>
+      </div>
+      <div class="pcard">
+        <span class="pstep">03</span>
+        <h3 data-p="k3T">Pierwsze zlecenie</h3>
+        <p data-p="k3D">Dostajesz pliki klienta, specyfikację materiału, termin i stawkę. Drukujesz, pakujesz, wysyłasz albo oddajesz na miejscu.</p>
+      </div>
+      <div class="pcard">
+        <span class="pstep">04</span>
+        <h3 data-p="k4T">Rozliczenie</h3>
+        <p data-p="k4D">Po potwierdzeniu dostawy wystawiamy rozliczenie. Twoje 70% idzie na konto w siedem dni, wraz z dokumentem podwykonawczym.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="psec soft">
+  <div class="pwrap">
+    <div class="psec-head">
+      <div class="pnum" data-p="s2Kicker">02 / Wymagania</div>
+      <h2 data-p="s2Title">Kogo szukamy</h2>
+      <p data-p="s2Sub">Nie szukamy największej farmy w Polsce. Szukamy warsztatu, który dowozi to, co obiecuje, i odpisuje tego samego dnia.</p>
+    </div>
+    <div class="pcols">
+      <ul class="plist">
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg><span data-p="r1">Działalność gospodarcza albo firma, która wystawi fakturę lub rachunek. To warunek konieczny, sieć chodzi w modelu podwykonawstwa.</span></li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg><span data-p="r2">Minimum jedna drukarka FDM z polem roboczym od 200 x 200 mm. Większe pole to szybsza kolejka zleceń.</span></li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg><span data-p="r3">PLA i PETG w standardzie. ASA, TPU, materiały z włóknem albo żywica to dodatkowe punkty i droższe zlecenia.</span></li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg><span data-p="r4">Powtarzalna jakość. Kalibracja stołu i przepływu, tolerancja rzędu 0,3 procent, brak nitek na gotowym elemencie.</span></li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg><span data-p="r5">Termin 48 do 72 godzin na drobne zlecenia i odpowiedź na wiadomość w ciągu doby.</span></li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg><span data-p="r6">Wysyłka InPost albo odbiór osobisty w Twoim mieście. Jedno z dwóch wystarczy.</span></li>
+      </ul>
+      <div>
+        <div class="psec-head" style="margin-bottom:14px">
+          <h2 style="font-size:22px" data-p="s2bTitle">Co dajemy w zamian</h2>
+        </div>
+        <ul class="plist">
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg><span data-p="g1">Zlecenia z 3dfile.link. Klienta, wycenę i płatność ogarniamy my, 70 procent stawki zostaje u Ciebie.</span></li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg><span data-p="g2">Automatyczną wycenę liczonym z objętości modelu, materiału i czasu druku. Bez targowania się z klientem o stawkę.</span></li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg><span data-p="g3">Pliki klienta i specyfikację w jednym miejscu, w formacie STL, 3MF albo OBJ, z policzoną objętością.</span></li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg><span data-p="g4">Zero opłat wstępnych i zero abonamentu. Płacisz wyłącznie swoim czasem, gdy przyjmiesz zlecenie.</span></li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="1.8"><path d="M20 6L9 17l-5-5"/></svg><span data-p="g5">Pierwszeństwo w kolejce, gdy zleceń jest więcej, niż nasza farma w Gdańsku jest w stanie przyjąć.</span></li>
+        </ul>
+        <div class="pwarn" data-p="warnBox">Zasada jednego kanału: klient zamawia u nas, Ty nie kontaktujesz się z nim w sprawie wyceny. Inaczej sieć rozsypuje się po pierwszym tygodniu.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="psec" id="zgloszenie">
+  <div class="pwrap">
+    <div class="psec-head">
+      <div class="pnum" data-p="s3Kicker">03 / Zgłoszenie</div>
+      <h2 data-p="s3Title">Zapisz pracownię do sieci</h2>
+      <p data-p="s3Sub">Formularz jest krótki. Im więcej konkretów podasz, tym wyżej ustawiamy Twoje zgłoszenie w kolejce weryfikacji.</p>
+    </div>
+
+    <form id="partnerForm" class="pform" onsubmit="return pSend(event)">
+      <div class="pf">
+        <label for="pCompany" data-p="fCompany">Pracownia albo firma *</label>
+        <input type="text" id="pCompany" maxlength="160" required>
+      </div>
+      <div class="pf">
+        <label for="pName" data-p="fName">Osoba do kontaktu</label>
+        <input type="text" id="pName" maxlength="120">
+      </div>
+      <div class="pf">
+        <label for="pEmail" data-p="fEmail">Email *</label>
+        <input type="email" id="pEmail" maxlength="200" required>
+      </div>
+      <div class="pf">
+        <label for="pPhone" data-p="fPhone">Telefon</label>
+        <input type="tel" id="pPhone" maxlength="40">
+      </div>
+      <div class="pf">
+        <label for="pCity" data-p="fCity">Miasto</label>
+        <input type="text" id="pCity" maxlength="120">
+      </div>
+      <div class="pf">
+        <label for="pRegion" data-p="fRegion">Województwo</label>
+        <input type="text" id="pRegion" maxlength="80">
+      </div>
+      <div class="pf">
+        <label for="pWeb" data-p="fWeb">Strona albo profil</label>
+        <input type="url" id="pWeb" maxlength="200" placeholder="https://">
+      </div>
+      <div class="pf">
+        <label for="pCount" data-p="fCount">Liczba drukarek</label>
+        <input type="number" id="pCount" min="1" max="200">
+      </div>
+      <div class="pf pfull">
+        <label for="pPrinters" data-p="fPrinters">Jakie maszyny</label>
+        <input type="text" id="pPrinters" maxlength="300" placeholder="np. Bambu Lab P1S x2, Prusa MK4">
+      </div>
+      <div class="pf">
+        <label for="pVolume" data-p="fVolume">Największe pole robocze</label>
+        <input type="text" id="pVolume" maxlength="80" placeholder="np. 256 x 256 x 256 mm">
+      </div>
+      <div class="pf">
+        <label for="pCapacity" data-p="fCapacity">Wolne moce w miesiącu</label>
+        <select id="pCapacity">
+          <option value="" data-p="cap0">Wybierz</option>
+          <option value="do 50h" data-p="cap1">do 50 godzin</option>
+          <option value="50-150h" data-p="cap2">50 do 150 godzin</option>
+          <option value="150-400h" data-p="cap3">150 do 400 godzin</option>
+          <option value="powyzej 400h" data-p="cap4">powyżej 400 godzin</option>
+        </select>
+      </div>
+      <div class="pf pfull">
+        <label data-p="fMaterials">Materiały, które możesz drukować</label>
+        <div class="pchips">
+          <label><input type="checkbox" class="pmat" value="PLA">PLA</label>
+          <label><input type="checkbox" class="pmat" value="PETG">PETG</label>
+          <label><input type="checkbox" class="pmat" value="ABS">ABS</label>
+          <label><input type="checkbox" class="pmat" value="ASA">ASA</label>
+          <label><input type="checkbox" class="pmat" value="TPU">TPU</label>
+          <label><input type="checkbox" class="pmat" value="PLA-CF">PLA-CF</label>
+          <label><input type="checkbox" class="pmat" value="PA12-CF">PA12-CF</label>
+          <label><input type="checkbox" class="pmat" value="Zywica SLA">&#379;ywica SLA</label>
+        </div>
+      </div>
+      <div class="pf pfull">
+        <div class="pchk"><input type="checkbox" id="pJdg"><label for="pJdg" style="font-family:var(--font);font-size:14.5px;letter-spacing:0;text-transform:none;color:var(--ink);font-weight:400;margin:0" data-p="fJdg">Mam działalność gospodarczą i mogę wystawić fakturę lub rachunek.</label></div>
+        <div class="pchk" style="margin-top:12px"><input type="checkbox" id="pShip"><label for="pShip" style="font-family:var(--font);font-size:14.5px;letter-spacing:0;text-transform:none;color:var(--ink);font-weight:400;margin:0" data-p="fShip">Wysyłam paczki InPost lub innym kurierem na terenie Polski.</label></div>
+      </div>
+      <div class="pf pfull">
+        <label for="pMsg" data-p="fMsg">Czym się zajmujesz, co warto wiedzieć</label>
+        <textarea id="pMsg" maxlength="4000" data-pp="fMsgPh" placeholder="Prototypy, detale techniczne, figurki, serie, doświadczenie z materiałami technicznymi"></textarea>
+      </div>
+      <div class="pf pfull">
+        <div class="pchk"><input type="checkbox" id="pConsent"><label for="pConsent" style="font-family:var(--font);font-size:14.5px;letter-spacing:0;text-transform:none;color:var(--ink);font-weight:400;margin:0" data-p="fConsent">Zgadzam się na kontakt w sprawie sieci partnerskiej i przetwarzanie danych w tym celu. *</label></div>
+      </div>
+      <input type="text" id="pHp" class="phide" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <div class="pf pfull">
+        <button type="submit" class="pbtn" id="pSubmit" data-p="fSubmit">Wyślij zgłoszenie</button>
+        <div class="pstatus" id="pStatus"></div>
+      </div>
+    </form>
+
+    <div class="pdone" id="pDone" style="display:none">
+      <div class="pnum" style="font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;color:var(--accent);text-transform:uppercase" data-p="doneKicker">Zgłoszenie przyjęte</div>
+      <h3 data-p="doneTitle">Jesteś w kolejce weryfikacji</h3>
+      <div class="pqueue" id="pQueuePos">1 / 20</div>
+      <p data-p="doneText">Odezwiemy się na podany email w ciągu dwóch dni roboczych. Sprawdź folder spam, pisujemy z adresu tomgal@3dfile.link.</p>
+    </div>
+  </div>
+</section>
+
+<section class="psec soft">
+  <div class="pwrap">
+    <div class="psec-head">
+      <div class="pnum" data-p="s4Kicker">04 / Pytania</div>
+      <h2 data-p="s4Title">Najczęstsze pytania</h2>
+    </div>
+    <details class="pfaq"><summary data-p="q1">Muszę mieć firmę, żeby wejść do sieci?</summary><p data-p="a1">Tak. Sieć działa w modelu podwykonawstwa, więc potrzebna jest działalność gospodarcza albo firma, która może wystawić fakturę lub rachunek. Rozliczamy się na dokument, nie na zeszyt.</p></details>
+    <details class="pfaq"><summary data-p="q2">Ile kosztuje wejście?</summary><p data-p="a2">Zero. Nie ma opłaty wstępnej, abonamentu ani prowizji od wdrożenia. Zarabiamy tylko wtedy, gdy Ty zarobisz, z podziału 70 na 30 od zrealizowanego zlecenia.</p></details>
+    <details class="pfaq"><summary data-p="q3">Kto ustala cenę dla klienta?</summary><p data-p="a3">My. Kalkulator liczy objętość modelu, materiał, czas druku, pakowanie i wysyłkę. Dostajesz zlecenie ze specyfikacją i stawką, więc nie negocjujesz z klientem.</p></details>
+    <details class="pfaq"><summary data-p="q4">Jak szybko dostanę pierwsze zlecenie?</summary><p data-p="a4">Zależy od materiału i regionu. PLA i PETG schodzą najszybciej, zwykle w pierwszym albo drugim tygodniu po weryfikacji. Materiały techniczne, jak ASA albo PA12-CF, trafiają do wąskiej grupy warsztatów i tam zlecenia pojawiają się rzadziej, ale są droższe.</p></details>
+    <details class="pfaq"><summary data-p="q5">Czy mogę odmówić zlecenia?</summary><p data-p="a5">Tak, bez konsekwencji. Zlecenie jest propozycją. Jeśli termin, materiał albo stawka nie pasuje, odrzucasz je jednym kliknięciem i wraca do puli.</p></details>
+  </div>
+</section>
+
+<footer class="prt-footer" id="partnerFooter">
+  <div class="prt-footer-inner">
+    <div class="prt-f-brand-col">
+      <div class="prt-f-logo"><img src="/logo.png?v=83" alt="3DFILE.link"></div>
+      <p style="font-size:13.5px;line-height:1.65;color:#bcc9de;margin-top:10px">Hosting modeli 3D, konwersja siatek do geometrii STEP i druk na przemysłowej farmie Bambu Lab P1S w Gdańsku Osowa.</p>
+    </div>
+    <div class="prt-f-col">
+      <h4 data-p="fUslugi">Usługi</h4>
+      <a href="/" data-p="navHome">Hosting 3D</a>
+      <a href="/zamow" data-p="fOrder">Druk 3D na żądanie</a>
+      <a href="/drukuje" data-p="navPrint">Wydrukuj u nas</a>
+    </div>
+    <div class="prt-f-col">
+      <h4 data-p="fForShops">Dla drukarń</h4>
+      <a href="/partner" data-p="fPartner">Sieć partnerska</a>
+      <a href="/partner#zgloszenie" data-p="fJoin">Zgłoś pracownię</a>
+      <a href="/partner#proces" data-p="fReq">Wymagania</a>
+    </div>
+    <div class="prt-f-col">
+      <h4 data-p="fContact">Kontakt</h4>
+      <a href="mailto:tomgal@3dfile.link">tomgal@3dfile.link</a>
+      <a href="/kontakt" data-p="navContact">Kontakt</a>
+      <a href="/regulamin.html" data-p="fTerms">Regulamin</a>
+    </div>
+  </div>
+  <div class="prt-f-bottom">
+    <span>&#169; 2026 3dfile.link &#183; <span data-p="fBottom">Hosting i druk 3D</span></span>
+    <span class="f-links"><a href="/regulamin.html" style="color:#bcc9de" data-p="fTerms">Regulamin</a> &#183; <a href="/prywatnosc.html" style="color:#bcc9de" data-p="fPrivacy">Polityka prywatności</a></span>
+  </div>
+</footer>
+
+<script>
+var PK={
+ pl:{
+  navHome:"Hosting 3D",navDiscover:"Odkrywaj",navPrint:"Wydrukuj u nas",navHow:"Jak to działa",navFAQ:"Pomoc FAQ",navBlog:"Blog",navContact:"Kontakt",navLogin:"Zaloguj",navSignup:"Załóż konto",
+  heroEyebrow:"Sieć partnerska · podwykonawstwo druku 3D",
+  heroH1:"Twoje wolne moce drukarek <em>zarabiają</em> na zleceniach z 3dfile.link",
+  heroSub:"My przyprowadzamy klienta i liczymy wycenę. Ty drukujesz i wysyłasz. Bez opłat wstępnych, bez abonamentu, bez szukania zleceń na grupach.",
+  heroCta1:"Zapisz pracownię do sieci",heroCta2:"Jak to działa",
+  statQueue:"Kolejka pierwszego rzutu",statSplit:"Podział na Twoją korzyść",statPayout:"Rozliczenie po dostawie",statFee:"Opłata wstępna",
+  s1Kicker:"01 / Proces",s1Title:"Od zgłoszenia do pierwszego wydruku",
+  s1Sub:"Cztery kroki, żadnych ukrytych etapów. Weryfikacja jest po to, żeby klient nie dostał krzywej ściany, a Ty nie dostał reklamacji.",
+  k1T:"Zgłoszenie",k1D:"Wypełniasz formularz poniżej. Dwa, trzy pola istotne: czym drukujesz, co możesz drukować i czy masz firmę. Zajmuje to dwie minuty.",
+  k2T:"Weryfikacja",k2D:"Rozmawiamy piętnaście minut: faktury, kalibracja, czasy realizacji, wysyłka. Prosimy o jedno zdjęcie wydruku, żeby nie zgadywać jakości.",
+  k3T:"Pierwsze zlecenie",k3D:"Dostajesz pliki klienta, specyfikację materiału, termin i stawkę. Drukujesz, pakujesz, wysyłasz albo oddajesz na miejscu.",
+  k4T:"Rozliczenie",k4D:"Po potwierdzeniu dostawy wystawiamy rozliczenie. Twoje 70% idzie na konto w siedem dni, wraz z dokumentem podwykonawczym.",
+  s2Kicker:"02 / Wymagania",s2Title:"Kogo szukamy",
+  s2Sub:"Nie szukamy największej farmy w Polsce. Szukamy warsztatu, który dowozi to, co obiecuje, i odpisuje tego samego dnia.",
+  r1:"Działalność gospodarcza albo firma, która wystawi fakturę lub rachunek. To warunek konieczny, sieć chodzi w modelu podwykonawstwa.",
+  r2:"Minimum jedna drukarka FDM z polem roboczym od 200 x 200 mm. Większe pole to szybsza kolejka zleceń.",
+  r3:"PLA i PETG w standardzie. ASA, TPU, materiały z włóknem albo żywica to dodatkowe punkty i droższe zlecenia.",
+  r4:"Powtarzalna jakość. Kalibracja stołu i przepływu, tolerancja rzędu 0,3 procent, brak nitek na gotowym elemencie.",
+  r5:"Termin 48 do 72 godzin na drobne zlecenia i odpowiedź na wiadomość w ciągu doby.",
+  r6:"Wysyłka InPost albo odbiór osobisty w Twoim mieście. Jedno z dwóch wystarczy.",
+  s2bTitle:"Co dajemy w zamian",
+  g1:"Zlecenia z 3dfile.link. Klienta, wycenę i płatność ogarniamy my, 70 procent stawki zostaje u Ciebie.",
+  g2:"Automatyczną wycenę liczoną z objętości modelu, materiału i czasu druku. Bez targowania się z klientem o stawkę.",
+  g3:"Pliki klienta i specyfikację w jednym miejscu, w formacie STL, 3MF albo OBJ, z policzoną objętością.",
+  g4:"Zero opłat wstępnych i zero abonamentu. Płacisz wyłącznie swoim czasem, gdy przyjmiesz zlecenie.",
+  g5:"Pierwszeństwo w kolejce, gdy zleceń jest więcej, niż nasza farma w Gdańsku jest w stanie przyjąć.",
+  warnBox:"Zasada jednego kanału: klient zamawia u nas, Ty nie kontaktujesz się z nim w sprawie wyceny. Inaczej sieć rozsypuje się po pierwszym tygodniu.",
+  s3Kicker:"03 / Zgłoszenie",s3Title:"Zapisz pracownię do sieci",
+  s3Sub:"Formularz jest krótki. Im więcej konkretów podasz, tym wyżej ustawiamy Twoje zgłoszenie w kolejce weryfikacji.",
+  fCompany:"Pracownia albo firma *",fName:"Osoba do kontaktu",fEmail:"Email *",fPhone:"Telefon",fCity:"Miasto",fRegion:"Województwo",
+  fWeb:"Strona albo profil",fCount:"Liczba drukarek",fPrinters:"Jakie maszyny",fVolume:"Największe pole robocze",
+  fCapacity:"Wolne moce w miesiącu",fMaterials:"Materiały, które możesz drukować",
+  cap0:"Wybierz",cap1:"do 50 godzin",cap2:"50 do 150 godzin",cap3:"150 do 400 godzin",cap4:"powyżej 400 godzin",
+  fJdg:"Mam działalność gospodarczą i mogę wystawić fakturę lub rachunek.",
+  fShip:"Wysyłam paczki InPost lub innym kurierem na terenie Polski.",
+  fMsg:"Czym się zajmujesz, co warto wiedzieć",
+  fMsgPh:"Prototypy, detale techniczne, figurki, serie, doświadczenie z materiałami technicznymi",
+  fConsent:"Zgadzam się na kontakt w sprawie sieci partnerskiej i przetwarzanie danych w tym celu. *",
+  fSubmit:"Wyślij zgłoszenie",
+  doneKicker:"Zgłoszenie przyjęte",doneTitle:"Jesteś w kolejce weryfikacji",
+  doneText:"Odezwiemy się na podany email w ciągu dwóch dni roboczych. Sprawdź folder spam, pisujemy z adresu tomgal@3dfile.link.",
+  s4Kicker:"04 / Pytania",s4Title:"Najczęstsze pytania",
+  q1:"Muszę mieć firmę, żeby wejść do sieci?",a1:"Tak. Sieć działa w modelu podwykonawstwa, więc potrzebna jest działalność gospodarcza albo firma, która może wystawić fakturę lub rachunek. Rozliczamy się na dokument, nie na zeszyt.",
+  q2:"Ile kosztuje wejście?",a2:"Zero. Nie ma opłaty wstępnej, abonamentu ani prowizji od wdrożenia. Zarabiamy tylko wtedy, gdy Ty zarobisz, z podziału 70 na 30 od zrealizowanego zlecenia.",
+  q3:"Kto ustala cenę dla klienta?",a3:"My. Kalkulator liczy objętość modelu, materiał, czas druku, pakowanie i wysyłkę. Dostajesz zlecenie ze specyfikacją i stawką, więc nie negocjujesz z klientem.",
+  q4:"Jak szybko dostanę pierwsze zlecenie?",a4:"Zależy od materiału i regionu. PLA i PETG schodzą najszybciej, zwykle w pierwszym albo drugim tygodniu po weryfikacji. Materiały techniczne, jak ASA albo PA12-CF, trafiają do wąskiej grupy warsztatów i tam zlecenia pojawiają się rzadziej, ale są droższe.",
+  q5:"Czy mogę odmówić zlecenia?",a5:"Tak, bez konsekwencji. Zlecenie jest propozycją. Jeśli termin, materiał albo stawka nie pasuje, odrzucasz je jednym kliknięciem i wraca do puli.",
+  fUslugi:"Usługi",fOrder:"Druk 3D na żądanie",fForShops:"Dla drukarń",fPartner:"Sieć partnerska",fJoin:"Zgłoś pracownię",fReq:"Wymagania",
+  fContact:"Kontakt",fTerms:"Regulamin",fPrivacy:"Polityka prywatności",fBottom:"Hosting i druk 3D",
+  errCompany:"Podaj nazwę pracowni",errEmail:"Podaj poprawny adres email",errConsent:"Potrzebujemy zgody na kontakt",
+  sending:"Wysyłanie",netErr:"Błąd sieci. Napisz na tomgal@3dfile.link"
+ },
+ en:{
+  navHome:"3D Hosting",navDiscover:"Discover",navPrint:"Print with us",navHow:"How it works",navFAQ:"FAQ",navBlog:"Blog",navContact:"Contact",navLogin:"Log in",navSignup:"Sign up",
+  heroEyebrow:"Partner network · 3D print subcontracting",
+  heroH1:"Put your idle printer hours to work with <em>3dfile.link orders</em>",
+  heroSub:"We bring the customer and price the job. You print and ship. No entry fee, no subscription, no hunting for orders in Facebook groups.",
+  heroCta1:"Apply to the network",heroCta2:"How it works",
+  statQueue:"First batch queue",statSplit:"Split in your favour",statPayout:"Settlement after delivery",statFee:"Entry fee",
+  s1Kicker:"01 / Process",s1Title:"From application to first print",
+  s1Sub:"Four steps, no hidden stages. We verify so the customer does not get a warped wall and you do not get a complaint.",
+  k1T:"Application",k1D:"You fill in the form below. Three fields matter: what you print with, what you can print, and whether you have a company. It takes two minutes.",
+  k2T:"Verification",k2D:"A fifteen minute call: invoices, calibration, lead times, shipping. We ask for one photo of a print so we do not have to guess quality.",
+  k3T:"First order",k3D:"You get the customer files, material spec, deadline and rate. You print, pack and ship, or hand it over locally.",
+  k4T:"Settlement",k4D:"Once delivery is confirmed we issue the settlement. Your 70 percent lands in seven days, with a subcontractor document.",
+  s2Kicker:"02 / Requirements",s2Title:"Who we are looking for",
+  s2Sub:"We are not after the biggest print farm in the country. We want a workshop that delivers what it promises and answers the same day.",
+  r1:"A registered business able to issue an invoice. That one is mandatory, the network runs on subcontracting.",
+  r2:"At least one FDM printer with a build volume of 200 x 200 mm or more. Bigger volume means a faster order queue.",
+  r3:"PLA and PETG as standard. ASA, TPU, fibre filled materials or resin earn extra points and better paid jobs.",
+  r4:"Repeatable quality. Bed and flow calibrated, tolerance around 0.3 percent, no stringing on the finished part.",
+  r5:"48 to 72 hour lead time on small jobs and a reply to messages within a day.",
+  r6:"InPost shipping or local pickup in your city. Either one is fine.",
+  s2bTitle:"What you get in return",
+  g1:"Orders from 3dfile.link. We handle the customer, the quote and the payment, 70 percent of the rate stays with you.",
+  g2:"Automatic quoting based on model volume, material and print time. No haggling with the customer about the rate.",
+  g3:"Customer files and spec in one place, STL, 3MF or OBJ, with the volume already calculated.",
+  g4:"No entry fee and no subscription. You only spend your time when you accept an order.",
+  g5:"Priority in the queue whenever demand exceeds what our Gdansk farm can take on.",
+  warnBox:"One channel rule: the customer orders from us, you do not contact them about pricing. Otherwise the network falls apart in the first week.",
+  s3Kicker:"03 / Application",s3Title:"Apply to the network",
+  s3Sub:"The form is short. The more detail you give, the higher we place your application in the verification queue.",
+  fCompany:"Workshop or company *",fName:"Contact person",fEmail:"Email *",fPhone:"Phone",fCity:"City",fRegion:"Region",
+  fWeb:"Website or profile",fCount:"Number of printers",fPrinters:"Which machines",fVolume:"Largest build volume",
+  fCapacity:"Free capacity per month",fMaterials:"Materials you can print",
+  cap0:"Select",cap1:"up to 50 hours",cap2:"50 to 150 hours",cap3:"150 to 400 hours",cap4:"over 400 hours",
+  fJdg:"I have a registered business and can issue an invoice.",
+  fShip:"I ship parcels with InPost or another courier within Poland.",
+  fMsg:"What you do and what we should know",
+  fMsgPh:"Prototypes, technical parts, miniatures, series, experience with engineering materials",
+  fConsent:"I agree to be contacted about the partner network and to my data being processed for that purpose. *",
+  fSubmit:"Send application",
+  doneKicker:"Application received",doneTitle:"You are in the verification queue",
+  doneText:"We will get back to you at your email within two business days. Check your spam folder, we write from tomgal@3dfile.link.",
+  s4Kicker:"04 / Questions",s4Title:"Frequent questions",
+  q1:"Do I need a company to join?",a1:"Yes. The network runs on subcontracting, so you need a registered business able to issue an invoice. Everything is settled on paper.",
+  q2:"How much does it cost to join?",a2:"Nothing. No entry fee, no subscription, no onboarding commission. We only earn when you earn, from the 70/30 split on a completed order.",
+  q3:"Who sets the price for the customer?",a3:"We do. The calculator works out model volume, material, print time, packing and shipping. You receive the job with a spec and a rate, so you never negotiate with the customer.",
+  q4:"How fast will I get my first order?",a4:"It depends on material and region. PLA and PETG move fastest, usually in the first or second week after verification. Engineering materials like ASA or PA12-CF go to a narrow group of workshops, those jobs are rarer but better paid.",
+  q5:"Can I turn an order down?",a5:"Yes, with no consequences. An order is a proposal. If the deadline, material or rate does not work, you reject it in one click and it goes back into the pool.",
+  fUslugi:"Services",fOrder:"3D printing on demand",fForShops:"For print shops",fPartner:"Partner network",fJoin:"Apply now",fReq:"Requirements",
+  fContact:"Contact",fTerms:"Terms",fPrivacy:"Privacy policy",fBottom:"3D hosting and printing",
+  errCompany:"Enter your workshop name",errEmail:"Enter a valid email address",errConsent:"We need your consent to make contact",
+  sending:"Sending",netErr:"Network error. Write to tomgal@3dfile.link"
+ }
+};
+function __ppGet(){try{return localStorage.getItem('mt_lang')==='en'?'en':'pl';}catch(e){return 'pl';}}
+function __ppApply(){
+  var L=PK[__ppGet()];
+  document.documentElement.lang=__ppGet();
+  var nodes=document.querySelectorAll('[data-p]');
+  for(var i=0;i<nodes.length;i++){
+    var k=nodes[i].getAttribute('data-p');
+    if(L[k]!==undefined){nodes[i].innerHTML=L[k];}
+  }
+  var ph=document.querySelectorAll('[data-pp]');
+  for(var j=0;j<ph.length;j++){
+    var k2=ph[j].getAttribute('data-pp');
+    if(L[k2]!==undefined){ph[j].setAttribute('placeholder',L[k2]);}
+  }
+  var lt=document.getElementById('partnerLang');
+  if(lt){lt.textContent=__ppGet()==='en'?'PL':'EN';}
+}
+function __ppLang(){
+  try{localStorage.setItem('mt_lang',__ppGet()==='en'?'pl':'en');}catch(e){}
+  location.reload();
+}
+function pSend(ev){
+  ev.preventDefault();
+  var L=PK[__ppGet()];
+  var st=document.getElementById('pStatus'),btn=document.getElementById('pSubmit');
+  var company=document.getElementById('pCompany').value.trim();
+  var email=document.getElementById('pEmail').value.trim();
+  var consent=document.getElementById('pConsent').checked;
+  var hp=document.getElementById('pHp').value;
+  function fail(msg){st.className='pstatus err';st.textContent=msg;}
+  if(company.length<2){fail(L.errCompany);return false;}
+  if(!/^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$/.test(email)){fail(L.errEmail);return false;}
+  if(!consent){fail(L.errConsent);return false;}
+  var mats=[].slice.call(document.querySelectorAll('.pmat')).filter(function(c){return c.checked}).map(function(c){return c.value});
+  var payload={
+    company:company,
+    email:email,
+    contact_name:document.getElementById('pName').value.trim(),
+    phone:document.getElementById('pPhone').value.trim(),
+    city:document.getElementById('pCity').value.trim(),
+    region:document.getElementById('pRegion').value.trim(),
+    website:document.getElementById('pWeb').value.trim(),
+    printers:document.getElementById('pPrinters').value.trim(),
+    count_printers:parseInt(document.getElementById('pCount').value||'0',10)||null,
+    build_volume:document.getElementById('pVolume').value.trim(),
+    materials:mats,
+    monthly_capacity:document.getElementById('pCapacity').value,
+    has_jdg:document.getElementById('pJdg').checked,
+    offer_shipping:document.getElementById('pShip').checked,
+    message:document.getElementById('pMsg').value.trim(),
+    consent:true,
+    hp:hp,
+    source:'partner_landing'
+  };
+  btn.disabled=true;
+  var old=btn.innerHTML;
+  btn.textContent=L.sending+'...';
+  st.className='pstatus';st.textContent='';
+  fetch('/api/partner/apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};}).catch(function(){return {ok:r.ok,d:{}};});})
+    .then(function(res){
+      btn.disabled=false;btn.innerHTML=old;
+      if(res.ok&&res.d&&res.d.ok){
+        document.getElementById('partnerForm').style.display='none';
+        var done=document.getElementById('pDone');
+        done.style.display='block';
+        document.getElementById('pQueuePos').textContent=(res.d.position||1)+' / '+(window.__pTarget||20);
+        window.scrollTo({top:done.getBoundingClientRect().top+window.pageYOffset-90,behavior:'smooth'});
+      } else {
+        fail((res.d&&res.d.detail)||L.netErr);
+      }
+    })
+    .catch(function(){btn.disabled=false;btn.innerHTML=old;fail(L.netErr);});
+  return false;
+}
+__ppApply();
+fetch('/api/partner/stats').then(function(r){return r.json();}).then(function(d){
+  if(d&&d.ok){
+    window.__pTarget=d.target||20;
+    var el=document.getElementById('stQueue');
+    if(el){el.textContent=(d.waiting||0)+' / '+(d.target||20);}
+  }
+}).catch(function(){});
+document.addEventListener('click',function(ev){
+  var nl=document.getElementById('partnerNavLinks');
+  if(nl&&nl.classList.contains('open')&&ev.target.closest('#partnerNavLinks a')){nl.classList.remove('open');}
+});
+</script>
+<script src="/asset/theme.js?v=4"></script>
+<script src="/asset/reveal.js?v=4"></script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js?v=23')}</script>
+<script src="/asset/ev.js?v=3" defer></script>
+<script src="/asset/nav-auth.js?v=1" defer></script>
+</body>
+</html>

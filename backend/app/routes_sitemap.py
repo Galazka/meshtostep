@@ -45,7 +45,7 @@ def sitemap(request: Request, db: Session = Depends(get_db)):
     urls.append(f"  <url><loc>{DOMAIN}/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>")
     # Static / print-shop + blog + articles
     STATIC_PAGES = {
-        "/drukuje": 0.9, "/kontakt": 0.8, "/en/print": 0.8, "/blog.html": 0.9, "/en/order": 0.7, "/zamow": 0.8,
+        "/drukuje": 0.9, "/partner": 0.8, "/en/partner": 0.7, "/kontakt": 0.8, "/en/print": 0.8, "/blog.html": 0.9, "/en/order": 0.7, "/zamow": 0.8,
         "/blog/jaki-filament-wybrac-3d.html": 0.7, "/blog/jak-przygotowac-plik-do-druku-3d.html": 0.7,
         "/blog/druk-3d-na-zamowienie-ile-kosztuje.html": 0.7, "/blog/druk-wielokolorowy-jak-to-dziala.html": 0.6,
         "/blog/prototypowanie-3d-dla-firm.html": 0.6, "/blog/tolerancje-i-dokladnosc-druku-3d.html": 0.6,

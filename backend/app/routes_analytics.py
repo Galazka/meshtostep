@@ -31,7 +31,7 @@ router = APIRouter()
 ALLOWED = {
     "pageview", "upload_start", "convert_ok", "download_click", "share_click",
     "click_print", "signup", "login", "order_start", "order_paid",
-    "contact_send", "search", "model_view", "outbound",
+    "contact_send", "search", "model_view", "outbound", "partner_apply",
 }
 
 # kolejnosc lejka (do panelu admina)

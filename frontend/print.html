@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
+    <script defer src="https://cloud.umami.is/script.js" data-website-id="e95fb872-41b4-4798-8b55-49d82405473b"></script>
 <script>window.__APP_V='113';(function(){try{var k='appV',s=sessionStorage.getItem(k);if(s&&s!=='110'){sessionStorage.setItem(k,'110');if(window.caches&&caches.keys){caches.keys().then(function(a){return Promise.all(a.map(function(n){return caches.delete(n)}))}).then(function(){location.reload()});return}}sessionStorage.setItem(k,'110')}catch(e){}})();</script>
 <script>try{var _t=localStorage.getItem("mt_theme")||"light";if(_t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}</script>
   <meta charset="UTF-8">
@@ -337,6 +338,20 @@
       </div>
     </section>
 
+    <!-- Siec partnerska / dla drukarni -->
+    <section class="partner-strip reveal" id="partner-cta" style="margin:30px 0;border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:14px;background:var(--card);padding:30px 26px">
+      <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:center;justify-content:space-between">
+        <div style="flex:1 1 420px;min-width:0">
+          <span class="section-kicker" data-i18n="pntKicker">Sieć partnerska</span>
+          <h2 style="font-size:22px;margin:8px 0" data-i18n="pntTitle">Masz własną drukarkę i wolne moce?</h2>
+          <p style="color:var(--muted);font-size:14.5px;line-height:1.6;margin:0" data-i18n="pntSub">Przyjmujemy pracownie do sieci podwykonawców. My dajemy klienta, pliki, wycenę i płatność, Ty drukujesz. Podział 70/30 na Twoją korzyść, zero opłat wstępnych, potrzebna faktura.</p>
+        </div>
+        <div style="flex:0 0 auto">
+          <a href="/partner" style="background:var(--accent);color:#fff;padding:14px 30px;border-radius:10px;font-weight:700;font-size:15px;display:inline-block" data-i18n="pntCta">Zgłoś pracownię →</a>
+        </div>
+      </div>
+    </section>
+
 <!-- Final CTA / urgency (Hormozi) -->
     <section class="final-cta reveal" id="drukuj-teraz" style="margin:30px 0;border-radius:18px;overflow:hidden;background:linear-gradient(135deg,#0f172a,#0b5394);color:#fff;text-align:center;padding:46px 24px">
       <div style="font-size:14px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#7dd3fc" data-i18n="finKicker">Druk 3D na życzenie</div>
@@ -396,6 +411,7 @@
       <a href="/">Hosting 3D</a>
       <a href="/#discover">Odkrywaj</a>
       <a href="/drukuje">Druk 3D na zamówienie</a>
+      <a href="/partner" data-i18n="navPartner">Sieć partnerska</a>
       <a href="/blog.html">Blog</a>
     </div>
     <div class="prt-f-col">
@@ -486,7 +502,7 @@
     </div>
   </div>
 <script>document.addEventListener('click',function(ev){var nb=document.getElementById('printNav');if(nb&&nb.classList.contains('open')&&ev.target.closest('.prt-nav a')){nb.classList.remove('open');}});</script>
-  <script src="/js/print_i18n.js?v=111"></script>
+  <script src="/js/print_i18n.js?v=112"></script>
   <script src="/asset/print.js?v=99"></script>
   <script>
   // Cache-bust fetch + upload handler + init

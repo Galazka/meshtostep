@@ -46,7 +46,7 @@ const I18N = {
         userJobsTitle: 'Ostatnie przetworzenia',
         whyKicker: 'Dlaczego my',
 
-        navHome: 'Hosting 3D', navHosting: 'Odkrywaj', navPrint: 'Wydrukuj u nas', btnPrint: 'Wydrukuj u nas', navHow: 'Jak to działa', navBlog: 'Blog', navContact: 'Kontakt', navConverter: 'Konwerter', navPricing: 'Cennik', navMyFiles: 'Moje pliki',
+        navHome: 'Hosting 3D', navHosting: 'Odkrywaj', navPrint: 'Wydrukuj u nas', btnPrint: 'Wydrukuj u nas', navHow: 'Jak to działa', navBlog: 'Blog', navContact: 'Kontakt', navPartner: 'Sieć partnerska', pntKicker: 'Sieć partnerska', pntTitle: 'Masz własną drukarkę i wolne moce?', pntSub: 'Przyjmujemy pracownie do sieci podwykonawców. My dajemy klienta, pliki, wycenę i płatność, Ty drukujesz. Podział 70/30 na Twoją korzyść, zero opłat wstępnych, potrzebna faktura.', pntCta: 'Zgłoś pracownię →', navConverter: 'Konwerter', navPricing: 'Cennik', navMyFiles: 'Moje pliki',
         navHowItWorks: 'Jak to dziala', navFAQ: 'Pomoc FAQ',
         navLogin: 'Zaloguj', navSignup: 'Załóż konto',
         navMyConversions: 'Moje konwersje', navLogout: 'Wyloguj',
@@ -297,7 +297,7 @@ const I18N = {
         userJobsTitle: 'Recent conversions',
         whyKicker: 'Why us',
 
-        navHome: '3D Hosting', navHosting: 'Discover', navPrint: 'Print with us', btnPrint: 'Print it here', navHow: 'How it works', navBlog: 'Blog', navContact: 'Contact',
+        navHome: '3D Hosting', navHosting: 'Discover', navPrint: 'Print with us', btnPrint: 'Print it here', navHow: 'How it works', navBlog: 'Blog', navContact: 'Contact', navPartner: 'Partner network', pntKicker: 'Partner network', pntTitle: 'Got a printer with spare capacity?', pntSub: 'We onboard workshops into our subcontractor network. We bring the client, files, quote and payment — you print. 70/30 split in your favour, no entry fees, invoice required.', pntCta: 'Apply as a workshop →',
         kontoProfile: 'Profile', kontoQuota: 'Storage', kontoTitle: 'My Account', navMyAccount: 'Account',
         navConverter: 'Converter', navPricing: 'Pricing', navMyFiles: 'My Files',
         navHowItWorks: 'How it works', navFAQ: 'Help FAQ',

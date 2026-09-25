@@ -33,6 +33,7 @@ from .routes_reviews import router as reviews_router
 from .routes_contact import router as contact_router
 from .routes_inpost import router as inpost_router
 from .routes_analytics import router as analytics_router
+from .routes_partner import router as partner_router
 
 app = FastAPI(title="3dfile.link", version="1.0.0")
 
@@ -60,7 +61,7 @@ async def csp_middleware(request: Request, call_next):
     csp = (
             "default-src 'self'; "
             # Google AdSense (Auto ads) + jego CMP (fundingchoicesmessages) dla ruchu z UE.
-            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net "
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cloud.umami.is "
             "https://pagead2.googlesyndication.com https://*.googlesyndication.com "
             "https://googleads.g.doubleclick.net https://securepubads.g.doubleclick.net "
             "https://tpc.googlesyndication.com https://adservice.google.com "
@@ -70,7 +71,7 @@ async def csp_middleware(request: Request, call_next):
             "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' data: https:; "
             # bez connect-src beacony AdSense lecą w default-src 'self' i są blokowane
-            "connect-src 'self' https://pagead2.googlesyndication.com https://*.googlesyndication.com "
+            "connect-src 'self' https://cloud.umami.is https://pagead2.googlesyndication.com https://*.googlesyndication.com "
             "https://googleads.g.doubleclick.net https://*.doubleclick.net "
             "https://adservice.google.com https://*.adtrafficquality.google "
             "https://*.google.com https://fundingchoicesmessages.google.com; "
@@ -161,6 +162,7 @@ app.include_router(reviews_router)
 app.include_router(contact_router)
 app.include_router(inpost_router)
 app.include_router(analytics_router)
+app.include_router(partner_router)
 
 @app.get("/api/health")
 def health():
@@ -261,6 +263,19 @@ def kontakt_page():
 def konto_page():
     from fastapi.responses import FileResponse
     return FileResponse(str(FRONTEND_DIR / "konto.html"))
+
+@app.get("/partner", response_class=HTMLResponse, include_in_schema=False)
+def partner_page():
+    from fastapi.responses import FileResponse
+    return FileResponse(str(FRONTEND_DIR / "partner.html"))
+
+@app.get("/en/partner", response_class=HTMLResponse, include_in_schema=False)
+def en_partner_page():
+    from fastapi.responses import HTMLResponse
+    _en = "<script>(function(){try{localStorage.setItem('mt_lang','en');}catch(e){}})();</script>"
+    html = (FRONTEND_DIR / "partner.html").read_text(encoding="utf-8")
+    html = html.replace("</head>", _en + "</head>", 1)
+    return HTMLResponse(content=html)
 
 @app.get("/blog", response_class=HTMLResponse, include_in_schema=False)
 @app.get("/blog/{slug}", response_class=HTMLResponse, include_in_schema=False)
