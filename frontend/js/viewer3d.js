@@ -134,7 +134,7 @@ function loadSTLIntoViewer(url, jobUuid) {
             var img=new Image();
             img.onload=function(){ container.innerHTML=''; img.style.cssText='width:100%;height:100%;object-fit:contain;border-radius:12px'; container.appendChild(img); };
             img.onerror=function(){ container.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">Podglad 3D niedostepny</div>'; };
-            img.src='/api/thumb/'+jobUuid+'?v=3';
+            img.src='/api/thumb/'+jobUuid+'?v=4';
         }
         function onErr(e){
             console.error('loadSTLIntoViewer error', e);

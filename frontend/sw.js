@@ -6,7 +6,7 @@
    - /api/, /s/, /u/, /e/, /admin: bypass
    - bump CACHE → activate kasuje stare cache u każdego klienta
 */
-const CACHE = '3dfile-v22';
+const CACHE = '3dfile-v23';
 const PRECACHE = ['/manifest.json'];
 
 self.addEventListener('install', e => {

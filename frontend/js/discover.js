@@ -41,7 +41,7 @@ function doDiscover(more){
         }
         function _cardTag(t){ var safe=String(t||'').replace(/</g,'&lt;'); return '<span class="prt-model-card-tag">'+safe+'</span>'; }
         var html = items.map(function(m){
-            var img = m.preview_url ? m.preview_url : (m.uuid ? '/api/thumb/'+m.uuid+'?v=3' : '');
+            var img = m.preview_url ? m.preview_url : (m.uuid ? '/api/thumb/'+m.uuid+'?v=4' : '');
             var title = m.title || m.slug || 'Model';
             var safeTitle = String(title).replace(/</g,'&lt;');
             var safeUser = String(m.username||'anonim').replace(/</g,'&lt;');

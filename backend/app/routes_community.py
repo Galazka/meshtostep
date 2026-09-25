@@ -403,7 +403,7 @@ new STLLoader().load('/api/stl-preview/__UUID__', g=>{g.computeBoundingBox();con
     var img=new Image();
     img.onload=function(){el.innerHTML='';img.style.cssText='max-width:100%;height:auto;object-fit:contain;border-radius:12px';el.appendChild(img);};
     img.onerror=function(){el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#64748b;font-size:14px;flex-direction:column;gap:8px"><span style="font-size:32px">△</span>Podgląd 3D niedostępny</div>';};
-    img.src='/api/thumb/__UUID__?v=3';
+    img.src='/api/thumb/__UUID__?v=4';
 });
 function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera);}animate();
 window.addEventListener('resize',()=>{const w=Math.min(el.clientWidth||640,1200),h=el.clientHeight||420;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h);});
@@ -682,7 +682,7 @@ def user_profile(username: str, db: Session = Depends(get_db)):
         title = html.escape(j.title or j.original_filename or "model")
         faces = j.result_faces or "?"
         views = j.views or 0
-        preview_url = f"/api/thumb/{j.uuid}?v=3"
+        preview_url = f"/api/thumb/{j.uuid}?v=4"
         cards += (
             f'<a href="/u/{html.escape(username)}/{html.escape(j.slug)}" class="card">'
             f'<img src="{preview_url}" alt="{title}" loading="lazy">'
@@ -774,7 +774,7 @@ def tag_page(tag: str, db: Session = Depends(get_db)):
         views = j.views or 0
         cards += (
             f'<a href="/u/{html.escape(uname)}/{html.escape(j.slug)}" class="card">'
-            f'<img src="/api/thumb/{j.uuid}?v=3" alt="{title}" loading="lazy">'
+            f'<img src="/api/thumb/{j.uuid}?v=4" alt="{title}" loading="lazy">'
             f'<div class="card-body">'
             f'<div class="card-title">{title}</div>'
             f'<div class="card-meta">{faces} ścian · {views} wyśw. · {html.escape(uname)}</div>'

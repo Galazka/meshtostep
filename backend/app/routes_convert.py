@@ -31,8 +31,9 @@ def _slugify(s: str) -> str:
 THUMB_BG = "#f0f2f5"
 THUMB_FACE = "#c9ced6"
 THUMB_EDGE = "#6b7280"
-THUMB_VERSION = "v3"  # bump → nowa nazwa pliku cache, stare PNG (niebieskie) przestają być serwowane
-THUMB_CACHE_HEADERS = {"Cache-Control": "no-cache, must-revalidate"}
+THUMB_VERSION = "v4"  # bump → nowa nazwa pliku cache, stare PNG (niebieskie) przestają być serwowane
+THUMB_CACHE_HEADERS = {"Cache-Control": "no-store, no-cache, max-age=0, must-revalidate",
+                       "Pragma": "no-cache", "Expires": "0"}
 
 
 def _thumb_path(job_uuid: str) -> Path:
@@ -46,6 +47,44 @@ def _thumb_response(path) -> FileResponse:
 
 def _thumb_name(job_uuid: str, versioned: bool = True) -> str:
     return f"thumb_{THUMB_VERSION}.png" if versioned else "thumb.png"
+
+
+def _placeholder_thumb() -> Path:
+    """Neutralny SZARY placeholder dla jobów bez siatki (brak pliku/dir).
+
+    Wcześniej leciało tu niebieskie logo.png — karty bez mesha wyglądały 'na niebiesko'.
+    Generowane raz, cache'owane w JOBS_DIR.
+    """
+    p = JOBS_DIR / f"_placeholder_{THUMB_VERSION}.png"
+    if p.exists():
+        return p
+    try:
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        import numpy as np
+        fig = plt.figure(figsize=(4, 3), dpi=125)
+        ax = fig.add_subplot(111, projection="3d")
+        ax.set_facecolor(THUMB_BG)
+        fig.patch.set_facecolor(THUMB_BG)
+        c = np.array([[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0],
+                      [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]], dtype=float)
+        for a, b in [(0, 1), (1, 2), (2, 3), (3, 0), (4, 5), (5, 6), (6, 7), (7, 4),
+                     (0, 4), (1, 5), (2, 6), (3, 7)]:
+            ax.plot(*zip(c[a], c[b]), color=THUMB_EDGE, linewidth=1.1, alpha=0.55)
+        ax.set_box_aspect((1, 1, 1))
+        ax.view_init(elev=20, azim=45)
+        ax.set_axis_off()
+        plt.tight_layout(pad=0)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(str(p), dpi=125, facecolor=THUMB_BG, bbox_inches="tight", pad_inches=0)
+        plt.close(fig)
+    except Exception:
+        # ostatnia linia obrony: płaski szary PNG 1x1 (nigdy niebieski)
+        import base64
+        p.write_bytes(base64.b64decode(
+            b"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="))
+    return p
 
 
 def _auto_thumb(mesh_file: str, thumb_path):
@@ -586,11 +625,8 @@ def stl_thumbnail(job_uuid: str, db: Session = Depends(get_db)):
     # find mesh file
     src_dir = JOBS_DIR / job_uuid
     if not src_dir.exists():
-        # job dir doesn't exist — return logo as placeholder
-        logo = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend", "logo.png")
-        if os.path.exists(logo):
-            return FileResponse(logo, media_type="image/png")
-        raise HTTPException(404, "Job dir niedostepny")
+        # job dir nie istnieje — SZARY placeholder (nigdy niebieskie logo)
+        return _thumb_response(_placeholder_thumb())
     mesh_file = None
     if src_dir.exists():
         for ext in (".stl", ".3mf", ".obj"):
@@ -599,11 +635,8 @@ def stl_thumbnail(job_uuid: str, db: Session = Depends(get_db)):
                     mesh_file = str(f); break
             if mesh_file: break
     if not mesh_file:
-        # fallback: return logo as thumbnail placeholder
-        logo = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend", "logo.png")
-        if os.path.exists(logo):
-            return FileResponse(logo, media_type="image/png")
-        raise HTTPException(404, "Mesh niedostepny")
+        # brak siatki — SZARY placeholder (nigdy niebieskie logo)
+        return _thumb_response(_placeholder_thumb())
     try:
         thumb_path.parent.mkdir(parents=True, exist_ok=True)
         _auto_thumb(mesh_file, str(thumb_path))
