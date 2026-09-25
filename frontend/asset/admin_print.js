@@ -104,7 +104,8 @@ window.adminSetSearch = function(v, f){ if(f) __adminQ.search=v; __adminQ.page=1
               (!o.is_paid ? '<br><button onclick="syncPayment(' + o.id + ',this)" title="Odśwież status płatności ze Stripe" style="font-size:10px;border:1px solid #d1d5db;background:#fff;border-radius:4px;cursor:pointer;margin-top:3px;padding:1px 6px">↻ Stripe</button>' : '') + '</td>' +
             '<td style="padding:8px"><button data-action="exportOrder" data-id="' + o.id + '" style="padding:4px 8px;border:1px solid #d1d5db;border-radius:4px;cursor:pointer">CSV</button><br>' +
                         (o.job_id ? '<button onclick="window.open(\'/e/' + o.job_id + '\',\'_blank\')" style="padding:4px 8px;border:1px solid #3b82f6;color:#3b82f6;border-radius:4px;background:none;cursor:pointer;margin-top:4px">3D</button><br>' : '') +
-                        '<button onclick="showOrderNotes(' + o.id + ')" style="padding:4px 8px;border:1px solid #d1d5db;border-radius:4px;cursor:pointer;margin-top:4px">Uwagi</button><br>' +
+                        '<button onclick="showOrderNotes(' + o.id + ')" style="padding:4px 8px;border:1px solid #d1d5db;border-radius:4px;cursor:pointer;margin-top:4px">Uwagi</button>' +
+                        ((o.is_paid && (o.shipping_method==='standard'||o.shipping_method==='express')) ? '<br><button onclick="createShipment(' + o.id + ')" title="Nadaj paczkomatem InPost (ShipX)" style="padding:4px 8px;border:1px solid #f97316;color:#f97316;border-radius:4px;background:none;cursor:pointer;margin-top:4px">📦 InPost</button>' : '') +
                         '<button onclick="deleteOrder(' + o.id + ')" style="padding:4px 8px;border:1px solid #ef4444;color:#ef4444;border-radius:4px;background:none;cursor:pointer;margin-top:4px">Usuń</button></td>' +
             '</tr>';
         });
@@ -183,6 +184,26 @@ window.adminSetSearch = function(v, f){ if(f) __adminQ.search=v; __adminQ.page=1
       if (r.ok) { showToast('Status #' + id + ' → ' + v + ' — klient powiadomiony mailem', 'success'); setTimeout(loadAdminOrders, 600); }
       else { showToast('Błąd zmiany statusu', 'error'); }
     });
+  };
+  window.createShipment = function(id) {
+    if (!confirm('Utworzyć przesyłkę InPost (paczkomat) dla zamówienia #' + id + '?')) return;
+    fetch('/api/orders/' + id + '/shipment?' + Date.now(), {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + getStoredToken(), 'Content-Type': 'application/json' }
+    }).then(function(r) { return r.json().then(function(d) { return { ok: r.ok, d: d }; }); })
+      .then(function(res) {
+        if (!res.ok) { showToast('InPost: ' + (res.d.detail || res.d.message || 'błąd ' + res.status), 'error'); return; }
+        if (res.d.fallback) {
+          // tryb bez klucza → link zastępczy (admin nadaje ręcznie w apce InPost)
+          showToast(res.d.message || 'Brak klucza InPost — użyj linku-zastępczego.', 'info');
+          if (res.d.create_url) window.open(res.d.create_url, '_blank');
+          return;
+        }
+        if (res.d.label_url) window.open(res.d.label_url, '_blank');
+        showToast('Przesyłka utworzona ✓ #' + (res.d.tracking_number || res.d.shipment_id || '?'), 'success');
+        setTimeout(loadAdminOrders, 800);
+      })
+      .catch(function() { showToast('InPost: błąd sieci', 'error'); });
   };
   window.syncPayment = function(id, btn) {
     btn.disabled = true; btn.textContent = '…';

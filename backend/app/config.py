@@ -41,6 +41,19 @@ class Settings(BaseSettings):
     STRIPE_WEBHOOK_SECRET: str = ""   # whsec_...
     STRIPE_PUBLIC_KEY: str = ""   # pk_...
 
+    # --- InPost ShipX (wysylka paczkomatami) ---
+    # Puste => admin widzi link-zastepczy (otwarcie w apce InPost z prefillem),
+    # po zal.ozeniu dzialalnosci Tom podaje klucz organizacji (Railway env) i
+    # automatyczna etykieta/QR startuje samoczynnie. Kierowanie na hit zawsze wraca.
+    INPOST_API_KEY: str = ""          # sk_x lub token organizacji (panel InPost -> Organizacja -> API)
+    INPOST_SENDER_ORG: str = "3dfile.link"      # nazwa organizacji/nadawcy widoczna na paczce
+    INPOST_SENDER_STREET: str = "Orfeusza 44"   # Gdańsk Osowa (punkt nadania Tom wozu)
+    INPOST_SENDER_CITY: str = "Gdańsk"
+    INPOST_SENDER_POSTAL: str = "80-299"
+    INPOST_SENDER_EMAIL: str = "hello@3dfile.link"
+    INPOST_SENDER_PHONE: str = "+48 790 824 762"
+    INPOST_SENDER_COUNTRY: str = "PL"
+
     class Config:
         env_file = ".env"
 
