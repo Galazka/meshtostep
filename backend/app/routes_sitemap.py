@@ -101,10 +101,15 @@ def sitemap(request: Request, db: Session = Depends(get_db)):
             if _t and _t not in _JUNK_TAGS:
                 _tag_counter[_t] = _tag_counter.get(_t, 0) + 1
 
-    # Tag landing pages: /tag/{tag} (top 50 by usage — liczone TYLKO z niezasmieconych modeli)
+    # Tag landing pages: /tag/{tag} — max 50, tylko tagi z >= 2 modelami
+    # (tag z jednym kafelkiem = thin content dla Google, zgodnie z noindex w tag_page)
     try:
         import urllib.parse as _up
-        for _t, _c in sorted(_tag_counter.items(), key=lambda x: -x[1])[:50]:
+        _tag_added = 0
+        for _t, _c in sorted(_tag_counter.items(), key=lambda x: -x[1]):
+            if _c < 2 or _tag_added >= 50:
+                continue
+            _tag_added += 1
             urls.append(
                 f"  <url><loc>{DOMAIN}/tag/{_up.quote(_t)}</loc>"
                 f"<changefreq>weekly</changefreq><priority>0.6</priority></url>"

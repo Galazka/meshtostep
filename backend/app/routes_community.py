@@ -764,9 +764,11 @@ def tag_page(tag: str, db: Session = Depends(get_db)):
         .all()
     )
     cards = ""
+    _n_cards = 0
     for j in jobs:
         if not j.slug:
             continue
+        _n_cards += 1
         uname = (j.user.username if j.user and getattr(j.user, "username", None)
                  else (j.user.email.split("@")[0] if j.user and j.user.email else "anon"))
         title = html.escape(j.title or j.original_filename or "model")
@@ -782,6 +784,8 @@ def tag_page(tag: str, db: Session = Depends(get_db)):
         )
     if not cards:
         return HTMLResponse("<h1>Brak modeli z tym tagiem</h1>", status_code=404)
+    # Thin content: tag z <2 modelami nie ma po co byc w indeksie Google
+    robots = '<meta name="robots" content="noindex,follow">' if _n_cards < 2 else ""
     desc = f"Darmowe modele 3D z tagiem {t}: podgląd, STL i konwersja do STEP bez konta."
     page = f"""<!DOCTYPE html>
 <html lang="pl">
@@ -791,6 +795,7 @@ def tag_page(tag: str, db: Session = Depends(get_db)):
 <title>Modele 3D: {html.escape(t)} — 3dfile.link</title>
 <meta name="description" content="{html.escape(desc)}">
 <link rel="canonical" href="https://3dfile.link/tag/{html.escape(t)}">
+{robots}
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
 body{{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;line-height:1.6}}
