@@ -282,12 +282,10 @@
           }
           totalEl.textContent = data.total.toFixed(2) + ' ' + sym;
                     hint.textContent = data.parts > 1 ? 'Model podzielony na ' + data.parts + ' części' : '';
-                    // VAT note (region-specific) + FX note
+                    // cena ostateczna — sprzedaż jako osoba fizyczna (brak VAT/faktur), bez dopłat po fakcie
                     var vatNote = document.getElementById('priceVatNote');
                     if (vatNote) {
-                      if (v.region === 'PL') vatNote.textContent = '① Do ceny doliczony zostanie VAT 23% (Polska) — Stripe naliczy go przy płatności.';
-                      else if (v.region === 'EU') vatNote.textContent = '① Do ceny może zostać doliczony VAT wg kraju UE — Stripe naliczy go przy płatności.';
-                      else vatNote.textContent = '① Do ceny może zostać doliczony VAT wg kraju dostawy — Stripe naliczy go przy płatności.';
+                      vatNote.textContent = '① Cena jest ostateczna — nie doliczamy nic po fakcie. Do zamówienia dołączamy rachunek.';
                     }
                     var fxNote = document.getElementById('priceFxNote');
                     if (fxNote) {

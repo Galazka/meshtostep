@@ -29,6 +29,12 @@ class Settings(BaseSettings):
     currency_rate_usd: float = 4.20  # 1 USD = 4.20 PLN
     currency_rate_eur: float = 4.55  # 1 EUR = 4.55 PLN
 
+    # --- Firma / NIP (B2B) ---
+    # Sprzedaz jako osoba fizyczna (dzialalnosc nierejestrowana) => brak faktur VAT / NIP.
+    # Wlaczenie: ustaw FIRM_ORDERS_ENABLED=true w env (Railway) + pokaz pola NIP w /zamow.
+    # Frontend czyta to przez GET /api/config/features.
+    FIRM_ORDERS_ENABLED: bool = False
+
 
     # --- Stripe ---
     STRIPE_SECRET_KEY: str = ""   # sk_...; empty = BLIK fallback

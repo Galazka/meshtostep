@@ -325,7 +325,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
                   <textarea id="fNotes" class="note-field" rows="2" data-i18n-ph="fNotes" placeholder="np. podkreśl nacięcia, kolor docelowy itp."></textarea></div>
                 </details>
                 <button class="btn-main" id="submitBtn" onclick="submitOrder()" data-i18n="fSubmit">Zamawiam →</button>
-        <div style="font-size:11.5px;color:var(--muted);margin-top:10px">Płatność: Stripe (karta / BLIK). Podana cena jest ceną brutto (z VAT 23%) — nie doliczamy nic później.</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:10px">Płatność: Stripe (karta / BLIK). Podana cena jest ostateczna — nie doliczamy nic później.</div>
       </div>
     </div>
 
@@ -339,7 +339,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
         <h2 data-i18n="summary">Podsumowanie</h2>
         <div id="sumEmpty" class="empty">Dodaj modele, a zobaczysz pełne zestawienie.</div>
         <div id="sumBody" style="display:none"></div>
-        <div class="vat" id="vatNote">Cena „do zapłaty” jest ostateczna — zawiera VAT 23%. Tyle obciąży płatność, tyle zobaczysz na fakturze.</div>
+        <div class="vat" id="vatNote">Cena „do zapłaty” jest ostateczna — nie doliczamy nic później. Do zamówienia dołączamy rachunek (dowód sprzedaży).</div>
         <div class="fx" id="fxNote">Waluta: PLN</div>
       </div>
     </div>
@@ -485,7 +485,35 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
     it.color=colPl(it._multi);
     drawCart(); reprice(selIdx); calc(); refreshCol(); renderMulti(); toast('Kolory: '+it.color,true);
   }
+  /* ===================================================================
+     FIRMA / NIP — WYGASZONE (nie usunięte).
+     Powód: sprzedaż prowadzona jako działalność nierejestrowana (osoba
+     fizyczna, brak NIP). Od 1.04.2026 faktury B2B wymagają NIP + KSeF.
+     WŁĄCZENIE JEDNYM KLIKIEM: ustaw env FIRM_ORDERS_ENABLED=true na
+     Railway (backend) — frontend czyta flagę z /api/config/features
+     i sam pokaże przycisk "Firma" + pola NIP/nazwa/adres do faktury.
+     Cała logika firmowa (NIP, nazwa, adres do faktury) zostaje w kodzie.
+     =================================================================== */
+  var FIRM_ORDERS_ENABLED = false;
+  function _firmApply(){
+    var b=document.getElementById('custTypeFirm');
+    if(b) b.style.display = FIRM_ORDERS_ENABLED ? '' : 'none';
+    var fr=document.getElementById('firmRow');
+    if(fr && !FIRM_ORDERS_ENABLED) fr.style.display='none';
+    var vn=document.getElementById('vatModeNote');
+    if(vn) vn.style.display = FIRM_ORDERS_ENABLED ? '' : 'none';
+  }
+  (function _firmLoad(){
+    try{
+      fetch('/api/config/features?t='+Date.now()).then(function(r){return r.json();}).then(function(j){
+        if(j && typeof j.firm_orders!=='undefined'){ FIRM_ORDERS_ENABLED=!!j.firm_orders; }
+        _firmApply();
+      }).catch(function(){ _firmApply(); });
+    }catch(e){ _firmApply(); }
+    if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',_firmApply); } else { _firmApply(); }
+  })();
   function setCustType(t){
+    if(t==='firm' && !FIRM_ORDERS_ENABLED){ try{ toast('Zamówienia firmowe (faktura na NIP) będą dostępne wkrótce',''); }catch(e){} return; }
     var p=document.getElementById('custTypePerson'),f=document.getElementById('custTypeFirm'),fr=document.getElementById('firmRow');
     if(t==='firm'){
       f.style.border='2px solid var(--accent)';f.style.background='#eff6ff';f.style.color='var(--accent)';
@@ -658,19 +686,17 @@ var discLine = COUPON_PLN>0 ? '<div class="summary-row"><span>Rabat '+(window.__
   var colorLine = colorExt>0 ? '<div class="summary-row"><span>Kolory ekstra</span><span style="color:#B45309">+'+fmt(colorExt/rate)+'</span></div>' : '';
   var shipLabel = isPickup ? 'Odbiór osobisty' : isPkExp ? 'Ekspres przy odbiorze (2 dni)' : freeShip ? 'Wysyłka — GRATIS (≥200 zł)' : smallOrder ? 'Wysyłka + pakowanie — PROMOCJA' : 'Wysyłka + pakowanie';
   var freeLine='';
-  // cena całkowita jest BRUTTO (z VAT 23%) — rozbijamy wstecz dla przejrzystości
-  var vatLine='';
+  // cena ostateczna (bez dopłat po fakcie) — bez rozbicia netto/VAT
   var total=cx(totalPLN/rate);
-  var brutto=cx(totalPLN/rate); var netto=+(brutto/1.23).toFixed(2); var vat=+(brutto-netto).toFixed(2);
-  vatLine='<div class="summary-row" style="border-top:1px dashed var(--border);color:var(--muted)"><span>Cena netto</span><span>'+fmt(netto)+'</span></div><div class="summary-row" style="color:var(--muted)"><span>VAT 23%</span><span>'+fmt(vat)+'</span></div>';
+  var brutto=total;
   box.innerHTML=rowsHTML+
       '<div class="summary-row"><span>Druk ('+CART.length+' model'+(CART.length>1?'i':'')+')</span><span>'+fmt(cx(basePrint/rate))+'</span></div>'+
     '<div class="summary-row"><span>'+shipLabel+'</span><span>'+(shippingPLN===0?'0,00 zł':fmt(shippingPLN/rate))+'</span></div>'+
     colorLine+discLine+freeLine+
-    '<div class="summary-total"><span>Do zapłaty (brutto)</span><span>'+fmt(brutto)+'</span></div>'+vatLine;
+    '<div class="summary-total"><span>Do zapłaty</span><span>'+fmt(brutto)+'</span></div>';
   empty.style.display='none'; box.style.display='block'; btn.disabled=false;
   try{ var sym=(cur==='PLN'?'zł':cur); btn.textContent='Zamawiam · '+fmt(brutto)+' \u2192'; var cb=document.getElementById('ctaTot'); if(cb)cb.textContent=fmt(brutto); }catch(e){}
-  var vn=document.getElementById('vatNote'); if(vn) vn.textContent='① Cena „do zapłaty" jest ostateczna — zawiera VAT 23%. Tyle obciąży Stripe, tyle zobaczysz na fakturze.';
+  var vn=document.getElementById('vatNote'); if(vn) vn.textContent='① Cena „do zapłaty" jest ostateczna — nie doliczamy nic później. Do zamówienia dołączamy rachunek.';
   var fn=document.getElementById('fxNote'); if(fn) fn.textContent = cur==='PLN'?'Waluta: PLN':'Waluta: '+cur+' · kurs 1 '+cur+' = '+(1/rate).toFixed(4)+' PLN';
 }
 
@@ -720,8 +746,9 @@ function submitOrder(){
   if(!CART.length){ toast('Dodaj co najmniej jeden model',''); return; }
   if(FULFILL==='ship' && (!document.getElementById('fAddr').value.trim() || !document.getElementById('fCity').value.trim())){ toast('Podaj adres i miasto dostawy',''); document.getElementById('fAddr').focus(); return; }
   var shipSel=document.getElementById('fShipping').value;
-    var nip=(document.getElementById('fNip')||{}).value||'';
-    var comp=(document.getElementById('fCompany')||{}).value||'';
+    /* FIRMA OFF: pola NIP/nazwa nie są wysyłane do backendu dopóki FIRM_ORDERS_ENABLED=false */
+    var nip=FIRM_ORDERS_ENABLED?((document.getElementById('fNip')||{}).value||''):'';
+    var comp=FIRM_ORDERS_ENABLED?((document.getElementById('fCompany')||{}).value||''):'';
     var shipAddr=document.getElementById('fAddr').value.trim();
     if(shipSel==='address'){
       var dest=(document.getElementById('fCompanyShip')||{}).value.trim();
@@ -733,7 +760,7 @@ function submitOrder(){
     }
     if(nip){ shipAddr=(shipAddr?shipAddr+', ':'')+'NIP: '+nip; if(comp) shipAddr+=', ' + comp; }
   if(FULFILL==='pickup'){ shipAddr='ODBIÓR OSOBISTY — Gdańsk, ul. Międzygwiezdna 31/2 (Osowa), 80-299'; }
-  var _fa=(document.getElementById('fFirmAddr')||{}).value||''; if(_fa.trim()) shipAddr=(shipAddr?shipAddr+' | ':'')+'FAKTURA: '+_fa.trim();
+  var _fa=FIRM_ORDERS_ENABLED?(((document.getElementById('fFirmAddr')||{}).value)||''):''; if(_fa.trim()) shipAddr=(shipAddr?shipAddr+' | ':'')+'FAKTURA: '+_fa.trim();
   var body={name:nm,email:em,phone:document.getElementById('fPhone').value.trim(),address:shipAddr,city:(FULFILL==='pickup'?'80-299 Gdańsk':document.getElementById('fCity').value.trim()),country:(FULFILL==='pickup'?'PL':document.getElementById('fRegion').value),shipping:document.getElementById('fShipping').value,shipping_region:document.getElementById('fRegion').value,discount_code:document.getElementById('fCode').value.trim(),notes:document.getElementById('fNotes').value.trim(),payment_method:'stripe',currency:cur,items:CART.map(function(it){return {job_uuid:it.job_uuid,job_id:it.job_id,model_name:it.model_name,material:it.material,color:it.color,colors:it.colors||1,quantity:it.qty,volume_cm3:it.vol,estimated_hours:0,dims:it.dims,infill:it.infill||INFCFG.base};})};
   var btn=document.getElementById('submitBtn'); btn.disabled=true; btn.textContent='Tworzę zamówienie…';
   fetch('/api/orders/multi?t='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
@@ -903,7 +930,7 @@ window.__local3d = {
 };
 </script>
 
-<script src="/js/print_i18n.js?v=110"></script>
+<script src="/js/print_i18n.js?v=111"></script>
 <script>document.addEventListener('click',function(ev){var nb=document.getElementById('orderNav');if(nb&&nb.classList.contains('open')&&ev.target.closest('#orderNav a')){nb.classList.remove('open');}});</script>
 <footer class="prt-footer" id="siteFooter">
   <div class="prt-footer-inner">

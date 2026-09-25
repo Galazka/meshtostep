@@ -597,7 +597,7 @@ window.showEmbed = showEmbed;
     <div><b style="color:#fff;font-size:13px">Drukarnia</b><div style="margin-top:10px;display:grid;gap:7px;font-size:13px"><a style="color:#bcc9de;text-decoration:none" href="/drukuje">Bambu Lab P1S Farm</a><a style="color:#bcc9de;text-decoration:none" href="/drukuje#materials">Materiały</a><a style="color:#bcc9de;text-decoration:none" href="/kontakt">Odbiór: Gdańsk Osowa</a></div></div>
     <div><b style="color:#fff;font-size:13px">Kontakt</b><div style="margin-top:10px;display:grid;gap:7px;font-size:13px"><a style="color:#bcc9de;text-decoration:none" href="mailto:hello@3dfile.link">hello@3dfile.link</a><a style="color:#bcc9de;text-decoration:none" href="mailto:tomgal@3dfile.link">tomgal@3dfile.link</a><a style="color:#bcc9de;text-decoration:none" href="tel:+487****4762">+48 790 824 762</a><span style="font-size:12px">ul. Międzygwiezdna 31/2<br>80-299 Gdańsk Osowa</span></div></div>
   </div>
-  <div style="border-top:1px solid rgba(255,255,255,.1);padding:14px 20px;text-align:center;font-size:12px;font-family:JetBrains Mono,monospace">© 2026 3dfile.link · Realizacja 48h · Faktury VAT 23%</div>
+  <div style="border-top:1px solid rgba(255,255,255,.1);padding:14px 20px;text-align:center;font-size:12px;font-family:JetBrains Mono,monospace">© 2026 3dfile.link · Realizacja 48h · Rachunek do zamówienia</div>
 </footer>
 </body>
 </html>

@@ -46,7 +46,7 @@ def _stripe_build_session(order, db=None):
             "price_data": {
                 "currency": currency,
                 "product_data": {
-                    "name": "Wydruk modeli 3D (material, kolory, uslugi) — ceny brutto z VAT",
+                    "name": "Wydruk modeli 3D (materiał, kolory, usługi) — cena ostateczna",
                     "description": f"Zamowienie #{order.id} — 3dfile.link",
                 },
                 "unit_amount": prod_amount,
