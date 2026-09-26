@@ -90,6 +90,47 @@
   }
 
   /* ==== Materials + shipping load ==== */
+  /* Kolory filamentów — spójne z order.html */
+  var COLOR_META = {
+    'natural':     { pl: 'naturalny',      hex: '#d9c9a3', prem: 0 },
+    'black':       { pl: 'czarny',         hex: '#1e293b', prem: 0 },
+    'white':       { pl: 'biały',          hex: '#f1f5f9', prem: 0 },
+    'gray':        { pl: 'szary',          hex: '#94a3b8', prem: 0 },
+    'silver':      { pl: 'srebrny',        hex: '#cbd5e1', prem: 20 },
+    'gold':        { pl: 'złoty',          hex: '#facc15', prem: 25 },
+    'bronze':      { pl: 'brązowy',        hex: '#b0763a', prem: 25 },
+    'copper':      { pl: 'miedziany',      hex: '#b87333', prem: 25 },
+    'carbon':      { pl: 'węglowy',        hex: '#0f172a', prem: 15 },
+    'wood':        { pl: 'drewniany',      hex: '#a2713e', prem: 15 },
+    'transparent': { pl: 'przezroczysty',  hex: '#e0e7ef', prem: 30 },
+    'red':         { pl: 'czerwony',       hex: '#dc2626', prem: 0 },
+    'orange':      { pl: 'pomarańczowy',   hex: '#ea580c', prem: 0 },
+    'yellow':      { pl: 'żółty',          hex: '#eab308', prem: 0 },
+    'green':       { pl: 'zielony',        hex: '#16a34a', prem: 0 },
+    'blue':        { pl: 'niebieski',      hex: '#2563eb', prem: 0 },
+    'purple':      { pl: 'fioletowy',      hex: '#7c3aed', prem: 0 },
+    'pink':        { pl: 'różowy',         hex: '#db2777', prem: 0 }
+  };
+
+  function renderMaterialColors(colors) {
+    if (!colors || typeof colors !== 'object') return '';
+    /* tylko kolory dostępne w koszyku order.html — spójne z #colSwatches */
+    var ORDER_COLORS = {black:1,white:1,gray:1,red:1,orange:1,yellow:1,green:1,blue:1,purple:1,pink:1,silver:1,gold:1,carbon:1,transparent:1};
+    var keys = Object.keys(colors).filter(function(c){ return ORDER_COLORS[c] && (colors[c] || 0) >= 0; });
+    if (!keys.length) return '';
+    var lang = (typeof window.__pi18n !== 'undefined') ? window.__pi18n.lang : 'pl';
+    var t = function(k){ if(typeof window.__pi18n !== 'undefined' && window.__pi18n.t) return window.__pi18n.t(k); return k; };
+    return '<div class="mat-colors">' + keys.map(function(c) {
+        var meta = COLOR_META[c] || { pl: c, hex: '#94a3b8', prem: 0 };
+        var premium = (typeof colors[c] === 'number') ? colors[c] : meta.prem;
+        var label = (lang === 'en') ? c : meta.pl;
+        var premTxt = '';
+        if (premium > 0) premTxt = '<span class="mat-prem">' + t('colPrem') + ' +' + premium + ' zł</span>';
+        return '<button type="button" class="mat-chip" title="' + meta.pl + '" style="--sw:' + meta.hex + '">' +
+               '<span class="mat-dot"></span>' + label + premTxt + '</button>';
+      }).join('') + '</div>';
+  }
+
   async function loadMaterials() {
     var box = document.getElementById('materialList');
     if (!box) return;
@@ -103,6 +144,7 @@
               return '<div class="material-card"><strong>' + m +
                                            '</strong>' +
                                            (desc ? '<span class="desc">' + desc + '</span>' : '') +
+                                           renderMaterialColors(data.colors) +
                                            '</div>';
             }).join('');
       box.innerHTML = html;

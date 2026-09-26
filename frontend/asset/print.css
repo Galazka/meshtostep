@@ -121,6 +121,11 @@ section h2,.section-head h2{font-size:26px;font-weight:700;letter-spacing:-0.02e
 .material-card strong{font-size:15px;color:var(--fg)}
 .material-card .price{color:var(--accent);font-weight:600}
 .material-card .desc{display:block;color:var(--muted);font-size:12.5px;line-height:1.45;margin-top:6px}
+.mat-colors{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.mat-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 11px 5px 5px;border:1px solid var(--border);border-radius:999px;background:var(--card);color:var(--fg);font-size:12px;line-height:1;cursor:default}
+.mat-chip:hover{border-color:var(--accent)}
+.mat-dot{width:14px;height:14px;border-radius:50%;background:var(--sw,#94a3b8);display:inline-block;flex:0 0 auto;border:1px solid rgba(0,0,0,.08)}
+.mat-prem{color:var(--accent);font-weight:600;margin-left:2px}
 
 /* ===== Shipping ===== */
 .shipping-print{padding:40px 0;margin:0}
