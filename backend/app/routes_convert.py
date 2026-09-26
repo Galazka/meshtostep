@@ -31,7 +31,8 @@ def _slugify(s: str) -> str:
 THUMB_BG = "#f0f2f5"
 THUMB_FACE = "#c9ced6"
 THUMB_EDGE = "#6b7280"
-THUMB_VERSION = "v4"  # bump → nowa nazwa pliku cache, stare PNG (niebieskie) przestają być serwowane
+THUMB_VERSION = "v6"  # bump → nowa nazwa pliku cache, stare PNG przestają być serwowane
+                      # v6: auto-fit kadru (proj3d) — model wypełnia ~93% i nigdy nie jest ucięty
 THUMB_CACHE_HEADERS = {"Cache-Control": "no-store, no-cache, max-age=0, must-revalidate",
                        "Pragma": "no-cache", "Expires": "0"}
 
@@ -119,16 +120,48 @@ def _auto_thumb(mesh_file: str, thumb_path):
         poly = Poly3DCollection(verts[faces], alpha=1.0, facecolors=THUMB_FACE,
                                 edgecolors=THUMB_EDGE, linewidths=0.08)
     ax.add_collection3d(poly)
-    # Respect mesh aspect ratio: compute extents, set box_aspect
+    # Kadr MUSI objąć CAŁY model i wypełnić go maksymalnie. Stały mnożnik na
+    # promieniu kuli okalającej (dawniej 0.62) dawał albo mikroskopijny model
+    # (fill ~30%), albo ucięte rogi przy płaskich/kanciastych bryłach.
+    # Rozwiązanie: iteracyjny auto-fit — rysujemy, rzutujemy wierzchołki na
+    # piksele przez proj3d (dokładny bbox, zweryfikowany pomiarowo) i skalujemy
+    # promień tak, by najdłuższa oś zajęła 1-margin kadru. 3 przebiegi, bo po
+    # każdej zmianie limitu rzut się zmienia (zbiega monotonicznie).
+    # bbox_inches='tight' NIE może tu wrócić — przy 3D ścina Poly3DCollection.
     import numpy as np
-    extents = np.ptp(verts, axis=0)
-    max_ext = extents.max()
-    if max_ext > 0:
-        ax.set_box_aspect(extents / max_ext)
-    ax.auto_scale_xyz(verts[:,0], verts[:,1], verts[:,2])
-    ax.view_init(elev=20, azim=45); ax.set_axis_off()
-    plt.tight_layout(pad=0)
-    fig.savefig(str(thumb_path), dpi=125, facecolor=THUMB_BG, bbox_inches="tight", pad_inches=0)
+    from mpl_toolkits.mplot3d import proj3d
+    lo = verts.min(axis=0); hi = verts.max(axis=0)
+    ctr = (lo + hi) / 2.0
+    rad = float(np.max(hi - lo)) * 0.62
+    if not (rad > 0):
+        rad = 1.0
+    ax.set_box_aspect((1, 1, 1))
+    ax.set_proj_type("ortho")
+    ax.view_init(elev=22, azim=45); ax.set_axis_off()
+    fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    margin = 0.07
+    cw = fig.get_figwidth() * fig.dpi; ch = fig.get_figheight() * fig.dpi
+    tgt_w = (cw / 2.0) * (1.0 - margin); tgt_h = (ch / 2.0) * (1.0 - margin)
+    for _ in range(3):
+        ax.set_xlim(ctr[0] - rad, ctr[0] + rad)
+        ax.set_ylim(ctr[1] - rad, ctr[1] + rad)
+        ax.set_zlim(ctr[2] - rad, ctr[2] + rad)
+        if _ == 2:
+            break
+        try:
+            fig.canvas.draw()
+            x2, y2, _z = proj3d.proj_transform(verts[:, 0], verts[:, 1], verts[:, 2], ax.get_proj())
+            pts = ax.transData.transform(np.column_stack([x2, y2]))
+            bb = ax.bbox
+            cx = (bb.x0 + bb.x1) / 2.0; cy = (bb.y0 + bb.y1) / 2.0
+            hw = max(pts[:, 0].max() - cx, cx - pts[:, 0].min())
+            hh = max(pts[:, 1].max() - cy, cy - pts[:, 1].min())
+            if hw <= 0 or hh <= 0:
+                break
+            rad = rad / max(min(tgt_w / hw, tgt_h / hh), 1e-6)
+        except Exception:
+            break
+    fig.savefig(str(thumb_path), dpi=125, facecolor=THUMB_BG)
     plt.close(fig)
 
 def _quota_used(db: Session, user_id: int) -> int:
