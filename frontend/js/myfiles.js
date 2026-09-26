@@ -579,6 +579,21 @@ function closeJobModal() {
 let _fsRenderer = null, _fsScene = null, _fsCamera = null, _fsControls = null, _fsAnimId = null, _fsInitialPos = null;
 let _fsPinchDist = 0, _fsGesturesBound = false;
 
+function _fitCamera(cam, controls, obj) {
+    if (!cam || !obj) return;
+    var b = new THREE.Box3().setFromObject(obj);
+    var sp = new THREE.Sphere();
+    b.getBoundingSphere(sp);
+    var r = sp.radius || 50;
+    var fovRad = (cam.fov || 45) / 2 * Math.PI / 180;
+    var dist = r / Math.sin(fovRad);
+    var dir = new THREE.Vector3(1, 0.75, 1).normalize();
+    cam.position.copy(sp.center).add(dir.multiplyScalar(dist * 1.15));
+    cam.near = dist / 100; cam.far = dist * 100;
+    cam.lookAt(sp.center);
+    if (controls) { controls.target.copy(sp.center); controls.update(); }
+}
+
 function openJobFullscreen() {
     if (!_jobCurrentStlUrl || !window.THREE || !window._OrbitControls) return;
     const overlay = document.getElementById('fsOverlay');
@@ -666,6 +681,7 @@ function loadFsSTL(url) {
         const sz = new THREE.Vector3(); cb.getSize(sz);
         obj.scale.setScalar(100 / (Math.max(sz.x, sz.y, sz.z) || 1));
         _fsScene.add(obj);
+        _fitCamera(_fsCamera, _fsControls, obj);
         _fsInitialPos = _fsCamera.position.clone();
     }
     const req = new XMLHttpRequest();
@@ -688,6 +704,7 @@ function loadFsSTL(url) {
                 const mesh = new THREE.Mesh(geometry, mat);
                 mesh.scale.setScalar(100 / (Math.max(size.x, size.y, size.z) || 1));
                 _fsScene.add(mesh);
+                _fitCamera(_fsCamera, _fsControls, mesh);
                 _fsInitialPos = _fsCamera.position.clone();
             }
         } catch(e) { console.error('fs preview error:', e); }
@@ -786,6 +803,7 @@ function loadJobModalSTL(url) {
                     const md = Math.max(sz.x, sz.y, sz.z) || 1;
                     obj.scale.setScalar(100 / md);
                     scene.add(obj);
+                    _fitCamera(camera, controls, obj);
                 }
                 if (ext === 'obj' && OL) {
                     new OL().load(URL.createObjectURL(new Blob([data])), addMeshObj, undefined, function(){ showJobModalErr(); });
@@ -803,9 +821,9 @@ function loadJobModalSTL(url) {
                     const mesh = new T.Mesh(geometry, mat);
                     mesh.scale.setScalar(100 / maxDim);
                     scene.add(mesh);
+                    _fitCamera(camera, controls, mesh);
                 }
-                camera.position.set(80, 60, 80);
-                camera.lookAt(0, 0, 0);
+                camera.initialPos = camera.position.clone();
                 controls.update();
                 function animate() {
                     _job3AnimId = requestAnimationFrame(animate);

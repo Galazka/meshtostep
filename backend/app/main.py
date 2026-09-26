@@ -71,7 +71,7 @@ async def csp_middleware(request: Request, call_next):
             "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' data: https:; "
             # bez connect-src beacony AdSense lecą w default-src 'self' i są blokowane
-            "connect-src 'self' https://cloud.umami.is https://pagead2.googlesyndication.com https://*.googlesyndication.com "
+            "connect-src 'self' https://cloud.umami.is https://gateway.umami.is https://pagead2.googlesyndication.com https://*.googlesyndication.com "
             "https://googleads.g.doubleclick.net https://*.doubleclick.net "
             "https://adservice.google.com https://*.adtrafficquality.google "
             "https://*.google.com https://fundingchoicesmessages.google.com; "
