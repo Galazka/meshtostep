@@ -126,6 +126,12 @@ section h2,.section-head h2{font-size:26px;font-weight:700;letter-spacing:-0.02e
 .mat-chip:hover{border-color:var(--accent)}
 .mat-dot{width:14px;height:14px;border-radius:50%;background:var(--sw,#94a3b8);display:inline-block;flex:0 0 auto;border:1px solid rgba(0,0,0,.08)}
 .mat-prem{color:var(--accent);font-weight:600;margin-left:2px}
+.mat-chip{white-space:nowrap}
+.colors-block{margin-top:28px;padding-top:24px;border-top:1px solid var(--border)}
+.colors-block:empty{display:none}
+.colors-head{margin-bottom:14px}
+.colors-head h3{margin:0 0 4px;font-size:17px;letter-spacing:-.01em}
+.colors-head p{margin:0;font-size:13px;color:var(--muted);max-width:60ch}
 
 /* ===== Shipping ===== */
 .shipping-print{padding:40px 0;margin:0}

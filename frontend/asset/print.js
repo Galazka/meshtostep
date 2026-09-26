@@ -138,16 +138,23 @@
       var res = await fetch('/api/admin/materials?' + Date.now());
       var data = res.ok ? await res.json() : { materials: { "PLA": 79, "PETG": 95, "ABS": 89, "ASA": 159, "TPU": 130 }, colors: {} };
             var html = Object.keys(data.materials || {}).map(function(m) {
-              var p = data.materials[m];
-              var price = typeof p === 'number' ? p : (p.price_kg || 0);
-              var desc = (typeof p === 'object' && p.desc) ? p.desc : '';
-              return '<div class="material-card"><strong>' + m +
-                                           '</strong>' +
-                                           (desc ? '<span class="desc">' + desc + '</span>' : '') +
-                                           renderMaterialColors(data.colors) +
-                                           '</div>';
-            }).join('');
+                    var p = data.materials[m];
+                    var desc = (typeof p === 'object' && p.desc) ? p.desc : '';
+                    return '<div class="material-card"><strong>' + m +
+                                                 '</strong>' +
+                                                 (desc ? '<span class="desc">' + desc + '</span>' : '') +
+                                                 '</div>';
+                  }).join('');
       box.innerHTML = html;
+      var cbox = document.getElementById('colorList');
+      if (cbox) {
+        var lt = function(k){ if(typeof window.__pi18n !== 'undefined' && window.__pi18n.t) return window.__pi18n.t(k); return k; };
+        var chtml = renderMaterialColors(data.colors);
+        if (chtml) {
+          cbox.innerHTML = '<div class="colors-head"><h3>' + lt('colHead') + '</h3>' +
+                           '<p>' + lt('colSub') + '</p></div>' + chtml;
+        }
+      }
     } catch (e) {
       box.innerHTML = '<p style="color:#6b7280">Materials list unavailable</p>';
     }
