@@ -100,6 +100,26 @@ export function initViewerPro(opts) {
   controls.maxPolarAngle = Math.PI - 0.05;
   controls.autoRotateSpeed = 2.2;
 
+  /* v4: kontener dostaje realny layout DOPIERO po inicjalizacji (dvh/flex/animacja
+     otwarcia) — bez synchronizacji renderer trzymał rozmiar z momentu montażu,
+     camera.aspect kłamał, a kadr liczył się dla złego pudełka → model obcięty.
+     Reagujemy na każdą zmianę rozmiaru hosta. */
+  let lastW = w0, lastH = h0;
+  function resize() {
+    const w = Math.max(1, host.clientWidth || lastW);
+    const h = Math.max(1, host.clientHeight || lastH);
+    if (w === lastW && h === lastH) return;
+    lastW = w; lastH = h;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    if (mesh) resetView();
+  }
+  if (typeof ResizeObserver !== 'undefined') { try { new ResizeObserver(resize).observe(host); } catch (e) {} }
+  window.addEventListener('resize', resize);
+  requestAnimationFrame(resize);
+  [120, 400, 900].forEach(function (ms) { setTimeout(resize, ms); });
+
   // neutral, non-tinted lighting (was blue-tinted before — made gray models look blue)
   scene.add(new THREE.HemisphereLight(0xffffff, 0xd7dde6, 1.05));
   const key = new THREE.DirectionalLight(0xffffff, 1.35); key.position.set(34, 52, 30); scene.add(key);
@@ -149,8 +169,22 @@ export function initViewerPro(opts) {
   }
 
   function resetView() {
-    const fd = 18 / Math.tan(camera.fov * Math.PI / 360) * 1.25;
-    camera.position.set(fd * 0.42, fd * 0.46, fd * 0.66);
+    /* Kadr liczony z promienia bryły i WĘŻSZEGO z pól widzenia (pion/poziom).
+       Stara wersja brała stałe 18 i tylko fov pionowy → na szerokim-niskim
+       kontenerze (share page: ~1060x300) model wychodził poza dolną krawędź. */
+    let r = 15;
+    if (mesh) {
+      mesh.updateMatrixWorld(true);
+      const sp = new THREE.Box3().setFromObject(mesh).getBoundingSphere(new THREE.Sphere());
+      r = sp.radius || 15;
+    }
+    const vFov = (camera.fov || 50) * Math.PI / 180;
+    const hFov = 2 * Math.atan(Math.tan(vFov / 2) * (camera.aspect || 1));
+    const fd = r / Math.sin(Math.min(vFov, hFov) / 2) * 1.12;
+    camera.position.copy(new THREE.Vector3(0.42, 0.46, 0.66).normalize().multiplyScalar(fd));
+    camera.near = Math.max(fd / 500, 0.1);
+    camera.far = fd * 30;
+    camera.updateProjectionMatrix();
     controls.target.set(0, 0, 0);
     controls.update();
     layoutGrid();
