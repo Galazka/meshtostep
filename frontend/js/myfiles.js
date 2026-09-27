@@ -883,6 +883,12 @@ async function deleteMyJob(jobId) {
     let _edJobId = null;
     let _edDescListener = null;
 
+    function _isRealImgSrc(src) {
+        if (!src) return false;
+        src = String(src).trim();
+        return /^(https?:)?\/\//.test(src) || src.charAt(0) === '/' || /^data:image\//.test(src);
+    }
+
     function _mdToHtml(md) {
         if (!md) return '';
         let h = md
@@ -902,8 +908,14 @@ async function deleteMyJob(jobId) {
         h = h.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
         h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
         h = h.replace(/\*(.+?)\*/g, '<em>$1</em>');
-        // images
-        h = h.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px">');
+        // images — tylko prawdziwe URL-e. Goły filename (np. "box-1") dawał 404
+        // w konsoli; starsze wpisy wklejały samą nazwę pliku z dysku.
+        h = h.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, function(m, alt, src) {
+            if (!_isRealImgSrc(src)) {
+                return '<span class="md-img-broken" title="' + src + '">obrazek: brak URL (wklej adres albo wgraj przez Galerię)</span>';
+            }
+            return '<img src="' + src + '" alt="' + alt + '" style="max-width:100%;border-radius:8px">';
+        });
         // links
         h = h.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
         // newlines → <br> (but not inside pre)
@@ -947,7 +959,7 @@ async function deleteMyJob(jobId) {
         var imgMatches = (j.description || '').match(/!\[[^\]]*\]\([^)]+\)/g) || [];
         imgMatches.forEach(function(m) {
             var urlM = m.match(/\(([^)]+)\)/);
-            if (urlM) {
+            if (urlM && _isRealImgSrc(urlM[1])) {
                 var img = document.createElement('img');
                 img.src = urlM[1];
                 img.style.cssText = 'width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0';
