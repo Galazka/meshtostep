@@ -1,5 +1,5 @@
 // viewer3d.js — Three.js viewer, toast, setMeshColor, loadSTLIntoViewer (verbatim).
-import { token } from './shared.js?v=110';
+import { token } from './shared.js?v=111';
 
 function setMeshColor(hex) {
     if (!_threeScene) return;
@@ -32,22 +32,38 @@ function _waitThreeReady(cb){
         else if(tries>40){ clearInterval(iv); console.log('[3D] _waitThreeReady: timeout'); if(!done) toast('B\u0142\u0105d \u0142adowania podgl\u0105du 3D', 'error'); }
     }, 150);
 }
+let _fittedObject=null;
 function _fitCameraToObject(obj){
     try{
-        const box=new THREE.Box3().setFromObject(obj);
-        const size=new THREE.Vector3(); box.getSize(size);
-        const center=new THREE.Vector3(); box.getCenter(center);
-        const maxDim=Math.max(size.x, size.y, size.z) || 1;
-        const fov=_threeCamera.fov * Math.PI/180;
-        let dist=(maxDim/2) / Math.tan(fov/2);
-        dist*=1.6;
+        if(obj) _fittedObject=obj;
+        const target=_fittedObject;
+        if(!target || !_threeCamera) return;
+        // Realny rozmiar kontenera — camera.aspect MUSI byc aktualny, inaczej
+        // przy waskim kontenerze (mobile/modal) model wychodzi poza kadr w poziomie.
+        const dom=_threeRenderer && _threeRenderer.domElement;
+        const W=(dom && dom.clientWidth) || (_threeCamera.aspect>0 ? 0 : 640);
+        const H=(dom && dom.clientHeight) || 0;
+        if(W>0 && H>0) _threeCamera.aspect=W/H;
+        const box=new THREE.Box3().setFromObject(target);
+        const sphere=box.getBoundingSphere(new THREE.Sphere());
+        const center=sphere.center;
+        const radius=sphere.radius || 1;
+        const vFov=_threeCamera.fov * Math.PI/180;
+        const hFov=2*Math.atan(Math.tan(vFov/2)*(_threeCamera.aspect||1));
+        // odleglosc liczona dla OBU osi — inaczej szeroki model tnie sie po bokach
+        const dist=Math.max(radius/Math.sin(vFov/2), radius/Math.sin(hFov/2))*1.12;
         const dir=new THREE.Vector3(0.6,0.8,1).normalize();
         _threeCamera.position.copy(center).add(dir.multiplyScalar(dist));
-        _threeCamera.near=dist/100; _threeCamera.far=dist*100; _threeCamera.updateProjectionMatrix();
+        _threeCamera.near=Math.max(dist/1000, 0.01); _threeCamera.far=dist*100;
+        _threeCamera.updateProjectionMatrix();
         _threeControls.target.copy(center);
         _threeControls.update();
     }catch(e){}
 }
+// Po zmianie rozmiaru okna/modału kadr musi sie przeliczyc (inaczej uciety model).
+window.addEventListener('resize', function(){
+    if(_fittedObject){ clearTimeout(window.__fitT); window.__fitT=setTimeout(function(){ _fitCameraToObject(null); }, 150); }
+});
 function _capturePreview(jobUuid){
     if(!jobUuid || !_threeRenderer) return;
     setTimeout(function(){

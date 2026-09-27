@@ -1,7 +1,7 @@
 // myfiles.js  -  jobs grid, folders, bulk, share modal, job modal, fullscreen, editor (verbatim).
-import { t } from './i18n.js?v=110';
-import { token } from './shared.js?v=110';
-import { toast } from './viewer3d.js?v=111';
+import { t } from './i18n.js?v=113';
+import { token } from './shared.js?v=111';
+import { toast } from './viewer3d.js?v=113';
 
 let _shareJobId = null;
 let _shareVanityUrl = '';
@@ -585,14 +585,27 @@ function _fitCamera(cam, controls, obj) {
     var sp = new THREE.Sphere();
     b.getBoundingSphere(sp);
     var r = sp.radius || 50;
-    var fovRad = (cam.fov || 45) / 2 * Math.PI / 180;
-    var dist = r / Math.sin(fovRad);
+    // FOV pionowy ORAZ poziomy — bez tego waski kontener (mobile) ucina model po bokach.
+    var vFov = (cam.fov || 45) * Math.PI / 180;
+    var hFov = 2 * Math.atan(Math.tan(vFov / 2) * (cam.aspect || 1));
+    var dist = Math.max(r / Math.sin(vFov / 2), r / Math.sin(hFov / 2)) * 1.12;
     var dir = new THREE.Vector3(1, 0.75, 1).normalize();
-    cam.position.copy(sp.center).add(dir.multiplyScalar(dist * 1.15));
-    cam.near = dist / 100; cam.far = dist * 100;
+    cam.position.copy(sp.center).add(dir.multiplyScalar(dist));
+    cam.near = Math.max(dist / 1000, 0.01); cam.far = dist * 100;
     cam.lookAt(sp.center);
     if (controls) { controls.target.copy(sp.center); controls.update(); }
+    window._lastFit = { cam: cam, controls: controls, obj: obj };
 }
+// Po zmianie rozmiaru okna kadr przelicza sie od nowa (inaczej model uciety).
+window.addEventListener('resize', function(){
+    if(!window._lastFit) return;
+    clearTimeout(window.__mfFitT);
+    window.__mfFitT = setTimeout(function(){
+        var f = window._lastFit; if(!f) return;
+        var el = f.cam && f.cam.__dom;
+        _fitCamera(f.cam, f.controls, f.obj);
+    }, 150);
+});
 
 function openJobFullscreen() {
     if (!_jobCurrentStlUrl || !window.THREE || !window._OrbitControls) return;
@@ -769,7 +782,7 @@ function loadJobModalSTL(url) {
         const data = req.response;
         const ext = url.split('.').pop().toLowerCase().split('?')[0];
         _jobModalDeps(function(T, OC, SL, OL, TML) {
-            const w = container.clientWidth || 740;
+            const w = Math.max(container.clientWidth || 0, 320) || 740;
             const h = Math.min(window.innerHeight * 0.5, 480) || 400;
             container.innerHTML = '';
             const scene = new T.Scene();
@@ -779,9 +792,23 @@ function loadJobModalSTL(url) {
             renderer.setSize(w, h);
             renderer.setPixelRatio(window.devicePixelRatio || 1);
             container.appendChild(renderer.domElement);
-            // Force resize after DOM layout settles (modal just opened, clientWidth was 0)
             console.log('[3D] loadJobModalSTL: renderer mounted w=', w, 'h=', h);
-            setTimeout(function(){ renderer.setSize(Math.min(container.clientWidth || w, 1200), h); }, 100);
+            // Modal dopiero sie otworzyl (clientWidth czesto 0) — po ustaleniu layoutu
+            // PRZELICZ canvas + camera.aspect i dopasuj kadr jeszcze raz.
+            function refitModal(){
+                try{
+                    var mw = container.clientWidth || w;
+                    var mh = container.clientHeight || h;
+                    if(mw < 40 || mh < 40) return;
+                    renderer.setSize(mw, mh);
+                    camera.aspect = mw / mh;
+                    camera.updateProjectionMatrix();
+                    var f = window._lastFit;
+                    if(f && f.cam === camera && f.obj) _fitCamera(camera, controls, f.obj);
+                }catch(e){}
+            }
+            setTimeout(refitModal, 100);
+            setTimeout(refitModal, 450);
             scene.add(new T.AmbientLight(0xffffff, 0.7));
             const dl = new T.DirectionalLight(0xffffff, 0.9);
             dl.position.set(1, 1, 1);

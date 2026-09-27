@@ -1,6 +1,6 @@
 // auth.js — forgot-password, modal, doAuth, fetchUser, logout (verbatim).
-import { t } from './i18n.js?v=110';
-import { token, setToken } from './shared.js?v=110';
+import { t } from './i18n.js?v=113';
+import { token, setToken } from './shared.js?v=111';
 
 async function openForgotModal(){ document.getElementById('forgotModal').classList.add('show'); document.getElementById('forgotError').style.display='none'; }
 function closeForgotModal(){ document.getElementById('forgotModal').classList.remove('show'); }
