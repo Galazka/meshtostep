@@ -46,12 +46,14 @@ function _capturePreview(jobUuid, pro){
             if(!canvas) return;
             const dataUrl=canvas.toDataURL('image/jpeg', 0.85);
             if(!dataUrl || dataUrl.length < 1000) return;
-            fetch(dataUrl).then(function(r){ return r.blob(); }).then(function(blob){
-                const fd=new FormData();
-                fd.append('preview', blob, 'preview.jpg');
-                const headers=token ? {'Authorization':'Bearer '+token} : {};
-                fetch('/api/jobs/'+jobUuid+'/preview', {method:'POST', body:fd, headers: headers}).catch(function(){});
-            }).catch(function(){});
+            // fetch(dataURL) jest w Chrome odrzucany — kodujemy recznie do Bloba
+            const bin=atob(dataUrl.split(',')[1]);
+            const arr=new Uint8Array(bin.length);
+            for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+            const fd=new FormData();
+            fd.append('preview', new Blob([arr],{type:'image/jpeg'}), 'preview.jpg');
+            const headers=token ? {'Authorization':'Bearer '+token} : {};
+            fetch('/api/jobs/'+jobUuid+'/preview', {method:'POST', body:fd, headers: headers}).catch(function(){});
         }catch(e){}
     }, 1800);
 }

@@ -720,7 +720,7 @@ def embed_page(job_id: str, db: Session = Depends(get_db)) -> HTMLResponse:
 <script type="module">
 import {{ initViewerPro }} from '/asset/viewer_pro.js?v=6';
 initViewerPro({{ container: 'viewer3d', stlUrl: '/api/stl-preview/{uuid}', fallbackImg: '/api/thumb/{uuid}?v=8',
-  uuid: '{uuid}', filename: {json.dumps(job.original_filename or "model")}, toolbar: false, printBar: false }});
+  uuid: '{uuid}', filename: {json.dumps(job.original_filename or "model")}, toolbar: true, printBar: false, grid: true }});
 </script>
 </body></html>"""
 
