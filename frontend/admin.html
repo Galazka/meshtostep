@@ -1410,8 +1410,7 @@ const I18N = {
 
 
     /* ═══════════════════════ JOB PREVIEW MODAL ═══════════════════════ */
-    let _jobThreeRenderer = null, _jobThreeScene = null, _jobThreeCamera = null,
-        _jobThreeControls = null, _jobThreeAnimId = null;
+    let _jobThreeAnimId = null;
     let _currentJob = null;
 
     function _waitFor(filename_, deps, check, timeout) {
@@ -1455,94 +1454,35 @@ const I18N = {
         document.getElementById('jobModal').classList.remove('show');
         if (_jobThreeAnimId) cancelAnimationFrame(_jobThreeAnimId);
         _jobThreeAnimId = null;
-        if (_jobThreeRenderer) { _jobThreeRenderer.dispose(); _jobThreeRenderer = null; }
-        if (_jobThreeControls) { try { _jobThreeControls.dispose(); } catch(e) {} _jobThreeControls = null; }
-        _jobThreeScene = null; _jobThreeCamera = null; _currentJob = null;
-        const canvas = document.getElementById('jobPreviewCanvas');
-        if (canvas) canvas.innerHTML = '';
-    }
-
-    function _threeDeps(cb) {
-        const T = window.THREE;
-        const OC = window._OrbitControls, SL = window._STLLoader;
-        if (T && OC && SL) { cb(T, OC, SL); return; }
-        let tries = 0;
-        const iv = setInterval(() => {
-            const T2 = window.THREE;
-            const OC2 = window._OrbitControls, SL2 = window._STLLoader;
-            tries++;
-            if (T2 && OC2 && SL2) { clearInterval(iv); cb(T2, OC2, SL2); }
-            else if (tries > 50) { clearInterval(iv); showJobPreviewErr(); }
-        }, 200);
+        _currentJob = null;
+        // Canvas nalezy do viewer_pro (kontener.__pro) — zostaje zywy,
+        // wiec ponowne otwarcie modala to samo loadUrl, bez nowego WebGL.
     }
 
     function showJobPreviewErr() {
         const container = document.getElementById('jobPreviewCanvas');
-        if (container) container.innerHTML =
+        if (!container || container.__pro) return; // viewer_pro juz pokazuje JPG fallback
+        container.innerHTML =
             '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">Podglad niedostepny</div>';
     }
 
-    function loadJobSTL(url) {
+    async function loadJobSTL(url) {
         const container = document.getElementById('jobPreviewCanvas');
-        container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">' + t('loading') + '</div>';
-        const req = new XMLHttpRequest();
-        req.open('GET', url);
-        if (token) req.setRequestHeader('Authorization', 'Bearer ' + token);
-        req.responseType = 'arraybuffer';
-        req.onload = function() {
-            if (req.status !== 200 || !req.response) { showJobPreviewErr(); return; }
-            const data = req.response;
-            _threeDeps(function(T, OC, SL) {
-                const w = container.clientWidth || 740;
-                const h = Math.min(window.innerHeight * 0.5, 480) || 400;
-                container.innerHTML = '';
-                const scene = new T.Scene();
-                scene.background = new T.Color(0xf7f9fc);
-                const camera = new T.PerspectiveCamera(45, w / h, 0.1, 10000);
-                const renderer = new T.WebGLRenderer({ antialias: true });
-                renderer.setSize(w, h);
-                renderer.setPixelRatio(window.devicePixelRatio || 1);
-                container.appendChild(renderer.domElement);
-                scene.add(new T.AmbientLight(0xffffff, 0.7));
-                const dl = new T.DirectionalLight(0xffffff, 0.9);
-                dl.position.set(1, 1, 1);
-                scene.add(dl);
-                const controls = new OC(camera, renderer.domElement);
-                controls.enableDamping = true;
-                controls.target.set(0, 0, 0);
-                _jobThreeRenderer = renderer;
-                _jobThreeScene = scene;
-                _jobThreeCamera = camera;
-                _jobThreeControls = controls;
-                try {
-                    const loader = new SL();
-                    const geometry = loader.parse(data);
-                    geometry.computeBoundingBox();
-                    const box = geometry.boundingBox;
-                    const center = new T.Vector3();
-                    box.getCenter(center);
-                    geometry.translate(-center.x, -center.y, -center.z);
-                    const size = new T.Vector3();
-                    box.getSize(size);
-                    const maxDim = Math.max(size.x, size.y, size.z) || 1;
-                    const mat = new T.MeshPhongMaterial({ color: 0xc9ced6, specular: 0x9aa0a6, shininess: 24 });
-                    const mesh = new T.Mesh(geometry, mat);
-                    mesh.scale.setScalar(100 / maxDim);
-                    scene.add(mesh);
-                    camera.position.set(80, 60, 80);
-                    camera.lookAt(0, 0, 0);
-                    controls.update();
-                    function animate() {
-                        _jobThreeAnimId = requestAnimationFrame(animate);
-                        controls.update();
-                        renderer.render(scene, camera);
-                    }
-                    animate();
-                } catch(e) { showJobPreviewErr(); }
+        if (!container) return;
+        const m = String(url).match(/([a-f0-9]{8,32})/i);
+        const uuid = m ? m[1] : '';
+        if (!container.__pro) {
+            const M = await import('/asset/viewer_pro.js?v=6');
+            container.__pro = M.initViewerPro({
+                container: container, stlUrl: '',
+                lang: 'pl', toolbar: true, printBar: false, grid: true,
+                authToken: (typeof token !== 'undefined' && token) ? token : ''
             });
-        };
-        req.onerror = showJobPreviewErr;
-        req.send();
+        }
+        container.__pro.loadUrl(url, {
+            fallback: uuid ? '/api/thumb/' + uuid + '?v=8' : '',
+            onError: showJobPreviewErr
+        });
     }
 
     async function doAdminShare(jobId) {

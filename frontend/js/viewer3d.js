@@ -1,111 +1,51 @@
-// viewer3d.js — Three.js viewer, toast, setMeshColor, loadSTLIntoViewer (verbatim).
+// viewer3d.js — glowny podglad na indexie = PELNY konfigurator viewer_pro
+// (auto-obrot, siatka, krawedzie, podloga, tlo, pelny ekran, zrzut PNG +
+// pasek kolorow/wydruku). Kiedys osobny, ubogi stack — teraz jeden shared
+// viewer uzywany wszedzie: /s/, /u/, /e/, index, Moje pliki, admin, /zamow.
 import { token } from './shared.js?v=111';
+import { initViewerPro } from '../asset/viewer_pro.js?v=6';
 
-function setMeshColor(hex) {
-    if (!_threeScene) return;
-    _threeScene.traverse(function(c) {
-        if (c.isMesh) { c.material.color.setHex(hex); c.material.needsUpdate = true; }
-    });
-}
+let _pro = null;
+let _toastT;
 
-let _threeScene, _threeCamera, _threeRenderer, _threeControls, _threeAnim;
-let _threeToastTimer;
 function toast(msg, type){
     let el=document.getElementById('toast');
     if(!el){ el=document.createElement('div'); el.id='toast'; el.className='toast'; document.body.appendChild(el); }
     el.textContent=msg;
     el.className='toast show '+(type||'');
-    clearTimeout(_threeToastTimer);
-    _threeToastTimer=setTimeout(function(){ el.classList.remove('show'); }, 3000);
+    clearTimeout(_toastT);
+    _toastT=setTimeout(function(){ el.classList.remove('show'); }, 3000);
 }
-function _waitThreeReady(cb){
-    console.log('[3D] _waitThreeReady: __threeReady=', window.__threeReady, 'THREE=', !!window.THREE, 'STLLoader=', !!window._STLLoader);
-    if(window.__threeReady && window.THREE && window._STLLoader){ console.log('[3D] _waitThreeReady: already ready'); cb(); return; }
-    let done=false;
-    function go(){ if(done) return; done=true; cb(); }
-    window.addEventListener('three-ready', go, {once:true});
-    let tries=0;
-    const iv=setInterval(function(){
-        tries++;
-        console.log('[3D] _waitThreeReady poll', tries, '__threeReady=', window.__threeReady);
-        if(window.__threeReady && window.THREE && window._STLLoader){ clearInterval(iv); console.log('[3D] _waitThreeReady: ready after poll'); go(); }
-        else if(tries>40){ clearInterval(iv); console.log('[3D] _waitThreeReady: timeout'); if(!done) toast('B\u0142\u0105d \u0142adowania podgl\u0105du 3D', 'error'); }
-    }, 150);
-}
-let _fittedObject=null;
-let _viewerContainer=null;
-let _viewerRO=null;
-// Rozmiar canvasa/kamery MUSI być liczony z ŻYWEGO kontenera w każdej chwili.
-// Modal podglądu startuje jako display:none → clientWidth=0, więc jednorazowe
-// setSize() w init zostawiało canvas przypięty do 640x420 na stałe i model
-// wychodził przycięty/rozjechany (kadr nigdy się nie przeliczał).
-function _syncViewerSize(){
-    if(!_viewerContainer || !_threeRenderer || !_threeCamera) return;
-    var w=_viewerContainer.clientWidth, h=_viewerContainer.clientHeight;
-    if(!w || !h) return;
-    var pr=_threeRenderer.getPixelRatio();
-    if(_threeRenderer.domElement.width!==Math.floor(w*pr) || _threeRenderer.domElement.height!==Math.floor(h*pr)){
-        _threeRenderer.setSize(w, h, false);
-    }
-    if(_threeCamera.aspect!==w/h){ _threeCamera.aspect=w/h; _threeCamera.updateProjectionMatrix(); }
-}
-function _installViewerResize(){
-    try{ if(_viewerRO){ _viewerRO.disconnect(); _viewerRO=null; } }catch(e){}
-    if(typeof ResizeObserver==='undefined') return;
-    _viewerRO=new ResizeObserver(function(){
-        _syncViewerSize();
-        if(_fittedObject){ clearTimeout(window.__fitT); window.__fitT=setTimeout(function(){ _fitCameraToObject(null); }, 60); }
+
+function _ensurePro() {
+    const container = document.getElementById('viewer3d');
+    if (!container) return null;
+    if (container.__pro) { _pro = container.__pro; return _pro; }
+    container.querySelectorAll('canvas').forEach(function(c){ c.remove(); });
+    const pro = initViewerPro({
+        container: container,
+        stlUrl: '',
+        lang: document.documentElement.lang || 'pl',
+        toolbar: true,
+        printBar: true,
+        grid: true,
+        authToken: token || ''
     });
-    try{ _viewerRO.observe(_viewerContainer); }catch(e){}
+    container.__pro = pro;
+    _pro = pro;
+    window.__viewerPro = pro;
+    return pro;
 }
-function _refitSoon(){
-    // mesh wpada 1-2 klatki PRZED tym, jak modal/pełny ekran dostanie finalny rozmiar
-    requestAnimationFrame(function(){
-        _syncViewerSize(); _fitCameraToObject(null);
-        setTimeout(function(){ _syncViewerSize(); _fitCameraToObject(null); }, 180);
-        setTimeout(function(){ _syncViewerSize(); _fitCameraToObject(null); }, 600);
-    });
-}
-function _fitCameraToObject(obj){
-    try{
-        if(obj) _fittedObject=obj;
-        const target=_fittedObject;
-        if(!target || !_threeCamera) return;
-        // Realny rozmiar kontenera — camera.aspect MUSI byc aktualny, inaczej
-        // przy waskim kontenerze (mobile/modal) model wychodzi poza kadr w poziomie.
-        const dom=_threeRenderer && _threeRenderer.domElement;
-        const W=(dom && dom.clientWidth) || (_threeCamera.aspect>0 ? 0 : 640);
-        const H=(dom && dom.clientHeight) || 0;
-        if(W>0 && H>0) _threeCamera.aspect=W/H;
-        const box=new THREE.Box3().setFromObject(target);
-        const sphere=box.getBoundingSphere(new THREE.Sphere());
-        const center=sphere.center;
-        const radius=sphere.radius || 1;
-        const vFov=_threeCamera.fov * Math.PI/180;
-        const hFov=2*Math.atan(Math.tan(vFov/2)*(_threeCamera.aspect||1));
-        // odleglosc liczona dla OBU osi — inaczej szeroki model tnie sie po bokach
-        const dist=Math.max(radius/Math.sin(vFov/2), radius/Math.sin(hFov/2))*1.12;
-        const dir=new THREE.Vector3(0.6,0.8,1).normalize();
-        _threeCamera.position.copy(center).add(dir.multiplyScalar(dist));
-        _threeCamera.near=Math.max(dist/1000, 0.01); _threeCamera.far=dist*100;
-        _threeCamera.updateProjectionMatrix();
-        _threeControls.target.copy(center);
-        _threeControls.update();
-    }catch(e){}
-}
-// Po zmianie rozmiaru okna/modału kadr musi sie przeliczyc (inaczej uciety model).
-window.addEventListener('resize', function(){
-    if(_fittedObject){ clearTimeout(window.__fitT); window.__fitT=setTimeout(function(){ _fitCameraToObject(null); }, 150); }
-});
-function _capturePreview(jobUuid){
-    if(!jobUuid || !_threeRenderer) return;
+
+// JPG karty (preview_image) — strzal z zywego canvasa, jak kiedys.
+function _capturePreview(jobUuid, pro){
+    if(!jobUuid || !pro || !pro.renderer) return;
     setTimeout(function(){
         try{
-            const canvas=_threeRenderer.domElement;
+            const canvas=pro.renderer.domElement;
             if(!canvas) return;
             const dataUrl=canvas.toDataURL('image/jpeg', 0.85);
             if(!dataUrl || dataUrl.length < 1000) return;
-            // dataURL -> blob via fetch
             fetch(dataUrl).then(function(r){ return r.blob(); }).then(function(blob){
                 const fd=new FormData();
                 fd.append('preview', blob, 'preview.jpg');
@@ -113,123 +53,36 @@ function _capturePreview(jobUuid){
                 fetch('/api/jobs/'+jobUuid+'/preview', {method:'POST', body:fd, headers: headers}).catch(function(){});
             }).catch(function(){});
         }catch(e){}
-    }, 1500);
-}
-function init3DViewer(container) {
-    if (_threeRenderer) {
-        cancelAnimationFrame(_threeAnim);
-        _threeRenderer.dispose();
-        _threeControls && _threeControls.dispose();
-    }
-    container.querySelectorAll('canvas').forEach(function(c){ c.remove(); });
-    const W = Math.min(container.clientWidth || 640, 1200), H = container.clientHeight || 420;
-    _threeScene = new THREE.Scene();
-    _threeScene.background = new THREE.Color(0xf0f2f5);
-    _threeCamera = new THREE.PerspectiveCamera(50, W / H, 0.1, 1000);
-    _threeCamera.position.set(0, 40, 60);
-    _threeRenderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-    _threeRenderer.setSize(W, H);
-    _threeRenderer.setPixelRatio(window.devicePixelRatio);
-    var cv = _threeRenderer.domElement;
-    cv.style.width = '100%'; cv.style.height = '100%'; cv.style.display = 'block';
-    container.appendChild(cv);
-    _viewerContainer = container;
-    _installViewerResize();
-    _syncViewerSize();
-    _threeControls = new window._OrbitControls(_threeCamera, _threeRenderer.domElement);
-    _threeControls.enableDamping = true;
-    _threeScene.add(new THREE.AmbientLight(0xffffff, 0.8));
-    const d1 = new THREE.DirectionalLight(0xffffff, 0.8); d1.position.set(30,50,30); _threeScene.add(d1);
-    const d2 = new THREE.DirectionalLight(0xffffff, 0.35); d2.position.set(-20,10,-30); _threeScene.add(d2);
-    function animate() { _threeAnim = requestAnimationFrame(animate); _threeControls.update(); _threeRenderer.render(_threeScene, _threeCamera); }
-    animate();
+    }, 1800);
 }
 
 function loadSTLIntoViewer(url, jobUuid) {
-    if(!jobUuid){
-        try{ const m=url.match(/([a-f0-9]{8,32})/i); if(m) jobUuid=m[1]; }catch(e){}
+    if (!jobUuid) {
+        try { const m = url.match(/([a-f0-9]{8,32})/i); if (m) jobUuid = m[1]; } catch (e) {}
     }
-    _waitThreeReady(function(){
-        const container = document.getElementById('viewer3d');
-        if(!container){ toast('Brak kontenera podgl\u0105du', 'error'); return; }
-        container.classList.add('show');
-        container.querySelectorAll('canvas').forEach(function(c){ c.remove(); });
-        var oldLd = document.getElementById('viewer3d-loading');
-        if (oldLd) oldLd.remove();
-        var ld = document.createElement('div');
-        ld.id = 'viewer3d-loading';
-        ld.style.cssText = 'display:flex;align-items:center;justify-content:center;height:100%;min-height:280px;color:var(--text-secondary);font-size:14px;position:absolute;inset:0';
-        ld.textContent = '\u0141adowanie modelu 3D...';
-        container.appendChild(ld);
-        var mcb=document.getElementById('meshColorBar');if(mcb)mcb.style.display='flex';
-        init3DViewer(container);
-        const ext = url.split('.').pop().toLowerCase().split('?')[0];
-        const mat = new THREE.MeshPhongMaterial({ color: 0xc9ced6, specular: 0x9aa0a6, shininess: 24 });
-
-        function addMesh(obj) {
-            var ldd = document.getElementById('viewer3d-loading');
-            if (ldd) ldd.remove();
-            obj.traverse(function(c) { if (c.isMesh) c.material = mat; });
-            obj.rotation.x = -Math.PI / 2;
-            _threeScene.add(obj);
-            _fitCameraToObject(obj);
-            _refitSoon();
-            _capturePreview(jobUuid);
-        }
-        function showJpgFallback(){
-            var ldd = document.getElementById('viewer3d-loading');
-            if (ldd) ldd.remove();
-            if(!jobUuid) return;
-            var img=new Image();
-            img.onload=function(){ container.innerHTML=''; img.style.cssText='width:100%;height:100%;object-fit:contain;border-radius:12px'; container.appendChild(img); };
-            img.onerror=function(){ container.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted)">Podglad 3D niedostepny</div>'; };
-            img.src='/api/thumb/'+jobUuid+'?v=8';
-        }
-        function onErr(e){
-            console.error('loadSTLIntoViewer error', e);
-            showJpgFallback();
-        }
-
-        if (ext === 'obj') {
-            const loader = new window._OBJLoader();
-            loader.load(url, addMesh, undefined, onErr);
-        } else if (ext === '3mf') {
-            const loader = new window._3MFLoader();
-            loader.load(url, addMesh, undefined, onErr);
-        } else {
-            // Sanity check: HEAD request to reject HTML error pages / corrupt files
-            fetch(url, {method:'HEAD'}).then(function(h){
-                            if (!h.ok) { showJpgFallback(); return; }
-                            var len = parseInt(h.headers.get('content-length')||'0', 10);
-                            var ct = (h.headers.get('content-type')||'').toLowerCase();
-                            if ((ct.indexOf('text/html')>=0) || (len > 500*1024*1024)) { onErr(new Error('bad file')); return; }
-                            loadStlNow();
-            }).catch(loadStlNow);
-            function loadStlNow(){
-                const loader = new window._STLLoader();
-                loader.load(url, function(geometry) {
-                    try{
-                        geometry.computeBoundingBox();
-                        const bb = geometry.boundingBox, center = new THREE.Vector3();
-                        bb.getCenter(center); geometry.translate(-center.x, -center.y, -center.z);
-                        const mesh=new THREE.Mesh(geometry, mat);
-                        addMesh(mesh);
-                    }catch(e){ onErr(e); }
-                }, undefined, onErr);
-            }
-        }
-    });
+    const container = document.getElementById('viewer3d');
+    if (!container) { toast('Brak kontenera podglądu', 'error'); return; }
+    container.classList.add('show');
+    const pro = _ensurePro();
+    if (!pro) return;
+    const fb = jobUuid ? '/api/thumb/' + jobUuid + '?v=8' : '';
+    pro.loadUrl(url, { fallback: fb });
+    _capturePreview(jobUuid, pro);
 }
 
+// compat: reszta kodu mogla wyolywac init3DViewer(container)
+function init3DViewer(container) { _ensurePro(); }
+
 export function refreshThreeTheme() {
-    if (!_threeScene) return;
+    // viewer_pro ma swoj staly, ciemny "stage" — w dark mode lekkie przyciemnienie
     try {
         const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-        _threeScene.background = new window.THREE.Color(dark ? 0x111827 : 0xf0f2f5);
+        if (_pro) _pro.setBg(dark ? '#0b1220' : '#101a2e');
     } catch (e) {}
 }
 
-export { toast, init3DViewer, loadSTLIntoViewer, setMeshColor };
+export function setMeshColor(hex) { if (_pro) _pro.setColor(hex); }
+export { toast, init3DViewer, loadSTLIntoViewer };
 window.setMeshColor = setMeshColor;
 window.loadSTLIntoViewer = loadSTLIntoViewer;
 window.toast = toast;

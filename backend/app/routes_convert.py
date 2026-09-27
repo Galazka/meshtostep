@@ -6,6 +6,7 @@ import shutil
 from collections import defaultdict
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request
 from fastapi.responses import FileResponse
@@ -13,7 +14,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 
 from . import models
-from .auth import get_current_user, require_user
+from .auth import get_current_user, require_user, _decode_token
 from .config import settings
 from .database import get_db
 from .engine import convert
@@ -644,7 +645,7 @@ def download(
 
 
 @router.get("/stl-preview/{job_uuid}")
-def stl_preview(job_uuid: str, db: Session = Depends(get_db)):
+def stl_preview(job_uuid: str, token: Optional[str] = None, db: Session = Depends(get_db)):
     """Return the original mesh (STL/3MF/OBJ) for Three.js preview."""
     job = db.query(models.Job).filter(
         models.Job.uuid == job_uuid
@@ -652,17 +653,25 @@ def stl_preview(job_uuid: str, db: Session = Depends(get_db)):
     if not job:
         raise HTTPException(404, "Job nie znaleziony")
     if job.visibility == "private":
-        raise HTTPException(403, "Prywatny model")
+        # Owner/admin with a valid token may preview own private mesh (My Files).
+        owner = _decode_token(token) if token else None
+        if not owner or not (owner.is_admin or owner.id == job.user_id):
+            raise HTTPException(403, "Prywatny model")
     stl_path = job.result_stl_path
     src_dir = JOBS_DIR / job_uuid
-    if stl_path and os.path.exists(stl_path):
-        return FileResponse(stl_path, media_type="model/stl")
+    # Prefer the ORIGINAL uploaded mesh over a conversion result — a 3MF/OBJ shown
+    # as its converted STL can look cut up if the conversion was lossy.
     if src_dir.exists():
-        for ext in (".stl", ".3mf", ".obj"):
+        for ext in (".stl", ".3mf", ".obj", ".ply", ".glb", ".gltf"):
             for f in src_dir.iterdir():
                 if f.suffix.lower() == ext:
                     mt = "model/stl" if ext == ".stl" else "application/octet-stream"
-                    return FileResponse(str(f), media_type=mt)
+                    return FileResponse(str(f), media_type=mt,
+                                        headers={"X-Mesh-Ext": ext.lstrip("."),
+                                                 "Cache-Control": "no-store"})
+    if stl_path and os.path.exists(stl_path):
+        return FileResponse(stl_path, media_type="model/stl",
+                            headers={"X-Mesh-Ext": "stl", "Cache-Control": "no-store"})
     # No mesh file at all
     raise HTTPException(404, "STL preview niedostepny")
 

@@ -842,91 +842,25 @@ function saveProfileShip(){
 </script>
 
 <script type="module">
-import * as THREE from 'three';
-import { STLLoader } from 'three/addons/loaders/STLLoader.js';
-import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-import { ThreeMFLoader } from 'three/addons/loaders/3MFLoader.js';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { initViewerPro } from '/asset/viewer_pro.js?v=6';
+/* Podglad w koszyku = ten sam pelny konfigurator co wszedzie: toolbar
+   (obrot/siatka/krawedzie/podloga/tlo/zoom/PNG/fullscreen) na scianie z konturem. */
 window.__local3d = {
   renderBytes: function(filename, bytes, boxId){
-    var ext = (filename || '').split('.').pop().toLowerCase();
-    var isStl = (ext==='stl'); var isObj = (ext==='obj');
-    var box = document.getElementById(boxId||'previewBox');
-    if(!box) return;
-    box.innerHTML = '<div class="local3d-box" style="width:100%;height:340px;position:relative"><canvas style="width:100%;height:340px;display:block"></canvas><div style="position:absolute;bottom:8px;left:10px;font-size:11px;color:#64748b">przytrzymaj LPM = obrót · scroll = zoom</div></div>';
-    var canvas = box.querySelector('canvas');
-    var renderer;
-    try { renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true}); }
-    catch(e){ renderer = new THREE.WebGLRenderer(); }
-    var scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf4f6fb);
-    var cam = new THREE.PerspectiveCamera(60, canvas.clientWidth / (canvas.clientHeight||1), 0.1, 5000);
-    cam.position.set(80, 70, 130);
-    var grid = new THREE.GridHelper(200, 24, 0xc9ced6, 0xdfe5f0);
-    scene.add(grid);
-    var _spin = true;
-    var controls = null;
-    var onMesh = function(mesh){
-      try{
-        var m = mesh;
-        if (mesh && mesh.geometry) { m = new THREE.Mesh(mesh.geometry, new THREE.MeshStandardMaterial({color:0xc9ced6, metalness:0.2, roughness:0.55, flatShading:true})); }
-        if (!(m && m.isObject3D)) m = new THREE.Object3D();
-        scene.add(m);
-        // frame object
-        scene.updateMatrixWorld();
-        var box = new THREE.Box3().setFromObject(m);
-        if (isNaN(box.min.x)) { var b0=new THREE.Box3(new THREE.Vector3(-10,-10,-10),new THREE.Vector3(10,10,10)); box=b0; }
-        var size = box.getSize(new THREE.Vector3());
-        var c = box.getCenter(new THREE.Vector3());
-        // SADZKA NA SIATKA: przesuń bryłę tak, by spód (min.y) leżał na y=0
-        var drop = box.min.y;
-        if (drop !== 0) m.position.y -= drop;
-        box.setFromObject(m);
-        size = box.getSize(new THREE.Vector3());
-        c = box.getCenter(new THREE.Vector3());
-        var maxdim = Math.max(size.x, size.y, size.z) || 10;
-        var d = maxdim * 2.6 + 30;
-        cam.position.set(c.x, maxdim*0.5 + d*0.35, c.z + d*1.1);
-        cam.lookAt(new THREE.Vector3(c.x, 0, c.z));
-        if (controls) { controls.target.set(c.x, 0, c.z); controls.update(); }
-        // faint ambient + directional light
-        scene.remove(scene.getObjectByName('l0')); scene.remove(scene.getObjectByName('l1'));
-        var l0=new THREE.AmbientLight(0xffffff, 0.75); l0.name='l0'; scene.add(l0);
-        var l1=new THREE.DirectionalLight(0xffffff, 1.0); l1.name='l1'; l1.position.set(maxdim*2, maxdim*2, maxdim*2); scene.add(l1);
-        renderer.render(scene, cam);
-        if (controls) controls.update();
-      }catch(e){ box.innerHTML='<div style="padding:16px;text-align:center">Podgląd: '+String(e).slice(0,140)+'</div>'; }
-    };
-    try {
-      renderer.setSize(canvas.clientWidth || 320, canvas.clientHeight || 260, false);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
-      controls = new OrbitControls(cam, canvas);
-      controls.enableDamping = true;
-      controls.autoRotate = true;
-      controls.autoRotateSpeed = -2.0;
-      controls.minDistance = 5; controls.maxDistance = 2000;
-      function anim(){ requestAnimationFrame(anim); controls.update(); renderer.render(scene, cam); }
-      anim();
-      // arraybuffer slice (STL/3MF need ArrayBuffer; OBJ needs text)
-      var ab = (bytes instanceof ArrayBuffer) ? bytes : bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
-      if (isStl) {
-        var stlLoader = new STLLoader();
-        var geo = stlLoader.parse(ab);   // auto-detects binary vs ASCII STL
-        var m = new THREE.Object3D(); m.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({color:0xc9ced6, metalness:0.2, roughness:0.55, flatShading:true})));
-        onMesh(m);
-      } else if (isObj) {
-        var objLoader = new OBJLoader();
-        var txt = new TextDecoder().decode(bytes);
-        onMesh(objLoader.parse(txt));
-      } else { // 3MF
-        var mfLoader = new ThreeMFLoader();
-        onMesh(mfLoader.parse(ab));
-      }
-    } catch(err){
-      box.innerHTML='<div style="padding:16px;text-align:center">Podgląd 3D: '+String(err).slice(0,160)+'</div>';
-      try{ renderer.render(scene, cam); }catch(e){}
+    var box = document.getElementById(boxId || 'previewBox');
+    if (!box) return;
+    if (!box.__pro) {
+      box.innerHTML = '';
+      box.style.minHeight = '420px';
+      box.__pro = initViewerPro({
+        container: box, stlUrl: '',
+        lang: document.documentElement.lang || 'pl',
+        toolbar: true, printBar: false, grid: true
+      });
     }
-    function esc2(x){ return String(x).replace(/</g,'&lt;').replace(/&/g,'&amp;'); }
+    var ab = (bytes instanceof ArrayBuffer) ? bytes : bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+    box.__pro.loadBytes(filename || 'model.stl', ab);
+    window.__viewerPro = box.__pro;
   }
 };
 </script>

@@ -94,8 +94,10 @@ body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--
   </nav>
 
   <div class="prt-actions nav-right" style="margin-left:auto">
-    <a class="prt-btn ghost" href="/">Zaloguj</a>
-    <a class="prt-btn primary" href="/">Załóż konto</a>
+    <span id="authBtns" style="display:inline-flex;gap:8px">
+      <a class="prt-btn ghost" href="/?login=1">Zaloguj</a>
+      <a class="prt-btn primary" href="/?register=1">Załóż konto</a>
+    </span>
     <button class="prt-burger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">☰</button>
   </div>
 </nav>

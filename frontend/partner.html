@@ -111,8 +111,10 @@ html[data-theme="dark"] .pwarn{background:var(--bg-soft)}
   </nav>
   <div class="prt-actions nav-right" style="margin-left:auto">
     <button class="prt-lang" id="partnerLang" onclick="__ppLang()">EN</button>
-    <a class="prt-btn ghost" href="/" data-p="navLogin">Zaloguj</a>
-    <a class="prt-btn primary" href="/" data-p="navSignup">Załóż konto</a>
+    <span id="authBtns" style="display:inline-flex;gap:8px">
+      <a class="prt-btn ghost" href="/?login=1" data-p="navLogin">Zaloguj</a>
+      <a class="prt-btn primary" href="/?register=1" data-p="navSignup">Załóż konto</a>
+    </span>
     <button class="prt-burger" onclick="document.getElementById('partnerNavLinks').classList.toggle('open')" aria-label="Menu">&#9776;</button>
   </div>
 </nav>

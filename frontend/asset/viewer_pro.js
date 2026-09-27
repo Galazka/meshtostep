@@ -66,7 +66,9 @@ export function initViewerPro(opts) {
     /* v3 defaults: dark navy stage + floor grid on, gray mesh — same look everywhere */
     bg: '#101a2e', meshHex: '#c9ced6', toolbar: true, printBar: true,
     printBarTarget: null, compact: false, noEdges: false,
-    grid: true, swatches: true
+    grid: true, swatches: true,
+    /* Bearer for private /api/stl-preview (owner's own files) */
+    authToken: ''
   }, opts || {});
   const L = T[cfg.lang] || T.pl;
   const isPL = (cfg.lang || 'pl') === 'pl';
@@ -221,7 +223,8 @@ export function initViewerPro(opts) {
   function buildToolbar() {
     if (!cfg.toolbar) return;
     toolbar = el('div', 'position:absolute;left:10px;top:10px;z-index:12;display:flex;flex-direction:column;gap:6px');
-    const state = { rot: false, wire: false, edges: !cfg.noEdges, grid: false };
+    const state = { rot: false, wire: false, edges: !cfg.noEdges, grid: !!cfg.grid };
+    if (state.grid) ensureGrid(true);
     toolbar.appendChild(tbBtn('⟳', L.rotate, b => {
       state.rot = !state.rot; controls.autoRotate = state.rot;
       b.style.background = state.rot ? '#eaf0ff' : 'rgba(255,255,255,.94)';
@@ -255,7 +258,7 @@ export function initViewerPro(opts) {
       b.style.background = state.grid ? '#eaf0ff' : 'rgba(255,255,255,.94)';
       b.style.borderColor = state.grid ? '#2B5CE6' : '#e2e8f0';
       b.style.color = state.grid ? '#1d4ed8' : '#475569';
-    }));
+    }, state.grid));
     toolbar.appendChild(tbBtn('◱', L.reset, () => resetView()));
     toolbar.appendChild(tbBtn('⤓', L.shot, () => {
       try {
@@ -383,7 +386,11 @@ export function initViewerPro(opts) {
   }
 
   // ---------- loading + loop ----------
-  const loader = new STLLoader();
+  /* Format-aware loading: backend /api/stl-preview nie ma rozszerzenia w URL,
+     wiec: naglowek X-Mesh-Ext -> byte-sniff (meshfmt) -> rozszerzenie z URL.
+     Obslugujemy STL / OBJ / 3MF (ply/glb/step -> JPG fallback). Auth przez
+     opcjonalny Bearer (prywatne pliki wlasciciela). */
+  let loaded = false;
   function showFallback() {
     if (!cfg.fallbackImg) {
       host.appendChild(el('div', 'position:absolute;inset:0;display:flex;flex-direction:column;gap:8px;align-items:center;' +
@@ -395,12 +402,89 @@ export function initViewerPro(opts) {
     img.onload = function () { host.appendChild(img); img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff'; };
     img.src = cfg.fallbackImg;
   }
-  let loaded = false;
-  if (cfg.stlUrl) {
-    loader.load(cfg.stlUrl, function (geo) {
-      try { setMesh(geo); loaded = true; } catch (e) { showFallback(); }
-    }, undefined, function () { showFallback(); });
+  function ensureMeshfmt() {
+    if (window.meshExtSync) return Promise.resolve();
+    return import('/js/meshfmt.js?v=116').catch(function () {});
   }
+  function mergeGroup(root) {
+    /* Scal wszystkie meshe grupy (OBJ/3MF) w JEDNA geometrie — dalej dziala
+       caly istniejacy pipeline (kadr, krawedzie, wireframe, kolor). */
+    try {
+      root.updateMatrixWorld(true);
+      const inv = new THREE.Matrix4().copy(root.matrixWorld).invert();
+      const parts = [];
+      root.traverse(function (c) {
+        if (c.isMesh && c.geometry) {
+          const g = c.geometry.index ? c.geometry.toNonIndexed() : c.geometry.clone();
+          const m = new THREE.Matrix4().multiplyMatrices(inv, c.matrixWorld);
+          g.applyMatrix4(m);
+          parts.push(g);
+        }
+      });
+      if (!parts.length) return null;
+      let total = 0;
+      parts.forEach(function (g) { total += g.attributes.position.count; });
+      const arr = new Float32Array(total * 3);
+      let off = 0;
+      parts.forEach(function (g) {
+        arr.set(g.attributes.position.array, off);
+        off += g.attributes.position.array.byteLength;
+        g.dispose();
+      });
+      const out = new THREE.BufferGeometry();
+      out.setAttribute('position', new THREE.BufferAttribute(arr, 3));
+      out.computeVertexNormals();
+      out.computeBoundingBox();
+      return out;
+    } catch (e) { return null; }
+  }
+  function mountBuffer(url, buf, hdrExt) {
+    try {
+      ensureMeshfmt();
+      const ext = hdrExt || (window.meshExtSync ? window.meshExtSync(buf, url) : '') || 'stl';
+      if (ext === 'obj' || ext === '3mf') {
+        const blobUrl = URL.createObjectURL(new Blob([buf]));
+        const p = ext === 'obj'
+          ? import('/vendor/three/loaders/OBJLoader.js').then(function (M) { return new M.OBJLoader().loadAsync(blobUrl); })
+          : import('/vendor/three/loaders/3MFLoader.js').then(function (M) { return new M.ThreeMFLoader().parse(buf, ''); });
+        p.then(function (grp) {
+          const g = mergeGroup(grp);
+          if (!g) throw new Error('empty mesh');
+          setMesh(g); loaded = true;
+        }).catch(function () { showFallback(); }).finally(function () {
+          try { URL.revokeObjectURL(blobUrl); } catch (e) {}
+        });
+        return;
+      }
+      if (ext === 'ply' || ext === 'glb' || ext === 'gltf' || ext === 'step' || ext === 'stp' || ext === 'iges' || ext === 'igs') {
+        showFallback();
+        return;
+      }
+      const geo = new STLLoader().parse(buf);
+      setMesh(geo); loaded = true;
+    } catch (e) { showFallback(); }
+  }
+  function loadUrl(url, o) {
+    o = o || {};
+    if (o.fallback !== undefined && o.fallback !== null) cfg.fallbackImg = o.fallback;
+    // /api/stl-preview czyta ?token= (Endpoint) — dla prywatnych plikow wlasciciela
+    if (cfg.authToken && String(url).indexOf('token=') < 0) {
+      url += (String(url).indexOf('?') >= 0 ? '&' : '?') + 'token=' + encodeURIComponent(cfg.authToken);
+    }
+    fetch(url, {}).then(function (r) {
+      if (!r.ok) throw new Error('http ' + r.status);
+      const hx = (r.headers.get('X-Mesh-Ext') || '').toLowerCase();
+      return r.arrayBuffer().then(function (b) { mountBuffer(url, b, hx); });
+    }).catch(function () {
+      if (!loaded) showFallback();
+      if (o.onError) o.onError();
+    });
+  }
+  function loadBytes(name, buf) {
+    ensureMeshfmt();
+    mountBuffer(name, buf, '');
+  }
+  if (cfg.stlUrl) loadUrl(cfg.stlUrl, {});
   window.addEventListener('resize', function () {
     const w = Math.min(host.clientWidth || 640, 1600), h = host.clientHeight || 420;
     if (!w || !h) return;
@@ -421,6 +505,17 @@ export function initViewerPro(opts) {
     setMesh: function (geo, keepView) { setMesh(geo, keepView); loaded = true; },
     /* replacement mesh from an external loader (e.g. STEP via OCCT WASM) */
     attachMesh: function (geo) { setMesh(geo); loaded = true; if (barEl) refreshBar(); },
+    /* format-aware loading (STL/OBJ/3MF) — uzywane przez Moje pliki / admin / zamow */
+    loadUrl: loadUrl,
+    loadBytes: loadBytes,
+    /* dolly zoom (Przyciski +/− na podgladach) */
+    zoomBy: function (delta) {
+      const dir = new THREE.Vector3().subVectors(camera.position, controls.target);
+      const dist = dir.length();
+      dir.normalize().multiplyScalar(dist * (1 + delta));
+      camera.position.copy(controls.target).add(dir);
+      controls.update();
+    },
     setBg: function (hex) { scene.background = new THREE.Color(hex); },
     refreshBar: refreshBar,
     setColor: function (hex) { mat.color.set(hex); },
