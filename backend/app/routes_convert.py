@@ -31,8 +31,9 @@ def _slugify(s: str) -> str:
 THUMB_BG = "#f0f2f5"
 THUMB_FACE = "#c9ced6"
 THUMB_EDGE = "#6b7280"
-THUMB_VERSION = "v7"  # bump → nowa nazwa pliku cache, stare PNG przestają być serwowane
+THUMB_VERSION = "v8"  # bump → nowa nazwa pliku cache, stare PNG przestają być serwowane
                       # v6: auto-fit kadru (proj3d) — model wypełnia ~93% i nigdy nie jest ucięty
+                      # v8: decymacja klastrowaniem zamiast losowych ścian — koniec dziur w renderze
 THUMB_CACHE_HEADERS = {"Cache-Control": "no-store, no-cache, max-age=0, must-revalidate",
                        "Pragma": "no-cache", "Expires": "0"}
 
@@ -88,6 +89,57 @@ def _placeholder_thumb() -> Path:
     return p
 
 
+def _decimate_cluster(verts, faces, target_max=14000, target_min=1200):
+    """Zmniejsz siatkę klastrowaniem wierzchołków (czysty numpy, bez zależności).
+
+    Poprzednia wersja losowo wybierała N ścian — na gęstej siatce (M001: 648k
+    ścian) zostawiało to DZIURY i model wyglądał 'pocięty', prześwitywał tłem.
+    Klastrowanie daje spójną, zamkniętą siatkę o mniejszej liczbie ścian,
+    więc render jest solidny i ostry, a nie postrzępiony.
+    """
+    import numpy as np
+    if len(faces) <= target_max:
+        return verts, faces
+    lo = verts.min(axis=0)
+    span = float(np.max(verts.max(axis=0) - lo))
+    if not (span > 0):
+        return verts, faces
+
+    def _cluster(grid):
+        step = span / float(grid)
+        keys = np.floor((verts - lo) / step).astype(np.int64)
+        dims = keys.max(axis=0) + 1
+        flat = (keys[:, 0] * dims[1] + keys[:, 1]) * dims[2] + keys[:, 2]
+        uniq, inv = np.unique(flat, return_inverse=True)
+        inv = np.asarray(inv).reshape(-1)
+        acc = np.zeros((len(uniq), 3)); cnt = np.zeros(len(uniq))
+        np.add.at(acc, inv, verts); np.add.at(cnt, inv, 1.0)
+        acc /= cnt[:, None]
+        f = inv[faces]
+        keep = (f[:, 0] != f[:, 1]) & (f[:, 1] != f[:, 2]) & (f[:, 0] != f[:, 2])
+        return acc, f[keep]
+
+    grid = 40.0
+    best = None
+    for _ in range(8):
+        cv, cf = _cluster(max(int(grid), 6))
+        n = len(cf)
+        if n <= target_max:
+            best = (cv, cf)
+            if n >= target_min:
+                break
+            grid = min(grid * 2.0, 220.0)   # za mało szczegółu → gęstsza siatka
+        else:
+            grid = max(grid / 2.0, 6.0)     # za dużo ścian → rzadsza siatka
+    if best is None:
+        return verts, faces
+    if len(best[1]) > 30000:                # twardy limit kosztu rysowania
+        import numpy as np
+        idx = np.random.choice(len(best[1]), 30000, replace=False)
+        return best[0], best[1][idx]
+    return best
+
+
 def _auto_thumb(mesh_file: str, thumb_path):
     """Render mesh to 500x375 PNG via trimesh+matplotlib (Agg)."""
     import matplotlib; matplotlib.use("Agg")
@@ -96,10 +148,10 @@ def _auto_thumb(mesh_file: str, thumb_path):
     import trimesh
     # ponytail: trimesh handles STL natively; OBJ/3MF need force="mesh" + process
     try:
-        mesh = trimesh.load(mesh_file, force="mesh")
+        mesh = trimesh.load(mesh_file, force="mesh", process=False)
     except Exception:
         # fallback: try without force, then concatenate if scene
-        scene = trimesh.load(mesh_file)
+        scene = trimesh.load(mesh_file, process=False)
         if hasattr(scene, 'geometry') and scene.geometry:
             mesh = trimesh.util.concatenate(list(scene.geometry.values()))
         else:
@@ -107,18 +159,19 @@ def _auto_thumb(mesh_file: str, thumb_path):
     fig = plt.figure(figsize=(4, 3), dpi=125)
     ax = fig.add_subplot(111, projection="3d")
     ax.set_facecolor(THUMB_BG); fig.patch.set_facecolor(THUMB_BG)
-    verts = mesh.vertices; faces = mesh.faces
-    if len(faces) > 8000:
-        import numpy as np
-        faces = faces[np.random.choice(len(faces), 8000, replace=False)]
+    verts, faces = mesh.vertices, mesh.faces
+    verts, faces = _decimate_cluster(verts, faces)
     # matplotlib >=3.9: shade=True requires the PLURAL kwargs (facecolors/edgecolors),
     # the singular ones land in **kwargs and raise ValueError -> 500 on /api/thumb.
+    # Gęsta siatka + krawędzie = siatka-mozaika na 500px. Krawędzie rysujemy
+    # tylko na rzadkich siatkach (cf. bryła wygląda jak low-poly).
+    _edges = THUMB_EDGE if len(faces) <= 6000 else "none"
     try:
         poly = Poly3DCollection(verts[faces], alpha=1.0, facecolors=THUMB_FACE,
-                                edgecolors=THUMB_EDGE, linewidths=0.08, shade=True)
+                                edgecolors=_edges, linewidths=0.08, shade=True)
     except (TypeError, ValueError):
         poly = Poly3DCollection(verts[faces], alpha=1.0, facecolors=THUMB_FACE,
-                                edgecolors=THUMB_EDGE, linewidths=0.08)
+                                edgecolors=_edges, linewidths=0.08)
     ax.add_collection3d(poly)
     # Kadr MUSI objąć CAŁY model i wypełnić go maksymalnie. Rzut wierzchołków
     # przez proj3d NIE jest wiarygodny: mapa mplot3d nie jest wyśrodkowana w
