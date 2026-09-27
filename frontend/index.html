@@ -446,10 +446,8 @@
         }
     </style>
     <script>try{var _t=localStorage.getItem("mt_theme")||"light";if(_t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}</script>
-    <link href="/asset/portal.css?v=71" rel="stylesheet">
+    <link href="/asset/portal.css?v=72" rel="stylesheet">
 <!-- Google AdSense (Auto ads) -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8919352846655813"
-        crossorigin="anonymous"></script>
 <meta name="google-adsense-account" content="ca-pub-8919352846655813">
 </head>
 <body class="portal">
@@ -1349,7 +1347,7 @@
     import './js/discover.js?v=111';
     import './js/myfiles.js?v=116';
     import './js/account.js?v=111';
-    import './js/main.js?v=112';
+    import './js/main.js?v=113';
 </script>
 
 <script>
@@ -1441,16 +1439,26 @@ if (!_globalDropOverlay) {
   </div>
 </div>
 <script>
+function loadAdScript() {
+  if (window.__adScriptLoaded) return;
+  window.__adScriptLoaded = true;
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8919352846655813';
+  s.crossOrigin = 'anonymous';
+  document.head.appendChild(s);
+}
 function cookieConsent(accept) {
   localStorage.setItem('mt_cookie_consent', accept ? 'accepted' : 'rejected');
   document.getElementById('cookieBanner').style.display = 'none';
-  if (accept && window.loadAdSlots) loadAdSlots();
+  document.body.classList.remove('ck-on');
+  if (accept) { loadAdScript(); if (window.loadAdSlots) loadAdSlots(); }
   else { document.querySelectorAll('.ad-slot').forEach(function(el){ el.innerHTML = ''; }); }
 }
 (function() {
   var c = localStorage.getItem('mt_cookie_consent');
   if (!c) { document.getElementById('cookieBanner').style.display = 'block'; document.body.classList.add('ck-on'); }
-  else if (c === 'accepted' && window.loadAdSlots) { try { loadAdSlots(); } catch(e){} }
+  else if (c === 'accepted') { loadAdScript(); if (window.loadAdSlots) { try { loadAdSlots(); } catch(e){} } }
 })();
 </script>
 

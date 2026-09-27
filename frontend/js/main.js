@@ -126,10 +126,21 @@ loadHomeRecent();
 applyI18n();
 if (token) fetchUser();
 setupDropZone();
-if(localStorage.getItem('mt_cookie_consent')==='accepted') loadAdSlots();
+if(localStorage.getItem('mt_cookie_consent')==='accepted'){ if(window.loadAdScript) loadAdScript(); loadAdSlots(); }
 
 window.toggleTheme = toggleTheme;
 window.loadAdSlots = loadAdSlots;
+if(!window.loadAdScript){
+  window.loadAdScript = function(){
+    if (window.__adScriptLoaded) return;
+    window.__adScriptLoaded = true;
+    var s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8919352846655813';
+    s.crossOrigin = 'anonymous';
+    document.head.appendChild(s);
+  };
+}
 // go() and toggleFaq() are defined inline in index.html (navigation + FAQ accordion)
 window.toggleFaqCompat = null;
 // go() uruchamia sie z inline skryptu PRZED imports — dociagnij loader dla biezacego hasha
