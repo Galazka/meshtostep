@@ -1,7 +1,7 @@
 // myfiles.js  -  jobs grid, folders, bulk, share modal, job modal, fullscreen, editor (verbatim).
 import { t } from './i18n.js?v=113';
 import { token } from './shared.js?v=111';
-import { toast } from './viewer3d.js?v=113';
+import { toast } from './viewer3d.js?v=114';
 
 let _shareJobId = null;
 let _shareVanityUrl = '';
@@ -470,7 +470,7 @@ async function loadMyJobs() {
 /* ═══════ JOB PREVIEW MODAL (Moje pliki) ═══════ */
 let _myJobsData = [];
 let _jobCurrentStlUrl = null;
-let _job3Renderer = null, _job3Controls = null, _job3AnimId = null;
+let _job3Renderer = null, _job3Controls = null, _job3AnimId = null, _job3Camera = null;
 
 function openJobModal(jobId) {
     const j = _myJobsData.find(x => x.id === jobId);
@@ -569,7 +569,8 @@ function closeJobModal() {
     if (_job3Renderer) { _job3Renderer.dispose(); _job3Renderer = null; }
     if (_job3Controls) { try { _job3Controls.dispose(); } catch(e) {} _job3Controls = null; }
     const c = document.getElementById('jobPreviewCanvas');
-    if (c) { c.innerHTML = ''; }
+    if (c) { _mfUnobserve(c); c.innerHTML = ''; }
+    _jobFitObj = null;
     // Reset JPG hero fallback
     const heroSection = document.getElementById('jobPreviewHero');
     if (heroSection) heroSection.style.display = 'none';
@@ -596,14 +597,65 @@ function _fitCamera(cam, controls, obj) {
     if (controls) { controls.target.copy(sp.center); controls.update(); }
     window._lastFit = { cam: cam, controls: controls, obj: obj };
 }
+
+// ── Wspólny sync rozmiaru + kadru dla widoków "Moje pliki" ──────────────────
+// Dlaczego: kontener modala/overlayu dostaje realny layout DOPIERO po otwarciu
+// (przedtem clientWidth/clientHeight = 0), a renderer był montowany na sztywnych
+// ~480px wewnątrz kontenera o wysokości 400px → canvas wystawał poza kontener
+// i model był obcinany. camera.aspect zostawał z rozmiaru sprzed layoutu.
+// Ten helper czyta ŻYWY kontener, ustawia canvas na 100%, przelicza aspect
+// i dopiero potem dopasowuje kadr do bryły.
+let _fsFitObj = null;      // bryła aktualnie w pełnoekranowym podglądzie
+let _jobFitObj = null;     // bryła aktualnie w modalu
+
+function _mfFit(renderer, camera, controls, container, obj){
+    try{
+        if(!renderer || !camera || !container) return;
+        const cv = renderer.domElement;
+        cv.style.width = '100%'; cv.style.height = '100%'; cv.style.display = 'block';
+        let w = container.clientWidth, h = container.clientHeight;
+        if(!w || !h){ w = w || cv.clientWidth; h = h || cv.clientHeight; }
+        if(!w || !h) return;
+        const pr = renderer.getPixelRatio ? renderer.getPixelRatio() : 1;
+        if(cv.width !== Math.floor(w*pr) || cv.height !== Math.floor(h*pr)) renderer.setSize(w, h, false);
+        if(camera.aspect !== w/h){ camera.aspect = w/h; camera.updateProjectionMatrix(); }
+        if(obj) _fitCamera(camera, controls, obj);
+    }catch(e){}
+}
+
+// Wielokrotny refit: layout modala/overlayu ustala się w 1-2 klatkach i po
+// animacji otwarcia — pojedynczy setTimeout potrafi trafić w rozmiar 0.
+function _mfRefitLater(renderer, camera, controls, container, getObj){
+    const run = function(){ _mfFit(renderer, camera, controls, container, getObj && getObj()); };
+    requestAnimationFrame(run);
+    [80, 200, 450, 900].forEach(function(ms){ setTimeout(run, ms); });
+}
+
+// Kontener zmienia rozmiar (obrót telefonu, resize okna, animacja) → przelicz.
+function _mfObserve(renderer, camera, controls, container, getObj){
+    try{
+        if(typeof ResizeObserver === 'undefined') return;
+        if(container._mfRO){ container._mfRO.disconnect(); container._mfRO = null; }
+        container._mfRO = new ResizeObserver(function(){
+            _mfFit(renderer, camera, controls, container, getObj && getObj());
+        });
+        container._mfRO.observe(container);
+    }catch(e){}
+}
+function _mfUnobserve(container){
+    try{ if(container && container._mfRO){ container._mfRO.disconnect(); container._mfRO = null; } }catch(e){}
+}
+
 // Po zmianie rozmiaru okna kadr przelicza sie od nowa (inaczej model uciety).
 window.addEventListener('resize', function(){
-    if(!window._lastFit) return;
     clearTimeout(window.__mfFitT);
     window.__mfFitT = setTimeout(function(){
-        var f = window._lastFit; if(!f) return;
-        var el = f.cam && f.cam.__dom;
-        _fitCamera(f.cam, f.controls, f.obj);
+        const fsEl = document.getElementById('fsViewer');
+        if(_fsRenderer && _fsCamera && fsEl && fsEl.clientWidth) _mfFit(_fsRenderer, _fsCamera, _fsControls, fsEl, _fsFitObj);
+        const jc = document.getElementById('jobPreviewCanvas');
+        if(_job3Renderer && jc && jc.clientWidth){
+            _mfFit(_job3Renderer, _job3Camera, _job3Controls, jc, _jobFitObj);
+        }
     }, 150);
 });
 
@@ -630,6 +682,12 @@ function openJobFullscreen() {
     _fsCamera.position.set(80, 60, 80);
     _fsCamera.lookAt(0, 0, 0);
     _fsControls.update();
+    // Overlay dostal 'show' przed chwila — po ustaleniu layoutu przelicz canvas,
+    // camera.aspect i dopasuj kadr od nowa (inaczej model jest uciety).
+    _fsFitObj = null;
+    _mfUnobserve(container);
+    _mfRefitLater(_fsRenderer, _fsCamera, _fsControls, container, function(){ return _fsFitObj; });
+    _mfObserve(_fsRenderer, _fsCamera, _fsControls, container, function(){ return _fsFitObj; });
     function animate() { _fsAnimId = requestAnimationFrame(animate); _fsControls.update(); _fsRenderer.render(_fsScene, _fsCamera); }
     animate();
     loadFsSTL(_jobCurrentStlUrl);
@@ -660,11 +718,7 @@ function openJobFullscreen() {
     // Resize renderer on window resize while fullscreen open
     let _fsResize = function(){
         if (!_fsRenderer || !overlay.classList.contains('show')) return;
-        const W2 = container.clientWidth || window.innerWidth;
-        const H2 = container.clientHeight || (window.innerHeight - 60);
-        _fsCamera.aspect = W2 / H2;
-        _fsCamera.updateProjectionMatrix();
-        _fsRenderer.setSize(W2, H2);
+        _mfFit(_fsRenderer, _fsCamera, _fsControls, container, _fsFitObj);
     };
     window.addEventListener('resize', _fsResize);
     // Remove listener on close (store on overlay)
@@ -694,7 +748,10 @@ function loadFsSTL(url) {
         const sz = new THREE.Vector3(); cb.getSize(sz);
         obj.scale.setScalar(100 / (Math.max(sz.x, sz.y, sz.z) || 1));
         _fsScene.add(obj);
-        _fitCamera(_fsCamera, _fsControls, obj);
+        _fsFitObj = obj;
+        const _fc = document.getElementById('fsViewer');
+        _mfFit(_fsRenderer, _fsCamera, _fsControls, _fc, obj);
+        setTimeout(function(){ _mfFit(_fsRenderer, _fsCamera, _fsControls, _fc, obj); }, 250);
         _fsInitialPos = _fsCamera.position.clone();
     }
     const req = new XMLHttpRequest();
@@ -717,7 +774,10 @@ function loadFsSTL(url) {
                 const mesh = new THREE.Mesh(geometry, mat);
                 mesh.scale.setScalar(100 / (Math.max(size.x, size.y, size.z) || 1));
                 _fsScene.add(mesh);
-                _fitCamera(_fsCamera, _fsControls, mesh);
+                _fsFitObj = mesh;
+                const _fc2 = document.getElementById('fsViewer');
+                _mfFit(_fsRenderer, _fsCamera, _fsControls, _fc2, mesh);
+                setTimeout(function(){ _mfFit(_fsRenderer, _fsCamera, _fsControls, _fc2, mesh); }, 250);
                 _fsInitialPos = _fsCamera.position.clone();
             }
         } catch(e) { console.error('fs preview error:', e); }
@@ -769,10 +829,11 @@ function loadJobModalSTL(url) {
     console.log('[3D] loadJobModalSTL called url=', url, 'container=', !!container, 'clientW=', container && container.clientWidth);
     // Ensure container has explicit height and loading text
     const wrap = container.closest('.job-preview-wrap');
-    if(wrap){ wrap.style.minHeight = '400px'; }
-    container.style.minHeight = '400px';
-    container.style.height = '400px';
-    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:400px;min-height:400px;color:var(--text-secondary);font-size:14px;font-weight:500">\u0141adowanie modelu 3D...</div>';
+    if(wrap){ wrap.style.minHeight = '320px'; }
+    const vh = Math.max(320, Math.min(Math.round((window.innerHeight || 800) * 0.6), 560));
+    container.style.minHeight = vh + 'px';
+    container.style.height = vh + 'px';
+    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:' + vh + 'px;min-height:' + vh + 'px;color:var(--text-secondary);font-size:14px;font-weight:500">\u0141adowanie modelu 3D...</div>';
     const req = new XMLHttpRequest();
     req.open('GET', url);
     if (token) req.setRequestHeader('Authorization', 'Bearer ' + token);
@@ -783,7 +844,9 @@ function loadJobModalSTL(url) {
         const ext = url.split('.').pop().toLowerCase().split('?')[0];
         _jobModalDeps(function(T, OC, SL, OL, TML) {
             const w = Math.max(container.clientWidth || 0, 320) || 740;
-            const h = Math.min(window.innerHeight * 0.5, 480) || 400;
+            // Wysokość bierzemy z ŻYWEGO kontenera (nie ze sztywnych 480) — inaczej
+            // canvas wystaje poza kontener 400px i model jest obcinany.
+            const h = container.clientHeight || Math.min(window.innerHeight * 0.5, 480) || 400;
             container.innerHTML = '';
             const scene = new T.Scene();
             scene.background = new T.Color(0xf0f2f5);
@@ -793,22 +856,6 @@ function loadJobModalSTL(url) {
             renderer.setPixelRatio(window.devicePixelRatio || 1);
             container.appendChild(renderer.domElement);
             console.log('[3D] loadJobModalSTL: renderer mounted w=', w, 'h=', h);
-            // Modal dopiero sie otworzyl (clientWidth czesto 0) — po ustaleniu layoutu
-            // PRZELICZ canvas + camera.aspect i dopasuj kadr jeszcze raz.
-            function refitModal(){
-                try{
-                    var mw = container.clientWidth || w;
-                    var mh = container.clientHeight || h;
-                    if(mw < 40 || mh < 40) return;
-                    renderer.setSize(mw, mh);
-                    camera.aspect = mw / mh;
-                    camera.updateProjectionMatrix();
-                    var f = window._lastFit;
-                    if(f && f.cam === camera && f.obj) _fitCamera(camera, controls, f.obj);
-                }catch(e){}
-            }
-            setTimeout(refitModal, 100);
-            setTimeout(refitModal, 450);
             scene.add(new T.AmbientLight(0xffffff, 0.7));
             const dl = new T.DirectionalLight(0xffffff, 0.9);
             dl.position.set(1, 1, 1);
@@ -817,7 +864,13 @@ function loadJobModalSTL(url) {
             controls.enableDamping = true;
             controls.target.set(0, 0, 0);
             _job3Renderer = renderer;
+            _job3Camera = camera;
             _job3Controls = controls;
+            // Modal dopiero sie otworzyl (clientWidth czesto 0) — po ustaleniu layoutu
+            // PRZELICZ canvas + camera.aspect i dopasuj kadr jeszcze raz.
+            _mfUnobserve(container);
+            _mfRefitLater(renderer, camera, controls, container, function(){ return _jobFitObj; });
+            _mfObserve(renderer, camera, controls, container, function(){ return _jobFitObj; });
             try {
                 const mat = new T.MeshPhongMaterial({ color: 0xc9ced6, specular: 0x9aa0a6, shininess: 24 });
                 function addMeshObj(obj) {
@@ -830,7 +883,9 @@ function loadJobModalSTL(url) {
                     const md = Math.max(sz.x, sz.y, sz.z) || 1;
                     obj.scale.setScalar(100 / md);
                     scene.add(obj);
-                    _fitCamera(camera, controls, obj);
+                    _jobFitObj = obj;
+                    _mfFit(renderer, camera, controls, container, obj);
+                    setTimeout(function(){ _mfFit(renderer, camera, controls, container, obj); }, 250);
                 }
                 if (ext === 'obj' && OL) {
                     new OL().load(URL.createObjectURL(new Blob([data])), addMeshObj, undefined, function(){ showJobModalErr(); });
@@ -848,7 +903,9 @@ function loadJobModalSTL(url) {
                     const mesh = new T.Mesh(geometry, mat);
                     mesh.scale.setScalar(100 / maxDim);
                     scene.add(mesh);
-                    _fitCamera(camera, controls, mesh);
+                    _jobFitObj = mesh;
+                    _mfFit(renderer, camera, controls, container, mesh);
+                    setTimeout(function(){ _mfFit(renderer, camera, controls, container, mesh); }, 250);
                 }
                 camera.initialPos = camera.position.clone();
                 controls.update();

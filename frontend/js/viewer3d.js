@@ -33,6 +33,39 @@ function _waitThreeReady(cb){
     }, 150);
 }
 let _fittedObject=null;
+let _viewerContainer=null;
+let _viewerRO=null;
+// Rozmiar canvasa/kamery MUSI być liczony z ŻYWEGO kontenera w każdej chwili.
+// Modal podglądu startuje jako display:none → clientWidth=0, więc jednorazowe
+// setSize() w init zostawiało canvas przypięty do 640x420 na stałe i model
+// wychodził przycięty/rozjechany (kadr nigdy się nie przeliczał).
+function _syncViewerSize(){
+    if(!_viewerContainer || !_threeRenderer || !_threeCamera) return;
+    var w=_viewerContainer.clientWidth, h=_viewerContainer.clientHeight;
+    if(!w || !h) return;
+    var pr=_threeRenderer.getPixelRatio();
+    if(_threeRenderer.domElement.width!==Math.floor(w*pr) || _threeRenderer.domElement.height!==Math.floor(h*pr)){
+        _threeRenderer.setSize(w, h, false);
+    }
+    if(_threeCamera.aspect!==w/h){ _threeCamera.aspect=w/h; _threeCamera.updateProjectionMatrix(); }
+}
+function _installViewerResize(){
+    try{ if(_viewerRO){ _viewerRO.disconnect(); _viewerRO=null; } }catch(e){}
+    if(typeof ResizeObserver==='undefined') return;
+    _viewerRO=new ResizeObserver(function(){
+        _syncViewerSize();
+        if(_fittedObject){ clearTimeout(window.__fitT); window.__fitT=setTimeout(function(){ _fitCameraToObject(null); }, 60); }
+    });
+    try{ _viewerRO.observe(_viewerContainer); }catch(e){}
+}
+function _refitSoon(){
+    // mesh wpada 1-2 klatki PRZED tym, jak modal/pełny ekran dostanie finalny rozmiar
+    requestAnimationFrame(function(){
+        _syncViewerSize(); _fitCameraToObject(null);
+        setTimeout(function(){ _syncViewerSize(); _fitCameraToObject(null); }, 180);
+        setTimeout(function(){ _syncViewerSize(); _fitCameraToObject(null); }, 600);
+    });
+}
 function _fitCameraToObject(obj){
     try{
         if(obj) _fittedObject=obj;
@@ -97,13 +130,12 @@ function init3DViewer(container) {
     _threeRenderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
     _threeRenderer.setSize(W, H);
     _threeRenderer.setPixelRatio(window.devicePixelRatio);
-    container.appendChild(_threeRenderer.domElement);
-    // Force resize after DOM layout settles
-    setTimeout(function(){
-        _threeRenderer.setSize(W, H);
-        var c = _threeRenderer.domElement;
-        if(c){ c.width = W; c.style.width = W+'px'; }
-    }, 100);
+    var cv = _threeRenderer.domElement;
+    cv.style.width = '100%'; cv.style.height = '100%'; cv.style.display = 'block';
+    container.appendChild(cv);
+    _viewerContainer = container;
+    _installViewerResize();
+    _syncViewerSize();
     _threeControls = new window._OrbitControls(_threeCamera, _threeRenderer.domElement);
     _threeControls.enableDamping = true;
     _threeScene.add(new THREE.AmbientLight(0xffffff, 0.8));
@@ -141,6 +173,7 @@ function loadSTLIntoViewer(url, jobUuid) {
             obj.rotation.x = -Math.PI / 2;
             _threeScene.add(obj);
             _fitCameraToObject(obj);
+            _refitSoon();
             _capturePreview(jobUuid);
         }
         function showJpgFallback(){
