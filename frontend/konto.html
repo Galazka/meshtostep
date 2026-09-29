@@ -86,7 +86,7 @@ function render(orders){
   var st = document.getElementById('stats');
   if (!orders.length){
     st.innerHTML='';
-    el.innerHTML = '<div class="empty"><b>Nie masz jeszcze zamówień.</b>Koszyk z plikami hostowanymi wyceniasz w 30 sekund — od 10 zł, BLIK lub karta.<br><a href="/zamow" style="display:inline-block;margin-top:12px;padding:10px 22px;background:var(--accent);color:#fff !important;font-weight:700;text-decoration:none;border-radius:6px;letter-spacing:.02em">Zamów wydruk 3D →</a></div>';
+    el.innerHTML = '<div class="empty"><b>Nie masz jeszcze zamówień.</b>Koszyk z plikami hostowanymi wyceniasz w 3 sekundy — od 10 zł, BLIK lub karta.<br><a href="/zamow" style="display:inline-block;margin-top:12px;padding:10px 22px;background:var(--accent);color:#fff !important;font-weight:700;text-decoration:none;border-radius:6px;letter-spacing:.02em">Zamów wydruk 3D →</a></div>';
     return;
   }
   var paid = orders.filter(function(o){return o.is_paid;}).length;
