@@ -57,7 +57,30 @@ app.add_middleware(
 # ── CSP middleware ──────────────────────────────────────────────────
 @app.middleware("http")
 async def csp_middleware(request: Request, call_next):
-    response = await call_next(request)
+    try:
+        response = await call_next(request)
+    except HTTPException as exc:
+        # Przyjazny 404: budujemy świeży HTML (nie da się edytować body
+        # HTTPException, bo pole response bywa _StreamingResponse bez .body).
+        accept = (request.headers.get("accept") or "").lower()
+        if "text/html" in accept and not request.url.path.startswith("/api"):
+            from fastapi.responses import HTMLResponse
+            html = f"""<!DOCTYPE html><html lang="pl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nie znaleziono — 3dfile.link</title>
+<style>body{{margin:0;font-family:Inter,system-ui,sans-serif;background:#f7f8fb;color:#0b1730;min-height:100vh;display:flex;align-items:center;justify-content:center}}
+.c{{text-align:center;padding:40px;max-width:480px}} h1{{font-size:56px;margin:0 0 8px;color:#2B5CE6}}
+p{{color:#5b6b86;line-height:1.6}} a{{display:inline-block;margin-top:18px;padding:11px 20px;border-radius:8px;background:#2B5CE6;color:#fff;text-decoration:none;font-weight:600}}
+a:hover{{background:#1e45b8}}</style>
+<!-- clarity-fallback -->
+</head><body><div class="c"><h1>404</h1>
+<p>Nie znaleziono strony <code>{request.url.path}</code>. Może link się zestarzał?</p>
+<a href="/">← Wróć na stronę główną</a></div></body></html>"""
+            headers = dict(getattr(exc, "headers", None) or {})
+            # CSP nadal musi być — poza tym blokujemy ewentualny inline JS
+            response = HTMLResponse(html, status_code=exc.status_code, headers=headers)
+        else:
+            raise
     csp = (
             "default-src 'self'; "
             # Google AdSense (Auto ads) + jego CMP (fundingchoicesmessages) dla ruchu z UE.
@@ -125,17 +148,40 @@ async def clarity_inject_middleware(request: Request, call_next):
     response = await call_next(request)
     try:
         ctype = response.headers.get("content-type", "")
-        if "text/html" in ctype and b"</head>" in response.body and b"clarity.ms" not in response.body:
-            new_body = response.body.replace(b"</head>", CLARITY_TAG.encode() + b"</head>", 1)
-            if len(new_body) != len(response.body):
-                from starlette.responses import Response as _Resp
-                headers = dict(response.headers)
-                headers["Content-Length"] = str(len(new_body))
-                response = _Resp(content=new_body, status_code=response.status_code,
-                                 headers=headers, media_type=ctype.split(";")[0])
+        if "text/html" not in ctype:
+            return response
+        # StreamingResponse (np. HTML z handlera 404) nie ma atrybutu body —
+        # BaseHTTPMiddleware pakaje odpowiedzi w _StreamingResponse (podklasę
+        # Response), więc sprawdzamy body_iterator duck-typingiem, nie isinstance.
+        # UWAGA: po spławieniu iteratora ORYGINALNA odpowiedź ma wypaloną
+        # iterację — trzeba zwrócić zawsze nowy obiekt Response, inaczej
+        # strony 200 wracają puste (len=0).
+        consumed = False
+        if hasattr(response, "body"):
+            body = response.body
+        elif hasattr(response, "body_iterator"):
+            consumed = True
+            chunks = []
+            async for chunk in response.body_iterator:
+                chunks.append(chunk if isinstance(chunk, bytes) else chunk.encode("utf-8"))
+            body = b"".join(chunks)
+        else:
+            return response
+        new_body = body
+        if b"</head>" in body and b"clarity.ms" not in body:
+            injected = body.replace(b"</head>", CLARITY_TAG.encode() + b"</head>", 1)
+            if len(injected) != len(body):
+                new_body = injected
+        if consumed or new_body is not body:
+            from starlette.responses import Response as _Resp
+            headers = dict(response.headers)
+            headers["Content-Length"] = str(len(new_body))
+            return _Resp(content=new_body, status_code=response.status_code,
+                         headers=headers, media_type=ctype.split(";")[0])
+        return response
     except Exception as e:
         print(f"[clarity] {e}")
-    return response
+        return response
 
 # ── Geo logging middleware ──────────────────────────────────────────
 @app.middleware("http")
