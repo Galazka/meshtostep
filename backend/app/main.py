@@ -66,7 +66,7 @@ async def csp_middleware(request: Request, call_next):
             "https://googleads.g.doubleclick.net https://securepubads.g.doubleclick.net "
             "https://tpc.googlesyndication.com https://adservice.google.com "
             "https://www.googletagservices.com https://fundingchoicesmessages.google.com "
-            "https://*.google.com; "
+            "https://*.google.com https://www.clarity.ms https://*.clarity.ms; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' data: https:; "
@@ -74,7 +74,8 @@ async def csp_middleware(request: Request, call_next):
             "connect-src 'self' https://cloud.umami.is https://gateway.umami.is https://pagead2.googlesyndication.com https://*.googlesyndication.com "
             "https://googleads.g.doubleclick.net https://*.doubleclick.net "
             "https://adservice.google.com https://*.adtrafficquality.google "
-            "https://*.google.com https://fundingchoicesmessages.google.com; "
+            "https://*.google.com https://fundingchoicesmessages.google.com "
+            "https://*.clarity.ms https://*.msn.com; "
             "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com "
             "https://*.googlesyndication.com https://*.doubleclick.net https://www.google.com "
             "https://fundingchoicesmessages.google.com "
@@ -106,6 +107,34 @@ async def csp_middleware(request: Request, call_next):
     if request.headers.get("x-forwarded-proto") == "http":
         url = str(request.url).replace("http://", "https://", 1)
         return RedirectResponse(url, status_code=301)
+    return response
+
+# ── Microsoft Clarity (behavior analytics) ──────────────────────────
+# Injected into <head> of every HTML response (site + server-rendered pages:
+# /, /u/, /s/, /e/, /blog, /zamow, admin…). One place instead of per-file.
+CLARITY_TAG = """<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "ypigm7bngb");
+</script>"""
+
+@app.middleware("http")
+async def clarity_inject_middleware(request: Request, call_next):
+    response = await call_next(request)
+    try:
+        ctype = response.headers.get("content-type", "")
+        if "text/html" in ctype and b"</head>" in response.body and b"clarity.ms" not in response.body:
+            new_body = response.body.replace(b"</head>", CLARITY_TAG.encode() + b"</head>", 1)
+            if len(new_body) != len(response.body):
+                from starlette.responses import Response as _Resp
+                headers = dict(response.headers)
+                headers["Content-Length"] = str(len(new_body))
+                response = _Resp(content=new_body, status_code=response.status_code,
+                                 headers=headers, media_type=ctype.split(";")[0])
+    except Exception as e:
+        print(f"[clarity] {e}")
     return response
 
 # ── Geo logging middleware ──────────────────────────────────────────
