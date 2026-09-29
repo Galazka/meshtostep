@@ -209,12 +209,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
               <button type="button" class="swatch" data-color="blue" style="--sw:#2563eb" onclick="pickColor('blue')">Niebieski</button>
               <button type="button" class="swatch" data-color="purple" style="--sw:#7c3aed" onclick="pickColor('purple')">Fioletowy</button>
               <button type="button" class="swatch" data-color="pink" style="--sw:#db2777" onclick="pickColor('pink')">Różowy</button>
-              <button type="button" class="swatch" data-color="silver" style="--sw:#cbd5e1;color:#334155" onclick="pickColor('silver')">Srebrny (+20)</button>
-              <button type="button" class="swatch" data-color="gold" style="--sw:#facc15;color:#3f3f00" onclick="pickColor('gold')">Złoty (+25)</button>
-              <button type="button" class="swatch" data-color="carbon" style="--sw:#0f172a" onclick="pickColor('carbon')">Węglowy (+15)</button>
-              <button type="button" class="swatch" data-color="transparent" style="--sw:linear-gradient(135deg,rgba(255,255,255,.28),rgba(200,220,240,.5));border:1px solid #cbd5e1;color:#334155;background:repeating-linear-gradient(45deg,#e2e8f0 0 4px,#f8fafc 4px 8px)" onclick="pickColor('transparent')">Przezroczysty (+30)</button>
             </div>
-            <div style="font-size:11.5px;color:var(--muted);margin-top:6px">Szczególne pigmenty (srebrny/złoty/węglowy/przezroczysty) mają dopłatę — dodawana do ceny modelu.</div>
+            <div style="font-size:11.5px;color:var(--muted);margin-top:6px">1 kolor zawsze w cenie. Dopłata tylko za wydruk wielokolorowy (2+ kolory).</div>
           </div>
           <details class="adv"><summary data-i18n="advModel">Opcje modelu — liczba kolorów i wypełnienie</summary>
           <div><label data-i18n="colCount">Ile kolorów w modelu</label>
@@ -377,7 +373,6 @@ var CART=[]; var cur='PLN'; var RATES={PLN:1,USD:4.20,EUR:4.55}; var SYM={PLN:'z
 var MATS={}; var CUR_ACTSYM=1; var selIdx=-1;
 
 function toast(m,ok){var t=document.createElement('div');t.className='toast';t.style.opacity=1;t.textContent=m;var col=(ok===false||ok==='')?'#dc2626':(ok==='w'?'#d97706':'#059669');t.style.background=col;document.body.appendChild(t);setTimeout(function(){t.style.opacity=0;setTimeout(function(){t.remove()},300);},2600);}
-function _colP(c){return {silver:20,gold:25,carbon:15,transparent:30}[c]||0;}
 var INFCFG={min:10,max:100,base:15,shell:0.35};
 var CFG=null;
 fetch('/api/pricing/public?t='+Date.now()).then(function(r){return r.json()}).then(function(d){if(d&&d.ok){CFG=d;}}).catch(function(){});
