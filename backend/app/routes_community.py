@@ -317,7 +317,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
 .btn-primary{background:#1a56db;color:#fff}
 .btn-sec{background:#f1f5f9;color:#1e293b}
 .wrap{max-width:1100px;margin:0 auto;padding:20px;display:grid;grid-template-columns:1fr 340px;gap:20px}
-#viewer3d{width:100%;height:520px;background:#101a2e;border-radius:12px;overflow:hidden;position:relative}
+#viewer3d{width:100%;height:calc(100dvh - 200px);min-height:480px;max-height:900px;background:#101a2e;border-radius:12px;overflow:hidden;position:relative}
 .viewer-toolbar{position:absolute;top:8px;right:8px;display:flex;gap:6px;z-index:10;align-items:center}
 .viewer-toolbar button{background:rgba(255,255,255,.9);border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:14px;cursor:pointer;backdrop-filter:blur(4px)}
 .viewer-toolbar button:hover{background:#fff;border-color:#1a56db;color:#1a56db}
@@ -329,7 +329,7 @@ body{font-family:Inter,system-ui,sans-serif;background:#f7f9fc;color:#1e293b;lin
 .yt iframe{width:100%;height:220px;border:none;border-radius:8px}
 .side{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;height:fit-content}
 @media(max-width:900px){.vnav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 82%,transparent)}.vnav a.vl{padding:8px 7px;font-size:12px}.vsub{top:0;position:static}.vsub .pills{flex:1 1 100%;justify-content:flex-start;margin-bottom:2px}.vsub .btn{flex:1 1 100%;white-space:normal;text-align:center;font-size:13px;padding:12px;min-width:0;overflow-wrap:anywhere}.vfoot-grid{grid-template-columns:1fr 1fr!important}.vfoot-grid>div:first-child{grid-column:1/-1}}
-@media(max-width:480px){.vfoot-grid{grid-template-columns:1fr!important}}.wrap{grid-template-columns:1fr;min-width:0}#viewer3d{height:320px}.top .btn{padding:8px 12px;font-size:13px}.top select{font-size:12px;padding:6px}.top>div{min-width:0;flex-wrap:wrap;gap:6px}.wrap>div{min-width:0;overflow-wrap:anywhere}.desc{overflow-wrap:anywhere}}
+@media(max-width:480px){.vfoot-grid{grid-template-columns:1fr!important}}.wrap{grid-template-columns:1fr;min-width:0}#viewer3d{height:58dvh;min-height:320px}.top .btn{padding:8px 12px;font-size:13px}.top select{font-size:12px;padding:6px}.top>div{min-width:0;flex-wrap:wrap;gap:6px}.wrap>div{min-width:0;overflow-wrap:anywhere}.desc{overflow-wrap:anywhere}}
 </style>
 <script type="importmap">{"imports":{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js"}}</script>
 </head>

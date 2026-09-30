@@ -139,47 +139,18 @@ __JSON_LD__
   .vnav a.vl:hover{color:#fff;background:rgba(255,255,255,.07)}
   .vnav a.vl.pr{color:#fff;background:#2B5CE6}
   .vnav .vsp{flex:1}
-  .topbar {
-    position: sticky;
-    top: 56px; left: 0; right: 0;
-    z-index: 15;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 10px 16px;
-    background: rgba(255,255,255,.85);
-    backdrop-filter: blur(8px);
-    border-bottom: 1px solid #e2e8f0;
-  }
-  .file-block { min-width: 0; max-width: 30vw; }
-  .file {
-    font-weight: 700;
-    font-size: 14px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .shared-by { font-size: 12px; color: #64748b; margin-top: 2px; }
-  .shared-by:empty { display: none; }
-  .pills {
-    display: flex;
-    flex: 1;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    min-width: 0;
-  }
-  .pill {
-    font-size: 12px;
-    padding: 4px 12px;
-    border: 1px solid #e2e8f0;
-    border-radius: 999px;
-    background: #f8fafc;
-    color: #475569;
-    white-space: nowrap;
-  }
-  .actions { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; min-width: 0; max-width: 100%; }
-  .actions select { max-width: 44vw; min-width: 0; }
+  .wrap { max-width: 1440px; margin: 0 auto; padding: 18px 16px; display: grid; grid-template-columns: minmax(0,1fr) 340px; gap: 18px; align-items: start; }
+  .side { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .side .file { font-weight: 700; font-size: 15px; overflow-wrap: anywhere; line-height: 1.35; }
+  .side .shared-by { font-size: 12px; color: #64748b; margin-top: 3px; overflow-wrap: anywhere; }
+  .side .shared-by:empty { display: none; }
+  .side .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .side .pill { font-size: 11px; padding: 3px 9px; border: 1px solid #e2e8f0; border-radius: 999px; background: #f8fafc; color: #475569; white-space: nowrap; }
+  .side label { display: block; font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 5px; }
+  .side select { width: 100%; padding: 9px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; background: #fff; }
+  .side .btn { justify-content: center; width: 100%; }
+  .desc-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px 20px; margin-top: 18px; }
+  .desc-box h3 { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
   .btn {
     display: inline-flex;
     align-items: center;
@@ -200,30 +171,29 @@ __JSON_LD__
   #viewer3d {
     position: relative;
     width: 100%;
-    height: calc(100dvh - 170px);
-    min-height: 360px;
+    height: calc(100dvh - 190px);
+    min-height: 420px;
+    max-height: 900px;
     background: #f0f2f5;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
   }
   #viewer3d canvas { display: block; }
-  @media (max-width: 860px) {
-    .pills { display: none; }
-    .file-block { max-width: 45vw; }
-    .btn { padding: 8px 12px; font-size: 13px; }
+  @media (max-width: 960px) {
+    .wrap { grid-template-columns: 1fr; }
+    .side { order: 2; }
+    .main { order: 1; }
+    #viewer3d { height: 62dvh; min-height: 320px; }
+    .desc-box { margin-top: 14px; }
     .vnav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg,#000 82%,transparent); }
+    .vnav a.vl { padding: 8px 7px; font-size: 12px; }
     .vfoot-grid { grid-template-columns: 1fr 1fr !important; }
     .vfoot-grid > div:first-child { grid-column: 1 / -1; }
-    .topbar .actions .btn:last-child { flex: 1 1 100%; }
-    .actions { width: 100%; }
-    .actions .btn { white-space: normal; flex: 1; text-align: center; }
-    .actions select { flex: 1; max-width: none; }
-    #sharePanel { width: 86vw; }
-    .vnav a.vl { padding: 8px 7px; font-size: 12px; }
-    .topbar { top: 52px; }
-    #viewer3d { height: 58dvh; }
   }
   @media (max-width: 520px) {
     .vfoot-grid { grid-template-columns: 1fr !important; }
-    }
+  }
   #descBody img { max-width: 100%; border-radius: 8px; margin: 12px 0; }
   #descBody pre { background: #1e293b; color: #e2e8f0; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 13px; margin: 12px 0; }
   #descBody code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
@@ -249,52 +219,54 @@ __JSON_LD__
   <a class="vl" href="/">Zaloguj</a>
   <a class="vl pr" href="/konto">Moje konto</a>
 </nav>
-<header class="topbar">
-  <div class="file-block">
-    <a href="/" style="text-decoration:none;margin-right:8px;flex-shrink:0"><img src="/logo.png?v=2" alt="3DFILE" style="height:48px" onerror="this.style.display='none'"></a>
-    <div class="file" title="__FILENAME__">__FILENAME__</div>
-    <div class="shared-by">__AUTHOR_INFO__</div>
-  </div>
-  <div class="pills">__CONV_INFO__</div>
-  <div id="expiryInfo" style="font-size:12px;color:#64748b;padding:4px 0">__EXPIRY_INFO__</div>
-  <div class="actions" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-    <select id="dlFormat" style="padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;background:#fff">
-      <option value="step">Solid — STEP (CAD/CAM)</option>
-      <option value="stl">Mesh — __FMT_STL__</option>
-      <option value="obj">Mesh — __FMT_OBJ__</option>
-      <option value="3mf">Mesh — __FMT_3MF__</option>
-    </select>
-    <select id="dlQuality" style="padding:8px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;background:#fff">
-      <option value="ultra">__Q_ULTRA__</option>
-      <option value="auto" selected>__Q_AUTO__</option>
-      <option value="light">__Q_LIGHT__</option>
-      <option value="smooth">__Q_SMOOTH__</option>
-      <option value="off">__Q_OFF__</option>
-    </select>
-    <a class="btn btn-primary" href="#" id="dlBtn" onclick="convertAndDownload('__UUID__');return false">⬇ __DOWNLOAD_BTN__</a>
-    <button class="btn btn-secondary" onclick="showEmbed('__TOKEN__')">⧉ __EMBED_BTN__</button>
-    <a class="btn" style="background:#2B5CE6;color:#fff" href="/zamow?job=__UUID__">🖨 __PRINT_CTA__</a>
-  </div>
-</header>
-<div id="viewer3d"></div>
-<div id="descriptionPanel" style="display:none;position:fixed;bottom:48px;left:0;right:0;z-index:15;background:rgba(255,255,255,0.95);border-top:1px solid #e5e7eb;max-height:45vh;overflow-y:auto;padding:24px 32px;font-size:14px;line-height:1.7">
-  <div style="max-width:800px;margin:0 auto">
-    <div id="descTitle" style="font-size:20px;font-weight:700;margin-bottom:12px"></div>
-    <div id="descTags" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px"></div>
-    <div id="descBody" style="color:#334155"></div>
-    <div id="descYoutube" style="margin-top:16px;display:none"><iframe id="descYoutubeFrame" width="100%" height="315" frameborder="0" allowfullscreen style="border-radius:8px"></iframe></div>
-    <div style="margin-top:24px;border-top:1px solid #e5e7eb;padding-top:16px">
-      <h3 id="commentsTitle" style="font-size:16px;margin-bottom:12px"></h3>
-      <div id="commentsList"></div>
-      <div id="commentForm" style="margin-top:12px;display:none">
-        <textarea id="commentBody" rows="3" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;resize:vertical" placeholder="Napisz komentarz..."></textarea>
-        <button onclick="postComment()" style="margin-top:8px;padding:8px 16px;background:#1a56db;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer">Wyślij</button>
+<div class="wrap">
+  <div class="main">
+    <div id="viewer3d"></div>
+    <div class="desc-box">
+      <h3 id="descTitle" style="font-size:18px"></h3>
+      <div id="descTags" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
+      <div id="descBody" style="color:#334155"></div>
+      <div id="descYoutube" style="margin-top:16px;display:none"><iframe id="descYoutubeFrame" width="100%" height="315" frameborder="0" allowfullscreen style="border-radius:8px"></iframe></div>
+      <div style="margin-top:24px;border-top:1px solid #e5e7eb;padding-top:16px">
+        <h3 id="commentsTitle" style="font-size:16px;margin-bottom:12px"></h3>
+        <div id="commentsList"></div>
+        <div id="commentForm" style="margin-top:12px;display:none">
+          <textarea id="commentBody" rows="3" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;resize:vertical" placeholder="Napisz komentarz..."></textarea>
+          <button onclick="postComment()" style="margin-top:8px;padding:8px 16px;background:#1a56db;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer">Wyślij</button>
+        </div>
       </div>
     </div>
   </div>
+  <aside class="side">
+    <div>
+      <div class="file" title="__FILENAME__">__FILENAME__</div>
+      <div class="shared-by">__AUTHOR_INFO__</div>
+    </div>
+    <div id="expiryInfo" style="font-size:12px;color:#64748b">__EXPIRY_INFO__</div>
+    <div class="pills">__CONV_INFO__</div>
+    <div style="border-top:1px solid #e2e8f0;padding-top:12px">
+      <label for="dlFormat">Format</label>
+      <select id="dlFormat">
+        <option value="step">Solid — STEP (CAD/CAM)</option>
+        <option value="stl">Mesh — __FMT_STL__</option>
+        <option value="obj">Mesh — __FMT_OBJ__</option>
+        <option value="3mf">Mesh — __FMT_3MF__</option>
+      </select>
+      <label for="dlQuality" style="margin-top:10px">Jakość konwersji</label>
+      <select id="dlQuality">
+        <option value="ultra">__Q_ULTRA__</option>
+        <option value="auto" selected>__Q_AUTO__</option>
+        <option value="light">__Q_LIGHT__</option>
+        <option value="smooth">__Q_SMOOTH__</option>
+        <option value="off">__Q_OFF__</option>
+      </select>
+      <a class="btn btn-primary" href="#" id="dlBtn" onclick="convertAndDownload('__UUID__');return false" style="margin-top:12px">⬇ __DOWNLOAD_BTN__</a>
+      <button class="btn btn-secondary" onclick="showEmbed('__TOKEN__')" style="margin-top:8px">⧉ __EMBED_BTN__</button>
+      <a class="btn" style="background:#2B5CE6;color:#fff;margin-top:8px" href="/zamow?job=__UUID__">🖨 __PRINT_CTA__</a>
+    </div>
+  </aside>
 </div>
-<button id="descToggle" onclick="toggleDescPanel()" style="position:fixed;bottom:56px;right:16px;z-index:20;background:#1a56db;color:#fff;border:none;border-radius:50%;width:44px;height:44px;font-size:20px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.3);display:none">📝</button>
-
+</div>
 <script type="module">
 import { initViewerPro } from '/asset/viewer_pro.js?v=6';
 window.__shareViewer = initViewerPro({
@@ -371,17 +343,9 @@ window.__shareViewer = initViewerPro({
     }
   };
 })();
-let _descVisible = false;
 let _jobId = __JOB_ID__;
-function toggleDescPanel() {
-  _descVisible = !_descVisible;
-  const p = document.getElementById('descriptionPanel');
-  if (p) p.style.display = _descVisible ? 'block' : 'none';
-}
 function renderDescription(title, tags, bodyHtml, youtubeUrl) {
   const hasDesc = title || tags.length || bodyHtml || youtubeUrl;
-  if (!hasDesc) return;
-  document.getElementById('descToggle').style.display = 'block';
   document.getElementById('descTitle').textContent = title || '';
   document.getElementById('descTags').innerHTML = tags.map(function(t){return '<span style="padding:2px 8px;border:1px solid #d1d5db;border-radius:999px;font-size:11px;color:#64748b">'+t+'</span>'}).join('');
   document.getElementById('descBody').innerHTML = bodyHtml || '';
