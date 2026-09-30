@@ -175,7 +175,7 @@ async def clarity_inject_middleware(request: Request, call_next):
         if consumed or new_body is not body:
             from starlette.responses import Response as _Resp
             headers = dict(response.headers)
-            headers["Content-Length"] = str(len(new_body))
+            headers.pop("content-length", None)  # inaczej: 2x Content-Length = malformed headers = 502
             return _Resp(content=new_body, status_code=response.status_code,
                          headers=headers, media_type=ctype.split(";")[0])
         return response
