@@ -230,7 +230,7 @@ function sendContact(ev){
     .then(function(res){
       if(res.ok&&res.d.ok){
         st.className='status ok'; st.textContent='✓ Dziękujemy! Twoja wiadomość została wysłana — odezwiemy się wkrótce.';
-        ['cName','cEmail','cSubject','cBudget','cMessage'].forEach(function(id){document.getElementById(id).value='';});
+        ['cName','cEmail','cSubject','cBudget','cMessage'].forEach(function(id){var _e=document.getElementById(id);if(_e)_e.value='';});
       } else {
         st.className='status err'; st.textContent=(res.d&&res.d.detail)||'Błąd wysyłania. Napisz bezpośrednio: hello@3dfile.link';
       }
