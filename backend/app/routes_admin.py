@@ -891,6 +891,49 @@ def queue_stats(
 
 
 # ── Backups ───────────────────────────────────────────────────────
+@router.get("/contact-files")
+def admin_contact_files(admin: models.User = Depends(require_admin)):
+    """Lista załączników z formularzy kontaktowych (data/contact/)."""
+    from pathlib import Path
+    d = Path(settings.DATA_DIR) / "contact"
+    if not d.is_dir():
+        return {"ok": True, "files": []}
+    files = []
+    for f in sorted(d.iterdir(), key=lambda x: x.stat().st_mtime, reverse=True):
+        if f.is_file():
+            files.append({"name": f.name, "size": f.stat().st_size,
+                          "mtime": f.stat().st_mtime})
+    return {"ok": True, "files": files}
+
+
+@router.get("/contact-files/{name}")
+def admin_contact_download(name: str, admin: models.User = Depends(require_admin)):
+    """Pobierz jeden załącznik z formularza kontaktowego."""
+    from fastapi.responses import FileResponse
+    from pathlib import Path
+    safe = name.replace("..", "").replace("/", "").replace("\\", "")
+    if not safe or safe != name:
+        raise HTTPException(400, "Zła nazwa")
+    path = Path(settings.DATA_DIR) / "contact" / safe
+    if not path.is_file():
+        raise HTTPException(404, "Brak pliku")
+    return FileResponse(str(path), filename=safe)
+
+
+@router.delete("/contact-files/{name}")
+def admin_contact_delete(name: str, admin: models.User = Depends(require_admin)):
+    """Usuń załącznik z formularza kontaktowego."""
+    from pathlib import Path
+    safe = name.replace("..", "").replace("/", "").replace("\\", "")
+    if not safe or safe != name:
+        raise HTTPException(400, "Zła nazwa")
+    path = Path(settings.DATA_DIR) / "contact" / safe
+    if not path.is_file():
+        raise HTTPException(404, "Brak pliku")
+    path.unlink()
+    return {"ok": True}
+
+
 @router.get("/backups")
 def list_backups(admin: models.User = Depends(require_admin)):
     from .backup import list_backups as _list

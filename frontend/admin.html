@@ -349,6 +349,7 @@
                                                                         <button class="admin-tab" onclick="switchAdminTab('analytics')" data-tab="analytics">Analityka</button>
                                                                         <button class="admin-tab" onclick="switchAdminTab('launch')" data-tab="launch">Uruchomienie</button>
                                     <button class="admin-tab" onclick="switchAdminTab('partners')" data-tab="partners">Partnerzy</button>
+                                    <button class="admin-tab" onclick="switchAdminTab('contact')" data-tab="contact">Zgłoszenia</button>
                                     <span style="color:var(--text-muted);padding:0 6px;font-size:12px;opacity:.6">| Drukarnia</span>
                                     <button class="print-tab-btn admin-tab" onclick="switchPrintTab('orders')" data-tabs="print" data-tab="orders">Zamówienia</button>
                                     <button class="print-tab-btn admin-tab" onclick="switchPrintTab('stats')" data-tabs="print" data-tab="stats">Statystyki druku</button>
@@ -654,6 +655,13 @@
                 <div class="tab-content" id="tab-analytics"><div id="adminAnalytics" class="print-panel"></div></div>
                 <div class="tab-content" id="tab-launch"><div id="adminLaunch" class="print-panel"></div></div>
                 <div class="tab-content" id="tab-partners"><div id="adminPartners" class="print-panel"></div></div>
+                <div class="tab-content" id="tab-contact">
+                    <div class="print-panel">
+                        <h2>Zgłoszenia — załączniki z formularzy (projektowanie/kontakt)</h2>
+                        <p style="font-size:13px;color:var(--text-muted)">Pliki wgrane przez klientów przy wysyłaniu zapytania. Mail z zapytaniem ma listę załączników — tutaj pobierasz pliki.</p>
+                        <div id="contactFilesList" style="margin-top:12px">Ładowanie…</div>
+                    </div>
+                </div>
 
                 <!-- DRUKARNIA ZAKLADKI (print shop) -->
                 <div class="tab-content" id="tab-orders"><div id="adminOrders" class="print-panel"></div></div>
@@ -962,9 +970,38 @@ const I18N = {
         if (name === 'analytics' && typeof window.loadAnalytics === 'function') window.loadAnalytics();
         if (name === 'launch' && typeof window.loadLaunch === 'function') window.loadLaunch();
         if (name === 'partners' && typeof window.loadPartners === 'function') window.loadPartners();
+        if (name === 'contact' && !_contactLoaded) { loadContactFiles(); _contactLoaded = true; }
         // Drukarnia version B — taby w admin_print.js via switchPrintTab (nie lazy tutaj)
         if (['orders','pstats','pricing','codes','gallery','reviews','reports'].includes(name)) { switchPrintTab(name); return; }
     }
+    let _contactLoaded = false;
+    async function loadContactFiles() {
+        try {
+            const d = await api('/api/admin/contact-files');
+            const el = document.getElementById('contactFilesList');
+            if (!d.files.length) { el.innerHTML = '<p style="color:var(--text-muted);font-size:14px">Brak załączników — nic jeszcze nie wgrano przez formularze.</p>'; return; }
+            el.innerHTML = '<table class="admin-table"><thead><tr><th>Nazwa</th><th>Rozmiar</th><th>Data</th><th>Akcje</th></tr></thead><tbody>' +
+                d.files.map(f => {
+                    const dt = new Date(f.mtime*1000).toLocaleString(currentLang==='pl'?'pl-PL':'en-US');
+                    const sz = f.size > 1048576 ? (f.size/1048576).toFixed(1)+' MB' : Math.max(1,Math.round(f.size/1024))+' KB';
+                    return '<tr><td class="cell-ellipsis">' + esc(f.name) + '</td><td>' + sz + '</td><td>' + dt + '</td>' +
+                        '<td><a class="btn-act" href="/api/admin/contact-files/' + encodeURIComponent(f.name) + '?t=' + Date.now() + '" download>Pobierz</a> ' +
+                        '<button class="btn-act btn-danger" onclick="delContactFile(' + JSON.stringify(f.name).replace(/"/g,'&quot;') + ')">Usuń</button></td></tr>';
+                }).join('') + '</tbody></table>';
+        } catch (e) {
+            document.getElementById('contactFilesList').innerHTML = '<p style="color:#dc2626;font-size:14px">Błąd ładowania: ' + esc(e.message) + '</p>';
+        }
+    }
+    async function delContactFile(name) {
+        if (!confirm('Usunąć plik ' + name + '? Tego się nie cofnie.')) return;
+        try {
+            await api('/api/admin/contact-files/' + encodeURIComponent(name), { method: 'DELETE' });
+            toast('Usunięto plik', 'ok');
+            loadContactFiles();
+        } catch (e) { toast(e.message, 'error'); }
+    }
+    window.delContactFile = delContactFile;
+
     let _commentsLoaded = false;
 
     let _statsLoaded = false;
