@@ -6,5 +6,5 @@
 <text x="96" y="222" font-family="Arial Black,Arial" font-size="46" font-weight="900" fill="#F2F6FC" letter-spacing="-1">WKŁADKI GWINTOWE</text><text x="96" y="280" font-family="Arial Black,Arial" font-size="46" font-weight="900" fill="#F2F6FC" letter-spacing="-1">W DRUKU 3D — M2,</text><text x="96" y="338" font-family="Arial Black,Arial" font-size="46" font-weight="900" fill="#F2F6FC" letter-spacing="-1">M3, M4, M5</text>
 <g transform="translate(820,330)" fill="none" stroke="#8FB4FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M110 30v160M90 46l40 18M90 74l40 18M90 102l40 18M90 130l40 18M90 158l40 18" stroke="#FBBF24"/><rect x="96" y="26" width="100" height="26" stroke="#2B5CE6"/><path d="M40 210h160" stroke-dasharray="4 6"/><text x="44" y="196" font-family="Consolas" font-size="18" fill="#93A5C6" stroke="none">Ø4.05 · M3</text></g>
 <text x="96" y="586" font-family="Consolas,monospace" font-size="17" letter-spacing="2" fill="#93A5C6">3DFILE.LINK · WIEDZA DRUKU 3D</text>
-<circle cx="1140" cy="76" r="6" fill="#2B5CE6"/><text x="1120" y="82" text-anchor="end" font-family="Consolas,monospace" font-size="16" fill="#93A5C6">GDAŃSK · FARMY P1S</text>
+<circle cx="1116" cy="76" r="6" fill="#2B5CE6"/><text x="1096" y="82" text-anchor="end" font-family="Consolas,monospace" font-size="16" fill="#93A5C6">GDAŃSK · FARMY P1S</text>
 </svg>

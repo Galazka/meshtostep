@@ -8,5 +8,5 @@
 <text x="96" y="338" font-family="Arial Black,Arial" font-size="46" font-weight="900" fill="#F2F6FC" letter-spacing="-1">METODY I WYMIANA</text>
 <g transform="translate(820,330)" fill="none" stroke="#8FB4FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M70 18h62v52l-14 42H84z"/><line x1="101" y1="112" x2="101" y2="130" stroke="#2B5CE6"/><path d="M38 118V44m0 0l-11 14m11-14l11 14" stroke="#34D399"/><path d="M97 144c0 0-13 16 0 25 10 6 20-4 14-14z" stroke="#F87171"/><text x="126" y="176" font-family="Consolas" font-size="17" fill="#8FB4FF" stroke="none">cold pull ×3</text></g>
 <text x="96" y="586" font-family="Consolas,monospace" font-size="17" letter-spacing="2" fill="#93A5C6">3DFILE.LINK · WIEDZA DRUKU 3D</text>
-<circle cx="1140" cy="76" r="6" fill="#2B5CE6"/><text x="1120" y="82" text-anchor="end" font-family="Consolas,monospace" font-size="16" fill="#93A5C6">GDAŃSK · FARMY P1S</text>
+<circle cx="1116" cy="76" r="6" fill="#2B5CE6"/><text x="1096" y="82" text-anchor="end" font-family="Consolas,monospace" font-size="16" fill="#93A5C6">GDAŃSK · FARMY P1S</text>
 </svg>

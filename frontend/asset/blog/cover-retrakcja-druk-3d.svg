@@ -6,5 +6,5 @@
 <text x="96" y="222" font-family="Arial Black,Arial" font-size="46" font-weight="900" fill="#F2F6FC" letter-spacing="-1">RETRAKCJA W DRUKU</text><text x="96" y="280" font-family="Arial Black,Arial" font-size="46" font-weight="900" fill="#F2F6FC" letter-spacing="-1">3D — USTAWIENIA</text><text x="96" y="338" font-family="Arial Black,Arial" font-size="46" font-weight="900" fill="#F2F6FC" letter-spacing="-1">DLA BAMBU, PRUSA,</text>
 <g transform="translate(820,330)" fill="none" stroke="#8FB4FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M40 50v150M180 50v150" stroke="#2B5CE6"/><path d="M40 60C90 120 130 60 180 130" stroke-dasharray="3 5" stroke="#F87171"/><path d="M40 190C95 165 125 190 180 172" stroke="#34D399"/><text x="46" y="30" font-family="Consolas" font-size="18" fill="#F87171" stroke="none">z retrakcją vs bez</text></g>
 <text x="96" y="586" font-family="Consolas,monospace" font-size="17" letter-spacing="2" fill="#93A5C6">3DFILE.LINK · WIEDZA DRUKU 3D</text>
-<circle cx="1140" cy="76" r="6" fill="#2B5CE6"/><text x="1120" y="82" text-anchor="end" font-family="Consolas,monospace" font-size="16" fill="#93A5C6">GDAŃSK · FARMY P1S</text>
+<circle cx="1116" cy="76" r="6" fill="#2B5CE6"/><text x="1096" y="82" text-anchor="end" font-family="Consolas,monospace" font-size="16" fill="#93A5C6">GDAŃSK · FARMY P1S</text>
 </svg>

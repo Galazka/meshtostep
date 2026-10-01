@@ -9,5 +9,5 @@
 <text x="100" y="390" font-family="Arial Black,Arial" font-size="46" font-weight="900" fill="#F2F6FC" letter-spacing="-1">ROZBICIE</text>
 <g transform="translate(880,300)" fill="none" stroke="#8FB4FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="20" y="40" width="120" height="90" rx="8"/><path d="M20 70h120"/><circle cx="96" cy="105" r="14"/><path d="M100 90l30 30"/></g>
 <text x="100" y="586" font-family="Consolas,monospace" font-size="17" letter-spacing="2" fill="#93A5C6">3DFILE.LINK · WIEDZA DRUKU 3D</text>
-<circle cx="1140" cy="76" r="6" fill="#2B5CE6"/><text x="1120" y="82" text-anchor="end" font-family="Consolas,monospace" font-size="16" fill="#93A5C6">GDAŃSK · FARMY P1S</text>
+<circle cx="1116" cy="76" r="6" fill="#2B5CE6"/><text x="1096" y="82" text-anchor="end" font-family="Consolas,monospace" font-size="16" fill="#93A5C6">GDAŃSK · FARMY P1S</text>
 </svg>

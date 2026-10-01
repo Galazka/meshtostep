@@ -6,5 +6,5 @@
 <text x="96" y="222" font-family="Arial Black,Arial" font-size="46" font-weight="900" fill="#F2F6FC" letter-spacing="-1">PROTOTYPOWANIE 3D</text><text x="96" y="280" font-family="Arial Black,Arial" font-size="46" font-weight="900" fill="#F2F6FC" letter-spacing="-1">DLA FIRM — JAK</text><text x="96" y="338" font-family="Arial Black,Arial" font-size="46" font-weight="900" fill="#F2F6FC" letter-spacing="-1">PRZYSPIESZYĆ</text>
 <g transform="translate(820,330)" fill="none" stroke="#8FB4FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="30" y="120" width="60" height="60"/><rect x="100" y="80" width="60" height="100"/><rect x="170" y="40" width="60" height="140" stroke="#2B5CE6"/><path d="M30 190h230" stroke="#FBBF24"/></g>
 <text x="96" y="586" font-family="Consolas,monospace" font-size="17" letter-spacing="2" fill="#93A5C6">3DFILE.LINK · WIEDZA DRUKU 3D</text>
-<circle cx="1140" cy="76" r="6" fill="#2B5CE6"/><text x="1120" y="82" text-anchor="end" font-family="Consolas,monospace" font-size="16" fill="#93A5C6">GDAŃSK · FARMY P1S</text>
+<circle cx="1116" cy="76" r="6" fill="#2B5CE6"/><text x="1096" y="82" text-anchor="end" font-family="Consolas,monospace" font-size="16" fill="#93A5C6">GDAŃSK · FARMY P1S</text>
 </svg>
