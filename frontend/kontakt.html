@@ -134,6 +134,7 @@ footer a{color:#cbd5e1;text-decoration:none}
         <input id="cName" required placeholder="Jan Kowalski">
         <label for="cEmail">Twój email *</label>
         <input id="cEmail" type="email" required placeholder="jan@przyklad.pl">
+        <input id="cFiles" type="file" multiple accept=".png,.jpg,.jpeg,.gif,.webp,.pdf,.stl,.step,.stp,.svg,.txt,.zip" style="padding:9px 13px;font-size:14px">
         <label for="cSubject">Temat</label>
         <input id="cSubject" placeholder="np. Wycena wydruku, pytanie o materiał…">
         <label for="cMessage">Wiadomość *</label>
@@ -217,8 +218,11 @@ function sendContact(ev){
   var st=document.getElementById('contactStatus');
   var btn=document.getElementById('contactBtn');
   btn.disabled=true; btn.textContent='Wysyłanie…'; st.className='status';
-  fetch('/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({name:name,email:email,subject:subject,message:message})})
+  var fd=new FormData();
+  fd.append('name',name); fd.append('email',email); fd.append('subject',subject); fd.append('message',message);
+  var _fl=document.getElementById('cFiles');
+  if(_fl&&_fl.files.length){ for(var fi=0;fi<_fl.files.length&&fi<8;fi++) fd.append('files',_fl.files[fi]); }
+  fetch('/api/contact',{method:'POST',body:fd})
     .then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d};});})
     .then(function(res){
       if(res.ok&&res.d.ok){

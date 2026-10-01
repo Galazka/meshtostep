@@ -3,7 +3,9 @@ GET /api/contact-info  — dane kontaktowe (adres odbioru, email) do renderu
 POST /api/contact      — wyślij zapytanie (name, email, subject, message) → mail
 """
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+import os, uuid
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from .config import settings
 from .database import get_db
 from .mail import send_mail
 
@@ -11,6 +13,9 @@ router = APIRouter()
 
 CONTACT_EMAIL = "tomekgalazka@gmail.com"
 PICKUP_ADDRESS = "Gdańsk Osowa, 80-299, ul. Międzygwiezdna 31/2"
+MAX_FILES = 8
+MAX_FILE_MB = 10
+ALLOWED_EXT = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".pdf", ".stl", ".step", ".stp", ".svg", ".txt", ".zip"}
 
 
 @router.get("/api/contact-info")
@@ -25,31 +30,61 @@ def contact_info():
             "pickup_note": "Odbiór osobisty po wcześniejszym umówieniu — drukujesz i odbierasz bez kosztów wysyłki."}
 
 
-class ContactIn(BaseModel):
-    name: str
-    email: str
-    subject: str = None
-    message: str
+def _save_attachments(files) -> list:
+    """Save uploads to DATA_DIR/contact/, return list of (original_name, path)."""
+    if not files:
+        return []
+    out_dir = os.path.join(settings.DATA_DIR, "contact")
+    os.makedirs(out_dir, exist_ok=True)
+    saved = []
+    for f in files[:MAX_FILES]:
+        if not f or not f.filename:
+            continue
+        ext = os.path.splitext(f.filename)[1].lower()
+        if ext not in ALLOWED_EXT:
+            raise HTTPException(400, detail=f"Niedozwolony typ pliku: {f.filename} (dozwolone: zdjęcia, PDF, STL/STEP, SVG, TXT, ZIP)")
+        data = f.file.read()
+        if len(data) > MAX_FILE_MB * 1024 * 1024:
+            raise HTTPException(400, detail=f"Plik {f.filename} za duży (max {MAX_FILE_MB} MB)")
+        safe = f"{uuid.uuid4().hex[:8]}_{os.path.basename(f.filename).replace(' ', '_')}"[:120]
+        path = os.path.join(out_dir, safe)
+        with open(path, "wb") as w:
+            w.write(data)
+        saved.append((f.filename, path))
+    return saved
 
 
 @router.post("/api/contact")
-def contact_submit(req: ContactIn, db=Depends(get_db)):
-    if not req.name.strip() or not req.message.strip():
+def contact_submit(
+    name: str = Form(...),
+    email: str = Form(...),
+    subject: str = Form(None),
+    message: str = Form(...),
+    files: list[UploadFile] = File(None),
+    db=Depends(get_db),
+):
+    if not name.strip() or not message.strip():
         raise HTTPException(400, detail="Podaj imię i treść wiadomości")
-    if "@" not in req.email:
+    if "@" not in (email or ""):
         raise HTTPException(400, detail="Podaj poprawny email")
+    saved = _save_attachments(files)
+    att_html = ""
+    if saved:
+        items = "".join(f"<li>{_h(n)} ({os.path.getsize(p)//1024} KB)</li>" for n, p in saved)
+        att_html = f"<p><b>Załączniki ({len(saved)}):</b></p><ul>{items}</ul><p style='color:#64748b;font-size:12px'>Pliki zapisane na serwerze (data/contact/) — pobierz przed odpowiedzią.</p>"
     body = (
         "<h2>Nowe zapytanie ze strony 3dfile.link</h2>"
-        f"<p><b>Imię:</b> {_h(req.name)}</p>"
-        f"<p><b>Email:</b> {_h(req.email)}</p>"
-        f"<p><b>Temat:</b> {_h(req.subject or 'brak')}</p>"
-        f"<p><b>Wiadomość:</b></p><blockquote style='background:#f1f5f9;padding:12px 16px;border-left:4px solid #0ea5e9'>{_h(req.message)}</blockquote>"
+        f"<p><b>Imię:</b> {_h(name)}</p>"
+        f"<p><b>Email:</b> {_h(email)}</p>"
+        f"<p><b>Temat:</b> {_h(subject or 'brak')}</p>"
+        f"<p><b>Wiadomość:</b></p><blockquote style='background:#f1f5f9;padding:12px 16px;border-left:4px solid #0ea5e9'>{_h(message)}</blockquote>"
+        + att_html +
         "<hr><p style='color:#64748b;font-size:12px'>Wysłano automatycznie z formularza kontaktowego 3dfile.link</p>"
     )
-    ok = send_mail(CONTACT_EMAIL, f"[3dfile.kontakt] {_h(req.subject or req.name)}", body)
+    ok = send_mail(CONTACT_EMAIL, f"[3dfile.kontakt] {_h(subject or name)}", body)
     if not ok:
         raise HTTPException(502, detail="Nie udało się wysłać — spróbuj później lub napisz na " + CONTACT_EMAIL)
-    return {"ok": True, "to": CONTACT_EMAIL}
+    return {"ok": True, "to": CONTACT_EMAIL, "attachments": len(saved)}
 
 
 def _h(x: str) -> str:
