@@ -78,12 +78,19 @@ MULTICOLOR_FIRST_EXTRA_PLN = 20.0
 MULTICOLOR_NEXT_EXTRA_PLN = 10.0
 
 
-def multicolor_fee(n_colors: int) -> float:
-    """Dopłata kliencka za N kolorów w jednym wydruku (N=1 → 0)."""
+def multicolor_fee(n_colors: int, db=None) -> float:
+    """Dopłata kliencka za N kolorów w jednym wydruku (N=1 → 0).
+
+    Stawki czytane z PricingConfig (klucze multicolor_first_extra_pln /
+    multicolor_next_extra_pln), edytowalne w panelu admina /api/admin/pricing.
+    Fallback: stałe MULTICOLOR_FIRST_EXTRA_PLN / MULTICOLOR_NEXT_EXTRA_PLN.
+    """
     n = max(1, int(n_colors or 1))
     if n <= 1:
         return 0.0
-    return MULTICOLOR_FIRST_EXTRA_PLN + (n - 2) * MULTICOLOR_NEXT_EXTRA_PLN
+    first = float(_cfg(db, "multicolor_first_extra_pln", MULTICOLOR_FIRST_EXTRA_PLN))
+    nxt = float(_cfg(db, "multicolor_next_extra_pln", MULTICOLOR_NEXT_EXTRA_PLN))
+    return first + (n - 2) * nxt
 
 # WYPEŁNIENIE (infill) — bazowa cena druku = 15% (standard farmy).
 # Model masy: V_materialu(f) = (s + f*(1-s))*V_objetosci — s = udzial powlok
@@ -1145,6 +1152,8 @@ def get_pricing(db: Session = Depends(get_db), admin=Depends(require_admin)):
             "infill_min": ("Wypełnienie min.", "Najniższe wypełnienie w konfiguratorze", "%", "Wypełnienie"),
             "infill_max": ("Wypełnienie maks.", "Najwyższe wypełnienie — elementy konstrukcyjne", "%", "Wypełnienie"),
             "infill_shell_share": ("Udział powłok", "Część objętości przypadająca na obrysy+sklepienia (kalibracja krzywej ceny)", "0–1", "Wypełnienie"),
+            "multicolor_first_extra_pln": ("Dopłata za 1. dodatkowy kolor", "Cena za drugi kolor w modelu (pierwszy ekstra)", "zł", "Kolory"),
+            "multicolor_next_extra_pln": ("Dopłata za każdy kolejny kolor", "Cena za trzeci i następne kolory w modelu", "zł", "Kolory"),
         }.get(key, (key, "", "", "Inne"))
 
     def _emit(key, default, kind="float"):
@@ -1176,6 +1185,8 @@ def get_pricing(db: Session = Depends(get_db), admin=Depends(require_admin)):
         _emit(f"throughput:{mat}", th)
     for col, prem in sorted(DEFAULT_COLOR_PREMIUM.items()):
         _emit(f"color:{col}", prem)
+    _emit("multicolor_first_extra_pln", MULTICOLOR_FIRST_EXTRA_PLN)
+    _emit("multicolor_next_extra_pln", MULTICOLOR_NEXT_EXTRA_PLN)
     for tier, regions in DEFAULT_SHIPPING.items():
         for region, val in regions.items():
             _emit(f"shipping_{tier}:{region}", val)

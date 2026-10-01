@@ -85,6 +85,7 @@ class Job(Base):
     likes = Column(Integer, default=0)
     preview_image = Column(String(512), nullable=True)
     folder_id = Column(Integer, ForeignKey("folders.id"), nullable=True, index=True)
+    parts_colors = Column(Text, nullable=True)  # opis element→kolor dla modeli wieloelementowych
     # ponytail: no folder nesting (single level). Add Folder.parent_id when needed.
 
     user = relationship("User", back_populates="jobs")

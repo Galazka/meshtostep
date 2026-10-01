@@ -139,17 +139,36 @@ __JSON_LD__
   .vnav a.vl:hover{color:#fff;background:rgba(255,255,255,.07)}
   .vnav a.vl.pr{color:#fff;background:#2B5CE6}
   .vnav .vsp{flex:1}
-  .wrap { max-width: 1440px; margin: 0 auto; padding: 18px 16px; display: grid; grid-template-columns: minmax(0,1fr) 340px; gap: 18px; align-items: start; }
-  .side { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-  .side .file { font-weight: 700; font-size: 15px; overflow-wrap: anywhere; line-height: 1.35; }
-  .side .shared-by { font-size: 12px; color: #64748b; margin-top: 3px; overflow-wrap: anywhere; }
-  .side .shared-by:empty { display: none; }
-  .side .pills { display: flex; flex-wrap: wrap; gap: 6px; }
-  .side .pill { font-size: 11px; padding: 3px 9px; border: 1px solid #e2e8f0; border-radius: 999px; background: #f8fafc; color: #475569; white-space: nowrap; }
-  .side label { display: block; font-size: 11px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 5px; }
-  .side select { width: 100%; padding: 9px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; background: #fff; }
-  .side .btn { justify-content: center; width: 100%; }
-  .desc-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px 20px; margin-top: 18px; }
+  .topbar {
+    position: sticky;
+    top: 56px; left: 0; right: 0;
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 18px;
+    background: rgba(255,255,255,.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid #e2e8f0;
+    flex-wrap: wrap;
+  }
+  .file-block { min-width: 0; display: flex; flex-direction: column; gap: 3px; max-width: 34vw; }
+  .file { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .shared-by { font-size: 12px; color: #64748b; }
+  .shared-by:empty { display: none; }
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+  .pill { font-size: 11px; padding: 3px 9px; border: 1px solid #e2e8f0; border-radius: 999px; background: #f8fafc; color: #475569; white-space: nowrap; }
+  .actions { display: flex; gap: 8px; margin-left: auto; align-items: center; flex-wrap: wrap; }
+  .actions select { padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; background: #fff; }
+  .wrap2 { max-width: 1440px; margin: 0 auto; padding: 18px 16px; }
+  .desc-box {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 22px 26px;
+    margin-top: 16px;
+    max-width: 1200px;
+  }
   .desc-box h3 { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
   .btn {
     display: inline-flex;
@@ -171,7 +190,7 @@ __JSON_LD__
   #viewer3d {
     position: relative;
     width: 100%;
-    height: calc(100dvh - 190px);
+    height: calc(100dvh - 220px);
     min-height: 420px;
     max-height: 900px;
     background: #f0f2f5;
@@ -181,10 +200,8 @@ __JSON_LD__
   }
   #viewer3d canvas { display: block; }
   @media (max-width: 960px) {
-    .wrap { grid-template-columns: 1fr; }
-    .side { order: 2; }
-    .main { order: 1; }
-    #viewer3d { height: 62dvh; min-height: 320px; }
+    .actions { width: 100%; }
+        #viewer3d { height: 62dvh; min-height: 320px; }
     .desc-box { margin-top: 14px; }
     .vnav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg,#000 82%,transparent); }
     .vnav a.vl { padding: 8px 7px; font-size: 12px; }
@@ -219,53 +236,53 @@ __JSON_LD__
   <a class="vl" href="/">Zaloguj</a>
   <a class="vl pr" href="/konto">Moje konto</a>
 </nav>
-<div class="wrap">
-  <div class="main">
-    <div id="viewer3d"></div>
-    <div class="desc-box">
-      <h3 id="descTitle" style="font-size:18px"></h3>
-      <div id="descTags" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
-      <div id="descBody" style="color:#334155"></div>
-      <div id="descYoutube" style="margin-top:16px;display:none"><iframe id="descYoutubeFrame" width="100%" height="315" frameborder="0" allowfullscreen style="border-radius:8px"></iframe></div>
-      <div style="margin-top:24px;border-top:1px solid #e5e7eb;padding-top:16px">
-        <h3 id="commentsTitle" style="font-size:16px;margin-bottom:12px"></h3>
-        <div id="commentsList"></div>
-        <div id="commentForm" style="margin-top:12px;display:none">
-          <textarea id="commentBody" rows="3" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;resize:vertical" placeholder="Napisz komentarz..."></textarea>
-          <button onclick="postComment()" style="margin-top:8px;padding:8px 16px;background:#1a56db;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer">Wyślij</button>
-        </div>
+<div class="topbar">
+  <div class="file-block">
+    <div class="file" title="__FILENAME__">__FILENAME__</div>
+    <div class="shared-by">__AUTHOR_INFO__</div>
+    <div id="expiryInfo" style="font-size:12px;color:#64748b">__EXPIRY_INFO__</div>
+  </div>
+  <div class="pills">__CONV_INFO__</div>
+  <div class="actions">
+    <select id="dlFormat">
+      <option value="step">Solid — STEP (CAD/CAM)</option>
+      <option value="stl">Mesh — __FMT_STL__</option>
+      <option value="obj">Mesh — __FMT_OBJ__</option>
+      <option value="3mf">Mesh — __FMT_3MF__</option>
+    </select>
+    <select id="dlQuality">
+      <option value="ultra">__Q_ULTRA__</option>
+      <option value="auto" selected>__Q_AUTO__</option>
+      <option value="light">__Q_LIGHT__</option>
+      <option value="smooth">__Q_SMOOTH__</option>
+      <option value="off">__Q_OFF__</option>
+    </select>
+    <a class="btn btn-primary" href="#" id="dlBtn" onclick="convertAndDownload('__UUID__');return false">⬇ __DOWNLOAD_BTN__</a>
+    <button class="btn btn-secondary" onclick="showEmbed('__TOKEN__')">⧉ __EMBED_BTN__</button>
+    <a class="btn" style="background:#2B5CE6;color:#fff" href="/zamow?job=__UUID__">🖨 __PRINT_CTA__</a>
+  </div>
+</div>
+<div class="wrap2">
+  <div id="viewer3d"></div>
+  <div class="desc-box">
+    <h3 id="descTitle" style="font-size:18px"></h3>
+    <div id="descTags" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px"></div>
+    <div id="descBody" style="color:#334155"></div>
+    <div id="partsColors" style="display:none;margin-top:14px;padding:12px 14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:13px;color:#1e40af"></div>
+    <div style="margin-top:14px;padding:10px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:12.5px;color:#475569">
+      🖨 <b>Drukujemy w jednym kolorze na bryłę</b> — model wielokolorowy musi mieć osobne elementy (osobne pliki lub osobne bryły w jednym pliku). Każdy element można zamówić w innym kolorze.
+      <a href="/drukuje#kolory" style="color:#2B5CE6;text-decoration:none;font-weight:600">Więcej o kolorach →</a>
+    </div>
+    <div id="descYoutube" style="margin-top:16px;display:none"><iframe id="descYoutubeFrame" width="100%" height="315" frameborder="0" allowfullscreen style="border-radius:8px"></iframe></div>
+    <div style="margin-top:24px;border-top:1px solid #e5e7eb;padding-top:16px">
+      <h3 id="commentsTitle" style="font-size:16px;margin-bottom:12px"></h3>
+      <div id="commentsList"></div>
+      <div id="commentForm" style="margin-top:12px;display:none">
+        <textarea id="commentBody" rows="3" style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;resize:vertical" placeholder="Napisz komentarz..."></textarea>
+        <button onclick="postComment()" style="margin-top:8px;padding:8px 16px;background:#1a56db;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer">Wyślij</button>
       </div>
     </div>
   </div>
-  <aside class="side">
-    <div>
-      <div class="file" title="__FILENAME__">__FILENAME__</div>
-      <div class="shared-by">__AUTHOR_INFO__</div>
-    </div>
-    <div id="expiryInfo" style="font-size:12px;color:#64748b">__EXPIRY_INFO__</div>
-    <div class="pills">__CONV_INFO__</div>
-    <div style="border-top:1px solid #e2e8f0;padding-top:12px">
-      <label for="dlFormat">Format</label>
-      <select id="dlFormat">
-        <option value="step">Solid — STEP (CAD/CAM)</option>
-        <option value="stl">Mesh — __FMT_STL__</option>
-        <option value="obj">Mesh — __FMT_OBJ__</option>
-        <option value="3mf">Mesh — __FMT_3MF__</option>
-      </select>
-      <label for="dlQuality" style="margin-top:10px">Jakość konwersji</label>
-      <select id="dlQuality">
-        <option value="ultra">__Q_ULTRA__</option>
-        <option value="auto" selected>__Q_AUTO__</option>
-        <option value="light">__Q_LIGHT__</option>
-        <option value="smooth">__Q_SMOOTH__</option>
-        <option value="off">__Q_OFF__</option>
-      </select>
-      <a class="btn btn-primary" href="#" id="dlBtn" onclick="convertAndDownload('__UUID__');return false" style="margin-top:12px">⬇ __DOWNLOAD_BTN__</a>
-      <button class="btn btn-secondary" onclick="showEmbed('__TOKEN__')" style="margin-top:8px">⧉ __EMBED_BTN__</button>
-      <a class="btn" style="background:#2B5CE6;color:#fff;margin-top:8px" href="/zamow?job=__UUID__">🖨 __PRINT_CTA__</a>
-    </div>
-  </aside>
-</div>
 </div>
 <script type="module">
 import { initViewerPro } from '/asset/viewer_pro.js?v=6';
@@ -344,11 +361,15 @@ window.__shareViewer = initViewerPro({
   };
 })();
 let _jobId = __JOB_ID__;
-function renderDescription(title, tags, bodyHtml, youtubeUrl) {
+function renderDescription(title, tags, bodyHtml, youtubeUrl, partsColors) {
   const hasDesc = title || tags.length || bodyHtml || youtubeUrl;
   document.getElementById('descTitle').textContent = title || '';
   document.getElementById('descTags').innerHTML = tags.map(function(t){return '<span style="padding:2px 8px;border:1px solid #d1d5db;border-radius:999px;font-size:11px;color:#64748b">'+t+'</span>'}).join('');
   document.getElementById('descBody').innerHTML = bodyHtml || '';
+  if (partsColors && partsColors.trim()) {
+    document.getElementById('partsColors').style.display = 'block';
+    document.getElementById('partsColors').innerHTML = '<b>Kolory elementów</b> — model ma kilka brył, każda drukowana w jednym kolorze:<br>' + partsColors;
+  }
   if (youtubeUrl) {
     const match = youtubeUrl.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]+)/);
     if (match) {
@@ -557,7 +578,7 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
     _js_tags = json.dumps(_tags_escaped)
     _js_body = json.dumps(_desc_body_html)
     _js_youtube = json.dumps(_yt)
-    _desc_init_js = f"renderDescription({_js_title},{_js_tags},{_js_body},{_js_youtube});"
+    _desc_init_js = f"renderDescription({_js_title},{_js_tags},{_js_body},{_js_youtube},{json.dumps(getattr(job, 'parts_colors', None) or '')});"
     # Structured data for search engines: build a real dict, dumps() it — never hand-write JSON
     _jsonld = {
         "@context": "https://schema.org",

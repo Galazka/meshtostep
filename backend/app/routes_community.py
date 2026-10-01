@@ -151,6 +151,7 @@ def get_model(job_id: int, db: Session = Depends(get_db), user: models.User = De
         "youtube_url": j.youtube_url,
         "youtube_id": _youtube_embed(j.youtube_url or ""),
         "visibility": j.visibility,
+        "parts_colors": getattr(j, "parts_colors", None) or "",
         "views": j.views, "likes": j.likes or 0,
         "faces": j.result_faces, "mode": j.mode,
         "dims_mm": getattr(j, "dims_mm", None),

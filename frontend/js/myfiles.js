@@ -748,6 +748,7 @@ async function deleteMyJob(jobId) {
         document.getElementById('edYoutube').value = j.youtube_url || '';
         document.getElementById('edVisibility').value = j.visibility || 'private';
         document.getElementById('edDesc').value = j.description || '';
+        document.getElementById('edPartsColors').value = j.parts_colors || '';
 
         // populate folder options
         const folderSel = document.getElementById('edFolder');
@@ -808,7 +809,8 @@ async function deleteMyJob(jobId) {
             tags: document.getElementById('edTags').value.split(',').map(function(s){return s.trim()}).filter(Boolean),
             youtube_url: document.getElementById('edYoutube').value.trim() || null,
             visibility: document.getElementById('edVisibility').value,
-            folder_id: document.getElementById('edFolder').value || null
+            folder_id: document.getElementById('edFolder').value || null,
+            parts_colors: document.getElementById('edPartsColors').value.trim()
         };
         try {
             const r = await fetch('/api/jobs/' + _edJobId + '/meta', {
@@ -826,6 +828,7 @@ async function deleteMyJob(jobId) {
                 j.youtube_url = body.youtube_url;
                 j.visibility = body.visibility;
                 j.folder_id = body.folder_id ? Number(body.folder_id) : null;
+                j.parts_colors = body.parts_colors;
             }
             statusEl.textContent = t('editorSaved');
             closeEditorModal();

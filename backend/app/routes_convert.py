@@ -1242,6 +1242,9 @@ def rename_job(job_id: str, payload: dict, user: models.User = Depends(require_u
             except:
                 raise HTTPException(400, "folder_id int")
         updated["folder_id"] = job.folder_id
+    if "parts_colors" in payload:
+        job.parts_colors = (payload.get("parts_colors") or "").strip()[:2000] or None
+        updated["parts_colors"] = job.parts_colors
     if not updated and "title" not in payload and "name" not in payload:
         # no recognized fields — require at least one
         raise HTTPException(400, "Brak pol do aktualizacji")

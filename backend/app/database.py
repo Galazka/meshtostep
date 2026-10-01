@@ -67,6 +67,7 @@ def _migrate_columns():
                 ("visibility","VARCHAR(20) DEFAULT 'public'"),("views","INTEGER DEFAULT 0"),
                 ("likes","INTEGER DEFAULT 0"),("preview_image","VARCHAR(512)"),
                 ("dims_mm","VARCHAR(60)"),("volume_cm3","FLOAT"),
+                ("parts_colors","TEXT"),
             ]:
                 add_col(conn, "jobs", col, dtype, existing)
         except Exception as e:
