@@ -232,7 +232,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
           </div>
           </details>
         </div>
-        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:9px 12px;margin:10px 0;font-size:12.5px;color:#1e40af" id="colPriceNote">Wydruk wielokolorowy (jako jeden model) jest droższy ze względu na dłuższy czas druku: +'+( (CFG&&CFG.multicolor_first_extra_pln)?CFG.multicolor_first_extra_pln:20 )+' zł za 1. ekstra, każdy kolejny +'+( (CFG&&CFG.multicolor_next_extra_pln)?CFG.multicolor_next_extra_pln:10 )+' zł.</div>
+        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:9px 12px;margin:10px 0;font-size:12.5px;color:#1e40af" id="colPriceNote">Wydruk wielokolorowy (jako jeden model) jest droższy ze względu na dłuższy czas druku.</div>
         <div id="multiInfo" style="margin:8px 0 4px"></div>
     <div style="margin-top:8px;padding:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;font-size:12.5px;color:#475569">
       Uwaga: Jeśli model składa się z kilku niezależnych brył, możesz opisać kolor każdej bryły w polu 'Opis' po przesłaniu pliku (np. 'Element 1: czarny; Element 2: biały').
@@ -385,7 +385,19 @@ var MATS={}; var CUR_ACTSYM=1; var selIdx=-1;
 function toast(m,ok){var t=document.createElement('div');t.className='toast';t.style.opacity=1;t.textContent=m;var col=(ok===false||ok==='')?'#dc2626':(ok==='w'?'#d97706':'#059669');t.style.background=col;document.body.appendChild(t);setTimeout(function(){t.style.opacity=0;setTimeout(function(){t.remove()},300);},2600);}
 var INFCFG={min:10,max:100,base:15,shell:0.35};
 var CFG=null;
-fetch('/api/pricing/public?t='+Date.now()).then(function(r){return r.json()}).then(function(d){if(d&&d.ok){CFG=d;}}).catch(function(){});
+fetch('/api/pricing/public?t='+Date.now()).then(function(r){return r.json()}).then(function(d){
+  if(d&&d.ok){
+    CFG=d;
+    var n1=document.getElementById('colPriceNote');
+    if(n1) n1.innerHTML='1 wybrany kolor jest <b>zawsze w cenie produktu</b> (również kolor specjalny). Dopłata dotyczy tylko wydruku wielokolorowego (2+ kolory): <b>+'+((CFG.multicolor_first_extra_pln!=null)?CFG.multicolor_first_extra_pln:20)+' zł za 1. ekstra</b>, każdy kolejny +'+((CFG.multicolor_next_extra_pln!=null)?CFG.multicolor_next_extra_pln:10)+' zł.';
+    // oznacz swatche z dopłatą (widoczne dopiero przy 2+ kolorach)
+    var cs=d.color_surcharge||{};
+    document.querySelectorAll('#colSwatches .swatch').forEach(function(b){
+      var sur=(cs[b.dataset.color]||0);
+      if(sur>0){ b.title='Kolor specjalny — dopłata '+sur.toFixed(0).replace('.',',')+' zł dotyczy TYLKO wydruków wielokolorowych (2+ kolory). Przy 1 kolorze jest w cenie.'; }
+    });
+  }
+}).catch(function(){});
 fetch('/api/config/infill?t='+Date.now()).then(function(r){return r.json()}).then(function(d){
   if(d&&d.ok){INFCFG={min:d.min,max:d.max,base:d.base,shell:d.shell};
     var rg=document.getElementById('infillRange'); if(rg){rg.min=d.min;rg.max=d.max;rg.value=d.base;}
@@ -410,7 +422,9 @@ function syncInfillUI(){
 }
 function reprice(i){ var it=CART[i]; if(!it||!it.vol)return;
   var fd=new FormData();
-  fd.append('material',it.material||'PLA'); fd.append('color',(it.color||'natural').split(' + ')[0]);
+  var _pl2en={czarny:'black',bialy:'white',szary:'gray',czerwony:'red',pomaranczowy:'orange',zolty:'yellow',zielony:'green',niebieski:'blue',fioletowy:'purple',rozowy:'pink',naturalny:'natural',srebrny:'silver',zloty:'gold',weglowy:'carbon',drewno:'wood',przezroczysty:'transparent'};
+  var _firstCol=((it.color||'naturalny').split(' + ')[0]||'naturalny').toLowerCase().trim();
+  fd.append('material',it.material||'PLA'); fd.append('color',_pl2en[_firstCol]||_firstCol);
   fd.append('quantity',String(it.qty||1)); fd.append('colors',String(it.colors||1));
   fd.append('shipping','pickup'); fd.append('shipping_region','PL');
   fd.append('volume_cm3',String(it.vol)); fd.append('estimated_hours','0');
@@ -455,7 +469,7 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
     var box=document.getElementById('multiInfo'); if(!box) return;
     if(selIdx<0){ box.innerHTML=''; return; }
     var it=CART[selIdx]; var n=it.colors||1; var list=it._multi||[];
-    if(n<2){ box.innerHTML='<span style="font-size:12px;color:var(--muted)">Jeden kolor — kliknij swatch aby wybrać.</span> <span style="font-size:11px;color:#B45309">Uwaga: 1 bryła = 1 kolor — nie drukujemy dwóch kolorów na jednym elemencie. Model wielokolorowy = osobne elementy (osobne bryły), każdy w swoim kolorze.</span>'; return; }
+    if(n<2){ box.innerHTML='<span style="font-size:12px;color:var(--muted)">Jeden kolor — kliknij swatch aby wybrać.</span> <span style="font-size:11px;color:#B45309">Uwaga: 1 bryła = 1 kolor — nie drukujemy dwóch kolorów na jednym elemencie. Model wielokolorowy = osobne elementy (osobne bryły), każdy w swoim kolorze.</span>'+((it._multi&&it._multi.length)?'':'<div style="font-size:11.5px;color:#b91c1c;margin-top:4px;font-weight:600">⚠ Wybierz kolor wydruku — 1 kolor jest w cenie produktu (nie płacisz za niego extra).</div>'); return; }
     box.innerHTML='<span style="font-size:12.5px">Wybrane kolory ('+list.length+'/'+n+'): <b>'+colPl(list)+'</b></span>'+
           '<span style="font-size:11px;color:var(--muted)"> — klikaj swatche aby dodać/odznaczyć. Ekstra kolor: +'+( (CFG&&CFG.multicolor_first_extra_pln)?CFG.multicolor_first_extra_pln:20 )+' zł, każdy kolejny +'+( (CFG&&CFG.multicolor_next_extra_pln)?CFG.multicolor_next_extra_pln:10 )+' zł.</span>';
   }
@@ -688,16 +702,18 @@ function calc(){
     var totalPLN = adjPLN + shippingPLN - COUPON_PLN;
 var discLine = COUPON_PLN>0 ? '<div class="summary-row"><span>Rabat '+(window.__COUPON.code||'')+'</span><span style="color:#15803d;font-weight:700">−'+fmt(cx(COUPON_PLN/rate))+'</span></div>' : '';
   var colorLine = colorExt>0 ? '<div class="summary-row"><span>Kolory ekstra</span><span style="color:#B45309">+'+fmt(colorExt/rate)+'</span></div>' : '';
-  var shipLabel = isPickup ? 'Odbiór osobisty' : isPkExp ? 'Ekspres przy odbiorze (2 dni)' : freeShip ? 'Wysyłka — GRATIS (≥200 zł)' : smallOrder ? 'Wysyłka + pakowanie — PROMOCJA' : 'Wysyłka + pakowanie';
+  var shipLabel = isPickup ? 'Odbiór osobisty (Gdańsk Osowa)' : isPkExp ? 'Ekspres przy odbiorze (≤2 dni)' : freeShip ? 'Wysyłka — GRATIS (≥'+FREEMIN+' zł)' : smallOrder ? 'Wysyłka + pakowanie — małe zamówienie (flat '+fmt(SOFLAT)+')' : 'Wysyłka + pakowanie';
   var freeLine='';
   // cena ostateczna (bez dopłat po fakcie) — bez rozbicia netto/VAT
   var total=cx(totalPLN/rate);
   var brutto=total;
+  var netHTML='<div class="summary-row" style="font-size:11.5px;color:var(--muted)"><span>Cena brutto = netto (osoba fizyczna, VAT zw.)</span><span>'+fmt(brutto)+'</span></div>';
   box.innerHTML=rowsHTML+
       '<div class="summary-row"><span>Druk ('+CART.length+' model'+(CART.length>1?'i':'')+')</span><span>'+fmt(cx(basePrint/rate))+'</span></div>'+
     '<div class="summary-row"><span>'+shipLabel+'</span><span>'+(shippingPLN===0?'0,00 zł':fmt(shippingPLN/rate))+'</span></div>'+
     colorLine+discLine+freeLine+
-    '<div class="summary-total"><span>Do zapłaty</span><span>'+fmt(brutto)+'</span></div>';
+    netHTML+
+    '<div class="summary-total"><span>Do zapłaty (brutto)</span><span>'+fmt(brutto)+'</span></div>';
   empty.style.display='none'; box.style.display='block'; btn.disabled=false;
   try{ var sym=(cur==='PLN'?'zł':cur); btn.textContent='Zamawiam · '+fmt(brutto)+' \u2192'; var cb=document.getElementById('ctaTot'); if(cb)cb.textContent=fmt(brutto); }catch(e){}
   var vn=document.getElementById('vatNote'); if(vn) vn.textContent='① Cena „do zapłaty" jest ostateczna — nie doliczamy nic później. Do zamówienia dołączamy rachunek.';
@@ -748,6 +764,8 @@ function submitOrder(){
   var ph=document.getElementById('fPhone').value.trim();
   if(!ph){ toast(FULFILL==='pickup'?'Do odbioru osobistego potrzebny jest numer telefonu (SMS o gotowości)':'Podaj numer telefonu — kurier/InPost wyśle kod',''); document.getElementById('fPhone').focus(); return; }
   if(!CART.length){ toast('Dodaj co najmniej jeden model',''); return; }
+  for(var ci=0;ci<CART.length;ci++){ var _it=CART[ci];
+    if(!_it._multi||!_it._multi.length){ toast('Wybierz kolor dla: '+(_it.model_name||'Model #'+(ci+1))+' — 1 kolor jest w cenie produktu',''); if(typeof preview==='function')preview(ci); if(typeof refreshCol==='function')refreshCol(); document.getElementById('colSwatches').scrollIntoView({behavior:'smooth',block:'center'}); return; } }
   if(FULFILL==='ship' && (!document.getElementById('fAddr').value.trim() || !document.getElementById('fCity').value.trim())){ toast('Podaj adres i miasto dostawy',''); document.getElementById('fAddr').focus(); return; }
   var shipSel=document.getElementById('fShipping').value;
     /* FIRMA OFF: pola NIP/nazwa nie są wysyłane do backendu dopóki FIRM_ORDERS_ENABLED=false */

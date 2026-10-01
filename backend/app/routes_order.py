@@ -383,6 +383,10 @@ def calculate_price(
     hours = hours * inf_factor
     cost_pln = filament_cost + power_cost
     color_premium = float(_cfg(db, f"color:{color}", DEFAULT_COLOR_PREMIUM.get(color, 0.0))) * quantity
+    # 1 WYBRANY KOLOR ZAWSZE W CENIE (reguła Toma): przy wydruku jednokolorowym
+    # żadna dopłata za pigment — klient wybiera dowolny darmowy kolor.
+    if int(colors or 1) <= 1:
+        color_premium = 0.0
     multi_fee = multicolor_fee(colors)
     surcharge_pln = round(color_premium + multi_fee, 2)
 
