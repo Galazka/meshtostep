@@ -81,6 +81,10 @@
         .cleanup-bar input[type=number]:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
         .btn-danger { background: var(--error); color: #fff; border: none; border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: opacity .15s; }
         .btn-danger:hover { opacity: .85; }
+        .btn-act { background: var(--bg-alt, #f1f5f9); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 13px; cursor: pointer; font-family: inherit; transition: opacity .15s; }
+        .btn-act:hover { opacity: .8; }
+        .btn-act.btn-danger { background: var(--error); color: #fff; border-color: transparent; }
+
         .storage-fmt { font-size: 12px; color: var(--text-secondary); }
 
         /* ── SECTION PANEL ── */
@@ -372,6 +376,7 @@
                                     <th data-i18n="thJobsCount">Pliki</th>
                                     <th>Rozmiar</th>
                                     <th data-i18n="thJoined">Ostatnia aktywnosc</th>
+                                    <th>Akcje</th>
                                 </tr>
                             </thead>
                             <tbody id="usersBody"></tbody>
@@ -583,6 +588,7 @@
                                             <th data-i18n="thTime">Czas (s)</th>
                                             <th data-i18n="thDate">Data</th>
                                             <th data-i18n="thUser">Użytkownik</th>
+                                            <th>Akcje</th>
                                         </tr>
                                     </thead>
                                     <tbody id="queueJobsBody"></tbody>
@@ -1027,6 +1033,46 @@ const I18N = {
         d.scrollIntoView({behavior:'smooth'});
     }
     function closeUserDetail(){ document.getElementById('userDetail').style.display='none'; }
+
+    /* ── User: preview models + permanent delete ── */
+    async function viewUserModels(uid) {
+        try {
+            const files = await api('/api/admin/users/' + uid + '/files');
+            const modal = document.getElementById('jobModal');
+            modal.classList.add('show');
+            document.getElementById('jobModalTitle').textContent = 'Modele użytkownika #' + uid;
+            document.getElementById('jobModalMeta').textContent = files.length + ' plików';
+            // reuse preview canvas as scrollable list
+            const wrap = document.getElementById('jobPreviewCanvas');
+            wrap.innerHTML = files.length ? '<div style="max-height:56vh;overflow:auto">' + files.map(f =>
+                '<div style="display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid var(--border)">' +
+                '<img src="/api/thumb/' + f.uuid + '" style="width:56px;height:56px;object-fit:cover;border-radius:6px;background:#f0f2f5" onerror="this.style.display='none'">' +
+                '<div style="flex:1;min-width:0"><div class="cell-ellipsis">' + esc(f.filename || f.uuid) + '</div>' +
+                '<div style="font-size:12px;color:var(--text-muted)">' + fmtBytes(f.file_size_bytes) + ' · ' + f.status + ' · 👁 ' + (f.views||0) + '</div></div>' +
+                '<a class="btn-sm ghost" href="/e/' + f.uuid + '" target="_blank">Podgląd</a>' +
+                '<a class="btn-sm ghost" href="/api/download/' + f.uuid + '?format=stl">STL</a>' +
+                '<a class="btn-sm ghost" href="/api/download/' + f.uuid + '?format=step">STEP</a>' +
+                '</div>').join('') + '</div>'
+                : '<div style="color:var(--text-muted);padding:20px;text-align:center">Brak plików</div>';
+            document.getElementById('jobDlStep').style.display='none';
+            document.getElementById('jobDlStl').style.display='none';
+            document.getElementById('jobShareBtn').style.display='none';
+            document.getElementById('jobDeleteBtn').onclick = () => deleteUserPerm(uid, '');
+        } catch(e) { toast('Błąd: ' + (e.message||e), 'error'); }
+    }
+    async function deleteUserPerm(uid, email) {
+        if (!confirm('TRWAŁE usunięcie użytkownika #' + uid + (email ? ' (' + email + ')' : '') + ' wraz ze WSZYSTKIMI modelami, linkami i komentarzami. Tego się nie cofnie. Kontynuować?')) return;
+        if (!confirm('Na pewno? Ostatnie ostrzeżenie.')) return;
+        try {
+            await api('/api/admin/users/' + uid, { method: 'DELETE' });
+            toast('Usunięto użytkownika #' + uid, 'ok');
+            _allUsersData = _allUsersData.filter(u=>u.id!==uid);
+            _usersData = _usersData.filter(u=>u.id!==uid);
+            renderUsers();
+        } catch(e) { toast('Błąd usuwania: ' + (e.message||e), 'error'); }
+    }
+    window.viewUserModels = viewUserModels;
+    window.deleteUserPerm = deleteUserPerm;
     function fmtBytes(b) {
         if (!b) return '0 B';
         if (b < 1024) return b + ' B';
@@ -1052,7 +1098,7 @@ const I18N = {
             if (!jobsBody) return;
             const jobs = d.jobs || [];
             if (!jobs.length) {
-                jobsBody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">Brak zadań w kolejce</td></tr>';
+                jobsBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted)">Brak zadań w kolejce</td></tr>';
                 return;
             }
             window._queueJobs = jobs;
@@ -1060,7 +1106,7 @@ const I18N = {
         } catch (e) {
             console.error('Queue load error:', e);
             document.getElementById('queueStats').innerHTML = '<div style="color:var(--error)">Błąd ładowania kolejki</div>';
-            document.getElementById('queueJobsBody').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">Błąd ładowania danych</td></tr>';
+            document.getElementById('queueJobsBody').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted)">Błąd ładowania danych</td></tr>';
         }
     }
 
@@ -1076,7 +1122,7 @@ const I18N = {
             return true;
         });
         if (!rows.length) {
-            jobsBody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">' + (jobs.length ? 'Brak wyników dla filtra' : 'Brak zadań w kolejce') + '</td></tr>';
+            jobsBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted)">' + (jobs.length ? 'Brak wyników dla filtra' : 'Brak zadań w kolejce') + '</td></tr>';
             return;
         }
         jobsBody.innerHTML = rows.map(j => {
@@ -1088,10 +1134,45 @@ const I18N = {
                 <td>${(j.processing_time_s ?? 0).toFixed(1)}s</td>
                 <td>${j.created_at ? new Date(j.created_at).toLocaleString() : '—'}</td>
                 <td>${j.user_email ?? j.user_id ?? 'anon'}</td>
+                <td><button class="btn-act" onclick="viewQueueJob(${j.id})" title="Podgląd">👁</button> <button class="btn-act btn-danger" onclick="delQueueJob(${j.id})" title="Usuń trwale">🗑</button></td>
             </tr>`;
         }).join('');
     }
     window.filterQueue = filterQueue;
+
+    /* ── Queue job preview + delete ── */
+    async function viewQueueJob(id) {
+        try {
+            const j = await api('/api/admin/jobs/' + id);
+            const modal = document.getElementById('jobModal');
+            modal.classList.add('show');
+            document.getElementById('jobModalTitle').textContent = j.filename || ('Zadanie #' + id);
+            document.getElementById('jobModalMeta').textContent =
+                'uuid: ' + j.uuid + ' · status: ' + j.status + ' · tryb: ' + (j.mode || '—') +
+                ' · czas: ' + ((j.processing_time_s ?? 0).toFixed(1)) + 's · user: ' + (j.user_email || j.user_id || 'anon');
+            const dlStep = document.getElementById('jobDlStep');
+            const dlStl = document.getElementById('jobDlStl');
+            const done = j.status === 'done';
+            dlStep.style.display = done ? '' : 'none';
+            dlStl.style.display = done ? '' : 'none';
+            dlStep.onclick = () => window.open('/api/download/' + j.uuid + '?format=step', '_blank');
+            dlStl.onclick = () => window.open('/api/download/' + j.uuid + '?format=stl', '_blank');
+            document.getElementById('jobShareBtn').style.display = 'none';
+            document.getElementById('jobDeleteBtn').onclick = () => delQueueJob(j.id);
+            loadJobSTL('/api/stl-preview/' + j.uuid);
+        } catch(e) { toast('Błąd podglądu: ' + (e.message||e), 'error'); }
+    }
+    async function delQueueJob(id) {
+        if (!confirm('Trwale usunąć zadanie #' + id + ' z bazy i dysku? Nie da się cofnąć.')) return;
+        try {
+            await api('/api/admin/jobs/' + id, { method: 'DELETE' });
+            toast('Usunięto #' + id, 'ok');
+            window._queueJobs = (window._queueJobs||[]).filter(j=>j.id!==id);
+            filterQueue();
+        } catch(e) { toast('Błąd usuwania: ' + (e.message||e), 'error'); }
+    }
+    window.viewQueueJob = viewQueueJob;
+    window.delQueueJob = delQueueJob;
 
     async function loadExport() {
             try {
@@ -1217,7 +1298,7 @@ const I18N = {
             renderUsers();
         } catch (e) {
             document.getElementById('usersBody').innerHTML =
-                '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">' + t('emptyUsers') + '</td></tr>';
+                '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-muted)">' + t('emptyUsers') + '</td></tr>';
         }
     }
 
@@ -1245,7 +1326,7 @@ const I18N = {
         const body = document.getElementById('usersBody');
         document.getElementById('userCount').textContent = _usersData.length + ' / ' + _allUsersData.length;
         if (!_usersData.length) {
-            body.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted)">' + t('emptyUsers') + '</td></tr>';
+            body.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-muted)">' + t('emptyUsers') + '</td></tr>';
             return;
         }
         body.innerHTML = _usersData.map(u => {
@@ -1258,8 +1339,9 @@ const I18N = {
                 '<td>' + (u.job_count ?? '—') + '</td>' +
                 '<td>' + sizeStr + '</td>' +
                 '<td>' + lastActive + '</td>' +
+                '<td><button class="btn-act" onclick="event.stopPropagation();viewUserModels(' + u.id + ')" title="Podgląd modeli">👁</button> <button class="btn-act btn-danger" onclick="event.stopPropagation();deleteUserPerm(' + u.id + ','' + esc(u.email || '') + '')" title="Usuń trwale">🗑</button></td>' +
                 '</tr>' +
-                '<tr class="expand-row" id="expand-' + u.id + '"><td colspan="7">' +
+                '<tr class="expand-row" id="expand-' + u.id + '"><td colspan="8">' +
                 '<div class="expand-inner" id="files-inner-' + u.id + '"><div style="padding:8px;color:var(--text-muted);font-size:13px">Kliknij strzalke aby zaladowac pliki...</div></div>' +
                 '</td></tr>';
         }).join('');

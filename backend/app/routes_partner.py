@@ -342,6 +342,16 @@ def admin_partner_patch(lead_id: int, body: PartnerPatch,
     return {"ok": True, "item": _lead_row(lead)}
 
 
+@router.delete("/api/admin/partners/{lead_id}")
+def admin_partner_delete(lead_id: int, admin=Depends(require_admin), db: Session = Depends(get_db)):
+    lead = db.query(models.PartnerLead).filter(models.PartnerLead.id == lead_id).first()
+    if not lead:
+        raise HTTPException(404, "Zgloszenie nie istnieje")
+    db.delete(lead)
+    db.commit()
+    return {"ok": True}
+
+
 @router.get("/api/admin/partners/export.csv")
 def admin_partners_csv(admin=Depends(require_admin), db: Session = Depends(get_db)):
     rows = (db.query(models.PartnerLead)

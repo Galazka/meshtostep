@@ -201,6 +201,7 @@
           '<textarea class="pn-ta" id="pnNotes' + it.id + '" rows="3" placeholder="Ustalenia, stawka, warunki, data kontaktu…">' + esc(it.notes || '') + '</textarea>' +
           '<div class="pn-acts">' +
           '<button class="pn-btn" data-save="' + it.id + '">Zapisz notatki</button>' +
+          '<button class="pn-btn pn-btn-danger" data-del="' + it.id + '">Usuń zgłoszenie</button>' +
           '<a class="pn-btn pn-btn-ghost" href="mailto:' + esc(it.email) +
           '?subject=' + encodeURIComponent('3dfile.link — sieć partnerska druku 3D') +
           '&body=' + encodeURIComponent('Dzień dobry,\n\ndziękujemy za zgłoszenie pracowni do naszej sieci partnerskiej.\n\n') + '">Napisz mail</a>' +
@@ -224,6 +225,23 @@
       sel.addEventListener('change', function (e) {
         e.stopPropagation();
         patch(Number(sel.dataset.id), { status: sel.value });
+      });
+    });
+    host.querySelectorAll('[data-del]').forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var id = Number(b.dataset.del);
+        if (!confirm('Trwale usunąć zgłoszenie #' + id + ' z bazy? Tego się nie cofnie.')) return;
+        jfetch('/api/admin/partners/' + id, { method: 'DELETE' }).then(function (r) {
+          if (r.status.toString().startsWith('2')) {
+            _items = _items.filter(function (x) { return x.id !== id; });
+            _loaded = true;
+            render();
+            toast('Usunięto zgłoszenie #' + id, 'ok');
+          } else {
+            toast('Nie udało się usunąć (' + r.status + ')', 'error');
+          }
+        });
       });
     });
     host.querySelectorAll('[data-save]').forEach(function (b) {

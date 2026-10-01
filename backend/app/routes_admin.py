@@ -567,6 +567,22 @@ def delete_job(
 
 
 
+# Permanent delete single user (cascades: jobs, shares, comments, likes, geo, files)
+@router.delete("/users/{user_id}")
+def delete_user_single(
+    user_id: int,
+    admin: models.User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, "User not found")
+    if user.is_admin:
+        raise HTTPException(400, "Nie mozna usunac konta admina")
+    _delete_user(db, user_id)
+    db.commit()
+    return {"ok": True}
+
 # Bulk delete jobs by admin
 @router.post("/jobs/bulk-delete")
 def admin_bulk_delete(
