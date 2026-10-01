@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<script>window.__APP_V='110';(function(){try{var k='appV',s=sessionStorage.getItem(k);if(s&&s!=='110'){sessionStorage.setItem(k,'110');if(window.caches&&caches.keys){caches.keys().then(function(a){return Promise.all(a.map(function(n){return caches.delete(n)}))}).then(function(){location.reload()});return}sessionStorage.setItem(k,'110')}catch(e){}})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Filament a wilgoć — suszenie i przechowywanie | 3DFILE.link</title>
+<meta name="description" content="Wilgoć w filamentach: objawy (pęcherze, syczenie), temperatura suszenia per materiał, drybox DIY, silica gel i jak rozpoznać mokry filament.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://3dfile.link/blog/sezonowanie-filamentu-wilgoc.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Filament a wilgoć — suszenie i przechowywanie">
+<meta property="og:description" content="PLA wybacza, nylon pije od razu. Tabela suszenia, drybox za 50 zł, wskaźniki wilgotności i objawy mokrego filamentu bez miernika.">
+<meta property="og:image" content="https://3dfile.link/asset/blog/cover-sezonowanie-filamentu-wilgoc.svg">
+<meta property="og:site_name" content="3DFILE.link">
+<meta property="og:url" content="https://3dfile.link/blog/sezonowanie-filamentu-wilgoc.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#0f172a;--muted:#64748b;--accent:#0ea5e9;--accent2:#0b5394;--border:#e2e8f0;--card:#ffffff;--bg:#f8fafc}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);line-height:1.65}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 20px 60px}
+.crumbs{font-size:13px;color:var(--muted);margin-bottom:18px}
+.crumbs a{color:var(--accent);text-decoration:none}
+h1{font-size:34px;line-height:1.2;font-weight:800;letter-spacing:-.5px;margin-bottom:14px}
+.meta{color:var(--muted);font-size:14px;margin-bottom:22px;display:flex;gap:16px;flex-wrap:wrap}
+.hero-img{width:100%;border-radius:14px;margin-bottom:26px}
+h2{font-size:24px;font-weight:800;margin:34px 0 12px;letter-spacing:-.3px;line-height:1.3}
+h3{font-size:19px;font-weight:700;margin:26px 0 10px}
+p{margin-bottom:16px}
+ul,ol{margin:0 0 18px 22px}
+li{margin-bottom:8px}
+.box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin:20px 0}
+.box.cta{background:linear-gradient(135deg,#0ea5e9,#0b5394);color:#fff;border:none;text-align:center;padding:28px}
+.box.cta h3{color:#fff;font-size:22px;margin-bottom:8px}
+.box.cta p{color:#e0f2fe;font-size:15px}
+.btn{display:inline-block;background:#fff;color:#0b5394;font-weight:800;padding:13px 30px;border-radius:10px;text-decoration:none;font-size:16px;margin-top:14px}
+.tip table{width:100%;border-collapse:collapse;margin:14px 0}
+.tip td,.tip th{border:1px solid var(--border);padding:10px 12px;font-size:14px;text-align:left}
+.tip th{background:#f1f5f9;font-weight:700}
+blockquote{border-left:4px solid var(--accent);background:var(--card);padding:4px 20px;font-size:17px;margin:20px 0;font-style:italic}
+.related h3{font-size:21px;margin:44px 0 16px}
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.rel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;text-decoration:none;color:var(--fg);display:block}
+.rel img{width:100%;height:120px;object-fit:cover}
+.rel .b{padding:12px 14px}
+.rel .b strong{font-size:15px;display:block;margin-bottom:4px;line-height:1.4}
+.rel .b span{color:var(--muted);font-size:13px}
+footer{background:#0f172a;color:#94a3b8;text-align:center;padding:24px;font-size:13px}
+footer a{color:#cbd5e1;text-decoration:none}
+@media(max-width:600px){h1{font-size:26px}h2{font-size:20px}}
+@media(max-width:760px){table{display:block;overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
+th,td{word-break:break-word}h1{font-size:24px}h2{font-size:19px}h3{font-size:16.5px}.wrap{padding:0 16px}}
+.tb{display:flex;align-items:center;gap:26px;background:#0B1220;border-bottom:1px solid rgba(255,255,255,.09);padding:0 28px;height:66px;position:sticky;top:0;z-index:900}
+.tb .brand{display:flex;align-items:center;gap:11px;text-decoration:none}
+.tb .chip{background:#fff;border-radius:8px;padding:5px 10px;display:flex;align-items:center}
+.tb .chip img{height:34px;width:auto;display:block}
+.tb nav.nk{display:flex;gap:1px;align-items:center;margin-left:10px;flex:1;flex-wrap:wrap}
+.tb nav.nk a{color:#93A5C6;text-decoration:none;font-weight:500;font-size:13.5px;padding:7px 13px;border-radius:7px;white-space:nowrap}
+.tb nav.nk a:hover{color:#fff;background:rgba(255,255,255,.06)}
+.tb nav.nk a.active{color:#fff;background:rgba(43,92,230,.28)}
+.tb .acts{display:flex;gap:8px;align-items:center;margin-left:auto}
+.tb a.btn{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:8px;font-weight:600;font-size:13px;border:1px solid rgba(255,255,255,.16);color:#DCE4F2;background:transparent;text-decoration:none}
+.tb a.btn:hover{border-color:rgba(255,255,255,.4);color:#fff}
+.tb a.btn.pri{background:#2B5CE6;border-color:#2B5CE6;color:#fff}
+.tb button.bur{display:none;background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff;font-size:17px;border-radius:7px;cursor:pointer;padding:5px 11px}
+@media(max-width:1020px){.tb nav.nk{display:none;flex-direction:column;position:absolute;top:66px;left:0;right:0;background:#0B1220;padding:10px 20px 16px;z-index:901;gap:2px}
+.tb nav.nk.open{display:flex}.tb nav.nk a{width:100%;text-align:left;padding:11px 12px}.tb button.bur{display:inline-block}}
+</style>
+</head>
+<body>
+<header class="tb"><a class="brand" href="/"><span class="chip"><img src="/logo.png?v=83" alt="3DFILE.link"></span></a>
+<nav class="nk" id="navLinks"><a href="/">Hosting 3D</a><a href="/#discover">Odkrywaj</a><a href="/drukuje">Wydrukuj u nas</a><a href="/#hiw">Jak to działa</a><a href="/#faq">Pomoc FAQ</a><a href="/blog.html" class="active">Blog</a><a href="/projektowanie.html">Projektowanie</a><a href="/kontakt">Kontakt</a></nav>
+<div class="acts"><a class="btn" href="/">Zaloguj</a><a class="btn pri" href="/">Załóż konto</a><button class="bur" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">&#9776;</button></div>
+</header>
+<div class="wrap">
+  <div class="crumbs"><a href="/">Strona główna</a> › <a href="/blog.html">Blog</a> › <span>Wiedza</span></div>
+  <h1>Filament a wilgoć — suszenie i przechowywanie</h1>
+  <div class="meta"><span>01.10.2026</span><span>Zespół 3DFILE.link</span><span>7 min czytania</span></div>
+  <img src="/asset/blog/cover-sezonowanie-filamentu-wilgoc.svg" alt="Filament a wilgoć — suszenie i przechowywanie" class="hero-img" loading="lazy">
+
+
+<p>Mokry filament to przyczyna nr 2 złych wydruków po zatłuszczonym stole. Objawy znasz: syczenie i trzaski z dyszy, pęcherze na powierzchni, drobne dziury w ścianach, „włochatość" mimo dobrej retrakcji. Woda w filamentzie paruje w hotendzie i rozwala strumień.</p>
+<h2>Które materiały chłoną ile</h2>
+<div class="box tip"><table><thead><tr><th>Materiał</th><th>Chłonność wilgoci</th><th>Czas do problemów na powietrzu</th><th>Suszenie</th></tr></thead><tbody><tr><td>PLA</td><td>niska</td><td>tygodnie–miesiące</td><td>45–50°C, 4–6 h</td></tr><tr><td>PETG</td><td>średnia</td><td>dni–tygodnie</td><td>60–65°C, 4–6 h</td></tr><tr><td>TPE/TPU</td><td>średnia–wysoka</td><td>dni</td><td>60–70°C, 6–8 h</td></tr><tr><td>ABS/ASA</td><td>niska–średnia</td><td>tygodnie</td><td>70–80°C, 4–6 h</td></tr><tr><td>PA (nylon)</td><td>bardzo wysoka</td><td>godziny</td><td>80–90°C, 8–12 h</td></tr><tr><td>PVA (podpory rozpuszczalne)</td><td>ekstremalna</td><td>godziny</td><td>45–55°C, 6–10 h</td></tr></tbody></table></div>
+<h2>Suszenie — bezpiecznie</h2>
+<ul>
+<li><strong>Suszarka do filamentu</strong> (Sunlu, eSUN, 60–120 zł) — temperatura i czas ustawione per materiał; drukowanie bezpośrednio z suszarki to najlepsza praktyka dla PA i PETG.</li>
+<li><strong>Piecyk kuchenny</strong> — działa, ale: termostat z odchyłką ±10°C potrafi „upiec" PLA (deformacja szpuli). Używaj z termometrem wewnętrznym, ustaw nisko, drzwi uchylone.</li>
+<li><strong>Nie susz</strong> powyżej temp. odkształcenia materiału — szpula się skrzywi i filament skleja się w zwojach.</li>
+</ul>
+<h2>Przechowywanie</h2>
+<p>Drybox / worki strunowe z gel krzemionkowym (silica gel) — podstawa. Wskaźnik wilgotności (higrometr za 15 zł) w pudełku mówi wszystko: <strong>poniżej 20% RH = bezpiecznie</strong>, powyżej 30% — PETG i PA zaczynają pić. Gel regeneruj w piekarniku (120°C, 2 h) co kilka miesięcy.</p>
+<h2>Jak rozpoznać mokry filament (bez miernika)</h2>
+<ul>
+<li>Syczenie/trzaski podczas druku (pary wody w hotendzie).</li>
+<li>Pęcherze i „matowienie" powierzchni, spłycone detale.</li>
+<li>Nieregularna średnica wycisku — strumień „kopie" i słabnie.</li>
+<li>Stringing mimo złożonej retrakcji.</li>
+</ul>
+<h2>Najczęściej zadawane pytania</h2>
+<h3>Czy PLA trzeba suszyć?</h3>
+<p>Zwykle nie od razu — nowe szpule są OK. Ale szpula leżąca 3 miesiące na półce w wilgotnym klimacie docenia 4 h w 45°C przed ważnym wydrukiem.</p>
+<h3>Czy suszenie „naprawia" stary filament na zawsze?</h3>
+<p>Tymczasowo. Nylon po suszeniu na powietrzu pije z powrotem w 1–2 dni — do PA kupuj drybox i drukuj z niego na bieżąco.</p>
+<h3>Gel krzemionkowy pomaga w worku?</h3>
+<p>Tak, przy małej ilości powietrza i zamknięciu. Do codziennej rotacji szpul wygodniejszy jest dedykowany drybox z podajnikiem.</p>
+<div class="box cta"><h3>Chcesz wydruk ten plik u nas?</h3><p>Wgraj plik na /zamow — wycena w 3 sekundy, bez rejestracji. Bambu Lab P1S, Gdańsk Osowa.</p><a class="btn" href="/zamow">Zamów wydruk</a></div>
+
+
+  <div class="related">
+    <h3>← Przeczytaj też</h3>
+    <div class="rel-grid">
+      <a class="rel" href="/blog/jaki-filament-wybrac-3d.html"><img src="/asset/blog/cover-jaki-filament-wybrac-3d.svg" alt=""><div class="b"><strong>Jaki filament wybrać</strong><span>przegląd materiałów</span></div></a>
+      <a class="rel" href="/blog/pla-vs-petg-twardosc-i-wybor.html"><img src="/asset/blog/cover-pla-vs-petg-twardosc-i-wybor.svg" alt=""><div class="b"><strong>PLA vs PETG</strong><span>tabela decyzji</span></div></a>
+      <a class="rel" href="/blog/czyszczenie-dyszy-fdm.html"><img src="/asset/blog/cover-czyszczenie-dyszy-fdm.svg" alt=""><div class="b"><strong>Czyszczenie dyszy</strong><span>skutki wilgoci</span></div></a>
+      
+    </div>
+  </div>
+</div>
+<footer>© 2026 3DFILE.link — <a href="/drukuje">druk 3D na życzenie</a> · <a href="/blog.html">Blog</a> · <a href="/projektowanie.html">Projektowanie</a> · <a href="/kontakt">Kontakt</a> · <a href="/prywatnosc.html">Prywatność</a></footer>
+<script>document.addEventListener('click',function(ev){var nl=document.querySelector('.nav-links');if(nl&&nl.classList.contains('open')&&ev.target.closest('.nav-links a')){nl.classList.remove('open');}});</script>
+<script src="/asset/ev.js?v=4" defer></script>
+</body>
+</html>

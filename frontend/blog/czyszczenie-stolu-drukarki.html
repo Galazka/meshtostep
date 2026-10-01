@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<script>window.__APP_V='110';(function(){try{var k='appV',s=sessionStorage.getItem(k);if(s&&s!=='110'){sessionStorage.setItem(k,'110');if(window.caches&&caches.keys){caches.keys().then(function(a){return Promise.all(a.map(function(n){return caches.delete(n)}))}).then(function(){location.reload()});return}sessionStorage.setItem(k,'110')}catch(e){}})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Czyszczenie stołu drukarki — PEI, tekstrom, klej | 3DFILE.link</title>
+<meta name="description" content="Czyszczenie stołu FDM: IPA, PEI proszkowy vs foliowy, zatłuszczenie, klej w sztyfcie jako rozdzielacz i kiedy winna jest kalibracja Z-offsetu.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://3dfile.link/blog/czyszczenie-stolu-drukarki.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Czyszczenie stołu drukarki — PEI, tekstrom, klej">
+<meta property="og:description" content="Pierwsza warstwa odchodzi? Winowajca to często zatłuszczony stół. Protokół czyszczenia PEI, tekstromu i kiedy klej w sztyfcie ma sens.">
+<meta property="og:image" content="https://3dfile.link/asset/blog/cover-czyszczenie-stolu-drukarki.svg">
+<meta property="og:site_name" content="3DFILE.link">
+<meta property="og:url" content="https://3dfile.link/blog/czyszczenie-stolu-drukarki.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#0f172a;--muted:#64748b;--accent:#0ea5e9;--accent2:#0b5394;--border:#e2e8f0;--card:#ffffff;--bg:#f8fafc}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);line-height:1.65}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 20px 60px}
+.crumbs{font-size:13px;color:var(--muted);margin-bottom:18px}
+.crumbs a{color:var(--accent);text-decoration:none}
+h1{font-size:34px;line-height:1.2;font-weight:800;letter-spacing:-.5px;margin-bottom:14px}
+.meta{color:var(--muted);font-size:14px;margin-bottom:22px;display:flex;gap:16px;flex-wrap:wrap}
+.hero-img{width:100%;border-radius:14px;margin-bottom:26px}
+h2{font-size:24px;font-weight:800;margin:34px 0 12px;letter-spacing:-.3px;line-height:1.3}
+h3{font-size:19px;font-weight:700;margin:26px 0 10px}
+p{margin-bottom:16px}
+ul,ol{margin:0 0 18px 22px}
+li{margin-bottom:8px}
+.box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin:20px 0}
+.box.cta{background:linear-gradient(135deg,#0ea5e9,#0b5394);color:#fff;border:none;text-align:center;padding:28px}
+.box.cta h3{color:#fff;font-size:22px;margin-bottom:8px}
+.box.cta p{color:#e0f2fe;font-size:15px}
+.btn{display:inline-block;background:#fff;color:#0b5394;font-weight:800;padding:13px 30px;border-radius:10px;text-decoration:none;font-size:16px;margin-top:14px}
+.tip table{width:100%;border-collapse:collapse;margin:14px 0}
+.tip td,.tip th{border:1px solid var(--border);padding:10px 12px;font-size:14px;text-align:left}
+.tip th{background:#f1f5f9;font-weight:700}
+blockquote{border-left:4px solid var(--accent);background:var(--card);padding:4px 20px;font-size:17px;margin:20px 0;font-style:italic}
+.related h3{font-size:21px;margin:44px 0 16px}
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.rel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;text-decoration:none;color:var(--fg);display:block}
+.rel img{width:100%;height:120px;object-fit:cover}
+.rel .b{padding:12px 14px}
+.rel .b strong{font-size:15px;display:block;margin-bottom:4px;line-height:1.4}
+.rel .b span{color:var(--muted);font-size:13px}
+footer{background:#0f172a;color:#94a3b8;text-align:center;padding:24px;font-size:13px}
+footer a{color:#cbd5e1;text-decoration:none}
+@media(max-width:600px){h1{font-size:26px}h2{font-size:20px}}
+@media(max-width:760px){table{display:block;overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
+th,td{word-break:break-word}h1{font-size:24px}h2{font-size:19px}h3{font-size:16.5px}.wrap{padding:0 16px}}
+.tb{display:flex;align-items:center;gap:26px;background:#0B1220;border-bottom:1px solid rgba(255,255,255,.09);padding:0 28px;height:66px;position:sticky;top:0;z-index:900}
+.tb .brand{display:flex;align-items:center;gap:11px;text-decoration:none}
+.tb .chip{background:#fff;border-radius:8px;padding:5px 10px;display:flex;align-items:center}
+.tb .chip img{height:34px;width:auto;display:block}
+.tb nav.nk{display:flex;gap:1px;align-items:center;margin-left:10px;flex:1;flex-wrap:wrap}
+.tb nav.nk a{color:#93A5C6;text-decoration:none;font-weight:500;font-size:13.5px;padding:7px 13px;border-radius:7px;white-space:nowrap}
+.tb nav.nk a:hover{color:#fff;background:rgba(255,255,255,.06)}
+.tb nav.nk a.active{color:#fff;background:rgba(43,92,230,.28)}
+.tb .acts{display:flex;gap:8px;align-items:center;margin-left:auto}
+.tb a.btn{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:8px;font-weight:600;font-size:13px;border:1px solid rgba(255,255,255,.16);color:#DCE4F2;background:transparent;text-decoration:none}
+.tb a.btn:hover{border-color:rgba(255,255,255,.4);color:#fff}
+.tb a.btn.pri{background:#2B5CE6;border-color:#2B5CE6;color:#fff}
+.tb button.bur{display:none;background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff;font-size:17px;border-radius:7px;cursor:pointer;padding:5px 11px}
+@media(max-width:1020px){.tb nav.nk{display:none;flex-direction:column;position:absolute;top:66px;left:0;right:0;background:#0B1220;padding:10px 20px 16px;z-index:901;gap:2px}
+.tb nav.nk.open{display:flex}.tb nav.nk a{width:100%;text-align:left;padding:11px 12px}.tb button.bur{display:inline-block}}
+</style>
+</head>
+<body>
+<header class="tb"><a class="brand" href="/"><span class="chip"><img src="/logo.png?v=83" alt="3DFILE.link"></span></a>
+<nav class="nk" id="navLinks"><a href="/">Hosting 3D</a><a href="/#discover">Odkrywaj</a><a href="/drukuje">Wydrukuj u nas</a><a href="/#hiw">Jak to działa</a><a href="/#faq">Pomoc FAQ</a><a href="/blog.html" class="active">Blog</a><a href="/projektowanie.html">Projektowanie</a><a href="/kontakt">Kontakt</a></nav>
+<div class="acts"><a class="btn" href="/">Zaloguj</a><a class="btn pri" href="/">Załóż konto</a><button class="bur" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">&#9776;</button></div>
+</header>
+<div class="wrap">
+  <div class="crumbs"><a href="/">Strona główna</a> › <a href="/blog.html">Blog</a> › <span>Wiedza</span></div>
+  <h1>Czyszczenie stołu drukarki — PEI, tekstrom, klej</h1>
+  <div class="meta"><span>01.10.2026</span><span>Zespół 3DFILE.link</span><span>6 min czytania</span></div>
+  <img src="/asset/blog/cover-czyszczenie-stolu-drukarki.svg" alt="Czyszczenie stołu drukarki — PEI, tekstrom, klej" class="hero-img" loading="lazy">
+
+
+<p>Pierwsza warstwa odchodzi w jednym rogu, reszta trzyma. Winowajca prawie zawsze: <strong>zatłuszczony stół</strong>, nie kalibracja. Odcisk palca na PEI to warstwa tłuszczu, na której filament nie przylega. Protokół czyszczenia zajmuje 2 minuty i rozwiązuje większość problemów adhezji.</p>
+<h2>Protokół podstawowy (raz na kilka wydruków)</h2>
+<ol>
+<li>Zdejmij płytę (albo pracuj na miejscu), przetrzyj <strong>IPA 70–99%</strong> na papierowym ręczniku bez fibry.</li>
+<li>Zetrzyj pozostałości warstwy kleju w sztyfcie (jeśli używałeś) — ciepła woda z płynem do naczyń, szmatka, osuszyć.</li>
+<li>Na koniec jeszcze raz IPA i nie dotykaj powierzchni palcami (trzymaj za krawędzie).</li>
+</ol>
+<h2>Pełna regeneracja (co kilka miesięcy / po lepkości)</h2>
+<ul>
+<li><strong>PEI proszkowy (Bambu, Prusa)</strong> — mydło + ciepła woda + miękka gąbka, do zniknięcia „smugi". Unikaj acetonu na PEI proszkowym (matowienie).</li>
+<li><strong>PEI foliowy (textured)</strong> — IPA na co dzień; co miesiąc aceton na chwilę odnowi powierzchnię (tylko folie zkalybkowane na acetone — sprawdź kartę produktu).</li>
+<li><strong>Szklane / epoxydowe płytki</strong> — mydło, potem IPA; klej w sztyfcie na szkło jako rozdzielacz dla PETG.</li>
+</ul>
+<h2>Kiedy to NIE stół</h2>
+<ul>
+<li><strong>Z-offset za wysoko</strong> — linie pierwszej warstwy nie sklejają się (widoczne „makaroniki" między pasmami). Trzeba kalibracji, nie mycia.</li>
+<li><strong>Temperatura stołu za niska</strong> — PLA 55–60°C, PETG 70–80°C, ABS 90–100°C. Zimny stół = skurcz krawędzi = odlepienie rogu.</li>
+<li><strong>Brak draftu / przeciąg</strong> — otwarta drukarka w przeciągu odcina rogi wydruku ASA/ABS niezależnie od czystości.</li>
+<li><strong>Zanurzony brud</strong> — resztki filamentu na płycie tworzą nierówności; wyrównanie płaszczyzny (bed mesh) się sypie.</li>
+</ul>
+<h2>Klej w sztyfcie — kiedy ma sens</h2>
+<p>Nie jako „klejenie", tylko jako <strong>warstwa rozdzielająca</strong>: PETG na gładkim PEI potrafi przykleić się na trwałe i wyrwać powłokę. Cienka warstwa kleju (nasączona gąbka, równa powierzchnia) odspina wydruk i chroni płytę. Do PLA na PEI zwykle zbędny.</p>
+<h2>Czego nie robić</h2>
+<ul>
+<li>Aceton na PEI proszkowym i płytkach bez oznaczenia „acetone-safe".</li>
+<li>Drucianki i szorstkie gąbki — rysy łapią filament i każdy wydruk ma ślad.</li>
+<li>Spraye adhezyjne „na zapas" — osadzają się na dyszy i czujniku; do trudnych przypadków (PA, TPU) celowane, nie profilaktycznie.</li>
+</ul>
+<h2>Najczęściej zadawane pytania</h2>
+<h3>IPA 70% czy 99%?</h3>
+<p>99% lepszy (mniej wody = mniej smug), ale 70% działa — problemem jest tłuszcz, nie procenty. Ważne: ręcznik bez włókien, jeden kierunek wycierania.</p>
+<h3>Jak często czyścić?</h3>
+<p>Przy regularnym druku — co 5–10 wydruków lub zawsze, gdy pierwsza warstwa „nie złapie" w rogu. Po dotknięciu powierzchni — od razu.</p>
+<h3>Czy mogę drukować na ciepłym stole z IPA?</h3>
+<p>IPA paruje szybko, ale na rozgrzanym stole paruje natychmiast i zostawia smugę. Czyść na zimno, potem grzej.</p>
+<div class="box cta"><h3>Chcesz wydruk ten plik u nas?</h3><p>Wgraj plik na /zamow — wycena w 3 sekundy, bez rejestracji. Bambu Lab P1S, Gdańsk Osowa.</p><a class="btn" href="/zamow">Zamów wydruk</a></div>
+
+
+  <div class="related">
+    <h3>← Przeczytaj też</h3>
+    <div class="rel-grid">
+      <a class="rel" href="/blog/pierwsza-warstwa-kalibracja.html"><img src="/asset/blog/cover-pierwsza-warstwa-kalibracja.svg" alt=""><div class="b"><strong>Pierwsza warstwa</strong><span>Z-offset i live-Z</span></div></a>
+      <a class="rel" href="/blog/smarowanie-i-czyszczenie-prowadnic.html"><img src="/asset/blog/cover-smarowanie-i-czyszczenie-prowadnic.svg" alt=""><div class="b"><strong>Konserwacja prowadnic</strong><span>smary i interwały</span></div></a>
+      <a class="rel" href="/blog/defects-druku-diagnostyka.html"><img src="/asset/blog/cover-defects-druku-diagnostyka.svg" alt=""><div class="b"><strong>Diagnostyka defektów</strong><span>co poszło nie tak</span></div></a>
+      
+    </div>
+  </div>
+</div>
+<footer>© 2026 3DFILE.link — <a href="/drukuje">druk 3D na życzenie</a> · <a href="/blog.html">Blog</a> · <a href="/projektowanie.html">Projektowanie</a> · <a href="/kontakt">Kontakt</a> · <a href="/prywatnosc.html">Prywatność</a></footer>
+<script>document.addEventListener('click',function(ev){var nl=document.querySelector('.nav-links');if(nl&&nl.classList.contains('open')&&ev.target.closest('.nav-links a')){nl.classList.remove('open');}});</script>
+<script src="/asset/ev.js?v=4" defer></script>
+</body>
+</html>

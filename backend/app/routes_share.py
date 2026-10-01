@@ -258,6 +258,7 @@ __JSON_LD__
       <option value="off">__Q_OFF__</option>
     </select>
     <a class="btn btn-primary" href="#" id="dlBtn" onclick="convertAndDownload('__UUID__');return false">⬇ __DOWNLOAD_BTN__</a>
+    <a class="btn btn-secondary" href="/api/download/__UUID__?format=stl&token=__TOKEN__" title="__ORIGINAL_TITLE__">⬇ __ORIGINAL_BTN__</a>
     <button class="btn btn-secondary" onclick="showEmbed('__TOKEN__')">⧉ __EMBED_BTN__</button>
     <a class="btn" style="background:#2B5CE6;color:#fff" href="/zamow?job=__UUID__">🖨 __PRINT_CTA__</a>
   </div>
@@ -609,6 +610,7 @@ def share_page(token: str, request: Request, db: Session = Depends(get_db)):
         token=token,
         print_cta=("Wydrukuj ten model — od 10 zł" if is_pl else "Print this model — from 10 PLN"),
         download_btn="Pobierz STEP" if is_pl else "Download STEP",
+        original_btn=("Pobierz oryginał" if is_pl else "Download original"),
         embed_btn="Osadź" if is_pl else "Embed",
         fmt_stl="STL (uniwersalny)" if is_pl else "STL (universal)",
         fmt_obj="OBJ (z teksturami)" if is_pl else "OBJ (with textures)",

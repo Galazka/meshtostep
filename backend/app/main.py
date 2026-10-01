@@ -334,6 +334,11 @@ def kontakt_page():
     from fastapi.responses import FileResponse
     return FileResponse(str(FRONTEND_DIR / "kontakt.html"))
 
+@app.get("/projektowanie", response_class=HTMLResponse, include_in_schema=False)
+def projektowanie_page():
+    from fastapi.responses import FileResponse
+    return FileResponse(str(FRONTEND_DIR / "projektowanie.html"))
+
 @app.get("/konto", response_class=HTMLResponse, include_in_schema=False)
 def konto_page():
     from fastapi.responses import FileResponse

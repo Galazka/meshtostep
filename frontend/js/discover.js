@@ -10,6 +10,12 @@ function doDiscover(more){
     const sort = document.getElementById('discoverSort').value || 'latest';
     const params = new URLSearchParams({q: q, sort: sort, offset: discoverOffset, limit: 24});
     if(_activeTag) params.set('tag', _activeTag);
+    try{
+      var fmtSel = document.getElementById('discoverFmt');
+      var sizeSel = document.getElementById('discoverSize');
+      if(fmtSel && fmtSel.value) params.set('fmt', fmtSel.value);
+      if(sizeSel && sizeSel.value && +sizeSel.value > 0) params.set('max_mb', sizeSel.value);
+    }catch(e){}
     const grid = document.getElementById('discoverGrid');
     if(!more) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:24px">Ładowanie…</div>';
     fetch('/api/models?'+params.toString()).then(function(r){

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<script>window.__APP_V='110';(function(){try{var k='appV',s=sessionStorage.getItem(k);if(s&&s!=='110'){sessionStorage.setItem(k,'110');if(window.caches&&caches.keys){caches.keys().then(function(a){return Promise.all(a.map(function(n){return caches.delete(n)}))}).then(function(){location.reload()});return}sessionStorage.setItem(k,'110')}catch(e){}})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Druk 3D w prototypowaniu maszyn i urządzeń | 3DFILE.link</title>
+<meta name="description" content="Druk 3D w prototypach: dobór materiału (PLA-CF, PETG, PA12), tolerancje pasowań, inserty, testy funkcjonalne i kiedy przejść na CNC.">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="https://3dfile.link/blog/druk-3d-w-prototypowaniu-maszyn.html">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Druk 3D w prototypowaniu maszyn i urządzeń">
+<meta property="og:description" content="Jak prototypować maszyny drukiem 3D: wybór materiału pod obciążenia, tolerancje pasowań, inserty gwintowe, zawiasy print-in-place i koszty iteracji vs CNC.">
+<meta property="og:image" content="https://3dfile.link/asset/blog/cover-druk-3d-w-prototypowaniu-maszyn.svg">
+<meta property="og:site_name" content="3DFILE.link">
+<meta property="og:url" content="https://3dfile.link/blog/druk-3d-w-prototypowaniu-maszyn.html">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--fg:#0f172a;--muted:#64748b;--accent:#0ea5e9;--accent2:#0b5394;--border:#e2e8f0;--card:#ffffff;--bg:#f8fafc}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,sans-serif;color:var(--fg);background:var(--bg);line-height:1.65}
+.wrap{max-width:1120px;margin:0 auto;padding:34px 20px 60px}
+.crumbs{font-size:13px;color:var(--muted);margin-bottom:18px}
+.crumbs a{color:var(--accent);text-decoration:none}
+h1{font-size:34px;line-height:1.2;font-weight:800;letter-spacing:-.5px;margin-bottom:14px}
+.meta{color:var(--muted);font-size:14px;margin-bottom:22px;display:flex;gap:16px;flex-wrap:wrap}
+.hero-img{width:100%;border-radius:14px;margin-bottom:26px}
+h2{font-size:24px;font-weight:800;margin:34px 0 12px;letter-spacing:-.3px;line-height:1.3}
+h3{font-size:19px;font-weight:700;margin:26px 0 10px}
+p{margin-bottom:16px}
+ul,ol{margin:0 0 18px 22px}
+li{margin-bottom:8px}
+.box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;margin:20px 0}
+.box.cta{background:linear-gradient(135deg,#0ea5e9,#0b5394);color:#fff;border:none;text-align:center;padding:28px}
+.box.cta h3{color:#fff;font-size:22px;margin-bottom:8px}
+.box.cta p{color:#e0f2fe;font-size:15px}
+.btn{display:inline-block;background:#fff;color:#0b5394;font-weight:800;padding:13px 30px;border-radius:10px;text-decoration:none;font-size:16px;margin-top:14px}
+.tip table{width:100%;border-collapse:collapse;margin:14px 0}
+.tip td,.tip th{border:1px solid var(--border);padding:10px 12px;font-size:14px;text-align:left}
+.tip th{background:#f1f5f9;font-weight:700}
+blockquote{border-left:4px solid var(--accent);background:var(--card);padding:4px 20px;font-size:17px;margin:20px 0;font-style:italic}
+.related h3{font-size:21px;margin:44px 0 16px}
+.rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.rel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;text-decoration:none;color:var(--fg);display:block}
+.rel img{width:100%;height:120px;object-fit:cover}
+.rel .b{padding:12px 14px}
+.rel .b strong{font-size:15px;display:block;margin-bottom:4px;line-height:1.4}
+.rel .b span{color:var(--muted);font-size:13px}
+footer{background:#0f172a;color:#94a3b8;text-align:center;padding:24px;font-size:13px}
+footer a{color:#cbd5e1;text-decoration:none}
+@media(max-width:600px){h1{font-size:26px}h2{font-size:20px}}
+@media(max-width:760px){table{display:block;overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
+th,td{word-break:break-word}h1{font-size:24px}h2{font-size:19px}h3{font-size:16.5px}.wrap{padding:0 16px}}
+.tb{display:flex;align-items:center;gap:26px;background:#0B1220;border-bottom:1px solid rgba(255,255,255,.09);padding:0 28px;height:66px;position:sticky;top:0;z-index:900}
+.tb .brand{display:flex;align-items:center;gap:11px;text-decoration:none}
+.tb .chip{background:#fff;border-radius:8px;padding:5px 10px;display:flex;align-items:center}
+.tb .chip img{height:34px;width:auto;display:block}
+.tb nav.nk{display:flex;gap:1px;align-items:center;margin-left:10px;flex:1;flex-wrap:wrap}
+.tb nav.nk a{color:#93A5C6;text-decoration:none;font-weight:500;font-size:13.5px;padding:7px 13px;border-radius:7px;white-space:nowrap}
+.tb nav.nk a:hover{color:#fff;background:rgba(255,255,255,.06)}
+.tb nav.nk a.active{color:#fff;background:rgba(43,92,230,.28)}
+.tb .acts{display:flex;gap:8px;align-items:center;margin-left:auto}
+.tb a.btn{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;border-radius:8px;font-weight:600;font-size:13px;border:1px solid rgba(255,255,255,.16);color:#DCE4F2;background:transparent;text-decoration:none}
+.tb a.btn:hover{border-color:rgba(255,255,255,.4);color:#fff}
+.tb a.btn.pri{background:#2B5CE6;border-color:#2B5CE6;color:#fff}
+.tb button.bur{display:none;background:transparent;border:1px solid rgba(255,255,255,.2);color:#fff;font-size:17px;border-radius:7px;cursor:pointer;padding:5px 11px}
+@media(max-width:1020px){.tb nav.nk{display:none;flex-direction:column;position:absolute;top:66px;left:0;right:0;background:#0B1220;padding:10px 20px 16px;z-index:901;gap:2px}
+.tb nav.nk.open{display:flex}.tb nav.nk a{width:100%;text-align:left;padding:11px 12px}.tb button.bur{display:inline-block}}
+</style>
+</head>
+<body>
+<header class="tb"><a class="brand" href="/"><span class="chip"><img src="/logo.png?v=83" alt="3DFILE.link"></span></a>
+<nav class="nk" id="navLinks"><a href="/">Hosting 3D</a><a href="/#discover">Odkrywaj</a><a href="/drukuje">Wydrukuj u nas</a><a href="/#hiw">Jak to działa</a><a href="/#faq">Pomoc FAQ</a><a href="/blog.html" class="active">Blog</a><a href="/projektowanie.html">Projektowanie</a><a href="/kontakt">Kontakt</a></nav>
+<div class="acts"><a class="btn" href="/">Zaloguj</a><a class="btn pri" href="/">Załóż konto</a><button class="bur" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">&#9776;</button></div>
+</header>
+<div class="wrap">
+  <div class="crumbs"><a href="/">Strona główna</a> › <a href="/blog.html">Blog</a> › <span>Wiedza</span></div>
+  <h1>Druk 3D w prototypowaniu maszyn i urządzeń</h1>
+  <div class="meta"><span>01.10.2026</span><span>Zespół 3DFILE.link</span><span>9 min czytania</span></div>
+  <img src="/asset/blog/cover-druk-3d-w-prototypowaniu-maszyn.svg" alt="Druk 3D w prototypowaniu maszyn i urządzeń" class="hero-img" loading="lazy">
+
+
+<p>Prototyp maszyny to iteracja: projektujesz, montujesz, widzisz błąd, poprawiasz. Druk 3D skraca cykl z tygodni (obróbka zewnętrzna) do godzin — ale tylko jeśli materiał i tolerancje dobrane pod funkcję, nie pod „co akurat w drukarce".</p>
+<h2>Materiał pod obciążenie</h2>
+<div class="box tip"><table><thead><tr><th>Zastosowanie</th><th>Materiał startowy</th><th>Dlaczego</th></tr></thead><tbody><tr><td>Obudowy, pokrywy, makiety</td><td>PLA / PLA Matte</td><td>tanio, szybko, łatwo szlifować i malować</td></tr><tr><td>Funkcjonalne wsporniki, uchwyty</td><td>PETG / PLA-CF</td><td>odporność na uderzenia, mniej kruchy niż PLA</td></tr><tr><td>Elementy w komorze cieplnej (do 80°C)</td><td>ASA / ABS</td><td>odporność temperaturowa, skurcz wymaga obudowy</td></tr><tr><td>Wysokie obciążenia, gwinty robocze</td><td>PA12-CF / PAHT-CF</td><td>sztywność + wytrzymałość, niski skurcz</td></tr><tr><td>Uszczelki, wąż, poduszki</td><td>TPU 95A</td><td>elastyczność, odporność na zmęczenie</td></tr></tbody></table></div>
+<h2>Tolerancje i pasowania</h2>
+<p>FDM realnie trzyma ±0,2 mm na wymiarze zależnym od maszyny i ±0,1 mm na dobrze skalibrowanej. Projektuj pasowania: otwór pod oś Ø8 mm drukuj Ø8,15–8,25 mm; kołek wciskany — Ø7,95 mm. Test pasowania wydrukuj z tej samej partii filamentu, co finalny element: partie różnią się średnicą o ±0,03 mm, a to 0,03 mm decyduje o wcisku.</p>
+<h2>Inserty zamiast drukowanych gwintów</h2>
+<p>Gwint M3 w PLA wytrzyma 2–3 montaże. Insert mosiężny wciskany na gorąco (M3, M4, M5) daje gwint trwały jak w elemencie wtryskiwanym. Projektuj gniazda pod konkretne inserty (typowe: Ø4,3 mm otwór, głębokość 4,6 mm pod M3×5,7). Więcej w artykule o insertach gwintowych.</p>
+<h2>Zawiasy i mechanizmy bez montażu</h2>
+<p>Print-in-place zawiasy i przekładnie drukują się w całości — luzy 0,3–0,5 mm, orientacja osi pozioma, materiał PETG na tarcie. Do prototypów ruchomych części to środek na sprawdzanie kinematyki bez warsztatu.</p>
+<h2>Kiedy przejść na CNC</h2>
+<p>Jeśli element pracuje w temperaturze >100°C, wymaga tolerancji ±0,05 mm, jest mocowany śrubami napięciowymi (prężenie wstępne) albo jest częścią bezpieczeństwa — CNC. Druk 3D trzyma prototyp i małe serie; produkcja seryjna to wtrysk z formy frezowanej z prototypu zatwierdzonego.</p>
+<h2>Koszty iteracji — realny przykład</h2>
+<p>Uchwyt czujnika: wydruk PLA 22 g = filament 1,74 zł + energia 0,30 zł + 0,8 h druku. Iteracja 5 wersji = ~10 zł i 4 godziny robocze. Równoważna obróbka z aluminium: 250–400 zł i 5–7 dni. Druk nie wygrywa ceną finalnej części — wygrywa czasem i kosztem pomyłki.</p>
+<h2>Najczęściej zadawane pytania</h2>
+<h3>Ile iteracji „opłaca się" zanim zleci się CNC?</h3>
+<p>Do stabilnej geometrii — niemal zawsze drukuj. Po zamrożeniu projektu wersja CNC potwierdza tolerancje, zanim zlecisz serię.</p>
+<h3>Czy prototyp z PLA „wystarczy" do testów wytrzymałościowych?</h3>
+<p>Do testów funkcjonalnych (czy pasuje, czy działa mechanizm) tak. Do testów obciążeniowych użyj materiału docelowego — PLA pełza pod obciążeniem długotrwałym nawet w temperaturze pokojowej.</p>
+<h3>Wydruk czy frezowanie na pierwszą wersję?</h3>
+<p>Wydruk. Wersja CNC ma sens, gdy projekt jest stabilny; pierwszy prototyp prawie zawsze wymaga poprawek.</p>
+<div class="box cta"><h3>Chcesz wydruk ten plik u nas?</h3><p>Wgraj plik na /zamow — wycena w 3 sekundy, bez rejestracji. Bambu Lab P1S, Gdańsk Osowa.</p><a class="btn" href="/zamow">Zamów wydruk</a></div>
+
+
+  <div class="related">
+    <h3>← Przeczytaj też</h3>
+    <div class="rel-grid">
+      <a class="rel" href="/blog/cnc-prototyp-vs-druk-3d.html"><img src="/asset/blog/cover-cnc-prototyp-vs-druk-3d.svg" alt=""><div class="b"><strong>CNC vs druk 3D</strong><span>kiedy co</span></div></a>
+      <a class="rel" href="/blog/jak-zrobic-dokladna-kopie-czesci.html"><img src="/asset/blog/cover-jak-zrobic-dokladna-kopie-czesci.svg" alt=""><div class="b"><strong>Kopia części</strong><span>od pomiaru do wydruku</span></div></a>
+      <a class="rel" href="/blog/inserty-gwintowe-druk-3d.html"><img src="/asset/blog/cover-inserty-gwintowe-druk-3d.svg" alt=""><div class="b"><strong>Inserty gwintowe</strong><span>trwały gwint w druku</span></div></a>
+      
+    </div>
+  </div>
+</div>
+<footer>© 2026 3DFILE.link — <a href="/drukuje">druk 3D na życzenie</a> · <a href="/blog.html">Blog</a> · <a href="/projektowanie.html">Projektowanie</a> · <a href="/kontakt">Kontakt</a> · <a href="/prywatnosc.html">Prywatność</a></footer>
+<script>document.addEventListener('click',function(ev){var nl=document.querySelector('.nav-links');if(nl&&nl.classList.contains('open')&&ev.target.closest('.nav-links a')){nl.classList.remove('open');}});</script>
+<script src="/asset/ev.js?v=4" defer></script>
+</body>
+</html>

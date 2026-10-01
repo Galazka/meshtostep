@@ -329,6 +329,58 @@
       </div>
     </section>
 
+    <!-- Quick quote calculator -->
+    <section class="reveal" id="kalkulator" style="max-width:1080px;margin:0 auto 40px;padding:0 20px">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:26px">
+        <div class="section-head" style="margin-bottom:16px"><span class="section-kicker">Kalkulator</span><h2 style="font-size:22px;margin-top:6px">Szybka wycena bez wgrywania pliku</h2></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end" class="qq-grid">
+          <div>
+            <label style="display:block;font-size:12.5px;font-weight:600;margin-bottom:4px">Materiał</label>
+            <select id="qqMat" onchange="qqCalc()" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:#fff"></select>
+          </div>
+          <div>
+            <label style="display:block;font-size:12.5px;font-weight:600;margin-bottom:4px">Objętość modelu (cm³)</label>
+            <input type="number" id="qqVol" min="0" step="0.1" placeholder="np. 30" onchange="qqCalc()" oninput="qqCalc()" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px">
+          </div>
+          <div>
+            <button type="button" onclick="location.href='/zamow'" style="padding:11px 22px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap">Zamów wydruk →</button>
+          </div>
+        </div>
+        <div id="qqResult" style="margin-top:14px;font-size:14px;color:var(--muted)">Podaj materiał i objętość, aby zobaczyć orientacyjną cenę.</div>
+        <div style="margin-top:10px;font-size:12.5px;color:var(--muted)">Masz plik? <a href="/zamow" style="color:var(--accent);font-weight:600">Wgraj go na /zamow</a> — wycena dokładna w 3 sekundy, z wymiarami i wagą.</div>
+      </div>
+    </section>
+    <script>
+    var QQ_MATS={}, QQ_MARZA=null;
+    function qqCalc(){
+      var vol=parseFloat((document.getElementById('qqVol')||{}).value||0);
+      var mat=document.getElementById('qqMat').value;
+      var r=document.getElementById('qqResult');
+      if(!vol||vol<=0){r.textContent='Podaj materiał i objętość, aby zobaczyć orientacyjną cenę.';r.style.color='var(--muted)';return;}
+      if(!QQ_MATS[mat]){r.textContent='Ładowanie cen materiałów…';return;}
+      var grams=vol*(mat.indexOf('ASA')===0?1.07:mat.indexOf('PETG')===0?1.27:1.24), priceKg=QQ_MATS[mat]||79;
+      var filament=(grams/1000)*priceKg;
+      var hours=Math.max(0.5, vol/((mat.indexOf('PETG')===0?240:mat.indexOf('ASA')===0?220:280)*3600/1000000))+0.5;
+      var kwh=hours*150/1000, energia=kwh*1.50;
+      var koszt=filament+energia;
+      var cena=Math.max(10, koszt/(1-0.68));
+      r.innerHTML='Orientacyjna cena: <b style="font-size:18px;color:var(--fg)">'+cena.toFixed(2)+' zł</b> · czas druku ≈ '+hours.toFixed(1)+' h · materiał ≈ '+grams.toFixed(0)+' g (przy 15% wypełnieniu; cena końcowa po wgraniu pliku)';
+      r.style.color='var(--fg)';
+    }
+    fetch('/api/pricing/public').then(function(x){return x.json()}).then(function(cfg){
+      try{
+        var mats=cfg.materials||{};
+        Object.keys(mats).forEach(function(k){
+          var v=mats[k];
+          QQ_MATS[k]=parseFloat((v&&v.price_kg!=null)?v.price_kg:v)||79;
+        });
+        var sel=document.getElementById('qqMat');
+        sel.innerHTML=Object.keys(QQ_MATS).map(function(k){return '<option>'+k+'</option>'}).join('');
+        qqCalc();
+      }catch(e){}
+    }).catch(function(){});
+    </script>
+
     <!-- Materials -->
         <section class="materials-print reveal" id="materials"><span id="materialy"></span>
           <div class="section-head"><span class="section-kicker" data-i18n="matKicker">Materiały</span><h2 data-i18n="matTitle">Materiały i kolory</h2>

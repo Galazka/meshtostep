@@ -71,6 +71,8 @@ def search_models(
     q: str = Query("", description="search query"),
     tag: str = Query("", description="filter by tag"),
     sort: str = Query("latest", description="latest|popular"),
+    fmt: str = Query("", description="filter by file extension (stl/obj/3mf)"),
+    max_mb: float = Query(0, ge=0, description="max file size in MB (0 = no limit)"),
     limit: int = Query(24, ge=1, le=60),
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
@@ -89,6 +91,11 @@ def search_models(
         )
     if tag:
         query = query.filter(models.Job.tags.ilike(f"%{tag}%"))
+    fmt_clean = (fmt or "").strip().lower().lstrip(".")
+    if fmt_clean:
+        query = query.filter(models.Job.original_filename.ilike(f"%.{fmt_clean}"))
+    if max_mb and max_mb > 0:
+        query = query.filter(models.Job.file_size_bytes <= int(max_mb * 1024 * 1024))
     if sort == "popular":
         query = query.order_by(models.Job.views.desc(), models.Job.created_at.desc())
     else:
@@ -109,6 +116,8 @@ def search_models(
             "youtube_url": j.youtube_url,
             "visibility": j.visibility,
             "views": j.views or 0,
+            "file_size_mb": round((j.file_size_bytes or 0)/1048576, 1),
+            "orig_ext": (j.original_filename.rsplit(".",1)[-1].lower() if "." in (j.original_filename or "") else ""),
             "likes": j.likes or 0,
             "faces": j.result_faces,
             "dims_mm": getattr(j, "dims_mm", None),

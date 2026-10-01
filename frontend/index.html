@@ -488,6 +488,7 @@
     <a href="/#hiw" data-i18n="navHow" onclick="if(location.pathname==='/'){go('hiw');return false}">Jak to działa</a>
     <a href="/#faq" data-i18n="navFAQ" onclick="if(location.pathname==='/'){go('faq');return false}">FAQ</a>
     <a href="/blog.html" data-i18n="navBlog">Blog</a>
+    <a href="/projektowanie.html" data-i18n="navDesign">Projektowanie</a>
     <a href="/kontakt" data-i18n="navContact">Kontakt</a>
     <span class="nav-auth-mobile" id="navAuthMobile">
       <button onclick="showModal('login');closeNav()" data-i18n="navLogin">Zaloguj</button>
@@ -909,6 +910,18 @@
         <option value="latest" data-i18n="discoverSortLatest">Najnowsze</option>
         <option value="popular" data-i18n="discoverSortPopular">Popularne</option>
       </select>
+      <select id="discoverFmt" onchange="doDiscover()">
+        <option value="">Format: wszystkie</option>
+        <option value="stl">STL</option>
+        <option value="obj">OBJ</option>
+        <option value="3mf">3MF</option>
+      </select>
+      <select id="discoverSize" onchange="doDiscover()">
+        <option value="0">Rozmiar: dowolny</option>
+        <option value="5">do 5 MB</option>
+        <option value="20">do 20 MB</option>
+        <option value="100">do 100 MB</option>
+      </select>
       <button class="nav-btn nav-btn-primary" onclick="doDiscover()" data-i18n="discoverSearchBtn">Szukaj</button>
     </div>
     <div class="discover-tags" id="discoverTags"></div>
@@ -1103,6 +1116,7 @@
       <h4>Społeczność &amp; Pomoc</h4>
       <a href="#" onclick="go('faq');return false">Status maszyn &amp; FAQ</a>
       <a href="/blog.html" data-i18n="navBlog">Blog</a>
+      <a href="/projektowanie.html" data-i18n="navDesign">Projektowanie</a>
       <a href="/kontakt" data-i18n="navContact">Kontakt</a>
       <a href="/prywatnosc.html">Prywatność</a>
     </div>
