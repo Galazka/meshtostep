@@ -30,6 +30,45 @@ def contact_info():
             "pickup_note": "Odbiór osobisty po wcześniejszym umówieniu — drukujesz i odbierasz bez kosztów wysyłki."}
 
 
+def _sign(name: str) -> str:
+    """Krótki podpis HMAC dla linku pobierania załącznika (24h)."""
+    import hmac, hashlib, time
+    exp = int(time.time()) + 86400
+    msg = f"{name}:{exp}".encode()
+    sig = hmac.new(settings.SECRET_KEY.encode(), msg, hashlib.sha256).hexdigest()[:16]
+    return f"{exp}-{sig}"
+
+
+def _contact_link(name: str) -> str:
+    return f"https://3dfile.link/api/contact-files/{_sign(name)}/{name}"
+
+
+@router.get("/api/contact-files/{sig}/{name}")
+def contact_file_download(sig: str, name: str):
+    """Pobranie załącznika po podpisanym linku (z maila) — bez logowania, 24h."""
+    import hmac, hashlib, time
+    from fastapi.responses import FileResponse
+    from pathlib import Path
+    safe = name.replace("..", "").replace("/", "").replace("\\", "")
+    if not safe or safe != name:
+        raise HTTPException(400, "Zła nazwa")
+    try:
+        exp_s, sig_got = sig.split("-", 1)
+        exp = int(exp_s)
+    except Exception:
+        raise HTTPException(400, "Zły link")
+    if exp < int(time.time()):
+        raise HTTPException(410, "Link wygasł (24h) — pobierz plik z panelu admina → Zgłoszenia")
+    msg = f"{safe}:{exp}".encode()
+    sig_ok = hmac.new(settings.SECRET_KEY.encode(), msg, hashlib.sha256).hexdigest()[:16]
+    if not hmac.compare_digest(sig_ok, sig_got):
+        raise HTTPException(403, "Nieprawidłowy podpis")
+    path = Path(settings.DATA_DIR) / "contact" / safe
+    if not path.is_file():
+        raise HTTPException(404, "Plik usunięty z serwera — pobierz z panelu admina → Zgłoszenia")
+    return FileResponse(str(path), filename=safe)
+
+
 def _save_attachments(files) -> list:
     """Save uploads to DATA_DIR/contact/, return list of (original_name, path)."""
     if not files:
@@ -71,7 +110,11 @@ def contact_submit(
     att_html = ""
     if saved:
         items = "".join(f"<li>{_h(n)} ({os.path.getsize(p)//1024} KB)</li>" for n, p in saved)
-        att_html = f"<p><b>Załączniki ({len(saved)}):</b></p><ul>{items}</ul><p style='color:#64748b;font-size:12px'>Pliki zapisane na serwerze (data/contact/) — pobierz przed odpowiedzią.</p>"
+        links = "".join(
+            f"<li><a href='{_contact_link(os.path.basename(p))}'>{_h(n)}</a> ({os.path.getsize(p)//1024} KB)</li>"
+            for n, p in saved
+        )
+        att_html = f"<p><b>Załączniki ({len(saved)}) — kliknij, żeby podejrzeć/pobrać:</b></p><ul>{links}</ul><p style='color:#64748b;font-size:12px'>Linki ważne 24 h. Pliki trwale: panel admina → Zgłoszenia.</p>"
     body = (
         "<h2>Nowe zapytanie ze strony 3dfile.link</h2>"
         f"<p><b>Imię:</b> {_h(name)}</p>"

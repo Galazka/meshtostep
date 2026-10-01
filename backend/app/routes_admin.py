@@ -920,6 +920,26 @@ def admin_contact_download(name: str, admin: models.User = Depends(require_admin
     return FileResponse(str(path), filename=safe)
 
 
+@router.post("/contact-files/bulk-delete")
+def admin_contact_bulk_delete(payload: dict, admin: models.User = Depends(require_admin)):
+    """Usuń wiele załączników naraz."""
+    from pathlib import Path
+    names = payload.get("names") or []
+    if not isinstance(names, list) or not names:
+        raise HTTPException(400, "names required")
+    deleted = 0
+    d = Path(settings.DATA_DIR) / "contact"
+    for raw in names:
+        safe = str(raw).replace("..", "").replace("/", "").replace("\\", "")
+        if not safe:
+            continue
+        path = d / safe
+        if path.is_file():
+            path.unlink()
+            deleted += 1
+    return {"ok": True, "deleted": deleted}
+
+
 @router.delete("/contact-files/{name}")
 def admin_contact_delete(name: str, admin: models.User = Depends(require_admin)):
     """Usuń załącznik z formularza kontaktowego."""

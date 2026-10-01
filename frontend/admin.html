@@ -659,6 +659,11 @@
                     <div class="print-panel">
                         <h2>Zgłoszenia — załączniki z formularzy (projektowanie/kontakt)</h2>
                         <p style="font-size:13px;color:var(--text-muted)">Pliki wgrane przez klientów przy wysyłaniu zapytania. Mail z zapytaniem ma listę załączników — tutaj pobierasz pliki.</p>
+                        <div id="contactFilesBulkBar" style="display:none;align-items:center;gap:12px;padding:12px 16px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;margin-top:12px">
+                            <span style="font-weight:600;font-size:13px">Zaznaczono: <span id="contactFilesBulkCount">0</span></span>
+                            <button onclick="contactFilesBulkDelete()" style="padding:8px 16px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">🗑 Usuń zaznaczone</button>
+                            <button onclick="_contactSelected.clear();updateContactBulkBar();loadContactFiles()" style="padding:8px 16px;background:#fff;border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer">Anuluj</button>
+                        </div>
                         <div id="contactFilesList" style="margin-top:12px">Ładowanie…</div>
                     </div>
                 </div>
@@ -975,19 +980,51 @@ const I18N = {
         if (['orders','pstats','pricing','codes','gallery','reviews','reports'].includes(name)) { switchPrintTab(name); return; }
     }
     let _contactLoaded = false;
+    let _contactSelected = new Set();
+    function toggleContactSelect(name){
+        if(_contactSelected.has(name)) _contactSelected.delete(name); else _contactSelected.add(name);
+        updateContactBulkBar();
+    }
+    window.toggleContactSelect = toggleContactSelect;
+    function toggleContactAll(on){
+        window._contactAllNames = window._contactAllNames || [];
+        if(on) window._contactAllNames.forEach(n=>_contactSelected.add(n));
+        else _contactSelected.clear();
+        updateContactBulkBar(); loadContactFiles();
+    }
+    window.toggleContactAll = toggleContactAll;
+    function updateContactBulkBar(){
+        const bar=document.getElementById('contactFilesBulkBar');
+        const cnt=document.getElementById('contactFilesBulkCount');
+        if(bar&&cnt){ cnt.textContent=_contactSelected.size; bar.style.display=_contactSelected.size>0?'flex':'none'; }
+    }
+    async function contactFilesBulkDelete(){
+        if(!_contactSelected.size) return;
+        if(!confirm('Usunąć ' + _contactSelected.size + ' plików zgłoszeń? Tego się nie cofnie.')) return;
+        if(!confirm('Na pewno? Ostatnie ostrzeżenie.')) return;
+        try{
+            const r=await api('/api/admin/contact-files/bulk-delete', {method:'POST', body:{names:[..._contactSelected]}});
+            toast('Usunięto ' + r.deleted + ' plików','ok');
+            _contactSelected.clear();
+            updateContactBulkBar();
+            loadContactFiles();
+        }catch(e){ toast(e.message,'error'); }
+    }
+    window.contactFilesBulkDelete = contactFilesBulkDelete;
     async function loadContactFiles() {
         try {
             const d = await api('/api/admin/contact-files');
             const el = document.getElementById('contactFilesList');
             if (!d.files.length) { el.innerHTML = '<p style="color:var(--text-muted);font-size:14px">Brak załączników — nic jeszcze nie wgrano przez formularze.</p>'; return; }
-            el.innerHTML = '<table class="admin-table"><thead><tr><th>Nazwa</th><th>Rozmiar</th><th>Data</th><th>Akcje</th></tr></thead><tbody>' +
+            el.innerHTML = '<table class="admin-table"><thead><tr><th><input type="checkbox" onchange="toggleContactAll(this.checked)" style="width:14px;height:14px"></th><th>Nazwa</th><th>Rozmiar</th><th>Data</th><th>Akcje</th></tr></thead><tbody>' +
                 d.files.map(f => {
                     const dt = new Date(f.mtime*1000).toLocaleString(currentLang==='pl'?'pl-PL':'en-US');
                     const sz = f.size > 1048576 ? (f.size/1048576).toFixed(1)+' MB' : Math.max(1,Math.round(f.size/1024))+' KB';
-                    return '<tr><td class="cell-ellipsis">' + esc(f.name) + '</td><td>' + sz + '</td><td>' + dt + '</td>' +
+                    return '<tr><td><input type="checkbox" ' + (_contactSelected.has(f.name)?'checked':'') + ' onclick="toggleContactSelect(' + JSON.stringify(f.name).replace(/"/g,'&quot;') + ')" style="width:14px;height:14px"></td><td class="cell-ellipsis">' + esc(f.name) + '</td><td>' + sz + '</td><td>' + dt + '</td>' +
                         '<td><a class="btn-act" href="/api/admin/contact-files/' + encodeURIComponent(f.name) + '?t=' + Date.now() + '" download>Pobierz</a> ' +
                         '<button class="btn-act btn-danger" onclick="delContactFile(' + JSON.stringify(f.name).replace(/"/g,'&quot;') + ')">Usuń</button></td></tr>';
                 }).join('') + '</tbody></table>';
+            window._contactAllNames = d.files.map(f=>f.name);
         } catch (e) {
             document.getElementById('contactFilesList').innerHTML = '<p style="color:#dc2626;font-size:14px">Błąd ładowania: ' + esc(e.message) + '</p>';
         }
@@ -996,6 +1033,8 @@ const I18N = {
         if (!confirm('Usunąć plik ' + name + '? Tego się nie cofnie.')) return;
         try {
             await api('/api/admin/contact-files/' + encodeURIComponent(name), { method: 'DELETE' });
+            _contactSelected.delete(name);
+            updateContactBulkBar();
             toast('Usunięto plik', 'ok');
             loadContactFiles();
         } catch (e) { toast(e.message, 'error'); }
