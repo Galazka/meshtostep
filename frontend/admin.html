@@ -289,54 +289,8 @@
         </nav>
 
         <div class="admin-wrap">
-            <!-- STATS -->
-            <div class="stats-grid" id="statsGrid">
-                <div class="stat-card primary">
-                    <div class="stat-label" data-i18n="statUsers">Uzytkownicy</div>
-                    <div class="stat-value" id="statUsers">—</div>
-                    <div class="stat-sub" data-i18n="statUsersSub">Laczna liczba kont</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label" data-i18n="statJobs">Pliki (aktywne)</div>
-                    <div class="stat-value" id="statJobs">—</div>
-                    <div class="stat-sub" data-i18n="statJobsSub">Praca przetworzenia</div>
-                </div>
-                <div class="stat-card success">
-                    <div class="stat-label">Pamiec</div>
-                    <div class="stat-value" id="statStorage">—</div>
-                    <div class="stat-sub">Suma rozmiarow plikow</div>
-                </div>
-                <div class="stat-card warning">
-                    <div class="stat-label" data-i18n="statDownloads">Pobrania</div>
-                    <div class="stat-value" id="statDownloads">—</div>
-                    <div class="stat-sub">Laczne pobrania publiczne</div>
-                </div>
-            </div>
-
-            <!-- CHARTS -->
-            <div class="charts-row" style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin:16px 0">
-                <div class="panel" style="padding:16px">
-                    <h3 style="font-size:14px;margin-bottom:12px" data-i18n="chartUploads">Uploady (30 dni)</h3>
-                    <canvas id="chartUploads" height="120"></canvas>
-                </div>
-                <div class="panel" style="padding:16px">
-                    <h3 style="font-size:14px;margin-bottom:12px" data-i18n="chartTop">Top uploadersi</h3>
-                    <div id="topUploadersList" style="font-size:13px;color:var(--text-muted)"></div>
-                </div>
-            </div>
-            <div class="panel" id="topModelsPanel" style="padding:16px;margin-bottom:16px;display:none">
-                <h3 style="font-size:14px;margin-bottom:12px" data-i18n="chartTopModels">Najpopularniejsze modele</h3>
-                <div id="topModelsList" style="font-size:13px"></div>
-            </div>
-            <div id="userDetail" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px">
-                <div style="display:flex;justify-content:space-between;align-items:center">
-                    <h3 id="userDetailTitle">Użytkownik</h3>
-                    <button class="btn-outline" onclick="closeUserDetail()">✕</button>
-                </div>
-                <div id="userDetailBody" style="font-size:13px;color:var(--text-muted);margin-top:8px"></div>
-            </div>
             <!-- TABS -->
-            <div class="panel">
+            <div class="panel" style="position:sticky;top:8px;z-index:60;padding:0;margin-bottom:16px">
                 <div class="admin-tabs">
                                     <button class="admin-tab active" onclick="switchAdminTab('users')" data-tab="users" data-i18n="tabUsers">Uzytkownicy</button>
                                     <button class="admin-tab" onclick="switchAdminTab('jobs')" data-tab="jobs" data-i18n="tabJobs">Przetworzenia</button>
@@ -612,6 +566,45 @@
                             <p class="subtitle">Przegląd kluczowych metryk systemu</p>
                         </div>
                         <div class="panel-body padded">
+            <!-- STATS -->
+                            <div class="stats-grid" id="statsGrid">
+                                <div class="stat-card primary">
+                                    <div class="stat-label" data-i18n="statUsers">Uzytkownicy</div>
+                                    <div class="stat-value" id="statUsers">—</div>
+                                    <div class="stat-sub" data-i18n="statUsersSub">Laczna liczba kont</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-label" data-i18n="statJobs">Pliki (aktywne)</div>
+                                    <div class="stat-value" id="statJobs">—</div>
+                                    <div class="stat-sub" data-i18n="statJobsSub">Praca przetworzenia</div>
+                                </div>
+                                <div class="stat-card success">
+                                    <div class="stat-label">Pamiec</div>
+                                    <div class="stat-value" id="statStorage">—</div>
+                                    <div class="stat-sub">Suma rozmiarow plikow</div>
+                                </div>
+                                <div class="stat-card warning">
+                                    <div class="stat-label" data-i18n="statDownloads">Pobrania</div>
+                                    <div class="stat-value" id="statDownloads">—</div>
+                                    <div class="stat-sub">Laczne pobrania publiczne</div>
+                                </div>
+                            </div>
+
+                            <!-- CHARTS -->
+                            <div class="charts-row" style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin:16px 0">
+                                <div class="panel" style="padding:16px">
+                                    <h3 style="font-size:14px;margin-bottom:12px" data-i18n="chartUploads">Uploady (30 dni)</h3>
+                                    <canvas id="chartUploads" height="120"></canvas>
+                                </div>
+                                <div class="panel" style="padding:16px">
+                                    <h3 style="font-size:14px;margin-bottom:12px" data-i18n="chartTop">Top uploadersi</h3>
+                                    <div id="topUploadersList" style="font-size:13px;color:var(--text-muted)"></div>
+                                </div>
+                            </div>
+                            <div class="panel" id="topModelsPanel" style="padding:16px;margin-bottom:16px;display:none">
+                                <h3 style="font-size:14px;margin-bottom:12px" data-i18n="chartTopModels">Najpopularniejsze modele</h3>
+                                <div id="topModelsList" style="font-size:13px"></div>
+                            </div>
                             <div class="stats-grid" id="statsGridExport">
                                 <div class="stat-card primary">
                                     <div class="stat-label" data-i18n="statUsers">Użytkownicy</div>
@@ -738,7 +731,14 @@
     <!-- TOAST -->
     <div class="toast" id="toast"></div>
 
-    <script type="importmap">
+                <div id="userDetail" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <h3 id="userDetailTitle">Użytkownik</h3>
+                    <button class="btn-outline" onclick="closeUserDetail()">✕</button>
+                </div>
+                <div id="userDetailBody" style="font-size:13px;color:var(--text-muted);margin-top:8px"></div>
+            </div>
+<script type="importmap">
         {
             "imports": {
                 "three": "/vendor/three/three.module.js",
