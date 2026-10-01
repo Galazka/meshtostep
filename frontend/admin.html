@@ -1339,7 +1339,7 @@ const I18N = {
                 '<td>' + (u.job_count ?? '—') + '</td>' +
                 '<td>' + sizeStr + '</td>' +
                 '<td>' + lastActive + '</td>' +
-                '<td><button class="btn-act" onclick="event.stopPropagation();viewUserModels(' + u.id + ')" title="Podgląd modeli">👁</button> <button class="btn-act btn-danger" onclick="event.stopPropagation();deleteUserPerm(' + u.id + ','' + esc(u.email || '') + '')" title="Usuń trwale">🗑</button></td>' +
+                '<td><button class="btn-act" onclick="event.stopPropagation();viewUserModels(' + u.id + ')" title="Podgląd modeli">👁</button> <button class="btn-act btn-danger" onclick="event.stopPropagation();deleteUserPerm(' + u.id + ', ' + esc(u.email || '') + ')" title="Usuń trwale">🗑</button></td>' +
                 '</tr>' +
                 '<tr class="expand-row" id="expand-' + u.id + '"><td colspan="8">' +
                 '<div class="expand-inner" id="files-inner-' + u.id + '"><div style="padding:8px;color:var(--text-muted);font-size:13px">Kliknij strzalke aby zaladowac pliki...</div></div>' +
