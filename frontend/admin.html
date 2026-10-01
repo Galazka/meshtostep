@@ -370,7 +370,7 @@
                         <table class="admin-table" id="usersTable">
                             <thead>
                                 <tr>
-                                    <th style="width:30px"></th>
+                                    <th style="width:30px"><input type="checkbox" id="usersSelectAll" onchange="toggleUsersAll(this.checked)" style="width:14px;height:14px"></th>
                                     <th><input type="checkbox" id="jobsSelectAll" onchange="toggleJobsAll(this.checked)" style="width:14px;height:14px"></th><th>ID</th>
                                     <th data-i18n="thEmail">Email</th>
                                     <th data-i18n="thJobsCount">Pliki</th>
@@ -381,6 +381,11 @@
                             </thead>
                             <tbody id="usersBody"></tbody>
                         </table>
+                        <div id="usersBulkBar" style="display:none;align-items:center;gap:12px;padding:12px 16px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;margin-top:12px">
+                            <span style="font-weight:600;font-size:13px">Zaznaczono: <span id="usersBulkCount">0</span></span>
+                            <button onclick="usersBulkDelete()" style="padding:8px 16px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">🗑 Usuń zaznaczonych</button>
+                            <button onclick="_adminSelectedUsers.clear();updateUsersBulkBar();renderUsers()" style="padding:8px 16px;background:#fff;border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer">Anuluj</button>
+                        </div>
                         <div id="adminBulkBar" style="display:none;align-items:center;gap:12px;padding:12px 16px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;margin-top:12px">
                             <span style="font-weight:600;font-size:13px">Zaznaczono: <span id="adminBulkCount">0</span></span>
                             <button onclick="adminBulkDelete()" style="padding:8px 16px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">🗑 Usuń zaznaczone</button>
@@ -1295,6 +1300,7 @@ const I18N = {
         try {
             _allUsersData = await api('/api/admin/users');
             _usersData = [..._allUsersData];
+            _adminSelectedUsers = new Set([..._adminSelectedUsers].filter(id=>_allUsersData.some(u=>u.id===id)));
             renderUsers();
         } catch (e) {
             document.getElementById('usersBody').innerHTML =
@@ -1333,6 +1339,7 @@ const I18N = {
             const lastActive = u.last_active ? new Date(u.last_active).toLocaleDateString(currentLang === 'pl' ? 'pl-PL' : 'en-US') : '—';
             const sizeStr = fmtBytes(u.total_size_bytes || 0);
             return '<tr class="user-row" data-id="' + u.id + '">' +
+                '<td><input type="checkbox" onclick="event.stopPropagation();toggleUserSelect(' + u.id + ')" ' + ( _adminSelectedUsers.has(u.id)?'checked':'') + ' style="width:14px;height:14px"></td>' +
                 '<td><span class="toggle-arrow" id="arrow-' + u.id + '">&#9654;</span></td>' +
                 '<td>' + u.id + '</td>' +
                 '<td class="cell-ellipsis">' + esc(u.email || '—') + '</td>' +
@@ -1588,6 +1595,36 @@ const I18N = {
     /* ═══════════════════════ JOBS ═══════════════════════ */
     let _jobsData = [];
     
+    let _adminSelectedUsers = new Set();
+    function toggleUserSelect(id){
+        if(_adminSelectedUsers.has(id)) _adminSelectedUsers.delete(id); else _adminSelectedUsers.add(id);
+        updateUsersBulkBar();
+    }
+    function toggleUsersAll(on){
+        if(on) _usersData.forEach(u=>{ if(!u.is_admin) _adminSelectedUsers.add(u.id); });
+        else _adminSelectedUsers.clear();
+        renderUsers(); updateUsersBulkBar();
+    }
+    window.toggleUserSelect=toggleUserSelect; window.toggleUsersAll=toggleUsersAll;
+    function updateUsersBulkBar(){
+        const bar=document.getElementById('usersBulkBar');
+        const cnt=document.getElementById('usersBulkCount');
+        if(bar&&cnt){ cnt.textContent=_adminSelectedUsers.size; bar.style.display=_adminSelectedUsers.size>0?'flex':'none'; }
+    }
+    async function usersBulkDelete(){
+        if(!_adminSelectedUsers.size) return;
+        if(!confirm('TRWAŁE usunięcie ' + _adminSelectedUsers.size + ' użytkowników wraz ze WSZYSTKIMI modelami, linkami i komentarzami. Tego się nie cofnie. Kontynuować?')) return;
+        if(!confirm('Na pewno? Ostatnie ostrzeżenie.')) return;
+        const ids=Array.from(_adminSelectedUsers);
+        try{
+            const r=await api('/api/admin/users/bulk-delete', {method:'POST',body:{ids:ids}});
+            toast('Usunięto ' + r.deleted + ' użytkowników','ok');
+            _adminSelectedUsers.clear();
+            updateUsersBulkBar();
+            loadUsers();
+        }catch(e){ toast(e.message,'error'); }
+    }
+    window.usersBulkDelete=usersBulkDelete;
     let _adminSelectedJobs = new Set();
     function toggleJobsAll(checked){
         _adminSelectedJobs.clear();
