@@ -64,7 +64,7 @@ export function initViewerPro(opts) {
     container: null, stlUrl: '', fallbackImg: '', uuid: '', token: '',
     lang: 'pl', printInfo: null, defaultMaterial: 'PLA', defaultColor: 'black',
     /* v3 defaults: dark navy stage + floor grid on, gray mesh — same look everywhere */
-    bg: '#101a2e', meshHex: '#1b1b1b', toolbar: true, printBar: true,
+    bg: '#16223c', meshHex: '#1b1b1b', toolbar: true, printBar: true,
     printBarTarget: null, compact: false, noEdges: false,
     grid: true, swatches: true,
     /* Bearer for private /api/stl-preview (owner's own files) */
