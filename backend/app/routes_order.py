@@ -408,7 +408,7 @@ def calculate_price(
     # Premia za pigment dotyczy wyłącznie dodatkowych kolorów, które rozlicza
     # multicolor_fee() poniżej.
     color_premium = 0.0
-    multi_fee = multicolor_fee(colors)
+    multi_fee = multicolor_fee(colors, db)
     surcharge_pln = round(color_premium + multi_fee, 2)
 
     subtotal = round(cost_pln, 2)
