@@ -355,8 +355,9 @@ const PI18N = {
       setLang: function (l) { lang = l; try { localStorage.setItem('mt_lang', l); } catch (e) {} this.apply(); },
     t: function (k) { return (PI18N[lang] && PI18N[lang][k]) || (PI18N.pl[k]) || k; },
     apply: function () {
-      var self = this;
-      document.querySelectorAll('[data-i18n]').forEach(function (el) {
+          var self = this;
+          try { document.documentElement.lang = lang; } catch (e) {}
+          document.querySelectorAll('[data-i18n]').forEach(function (el) {
         var k = el.getAttribute('data-i18n');
         var v = self.t(k);
         if (v && v !== k) el.innerHTML = v;   // brak tlumaczenia = zostaw oryginalny HTML, nigdy surowy klucz
