@@ -62,9 +62,9 @@ export { fmtHours, fmtGrams };
 export function initViewerPro(opts) {
   const cfg = Object.assign({
     container: null, stlUrl: '', fallbackImg: '', uuid: '', token: '',
-    lang: 'pl', printInfo: null, defaultMaterial: 'PLA', defaultColor: 'gray',
+    lang: 'pl', printInfo: null, defaultMaterial: 'PLA', defaultColor: 'black',
     /* v3 defaults: dark navy stage + floor grid on, gray mesh — same look everywhere */
-    bg: '#101a2e', meshHex: '#c9ced6', toolbar: true, printBar: true,
+    bg: '#101a2e', meshHex: '#1b1b1b', toolbar: true, printBar: true,
     printBarTarget: null, compact: false, noEdges: false,
     grid: true, swatches: true,
     /* Bearer for private /api/stl-preview (owner's own files) */

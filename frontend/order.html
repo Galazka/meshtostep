@@ -9,7 +9,7 @@
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "ypigm7bngb");
 </script>
-<script>window.__APP_V='117';(function(){try{var k='appV',s=sessionStorage.getItem(k);if(s&&s!=='117'){sessionStorage.setItem(k,'117');if(window.caches&&caches.keys){caches.keys().then(function(a){return Promise.all(a.map(function(n){return caches.delete(n)}))}).then(function(){location.reload()});return}}sessionStorage.setItem(k,'110')}catch(e){}})();</script>
+<script>window.__APP_V='118';(function(){try{var k='appV',s=sessionStorage.getItem(k);if(s&&s!=='117'){sessionStorage.setItem(k,'117');if(window.caches&&caches.keys){caches.keys().then(function(a){return Promise.all(a.map(function(n){return caches.delete(n)}))}).then(function(){location.reload()});return}}sessionStorage.setItem(k,'110')}catch(e){}})();</script>
 <script>try{var _t=localStorage.getItem("mt_theme")||"light";if(_t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -536,7 +536,23 @@ el.innerHTML='<b>'+k+'</b><span>'+desc+p100+'</span>';el.onclick=function(){sele
 }
 function selectMat(k){ if(selIdx<0){toast('Najpierw kliknij model w koszyku','');return;} CART[selIdx].material=k; drawCart(); refreshMatSel(); reprice(selIdx); calc(); }
 function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document.querySelectorAll('.mat').forEach(function(x){x.classList.toggle('sel',x.dataset.mat===m);}); document.getElementById('matFor').textContent=(selIdx>=0)?('#'+(selIdx+1)+' · '+(CART[selIdx].model_name||'Model')):'—'; }
-  function refreshCol(){ var cnt=document.getElementById('colCount'); if(cnt&&selIdx>=0){ cnt.value=String(CART[selIdx].colors||1); } document.querySelectorAll('.swatch').forEach(function(x){var sel=(selIdx>=0)?(CART[selIdx]._multi||[]).indexOf(x.dataset.color)>=0:false;x.classList.toggle('sel',sel);}); document.getElementById('colFor').textContent=(selIdx>=0)?('#'+(selIdx+1)+' · '+(CART[selIdx].model_name||'Model')):'—'; if(typeof renderMulti==='function')renderMulti(); }
+  // Podglad 3D ma pokazywac ten sam kolor co zamowienie. Kolor ma wplyw
+  // na postrzegana wage bryly, wiec czarne PLA wyglada inaczej niz biale.
+  var PREVIEW_HEX={black:'#151515',white:'#e8eaed',gray:'#6b7584',red:'#c81e1e',orange:'#d9600a',
+    yellow:'#e3b505',green:'#12873d',blue:'#1d4ed8',purple:'#6d28d9',pink:'#c2185b',
+    silver:'#c3cad3',gold:'#d4a017',carbon:'#1f1f1f',transparent:'#dfe4ea'};
+  var PL2CODE={czarny:'black',bialy:'white',szary:'gray',czerwony:'red',pomaranczowy:'orange',
+    zolty:'yellow',zielony:'green',niebieski:'blue',fioletowy:'purple',rozowy:'pink',
+    naturalny:'black',srebrny:'silver',zloty:'gold',grafitowy:'carbon',weglowy:'carbon',
+    drewno:'carbon',przezroczysty:'transparent'};
+  function previewHex(){ var it=(selIdx>=0)?CART[selIdx]:null; if(!it) return null;
+    var first=(it._multi&&it._multi.length)?it._multi[0]:String(it.color||'black').split(' ')[0].toLowerCase();
+    first=String(first).toLowerCase();
+    // it.color trzyma tekst PL ("czarny + bialy"), _multi trzyma kody — sprowadzamy oba do kodu
+    return PREVIEW_HEX[first]||PREVIEW_HEX[PL2CODE[first]]||'#151515'; }
+  function syncPreviewColor(){ var v=window.__viewerPro; if(!v||!v.setColor) return;
+    var h=previewHex(); if(h) v.setColor(h); }
+  function refreshCol(){ var cnt=document.getElementById('colCount'); if(cnt&&selIdx>=0){ cnt.value=String(CART[selIdx].colors||1); } document.querySelectorAll('.swatch').forEach(function(x){var sel=(selIdx>=0)?(CART[selIdx]._multi||[]).indexOf(x.dataset.color)>=0:false;x.classList.toggle('sel',sel);}); document.getElementById('colFor').textContent=(selIdx>=0)?('#'+(selIdx+1)+' · '+(CART[selIdx].model_name||'Model')):'—'; if(typeof renderMulti==='function')renderMulti(); syncPreviewColor(); }
   function applyColor(){ if(selIdx<0){toast('Kliknij model w koszyku','');return;} var cnt=document.getElementById('colCount'); var n=parseInt(cnt?cnt.value:'1'); var it=CART[selIdx]; it.colors=(n>1)?n:1;
     // _multi trzymy KODY kolorów (dataset.color), a it.color trzyma tekst PL.
     // Przy first load it.color bywa polskim napisem, więc odtwarzamy listę kodów
@@ -567,7 +583,7 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
   // Wartości dostrojone pod tekst na plakietce: gray/orange/green przyciemnione,
   // bo surowy odcień z białym tekstem dawał < 4.5:1 (WCAG AA). Środek kółka
   // zostaje w oryginalnym odcieniu swatcha, więc kolor dalej wygląda na swatch.
-  var COL_HEX={black:'#1e293b',white:'#f8fafc',gray:'#6b7584',red:'#dc2626',orange:'#c94c0a',
+  var COL_HEX={black:'#151515',white:'#f8fafc',gray:'#6b7584',red:'#dc2626',orange:'#c94c0a',
     yellow:'#eab308',green:'#12873d',blue:'#2563eb',purple:'#7c3aed',pink:'#db2777',
     silver:'#cbd5e1',gold:'#facc15',carbon:'#0f172a',transparent:'#e2e8f0'};
   var COL_SWATCH={gray:'#94a3b8',orange:'#ea580c',green:'#16a34a'};
@@ -896,7 +912,7 @@ document.getElementById('fileInput').addEventListener('change',function(){ var f
     document.getElementById('loading').style.display='none';
     var vol=d.volume_cm3||0;
     var estPrice=(d.estimate && d.estimate.product_subtotal)?d.estimate.product_subtotal:0;
-    var item={job_id:null,job_uuid:d.uuid||null,model_name:f.name,material:'PLA',color:'natural',qty:1,infill:INFCFG.base,vol:vol,dims:d.dimensions||'',desc:'',price:estPrice,_bytes:null};
+    var item={job_id:null,job_uuid:d.uuid||null,model_name:f.name,material:'PLA',color:'czarny',qty:1,infill:INFCFG.base,vol:vol,dims:d.dimensions||'',desc:'',price:estPrice,_bytes:null};
     // read local bytes for instant 3D preview (no server round-trip)
     f.arrayBuffer().then(function(buf){
       item._bytes=new Uint8Array(buf);
@@ -906,7 +922,7 @@ document.getElementById('fileInput').addEventListener('change',function(){ var f
     // always get a hostable job for 3D preview (public /e/{job_id})
     var fd3=new FormData(); fd3.append('mode','auto'); fd3.append('file',f);
     fetch('/api/convert?t='+Date.now(),{method:'POST',body:fd3}).then(function(r){return r.json();}).then(function(cv){ if(cv&&cv.job_id){ item.job_id=cv.job_id; if(selIdx===CART.length-1){ preview(CART.length-1); } } }).catch(function(){});
-    var fd2=new FormData(); fd2.append('material','PLA'); fd2.append('color','natural'); fd2.append('quantity','1'); fd2.append('shipping','pickup'); fd2.append('shipping_region','PL'); fd2.append('volume_cm3',String(vol)); fd2.append('estimated_hours','0'); if(d.dimensions)fd2.append('dims',String(d.dimensions)); fd2.append('infill',String(INFCFG.base)); fd2.append('currency','PLN');
+    var fd2=new FormData(); fd2.append('material','PLA'); fd2.append('color','black'); fd2.append('quantity','1'); fd2.append('shipping','pickup'); fd2.append('shipping_region','PL'); fd2.append('volume_cm3',String(vol)); fd2.append('estimated_hours','0'); if(d.dimensions)fd2.append('dims',String(d.dimensions)); fd2.append('infill',String(INFCFG.base)); fd2.append('currency','PLN');
     fetch('/api/calculate?t='+Date.now(),{method:'POST',body:fd2}).then(function(r){return r.json();}).then(function(c){if(c.ok){item.price=c.product_subtotal_pln; item.mfee=0; if(!item.desc) item.desc=''; calc();}}).catch(function(){});
     CART.push(item); selIdx=CART.length-1; drawCart(); refreshMatSel(); calc();
     if(item.vol) preview(selIdx); toast('Dodano: '+f.name,true);
@@ -1031,12 +1047,12 @@ function applyCoupon(silent){
 function preview(i){
   selIdx=i; drawCart(); refreshMatSel(); syncInfillUI(); if(typeof refreshCol==='function') refreshCol();
   var it=CART[i], box=document.getElementById('previewBox');
-  if(it && it._bytes && typeof window.__local3d!=='undefined'){ try{ window.__local3d.renderBytes(it.model_name,it._bytes,'previewBox'); return; }catch(e){ if(e&&e.message)console.warn('renderBytes:',e.message); } }
+  if(it && it._bytes && typeof window.__local3d!=='undefined'){ try{ window.__local3d.renderBytes(it.model_name,it._bytes,'previewBox'); syncPreviewColor(); return; }catch(e){ if(e&&e.message)console.warn('renderBytes:',e.message); } }
   if(it.job_id){
-    if(box.__pro){ box.__pro.loadBytes(it.model_name||'model.stl', it._bytes||new ArrayBuffer(0)); return; }
+    if(box.__pro){ box.__pro.loadBytes(it.model_name||'model.stl', it._bytes||new ArrayBuffer(0)); syncPreviewColor(); return; }
     box.innerHTML='<iframe class="preview-iframe" src="/e/'+it.job_id+'" frameborder="0" allowfullscreen></iframe>';
   } else {
-    box.innerHTML='<div style="padding:22px;text-align:center">📦 <b>'+esc(it.model_name||'Model')+'</b><br><span style="color:var(--muted);font-size:13px">'+(it.vol?it.vol.toFixed(1)+' cm³': '')+(it.dims?' · '+it.dims:'')+'</span><br><span style="color:#2563eb;font-size:12px">'+esc(it.material||'PLA')+' · kolor '+esc(it.color||'natural')+' · '+it.qty+' szt</span><br><br><span style="color:var(--muted);font-size:12px">Wgrywam podgląd 3D… (pozwól chwilę konwersji)</span></div>';
+    box.innerHTML='<div style="padding:22px;text-align:center">📦 <b>'+esc(it.model_name||'Model')+'</b><br><span style="color:var(--muted);font-size:13px">'+(it.vol?it.vol.toFixed(1)+' cm³': '')+(it.dims?' · '+it.dims:'')+'</span><br><span style="color:#2563eb;font-size:12px">'+esc(it.material||'PLA')+' · kolor '+esc(it.color||'czarny')+' · '+it.qty+' szt</span><br><br><span style="color:var(--muted);font-size:12px">Wgrywam podgląd 3D… (pozwól chwilę konwersji)</span></div>';
   }
 }
 
@@ -1151,7 +1167,7 @@ function saveProfileShip(){
 </script>
 
 <script type="module">
-import { initViewerPro } from '/asset/viewer_pro.js?v=6';
+import { initViewerPro } from '/asset/viewer_pro.js?v=7';
 /* Podglad w koszyku = ten sam pelny konfigurator co wszedzie: toolbar
    (obrot/siatka/krawedzie/podloga/tlo/zoom/PNG/fullscreen) na scianie z konturem. */
 window.__local3d = {
