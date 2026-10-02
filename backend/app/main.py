@@ -89,6 +89,7 @@ a:hover{{background:#1e45b8}}</style>
             "https://googleads.g.doubleclick.net https://securepubads.g.doubleclick.net "
             "https://tpc.googlesyndication.com https://adservice.google.com "
             "https://www.googletagservices.com https://fundingchoicesmessages.google.com "
+            "https://www.googletagmanager.com https://*.googletagmanager.com "
             "https://*.google.com https://www.clarity.ms https://*.clarity.ms; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
@@ -98,11 +99,14 @@ a:hover{{background:#1e45b8}}</style>
             "https://googleads.g.doubleclick.net https://*.doubleclick.net "
             "https://adservice.google.com https://*.adtrafficquality.google "
             "https://*.google.com https://fundingchoicesmessages.google.com "
+            "https://www.google-analytics.com https://*.google-analytics.com "
+            "https://stats.g.doubleclick.net https://*.googletagmanager.com "
             "https://*.clarity.ms https://*.msn.com; "
             "frame-src 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com "
             "https://*.googlesyndication.com https://*.doubleclick.net https://www.google.com "
             "https://fundingchoicesmessages.google.com "
-            "https://www.youtube.com https://www.youtube-nocookie.com https://www.openstreetmap.org; "
+            "https://www.youtube.com https://www.youtube-nocookie.com https://www.openstreetmap.org "
+            "https://www.googletagmanager.com; "
             "frame-ancestors 'self'; "
             "worker-src 'self' blob:; "
         )
@@ -143,6 +147,25 @@ CLARITY_TAG = """<script type="text/javascript">
     })(window, document, "clarity", "script", "ypigm7bngb");
 </script>"""
 
+# ── Google Tag Manager (GTM-PSGG68W2) ────────────────────────────────
+# Wstrzykiwane tym samym middleware co Clarity: jedno miejsce zamiast
+# 53 plikow HTML. Skrypt wchodzi w <head> jak najwyzej, noscript iframe
+# tuz po <body> — inaczej GTM nie widzi ruchu z wylaczonym JavaScriptem.
+GTM_ID = "GTM-PSGG68W2"
+GTM_HEAD = """
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-PSGG68W2');</script>
+<!-- End Google Tag Manager -->"""
+
+GTM_BODY = """
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PSGG68W2" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->"""
+
 @app.middleware("http")
 async def clarity_inject_middleware(request: Request, call_next):
     response = await call_next(request)
@@ -172,6 +195,21 @@ async def clarity_inject_middleware(request: Request, call_next):
             injected = body.replace(b"</head>", CLARITY_TAG.encode() + b"</head>", 1)
             if len(injected) != len(body):
                 new_body = injected
+        # GTM: skrypt do <head> (jak najwyzej), noscript iframe zaraz po <body>.
+        # Identyfikator jest w jednym miejscu, wiec warunek "czy juz jest"
+        # to prosty grep po GTM_ID — bez latania po 53 plikach HTML.
+        if GTM_ID.encode() not in body:
+            _gm = new_body
+            if b"</head>" in _gm:
+                _gm = _gm.replace(b"</head>", GTM_HEAD.encode() + b"</head>", 1)
+            _bo = _gm.find(b"<body")
+            if _bo != -1:
+                _cut = _gm.find(b">", _bo)
+                if _cut != -1:
+                    _cut += 1
+                    _gm = _gm[:_cut] + GTM_BODY.encode() + _gm[_cut:]
+            if _gm != new_body:
+                new_body = _gm
         if consumed or new_body is not body:
             from starlette.responses import Response as _Resp
             headers = dict(response.headers)
