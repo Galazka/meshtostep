@@ -109,6 +109,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 /* linia "jednostkowa x ilosc = razem" — mono, bo to liczby */
 .summath{display:block;margin-top:6px;font-family:var(--font-mono);font-size:11.5px;color:var(--muted);letter-spacing:-.01em}
 .summath b{color:var(--foreground);font-weight:700}
+.sumsub.sumround{color:var(--muted);opacity:.85;font-style:italic}
 .sumunit{font-size:12px;color:var(--muted);font-family:var(--font-mono);white-space:nowrap}
 .sumedit{background:none;border:1px solid var(--border);border-radius:999px;padding:2px 10px;font-size:11.5px;color:var(--accent);cursor:pointer;font-weight:600}
 .sumedit:hover{background:var(--card-soft,#f4f6fa)}
@@ -765,7 +766,7 @@ function calc(){
     var c=it.colors||1; var colTag=(c>1)?' · '+c+' kol.':'';
     var infTag=(it.infill&&it.infill!==INFCFG.base)?' · '+it.infill+'% wypełn.':'';
     var unit = it.qty>1 ? ' × '+it.qty+' szt' : '';
-    rowsHTML+='<div class="summary-row sumitem" style="cursor:pointer" onclick="preview('+idx+');refreshCol()"><span style="font-weight:600">'+esc(it.model_name||('Model '+(idx+1)))+unit+'</span><span>'+fmt(cx(prn/rate))+'</span></div>';
+    rowsHTML+='<div class="summary-row sumitem" style="cursor:pointer" onclick="preview('+idx+');refreshCol()"><span style="font-weight:600">'+esc(it.model_name||('Model '+(idx+1)))+unit+'</span><span>'+fmt(prn/rate)+'</span></div>';
     var gl=''; if(it.grams){ gl=(+it.grams).toFixed(1).replace('.',',')+' g'; if(it.hours) gl+=' · ~'+(+it.hours).toFixed(1).replace('.',',')+' h'; }
     var meta=[];
     meta.push('<span class="chip">'+esc(it.material||'PLA')+'</span>');
@@ -817,6 +818,9 @@ function calc(){
 var discLine = COUPON_PLN>0 ? '<div class="summary-row"><span>Rabat '+(window.__COUPON.code||'')+'</span><span style="color:#15803d;font-weight:700">−'+fmt(cx(COUPON_PLN/rate))+'</span></div>' : '';
   // it.price from /api/calculate ALREADY includes multicolor_fee — never add it twice.
   // Show it as a breakdown line inside the total, not as a separate charge.
+  var _rawAdj=adjPLN+shippingPLN-COUPON_PLN, _rounded=cx(_rawAdj/rate), _raw=Math.round(_rawAdj/rate*100)/100;
+  var roundLine = (Math.abs(_rounded-_raw)>=0.005 && shippingPLN>0)
+    ? '<div class="summary-row sumsub sumround"><span>okrąglenie do pełnej 0,50 zł</span><span>'+fmt(_rounded-_raw)+'</span></div>' : '';
   var colorLine = colorExt>0 ? '<div class="summary-row sumsub"><span>w tym dopłata za kolory</span><span>'+fmt(colorExt/rate)+'</span></div>' : '';
   var shipLabel = isPickup ? 'Odbiór osobisty (Gdańsk Osowa)' : isPkExp ? 'Ekspres przy odbiorze (≤2 dni)' : freeShip ? 'Wysyłka — GRATIS (≥'+FREEMIN+' zł)' : smallOrder ? 'Wysyłka + pakowanie — małe zamówienie (flat '+fmt(SOFLAT)+')' : 'Wysyłka + pakowanie';
   // cena ostateczna (bez dopłat po fakcie) — bez rozbicia netto/VAT
@@ -827,7 +831,7 @@ var discLine = COUPON_PLN>0 ? '<div class="summary-row"><span>Rabat '+(window.__
   box.innerHTML='<div class="sumhead">Co drukujemy</div>'+
     '<div class="sumlist">'+rowsHTML+'</div>'+
     '<div class="sumcalc">'+
-      '<div class="summary-row sumsub2"><span>Wszystkie modele</span><span>'+fmt(cx(basePrint/rate))+'</span></div>'+
+      '<div class="summary-row sumsub2"><span>Wszystkie modele</span><span>'+fmt(basePrint/rate)+'</span></div>'+roundLine+
       '<div class="summary-row"><span>'+shipLabel+'</span><span>'+(shippingPLN===0?'gratis':fmt(shippingPLN/rate))+'</span></div>'+
       colorLine+discLine+
       '<div class="summary-row sumsum"><span>Razem</span><span>'+fmt(brutto)+'</span></div>'+
