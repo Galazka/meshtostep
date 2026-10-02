@@ -95,6 +95,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 .sumblock{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-2px 0 4px;padding-left:2px}
 .summeta{display:flex;gap:6px;flex-wrap:wrap;flex:1;min-width:0}
 .chip{display:inline-flex;align-items:center;gap:5px;background:var(--card-soft,#f4f6fa);border:1px solid var(--border);border-radius:999px;padding:2px 9px;font-size:11.5px;color:var(--muted);font-family:var(--font-mono);white-space:nowrap}
+/* cienie chips zostawiaja slomiana szare — na jasnym tle ledwo sie czytaja */
+.summeta .chip{color:var(--foreground);opacity:.82}
+.cdot{box-sizing:border-box}
 .chipcol{color:var(--foreground)}
 .chipmin{background:#fff7ed;border-color:#fed7aa;color:#b45309;font-weight:600}
 /* ── Plakietka koloru: tło = wybrany kolor, tekst czytelny na jasnych i ciemnych ── */
@@ -529,7 +532,7 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
     var ring=code==='white'||code==='silver'||code==='transparent'?'box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);':'';
     var dot=COL_SWATCH[code]||hex;
     return '<span class="cbadge" style="background:'+hex+';color:'+txt+';border-color:'+bd+';'+ring+'">'
-         +'<i class="cdot" style="background:'+dot+';border:1px solid '+bd+'"></i>'
+         +'<i class="cdot" style="background:'+dot+';box-shadow:0 0 0 1.5px '+txt+'"></i>'
          +'<span class="ctxt">'+(label||COL_PL[code]||code)+'</span></span>';
   }
   // pozycja w koszyku: lista kodów _multi, a gdy pusta — kod z nazwy PL
