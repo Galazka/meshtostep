@@ -819,7 +819,7 @@ var discLine = COUPON_PLN>0 ? '<div class="summary-row"><span>Rabat '+(window.__
   // it.price from /api/calculate ALREADY includes multicolor_fee — never add it twice.
   // Show it as a breakdown line inside the total, not as a separate charge.
   var _rawAdj=adjPLN+shippingPLN-COUPON_PLN, _rounded=cx(_rawAdj/rate), _raw=Math.round(_rawAdj/rate*100)/100;
-  var roundLine = (Math.abs(_rounded-_raw)>=0.005 && shippingPLN>0)
+  var roundLine = (Math.abs(_rounded-_raw)>=0.005)
     ? '<div class="summary-row sumsub sumround"><span>okrąglenie do pełnej 0,50 zł</span><span>'+fmt(_rounded-_raw)+'</span></div>' : '';
   var colorLine = colorExt>0 ? '<div class="summary-row sumsub"><span>w tym dopłata za kolory</span><span>'+fmt(colorExt/rate)+'</span></div>' : '';
   var shipLabel = isPickup ? 'Odbiór osobisty (Gdańsk Osowa)' : isPkExp ? 'Ekspres przy odbiorze (≤2 dni)' : freeShip ? 'Wysyłka — GRATIS (≥'+FREEMIN+' zł)' : smallOrder ? 'Wysyłka + pakowanie — małe zamówienie (flat '+fmt(SOFLAT)+')' : 'Wysyłka + pakowanie';
