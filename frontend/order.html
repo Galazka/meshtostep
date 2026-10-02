@@ -9,7 +9,7 @@
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "ypigm7bngb");
 </script>
-<script>window.__APP_V='114';(function(){try{var k='appV',s=sessionStorage.getItem(k);if(s&&s!=='114'){sessionStorage.setItem(k,'114');if(window.caches&&caches.keys){caches.keys().then(function(a){return Promise.all(a.map(function(n){return caches.delete(n)}))}).then(function(){location.reload()});return}}sessionStorage.setItem(k,'110')}catch(e){}})();</script>
+<script>window.__APP_V='115';(function(){try{var k='appV',s=sessionStorage.getItem(k);if(s&&s!=='115'){sessionStorage.setItem(k,'115');if(window.caches&&caches.keys){caches.keys().then(function(a){return Promise.all(a.map(function(n){return caches.delete(n)}))}).then(function(){location.reload()});return}}sessionStorage.setItem(k,'110')}catch(e){}})();</script>
 <script>try{var _t=localStorage.getItem("mt_theme")||"light";if(_t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -716,7 +716,7 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
     if(_KNOWN_CITIES[first]) return q;
     return PCZ_CITY||'Gdańsk';
   }
-  function searchPaczkomatCity(city){
+  function searchPaczkomatCity(city, keepStatus){
     PCZ_CITY=city||'Gdańsk';
     var box=document.getElementById('paczkomatList'); if(!box) return;
     pczStatus('Szukam…');
@@ -724,7 +724,7 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
       .then(function(r){return r.json();}).then(function(d){
         PCZ_ITEMS=(d&&d.items)||[]; PCZ_CITY=(d&&d.city)||PCZ_CITY;
         renderPaczkomaty();
-        pczStatus(PCZ_ITEMS.length
+        if(!keepStatus) pczStatus(PCZ_ITEMS.length
           ? 'Znaleziono <b>'+PCZ_ITEMS.length+'</b> punktów w '+esc(PCZ_CITY)+'. Kliknij mapę albo listę, albo użyj „najbliższy automatycznie”.'
           : 'Brak punktów w tym mieście — spróbuj innego.');
       }).catch(function(){ pczStatus('Nie udało się pobrać punktów.'); });
@@ -779,8 +779,8 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
   function autoNearestPaczkomat(){
     var city=PCZ_CITY||'Gdańsk';
     if(!navigator.geolocation){
-      pczStatus('Ta przeglądarka nie udostępnia lokalizacji. Wybierz z listy albo wpisz miasto.');
-      searchPaczkomatCity(city); return;
+      pczStatus('Ta przeglądarka nie udostępnia lokalizacji. Wybierz z listy albo kliknij mapę.');
+      searchPaczkomatCity(city, true); return;
     }
     pczStatus('Szukam Twojej lokalizacji…');
     navigator.geolocation.getCurrentPosition(function(pos){
@@ -790,14 +790,14 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
           var it=((d&&d.items)||[])[0];
           if(!it){
             pczStatus('Nie znalazłem punktów w pobliżu — sprawdź miasto.');
-            searchPaczkomatCity(city); return;
+            searchPaczkomatCity(city, true); return;
           }
           PCZ_ITEMS=[it]; renderPaczkomaty(); selectPaczkomat(it.name);
           toast('Najbliższy punkt: '+it.street+' ('+(it.distance_m!=null?it.distance_m+' m':'?')+')', true);
         });
     }, function(){
-      pczStatus('Nie udało się ustalić lokalizacji — wybierz z listy albo wpisz miasto.');
-      searchPaczkomatCity(city);
+      pczStatus('Nie udało się ustalić lokalizacji — wybierz z listy albo wpisz miasto. Dopuszcz dostęp do lokalizacji w przeglądarce, albo kliknij punkt na mapie.');
+      searchPaczkomatCity(city, true);
     }, {enableHighAccuracy:true, timeout:9000});
   }
   function locateMePaczkomat(){
