@@ -454,9 +454,15 @@ function selectMat(k){ if(selIdx<0){toast('Najpierw kliknij model w koszyku','')
 function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document.querySelectorAll('.mat').forEach(function(x){x.classList.toggle('sel',x.dataset.mat===m);}); document.getElementById('matFor').textContent=(selIdx>=0)?('#'+(selIdx+1)+' · '+(CART[selIdx].model_name||'Model')):'—'; }
   function refreshCol(){ var cnt=document.getElementById('colCount'); if(cnt&&selIdx>=0){ cnt.value=String(CART[selIdx].colors||1); } document.querySelectorAll('.swatch').forEach(function(x){var sel=(selIdx>=0)?(CART[selIdx]._multi||[]).indexOf(x.dataset.color)>=0:false;x.classList.toggle('sel',sel);}); document.getElementById('colFor').textContent=(selIdx>=0)?('#'+(selIdx+1)+' · '+(CART[selIdx].model_name||'Model')):'—'; if(typeof renderMulti==='function')renderMulti(); }
   function applyColor(){ if(selIdx<0){toast('Kliknij model w koszyku','');return;} var cnt=document.getElementById('colCount'); var n=parseInt(cnt?cnt.value:'1'); var it=CART[selIdx]; it.colors=(n>1)?n:1;
-    if(!it._multi||!it._multi.length){ it._multi=it.color&&COL_PL[it.color]?[]:[it.color]; }
-    if(it._multi.length>it.colors){ while(it._multi.length>it.colors){ it._multi.pop(); } }
-    if(!it._multi.length){ it._multi=[it.color||'black']; }
+    // _multi trzymy KODY kolorów (dataset.color), a it.color trzyma tekst PL.
+    // Przy first load it.color bywa polskim napisem, więc odtwarzamy listę kodów
+    // z pierwszego słowa, inaczej colPl() przestaje mapować i cena się rozjeżdża.
+    if(!it._multi||!it._multi.length){
+      var firstPl=String(it.color||'').split(' + ')[0].trim().toLowerCase();
+      var firstCode=Object.keys(COL_PL).find(function(k){return COL_PL[k]===firstPl;})||firstPl||'black';
+      it._multi=[firstCode];
+    }
+    while(it._multi.length>it.colors){ it._multi.pop(); }
     it.color=colPl(it._multi);
     drawCart(); reprice(selIdx); calc(); refreshCol(); renderMulti(); toast('Kolory: '+it.colors+'x',true); }
   var COL_PL={};
@@ -479,30 +485,34 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
         if(CART.length===1){ selIdx=0; } else { toast('Kliknij model w koszyku',''); return; }
       }
       var it=CART[selIdx];
-      if(!it._multi||!it._multi.length){
-        // PIERWSZY wybrany kolor jest w cenie (rule: 1 bryła = 1 kolor, backend
-        // routes_order.py zeruje color_premium gdy colors<=1). Nie seedujemy
-        // domyślnego koloru — inaczej pierwsze kliknięcie liczyłoby się jako
-        // "drugi kolor" i klient płacił +20 zł za zmianę koloru.
-        it._multi=[];
-      }
-      var i=it._multi.indexOf(c);
-      if(i>=0){
-        if(it._multi.length>1){
-          it._multi.splice(i,1);
-          if(it.colors>it._multi.length){ it.colors=Math.max(1,it._multi.length); var cc0=document.getElementById('colCount'); if(cc0) cc0.value=String(it.colors); }
-          it.color=colPl(it._multi);
-          drawCart(); reprice(selIdx); calc(); refreshCol(); renderMulti(); toast('Odznaczono: '+colPl([c]),true);
-          return;
-        } else { toast('Przynajmniej 1 kolor zostaje',''); return; }
-      }
-      if(it._multi.length>=it.colors){
-        // chcesz więcej kolorów niż ustawione → automatycznie podnieś liczbę (cena: +20 zł za 1. ekstra)
-        it.colors=it._multi.length+1;
-        var cc=document.getElementById('colCount'); if(cc) cc.value=String(it.colors);
-        var extra=(it.colors===2)?((CFG&&CFG.multicolor_first_extra_pln)?CFG.multicolor_first_extra_pln:20):((CFG&&CFG.multicolor_next_extra_pln)?CFG.multicolor_next_extra_pln:10);
-        toast('Ilość kolorów → '+it.colors+' (+'+extra+' zł)');
-      }
+            if(!it._multi||!it._multi.length){
+              // PIERWSZY wybrany kolor jest w cenie (rule: 1 bryła = 1 kolor, backend
+              // routes_order.py zeruje color_premium gdy colors<=1). Nie seedujemy
+              // domyślnego koloru — inaczej pierwsze kliknięcie liczyłoby się jako
+              // "drugi kolor" i klient płacił +20 zł za zmianę koloru.
+              it._multi=[];
+            }
+            // it.colors bywa undefined (item z koszyka nie ustawia tego pola) —
+            // wyprowadzamy je z faktycznej liczby wybranych kolorów, inaczej
+            // porównanie `>=` nigdy nie przejdzie i dopłata się nie naliczy.
+            if(it.colors==null||isNaN(it.colors)){ it.colors=Math.max(1,it._multi.length); }
+            var i=it._multi.indexOf(c);
+            if(i>=0){
+              if(it._multi.length>1){
+                it._multi.splice(i,1);
+                if(it.colors>it._multi.length){ it.colors=Math.max(1,it._multi.length); var cc0=document.getElementById('colCount'); if(cc0) cc0.value=String(it.colors); }
+                it.color=colPl(it._multi);
+                drawCart(); reprice(selIdx); calc(); refreshCol(); renderMulti(); toast('Odznaczono: '+colPl([c]),true);
+                return;
+              } else { toast('Przynajmniej 1 kolor zostaje',''); return; }
+            }
+            if(it._multi.length>=it.colors){
+              // chcesz więcej kolorów niż ustawione → automatycznie podnieś liczbę (cena: +20 zł za 1. ekstra)
+              it.colors=it._multi.length+1;
+              var cc=document.getElementById('colCount'); if(cc) cc.value=String(it.colors);
+              var extra=(it.colors===2)?((CFG&&CFG.multicolor_first_extra_pln)?CFG.multicolor_first_extra_pln:20):((CFG&&CFG.multicolor_next_extra_pln)?CFG.multicolor_next_extra_pln:10);
+              toast('Ilość kolorów → '+it.colors+' (+'+extra+' zł)');
+            }
       it._multi.push(c);
       it.color=colPl(it._multi);
       drawCart(); reprice(selIdx); calc(); refreshCol(); renderMulti(); toast('Kolory: '+it.color,true);
