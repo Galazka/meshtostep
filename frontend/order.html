@@ -782,11 +782,15 @@ function calc(){
     // przyciac, wowczas mnozenie by klamalo, wiec idzie "srednio ... / szt".
     var q=it.qty||1, mathTxt='';
     if(q>1){
-      var perR=Math.round((prn/q)*100)/100;
-      var recon=Math.abs(perR*q-prn)<0.005;
+      // cx() rounds UP to 0.50, which would print 9,90 as 10,00 and then
+      // 10,00 x 5 = 50 against a 49,50 line. So the unit price keeps its real
+      // 2 decimals, and the multiplication is shown only when it reconciles
+      // exactly at those decimals — otherwise it would not add up on paper.
+      var perR=Math.round((prn/q)/rate*100)/100;
+      var recon=Math.abs(perR*q-prn/rate)<0.005;
       mathTxt = recon
-        ? '<span class="summath">'+fmt(cx(perR/rate))+' × '+q+' szt = <b>'+fmt(cx(prn/rate))+'</b></span>'
-        : '<span class="summath">średnio '+fmt(cx(perR/rate))+' / szt</span>';
+        ? '<span class="summath">'+fmt(perR)+' × '+q+' szt = <b>'+fmt(prn/rate)+'</b></span>'
+        : '<span class="summath">średnio '+fmt(perR)+' / szt</span>';
     }
     rowsHTML+='<div class="sumblock"><div class="summeta">'+meta.join('')+'</div>'+mathTxt+
       '<button class="sumedit" onclick="event.stopPropagation();preview('+idx+');refreshCol()">Zmień</button></div>';
