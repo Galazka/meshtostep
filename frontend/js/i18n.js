@@ -512,21 +512,19 @@ const I18N = {
     }
 };
 
-/* Auto-detekcja języka: zapisany wybór > przeglądarka > PL.
-   Polscy użytkownicy (Accept-Language pl) dostają polski domyślnie,
-   a przełącznik EN/PL zostaje w nav do ręcznej zmiany. */
+/* Język: zapisany wybór > przeglądarka (tylko PL) > domyślnie PL.
+   PL jest głównym rynkiem — angielski tylko świadomym wyborem,
+   nie automatycznie dla zagranicznych przeglądarek. */
 function detectLang() {
     const saved = localStorage.getItem('mt_lang');
     if (saved === 'pl' || saved === 'en') return saved;
     try {
         const langs = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || ''];
         for (const l of langs) {
-            const lc = String(l).toLowerCase();
-            if (lc.startsWith('pl')) return 'pl';          // polski preferowany = polski
-            if (lc.startsWith('en')) return 'en';
+            if (String(l).toLowerCase().startsWith('pl')) return 'pl';
         }
     } catch (e) { /* navigator.languages niedostępne */ }
-    return 'pl';  // domyślny = polski (PL jest głównym rynkiem)
+    return 'pl';
 }
 let currentLang = detectLang();
 

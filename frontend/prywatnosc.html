@@ -47,7 +47,7 @@ footer{border-top:1px solid var(--border);text-align:center;padding:24px;color:v
 }
 </style>
     <link href="https://fonts.googleapis.com/css2?family=Space Grotesk:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="/asset/portal.css?v=74" rel="stylesheet">
+    <link href="/asset/portal.css?v=75" rel="stylesheet">
 <!-- Google AdSense (Auto ads) -->
 <meta name="google-adsense-account" content="ca-pub-8919352846655813">
 </head>
@@ -64,6 +64,7 @@ footer{border-top:1px solid var(--border);text-align:center;padding:24px;color:v
     <a href="/kontakt">Kontakt</a>
   </nav>
   <div class="prt-actions nav-right" style="margin-left:auto">
+    <button class="prt-lang" id="langToggle" onclick="window.__pi18n&&window.__pi18n.toggle&&window.__pi18n.toggle()">EN</button>
     <a class="prt-btn ghost" href="/">Zaloguj</a>
     <a class="prt-btn primary" href="/">Załóż konto</a>
     <button class="prt-burger" onclick="document.getElementById('navLinks').classList.toggle('open')" aria-label="Menu">☰</button>
@@ -275,5 +276,6 @@ function showLang(l){
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js?v=24').then(function(sw){sw&&sw.update&&setInterval(function(){sw.update()},3*60*60*1000)});navigator.serviceWorker.addEventListener('controllerchange',function(){location.reload()})}</script>
 <script src="/asset/ev.js?v=4" defer></script>
 <script src="/asset/nav-auth.js?v=2" defer></script>
+<script src="/js/print_i18n.js?v=132"></script>
 </body>
 </html>

@@ -24,7 +24,7 @@
 {"@type":"Question","name":"Jak wygląda wypłata?","acceptedAnswer":{"@type":"Answer","text":"Po potwierdzeniu dostawy przez klienta wystawiamy rozliczenie, a Twoje 70% trafia na konto w ciągu 7 dni. Na życzenie wystawiamy dokument podwykonawczy."}}]}
 </script>
 <link rel="icon" href="/favicon.ico">
-<link rel="stylesheet" href="/asset/portal.css?v=74">
+<link rel="stylesheet" href="/asset/portal.css?v=75">
 <style>
 .pwrap{max-width:1300px;margin:0 auto;padding:0 16px}
 .phero{background:var(--bg-navy);color:#fff;padding:64px 0 56px;border-bottom:1px solid var(--line-dark)}
@@ -110,7 +110,7 @@ html[data-theme="dark"] .pwarn{background:var(--bg-soft)}
     <a href="/kontakt" data-p="navContact">Kontakt</a>
   </nav>
   <div class="prt-actions nav-right" style="margin-left:auto">
-    <button class="prt-lang" id="partnerLang" onclick="__ppLang()">EN</button>
+    <button class="prt-lang" id="langToggle" onclick="__ppLang()">EN</button>
     <span id="authBtns" style="display:inline-flex;gap:8px">
       <a class="prt-btn ghost" href="/?login=1" data-p="navLogin">Zaloguj</a>
       <a class="prt-btn primary" href="/?register=1" data-p="navSignup">Załóż konto</a>
@@ -493,7 +493,7 @@ function __ppApply(){
     var k2=ph[j].getAttribute('data-pp');
     if(L[k2]!==undefined){ph[j].setAttribute('placeholder',L[k2]);}
   }
-  var lt=document.getElementById('partnerLang');
+  var lt=document.getElementById('langToggle');
   if(lt){lt.textContent=__ppGet()==='en'?'PL':'EN';}
 }
 function __ppLang(){

@@ -24,7 +24,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Blog o druku 3D | 3DFILE.link">
 <link href="https://fonts.googleapis.com/css2?family=Space Grotesk:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/asset/portal.css?v=74">
+<link rel="stylesheet" href="/asset/portal.css?v=75">
 <style>
 :root{--ink:#0f172a;--ink2:#334155;--muted:#64748b;--line:#e2e8f0;--accent:#2563eb;--bg:#f6f8fb}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -99,6 +99,7 @@ body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--
   </nav>
 
   <div class="prt-actions nav-right" style="margin-left:auto">
+    <button class="prt-lang" id="langToggle" onclick="window.__pi18n&&window.__pi18n.toggle&&window.__pi18n.toggle()">EN</button>
     <span id="authBtns" style="display:inline-flex;gap:8px">
       <a class="prt-btn ghost" href="/?login=1">Zaloguj</a>
       <a class="prt-btn primary" href="/?register=1">Załóż konto</a>
@@ -575,5 +576,6 @@ document.querySelectorAll('.bcard').forEach(card=>{card.style.display=(c==='all'
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js?v=24').then(function(sw){sw&&sw.update&&setInterval(function(){sw.update()},3*60*60*1000)});navigator.serviceWorker.addEventListener('controllerchange',function(){location.reload()})}</script>
 <script src="/asset/ev.js?v=4" defer></script>
 <script src="/asset/nav-auth.js?v=2" defer></script>
+<script src="/js/print_i18n.js?v=132"></script>
 </body>
 </html>

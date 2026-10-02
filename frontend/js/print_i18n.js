@@ -340,17 +340,19 @@ const PI18N = {
       if (saved === 'pl' || saved === 'en') return saved;
       var langs = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || ''];
       for (var i = 0; i < langs.length; i++) {
-        var lc = String(langs[i]).toLowerCase();
-        if (lc.indexOf('pl') === 0) return 'pl';
-        if (lc.indexOf('en') === 0) return 'en';
+        if (String(langs[i]).toLowerCase().indexOf('pl') === 0) return 'pl';
       }
     } catch (e) { /* przeglądarka bez navigator.languages */ }
     return 'pl';
   }
   var lang = load();
-  window.__pi18n = {
-    lang: lang,
-    setLang: function (l) { lang = l; try { localStorage.setItem('mt_lang', l); } catch (e) {} this.apply(); },
+    window.__pi18n = {
+      lang: lang,
+      /* Jedyne API dla HTML: toggle() = kliknięcie, label() = co pokazać.
+         Dzięki temu strony nie muszą budować onclick z cudzysłowami. */
+      toggle: function () { this.setLang(lang === 'pl' ? 'en' : 'pl'); },
+      label: function () { return lang === 'pl' ? 'EN' : 'PL'; },
+      setLang: function (l) { lang = l; try { localStorage.setItem('mt_lang', l); } catch (e) {} this.apply(); },
     t: function (k) { return (PI18N[lang] && PI18N[lang][k]) || (PI18N.pl[k]) || k; },
     apply: function () {
       var self = this;
