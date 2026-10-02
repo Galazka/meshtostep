@@ -333,7 +333,20 @@ const PI18N = {
   }
 };
 (function () {
-  function load() { try { return localStorage.getItem('mt_lang') || 'pl'; } catch (e) { return 'pl'; } }
+  /* Auto-detekcja: zapisany wybór > przeglądarka > PL (polski domyślnie). */
+  function load() {
+    try {
+      var saved = localStorage.getItem('mt_lang');
+      if (saved === 'pl' || saved === 'en') return saved;
+      var langs = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || ''];
+      for (var i = 0; i < langs.length; i++) {
+        var lc = String(langs[i]).toLowerCase();
+        if (lc.indexOf('pl') === 0) return 'pl';
+        if (lc.indexOf('en') === 0) return 'en';
+      }
+    } catch (e) { /* przeglądarka bez navigator.languages */ }
+    return 'pl';
+  }
   var lang = load();
   window.__pi18n = {
     lang: lang,

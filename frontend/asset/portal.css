@@ -457,8 +457,11 @@ html[data-theme="dark"] .why-table td.us{background:rgba(143,180,255,.07)}
   .why-table table{min-width:520px}
 }
 /* header mobile: auth w burger-menu, nie w topbar */
+/* Przełącznik języka (prt-lang) zawsze widoczny — także na mobile.
+   Ukrywamy tylko w-theme, nie w-nav: użytkownik musi móc zmienić język. */
 @media(max-width:760px){
-  .prt-actions .prt-lang,.prt-actions .ghost{display:none}
+  .prt-actions .ghost{display:none}
+  .prt-actions .prt-lang{display:inline-flex !important}
   .prt-actions{gap:6px}
   .prt-actions a.prt-btn{display:none}
   .nav-auth-mobile{display:none;flex-direction:column;gap:8px;padding-top:12px;margin-top:4px;border-top:1px solid rgba(255,255,255,.12)}

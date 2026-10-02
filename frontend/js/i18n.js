@@ -512,7 +512,23 @@ const I18N = {
     }
 };
 
-let currentLang = localStorage.getItem('mt_lang') || 'pl';
+/* Auto-detekcja języka: zapisany wybór > przeglądarka > PL.
+   Polscy użytkownicy (Accept-Language pl) dostają polski domyślnie,
+   a przełącznik EN/PL zostaje w nav do ręcznej zmiany. */
+function detectLang() {
+    const saved = localStorage.getItem('mt_lang');
+    if (saved === 'pl' || saved === 'en') return saved;
+    try {
+        const langs = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || ''];
+        for (const l of langs) {
+            const lc = String(l).toLowerCase();
+            if (lc.startsWith('pl')) return 'pl';          // polski preferowany = polski
+            if (lc.startsWith('en')) return 'en';
+        }
+    } catch (e) { /* navigator.languages niedostępne */ }
+    return 'pl';  // domyślny = polski (PL jest głównym rynkiem)
+}
+let currentLang = detectLang();
 
 function t(key, replacements) {
     let val = (I18N[currentLang] && I18N[currentLang][key]) || (I18N.en && I18N.en[key]) || key;
@@ -529,6 +545,14 @@ function applyI18n() {
         const key = el.getAttribute('data-i18n-placeholder'); const val = t(key); if (val) el.placeholder = val;
     });
     document.getElementById('langToggle').textContent = t('langLabel');
+    // burger/mobile: kopia przełącznika języka zawsze w tym samym języku co desktop
+    try {
+        const mob = document.getElementById('navLangM');
+        if (mob) {
+            mob.textContent = t('langLabel');
+            mob.style.display = 'flex';
+        }
+    } catch (e) { /* brak mobilnego przełącznika na tej stronie */ }
     // SEO head per language
     try {
         document.title = t('metaTitle');
