@@ -799,6 +799,7 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
     document.getElementById('fPaczkomat').value=p.street+' '+String(p.building_number||'')+' ('+p.name+')';
     pczStatus('Wybrano <b>'+esc(p.street)+' '+esc(String(p.building_number||''))+'</b> · '+esc(p.name));
     boxSelectedPcz();
+    renderPaczkomaty();
     drawPczMap();
   }
   function boxSelectedPcz(){

@@ -63,7 +63,7 @@ if(sel){
   ok(sel.tlo!==sel.zwykłeTlo,`tlo roznia sie od zwyklego: ${sel.tlo} vs ${sel.zwykłeTlo}`);
   ok(sel.badge&&/wybrany/i.test(sel.badgeTekst||''),`badge "wybrany" widoczny`);
   ok(sel.cien!=='none','cien/obwodka wzmocniona');
-  ok(parseInt(sel.paddingLeft)>parseInt(sel.tlo)&&sel.paddingLeft!=='0px',`miejsce na znacznik: ${sel.paddingLeft}`);
+  ok(parseInt(sel.paddingLeft)>=28,`miejsce na znacznik ✓: ${sel.paddingLeft}`);
 }
 const nSel=await p.evaluate(()=>document.querySelectorAll('#paczkomatList .pczrow.sel').length);
 ok(nSel===1,`dokladnie jeden zaznaczony (${nSel})`);
