@@ -496,8 +496,13 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
   document.querySelectorAll('#colSwatches .swatch').forEach(function(b){
     var code=b.dataset.color; var txt=b.textContent||'';
     var pl=txt.replace(/\s*\(\+?\d+\)\s*$/,'').trim().toLowerCase();
-    COL_PL[code]=pl||code; COL_PL['natural']='naturalny';
+    COL_PL[code]=pl||code;
   });
+  // swatche bez polskiej etykiety w DOM — uzupelniamy, inaczej plakietka
+  // pokazuje angielski kod (silver/gold) zamiast nazwy
+  var _plFallback={natural:'naturalny',silver:'srebrny',gold:'złoty',carbon:'grafitowy',
+    transparent:'przezroczysty'};
+  for(var _k in _plFallback){ if(!COL_PL[_k]) COL_PL[_k]=_plFallback[_k]; }
   function colPl(list){ return list.map(function(c){return COL_PL[c]||c;}).join(' + '); }
   // ── Plakietka koloru w podsumowaniu ──
   // tło = wybrany kolor, ramka = ten sam kolor przyciemniony, tekst czytelny
