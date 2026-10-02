@@ -9,11 +9,12 @@
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "ypigm7bngb");
 </script>
-<script>window.__APP_V='113';(function(){try{var k='appV',s=sessionStorage.getItem(k);if(s&&s!=='110'){sessionStorage.setItem(k,'110');if(window.caches&&caches.keys){caches.keys().then(function(a){return Promise.all(a.map(function(n){return caches.delete(n)}))}).then(function(){location.reload()});return}}sessionStorage.setItem(k,'110')}catch(e){}})();</script>
+<script>window.__APP_V='114';(function(){try{var k='appV',s=sessionStorage.getItem(k);if(s&&s!=='114'){sessionStorage.setItem(k,'114');if(window.caches&&caches.keys){caches.keys().then(function(a){return Promise.all(a.map(function(n){return caches.delete(n)}))}).then(function(){location.reload()});return}}sessionStorage.setItem(k,'110')}catch(e){}})();</script>
 <script>try{var _t=localStorage.getItem("mt_theme")||"light";if(_t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Cache-Control" content="no-store, max-age=0">
+    <link rel="stylesheet" href="/js/vendor/leaflet.css?v=1">
 <title>Zamów druk 3D online — wycena w 3 s | 3DFILE.link</title>
 <meta name="description" content="Zamów wydruk 3D: wgraj STL/OBJ/3MF, wyceń natychmiast, wybierz materiał i kolor, wskaż paczkomat InPost, zapłać online. Dostawa na świecie.">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -158,6 +159,17 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 .prt-actions.nav-right{min-width:0}
 @media(max-width:900px){.prt-actions.nav-right .prt-lang,.prt-actions.nav-right a{display:none}
 @media(max-width:900px){.nav-burger{display:inline-flex;align-items:center;gap:6px}.order-nav{display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border-bottom:1px solid var(--border);box-shadow:var(--shadow-lg);padding:10px 16px;flex-direction:column;align-items:stretch!important;z-index:60}.order-nav.open{display:flex}.header-in{position:relative}.order-nav a,.order-nav button{width:100%;text-align:left;padding:12px 10px!important}}
+
+/* --- paczkomaty InPost --- */
+.pczrow{display:block;width:100%;text-align:left;padding:9px 12px;border:1px solid var(--border);border-radius:10px;background:var(--card);cursor:pointer;font-size:13px;color:var(--foreground);margin-bottom:5px}
+.pczrow:hover{border-color:#2563eb}
+.pczrow.sel{border-color:#1d4ed8;box-shadow:0 0 0 2px rgba(37,99,235,.18);background:var(--card)}
+.pczcode{font-family:var(--font-mono,monospace);font-size:11px;color:var(--muted);font-weight:400}
+.pczsub{color:var(--muted);font-size:11.5px}
+.pczgroup{margin:12px 0 5px;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1px solid var(--border);padding-bottom:3px}
+#pczMap{border-radius:10px}
+#pczMap .leaflet-popup-content{font-size:13px;line-height:1.45}
+@media(max-width:560px){ #pczMap{height:260px} .pczrow{font-size:12.5px} }
 </style>
 <script type="importmap">
 {"imports":{"three":"/vendor/three/three.module.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/STLLoader.js":"/vendor/three/loaders/STLLoader.js","three/addons/loaders/OBJLoader.js":"/vendor/three/loaders/OBJLoader.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js","three/addons/loaders/3MFLoader.js":"/vendor/three/loaders/3MFLoader.js","three/addons/controls/OrbitControls.js":"/vendor/three/controls/OrbitControls.js"}}
@@ -330,10 +342,16 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
                             </div>
                             <div id="pickupRow" style="display:none;margin-top:10px">
                                       <label>📍 Paczkomat InPost — wybierz punkt</label>
-                                      <input id="fPaczkomat" placeholder="Wpisz miasto, np. gdansk albo Gdańsk…" style="padding:9px 12px;border:1px solid var(--border);border-radius:9px;width:100%;margin-top:6px">
-                                      <div id="paczkomatList" style="display:grid;gap:6px;margin-top:8px;max-height:260px;overflow:auto"></div>
+                                      <input id="fPaczkomat" placeholder="Wpisz miasto LUB ulicę, np. Gdańsk, Raatza…" oninput="clearTimeout(window._pczT);window._pczT=setTimeout(function(){searchPaczkomat(document.getElementById('fPaczkomat').value);},420)" style="padding:9px 12px;border:1px solid var(--border);border-radius:9px;width:100%;margin-top:6px">
+                                      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+                                        <button type="button" onclick="autoNearestPaczkomat()" style="flex:1 1 220px;padding:9px 12px;border-radius:9px;border:1px solid #2563eb;background:#eff6ff;color:#1d4ed8;font-weight:600;cursor:pointer;font-size:13px">🎯 Wybierz najbliższy automatycznie</button>
+                                        <button type="button" onclick="locateMePaczkomat()" style="padding:9px 12px;border-radius:9px;border:1px solid var(--border);background:var(--card);color:var(--foreground);cursor:pointer;font-size:13px">📍 Moja lokalizacja</button>
+                                      </div>
+                                      <div id="pczStatus" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
+                                      <div id="pczMap" style="height:320px;border:1px solid var(--border);border-radius:10px;margin-top:8px;display:none;overflow:hidden"></div>
+                                      <div id="paczkomatList" style="display:grid;gap:6px;margin-top:8px;max-height:320px;overflow:auto"></div>
+                                      <div style="font-size:11px;color:var(--muted);margin-top:6px">Lista zawiera <b>wszystkie</b> paczkomaty w mieście — kliknij punkt na mapie albo na liście.</div>
                                       <input type="hidden" id="fPaczkomatName"><input type="hidden" id="fPaczkomatAddr"><input type="hidden" id="fPaczkomatLat"><input type="hidden" id="fPaczkomatLon">
-                                      <div id="pickupMap" style="display:none"></div>
                                     </div>
                                     <div id="companyShipRow" style="display:none;margin-top:10px">
                                       <label>🏢 Wysyłka na adres firmy</label>
@@ -655,55 +673,166 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
       var sel=document.getElementById('fShipping');
       if(FULFILL==='pickup'){ sel.value = PK_SPEED==='express'?'pickup_express':'pickup'; return; }
       var ship=sel.value, row=document.getElementById('pickupRow'), csr=document.getElementById('companyShipRow');
-      if(ship==='standard'||ship==='express'){ LAST_SHIP_TIER=ship; row.style.display='block'; csr.style.display='none'; if(!document.getElementById('fPaczkomat').value) searchPaczkomat('Gda%C5%84sk'); }
+      if(ship==='standard'||ship==='express'){ LAST_SHIP_TIER=ship; row.style.display='block'; csr.style.display='none'; if(!document.getElementById('fPaczkomat').value) searchPaczkomatCity('Gdańsk'); }
       else if(ship==='address'){ LAST_SHIP_TIER='address'; row.style.display='none'; csr.style.display='block'; }
       else { row.style.display='none'; csr.style.display='none'; }
     }
+  var PCZ_ITEMS=[], PCZ_MAP=null, PCZ_MARKERS=[], PCZ_SEL=null, PCZ_CITY='', PCZ_ME=null;
+  function pczStatus(msg){ var el=document.getElementById('pczStatus'); if(el) el.innerHTML=msg||''; }
+
+  // Jedno pole dla miasta LUB ulicy. InPost wymaga diakrytyk w nazwie
+  // miasta, wiec miasto idzie z nasza mapa; ulice filtrujemy sami po
+  // stronie serwera, wiec polskie wejscie ("raatza", "Raatza") dziala.
   function searchPaczkomat(q){
     var box=document.getElementById('paczkomatList'); if(!box) return;
-    if(!q||q.trim().length<2){ box.innerHTML=''; return; }
-    box.innerHTML='<div style="color:var(--muted);font-size:13px;padding:6px">Szukam punktów…</div>';
-    fetch('/api/inpost/points?q='+encodeURIComponent(q.trim())+'&t='+Date.now()).then(function(r){return r.json();}).then(function(d){
-      var items=(d&&d.items)||[];
-      if(!items.length){ box.innerHTML='<div style="color:var(--muted);font-size:13px">Nie znaleziono paczkomatów — sprawdź miasto (np. Gdańsk, wejście bez polskich znaków też zadziała).</div>'; return; }
-      box.innerHTML=items.map(function(p){
-        var disp = String(p.display_name||'');
-        var addr = '<b style="color:var(--fg)">'+String(p.street||'')+' '+String(p.building_number||'')+'</b>';
-        addr += '<br><span style="color:var(--muted);font-size:12px">'+String(p.post_code||'')+' '+String(p.city||'')+'</span>';
-        var bn = String(p.name||'');
-        var lat=p.lat?p.lat:''; var lon=p.lon?p.lon:'';
-        return '<button type="button" data-pczbk="'+bn+'" data-pczdisp="'+disp+'" data-pczlat="'+lat+'" data-pczlon="'+lon+'" data-pczaddr="'+esc(String(p.street||'')+' '+String(p.building_number||'')+', '+String(p.post_code||'')+' '+String(p.city||''))+'">'+
-          '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><b>'+disp+'</b><span style="color:var(--accent);font-size:11px;white-space:nowrap">Wybierz →</span></div>'+addr+'</button>';
-      }).join('');
-      // delegation
-      box.querySelectorAll('button[data-pczbk]').forEach(function(b){
-        b.style.cssText='text-align:left;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--card);cursor:pointer;font-size:13px;display:block;width:100%;margin-bottom:6px';
-        b.onclick=function(){
-          var addr=b.getAttribute('data-pczaddr')||'';
-          document.getElementById('fPaczkomatName').value=b.getAttribute('data-pczbk');
-          document.getElementById('fPaczkomat').value=b.getAttribute('data-pczdisp');
-          document.getElementById('fPaczkomatAddr').value=addr;
-          document.getElementById('fPaczkomatLat').value=b.getAttribute('data-pczlat')||'';
-          document.getElementById('fPaczkomatLon').value=b.getAttribute('data-pczlon')||'';
-          box.innerHTML='';
-          showPickupMap();
-          toast('Wybrano: '+b.getAttribute('data-pczbk')+' — '+addr, true);
-        };
+    q=(q||'').trim();
+    if(q.length<2){ box.innerHTML=''; pczStatus(''); return; }
+    var city=_cityFromQuery(q);
+    pczStatus('Szukam…');
+    fetch('/api/inpost/points?q='+encodeURIComponent(city)+'&street='+encodeURIComponent(q)+'&t='+Date.now())
+      .then(function(r){return r.json();}).then(function(d){
+        var items=(d&&d.items)||[];
+        PCZ_CITY=(d&&d.city)||city;
+        if(!items.length){
+          // Ulica bez punktow nie moze konczyc sie pustym oknem — pokaz
+          // caly katalog miasta i powiedz wprost, czego szukac.
+          searchPaczkomatCity(PCZ_CITY);
+          pczStatus('Brak paczkomatu na ulicy „'+esc(q)+'”. Poniżej wszystkie punkty w '+esc(PCZ_CITY)+' — kliknij mapę albo listę.');
+          return;
+        }
+        PCZ_ITEMS=items; renderPaczkomaty();
+        pczStatus('Znaleziono <b>'+items.length+'</b> punktów na tej ulicy — kliknij, aby wybrać.');
+      }).catch(function(){
+        box.innerHTML='<div style="color:var(--muted);font-size:13px">Nie udało się pobrać punktów.</div>'; pczStatus('');
       });
-    }).catch(function(){ box.innerHTML='<div style="color:var(--muted);font-size:13px">Nie udało się pobrać punktów.</div>'; });
   }
-  function showPickupMap(){
-    var lat=document.getElementById('fPaczkomatLat').value, lon=document.getElementById('fPaczkomatLon').value;
-    var box=document.getElementById('pickupMap');
-    if(!box) return;
-    if(!lat||!lon){ box.innerHTML=''; return; }
-    box.style.display='block';
-    box.innerHTML='<div style="margin-top:10px"><div style="font-size:12px;color:var(--muted);margin-bottom:6px">📍 Lokalizacja punktu na mapie:</div>'+
-      '<iframe loading="lazy" style="width:100%;height:200px;border:1px solid var(--border);border-radius:10px" src="https://www.openstreetmap.org/export/embed.html?bbox='+(parseFloat(lon)-0.01)+','+(parseFloat(lat)-0.006)+','+(parseFloat(lon)+0.01)+','+(parseFloat(lat)+0.006)+'&layer=mapnik&marker='+lat+','+lon+'"></iframe>'+
-      '<div style="font-size:11px;color:var(--muted);margin-top:4px">Wybrany paczkomat: <b>'+document.getElementById('fPaczkomatName').value+'</b> · '+document.getElementById('fPaczkomatAddr').value+'</div></div>';
+  // miasto rozpoznajemy po znanych nazwach; "raatza" to ulica, wiec zostaje
+  // miasto z ostatniego wyboru (domyslnie Gdansk)
+  var _KNOWN_CITIES={gdansk:1,gdynia:1,sopot:1,krakow:1,wroclaw:1,poznan:1,warszawa:1,katowice:1,lodz:1,szczecin:1,bialystok:1,bydgoszcz:1,lublin:1,olsztyn:1,kielce:1,szczecin:1,czestochowa:1,elblag:1,koszalin:1,opole:1,plock:1,rzeszow:1,slupsk:1,sosnowiec:1,torun:1,zabrze:1,gliwice:1,bytom:1,pomorskie:1};
+  function _cityFromQuery(q){
+    var n=(q||'').toLowerCase().trim();
+    if(_KNOWN_CITIES[n]) return q;
+    var first=n.split(' ')[0];
+    if(_KNOWN_CITIES[first]) return q;
+    return PCZ_CITY||'Gdańsk';
   }
-
-
+  function searchPaczkomatCity(city){
+    PCZ_CITY=city||'Gdańsk';
+    var box=document.getElementById('paczkomatList'); if(!box) return;
+    pczStatus('Szukam…');
+    fetch('/api/inpost/points?q='+encodeURIComponent(PCZ_CITY)+'&t='+Date.now())
+      .then(function(r){return r.json();}).then(function(d){
+        PCZ_ITEMS=(d&&d.items)||[]; PCZ_CITY=(d&&d.city)||PCZ_CITY;
+        renderPaczkomaty();
+        pczStatus(PCZ_ITEMS.length
+          ? 'Znaleziono <b>'+PCZ_ITEMS.length+'</b> punktów w '+esc(PCZ_CITY)+'. Kliknij mapę albo listę, albo użyj „najbliższy automatycznie”.'
+          : 'Brak punktów w tym mieście — spróbuj innego.');
+      }).catch(function(){ pczStatus('Nie udało się pobrać punktów.'); });
+  }
+  function renderPaczkomaty(){
+    var box=document.getElementById('paczkomatList'); if(!box) return;
+    if(!PCZ_ITEMS.length){ box.innerHTML=''; drawPczMap(); return; }
+    // grupuj po ulicy — dla klienta "Raatza" czyta sie lepiej niz kod GDA125M
+    var groups={}, order=[];
+    PCZ_ITEMS.forEach(function(p){ var k=p.street||'—'; if(!groups[k]){groups[k]=[];order.push(k);} groups[k].push(p); });
+    var h='';
+    order.sort().forEach(function(k){
+      var g=groups[k];
+      h+='<div class="pczgroup">'+esc(k)+(g.length>1?' ('+g.length+')':'')+'</div>';
+      g.forEach(function(p){ h+=pczRow(p); });
+    });
+    box.innerHTML=h;
+    box.querySelectorAll('button[data-pczbk]').forEach(function(b){
+      b.onclick=function(){ selectPaczkomat(b.getAttribute('data-pczbk')); };
+    });
+    drawPczMap();
+  }
+  function pczRow(p){
+    var h='<b>'+esc(String(p.street||''))+' '+esc(String(p.building_number||''))+'</b>'+
+      ' <span class="pczcode">'+esc(String(p.name||''))+'</span>'+
+      '<br><span class="pczsub">'+esc(String(p.post_code||''))+' '+esc(String(p.city||''))+
+      (p.distance_m!=null?' · '+p.distance_m+' m':'')+'</span>';
+    return '<button type="button" class="pczrow" data-pczbk="'+esc(String(p.name||''))+'">'+h+'</button>';
+  }
+  function selectPaczkomat(name){
+    var p=null;
+    PCZ_ITEMS.forEach(function(x){ if(x.name===name) p=x; });
+    if(!p) return;
+    PCZ_SEL=name;
+    document.getElementById('fPaczkomatName').value=p.name;
+    document.getElementById('fPaczkomatAddr').value=String(p.street||'')+' '+String(p.building_number||'')+', '+String(p.post_code||'')+' '+String(p.city||'');
+    document.getElementById('fPaczkomatLat').value=(p.lat==null?'':p.lat);
+    document.getElementById('fPaczkomatLon').value=(p.lon==null?'':p.lon);
+    document.getElementById('fPaczkomat').value=p.street+' '+String(p.building_number||'')+' ('+p.name+')';
+    pczStatus('Wybrano <b>'+esc(p.street)+' '+esc(String(p.building_number||''))+'</b> · '+esc(p.name));
+    boxSelectedPcz();
+    drawPczMap();
+  }
+  function boxSelectedPcz(){
+    var box=document.getElementById('paczkomatList'); if(!box) return;
+    box.querySelectorAll('button[data-pczbk]').forEach(function(b){
+      b.classList.toggle('sel', b.getAttribute('data-pczbk')===PCZ_SEL);
+    });
+  }
+  // "wybierz najblizszy automatycznie": pozycja z przegladarki, serwer
+  // sortuje po prawdziwej odleglosci — to nie jest "pierwszy z listy".
+  function autoNearestPaczkomat(){
+    var city=PCZ_CITY||'Gdańsk';
+    if(!navigator.geolocation){
+      pczStatus('Ta przeglądarka nie udostępnia lokalizacji. Wybierz z listy albo wpisz miasto.');
+      searchPaczkomatCity(city); return;
+    }
+    pczStatus('Szukam Twojej lokalizacji…');
+    navigator.geolocation.getCurrentPosition(function(pos){
+      var la=pos.coords.latitude, lo=pos.coords.longitude;
+      fetch('/api/inpost/points?q='+encodeURIComponent(city)+'&lat='+la+'&lon='+lo+'&limit=1&t='+Date.now())
+        .then(function(r){return r.json();}).then(function(d){
+          var it=((d&&d.items)||[])[0];
+          if(!it){
+            pczStatus('Nie znalazłem punktów w pobliżu — sprawdź miasto.');
+            searchPaczkomatCity(city); return;
+          }
+          PCZ_ITEMS=[it]; renderPaczkomaty(); selectPaczkomat(it.name);
+          toast('Najbliższy punkt: '+it.street+' ('+(it.distance_m!=null?it.distance_m+' m':'?')+')', true);
+        });
+    }, function(){
+      pczStatus('Nie udało się ustalić lokalizacji — wybierz z listy albo wpisz miasto.');
+      searchPaczkomatCity(city);
+    }, {enableHighAccuracy:true, timeout:9000});
+  }
+  function locateMePaczkomat(){
+    if(!navigator.geolocation){ pczStatus('Ta przeglądarka nie udostępnia lokalizacji.'); return; }
+    navigator.geolocation.getCurrentPosition(function(pos){
+      PCZ_ME=[pos.coords.latitude,pos.coords.longitude];
+      pczStatus('Twoja lokalizacja: '+PCZ_ME[0].toFixed(4)+', '+PCZ_ME[1].toFixed(4));
+      autoNearestPaczkomat();
+    }, function(){ pczStatus('Brak dostępu do lokalizacji.'); });
+  }
+  function drawPczMap(){
+    var el=document.getElementById('pczMap');
+    if(!el||typeof L==='undefined'||!window.L) return;
+    var pts=PCZ_ITEMS.filter(function(p){return p.lat!=null&&p.lon!=null;});
+    if(!pts.length){ el.style.display='none'; return; }
+    el.style.display='block';
+    if(!PCZ_MAP){
+      PCZ_MAP=L.map(el,{scrollWheelZoom:false}).setView([54.3520,18.6466],12);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(PCZ_MAP);
+    }
+    PCZ_MARKERS.forEach(function(m){ PCZ_MAP.removeLayer(m); });
+    PCZ_MARKERS=[];
+    pts.forEach(function(p){
+      var sel=p.name===PCZ_SEL;
+      var m=L.marker([p.lat,p.lon],{icon:L.divIcon({className:'',html:
+        '<span style="display:block;width:'+(sel?18:13)+'px;height:'+(sel?18:13)+'px;border-radius:50%;background:'+(sel?'#2563eb':'#ffffff')+';border:2.5px solid #1d4ed8;box-shadow:0 1px 4px rgba(0,0,0,.35)"></span>'})});
+      m.bindPopup('<b>'+esc(p.street)+' '+esc(String(p.building_number||''))+'</b><br>'+esc(p.post_code)+' '+esc(p.city)+'<br><span class="pczcode">'+esc(p.name)+'</span>');
+      m.on('click',function(){ selectPaczkomat(p.name); });
+      m.addTo(PCZ_MAP); PCZ_MARKERS.push(m);
+    });
+    if(PCZ_ME) L.circleMarker(PCZ_ME,{radius:7,color:'#16a34a',fillColor:'#16a34a',fillOpacity:.9}).addTo(PCZ_MAP).bindPopup('Ty');
+    var all=pts.map(function(p){return [p.lat,p.lon];});
+    if(PCZ_ME) all.push(PCZ_ME);
+    PCZ_MAP.fitBounds(L.latLngBounds(all).pad(0.15));
+  }
 function drawCart(){
   var c=document.getElementById('cart');
   if(!CART.length){ c.innerHTML='<div class="cart-empty">Koszyk pusty — prześlij model powyżej (możesz dodać kilka).</div>'; return; }
@@ -963,8 +1092,8 @@ function loadJobFromUrl(){
   }).catch(function(){});
 }
 
-var ppEl=document.getElementById('fPaczkomat');
-if(ppEl){ ppEl.addEventListener('input',function(){ var v=ppEl.value.trim(); if(v.length>=2){ clearTimeout(window.__ppe); window.__ppe=setTimeout(function(){searchPaczkomat(v);},450); } }); }
+
+
 if(document.getElementById('fShipping').value!=='pickup') toggleShipUI();
 function autofillShipping(){
   var t=localStorage.getItem('token')||localStorage.getItem('mt_token');
@@ -1068,5 +1197,6 @@ window.__local3d = {
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js?v=24').then(function(sw){sw&&sw.update&&setInterval(function(){sw.update()},3*60*60*1000)});navigator.serviceWorker.addEventListener('controllerchange',function(){location.reload()})}</script>
 <script src="/asset/ev.js?v=4" defer></script>
 <script src="/asset/nav-auth.js?v=2" defer></script>
+<script src="/js/vendor/leaflet.js?v=1"></script>
 </body>
 </html>
