@@ -9,7 +9,7 @@
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "ypigm7bngb");
 </script>
-<script>window.__APP_V='115';(function(){try{var k='appV',s=sessionStorage.getItem(k);if(s&&s!=='115'){sessionStorage.setItem(k,'115');if(window.caches&&caches.keys){caches.keys().then(function(a){return Promise.all(a.map(function(n){return caches.delete(n)}))}).then(function(){location.reload()});return}}sessionStorage.setItem(k,'110')}catch(e){}})();</script>
+<script>window.__APP_V='116';(function(){try{var k='appV',s=sessionStorage.getItem(k);if(s&&s!=='116'){sessionStorage.setItem(k,'116');if(window.caches&&caches.keys){caches.keys().then(function(a){return Promise.all(a.map(function(n){return caches.delete(n)}))}).then(function(){location.reload()});return}}sessionStorage.setItem(k,'110')}catch(e){}})();</script>
 <script>try{var _t=localStorage.getItem("mt_theme")||"light";if(_t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -719,7 +719,7 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
   function searchPaczkomatCity(city, keepStatus){
     PCZ_CITY=city||'Gdańsk';
     var box=document.getElementById('paczkomatList'); if(!box) return;
-    pczStatus('Szukam…');
+    if(!keepStatus) pczStatus('Szukam…');
     fetch('/api/inpost/points?q='+encodeURIComponent(PCZ_CITY)+'&t='+Date.now())
       .then(function(r){return r.json();}).then(function(d){
         PCZ_ITEMS=(d&&d.items)||[]; PCZ_CITY=(d&&d.city)||PCZ_CITY;

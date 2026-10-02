@@ -37,7 +37,7 @@ ok(tiles > 0, `kafelki OSM zaladowane: ${tiles}`);
 
 // --- 3. RAATZA ---
 console.log('\n[3] szukanie ulicy "Raatza" (ta, ktorej nie bylo w wyborze)');
-await page.fill('#fPaczkomat', '');
+await page.evaluate(() => { const e=document.getElementById('fPaczkomat'); e.value=''; });
 await page.type('#fPaczkomat', 'Raatza', { delay: 60 });
 await page.waitForTimeout(2500);
 const raatzaTxt = await page.locator('#paczkomatList').innerText();
