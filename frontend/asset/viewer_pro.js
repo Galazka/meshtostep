@@ -518,7 +518,18 @@ export function initViewerPro(opts) {
     },
     setBg: function (hex) { scene.background = new THREE.Color(hex); },
     refreshBar: refreshBar,
-    setColor: function (hex) { mat.color.set(hex); },
+    setColor: function (hex) {
+      mat.color.set(hex);
+      // Czarne PLA na ciemnym tle jest nierozpoznawalne — podswietlenie
+      // i metalness musza wzrosnac, inaczej bryla wyglada jak plamka.
+      // Jasne kolory dostaja odwrotnie: mniej metalu, wiecej rozproszenia.
+      const lum = mat.color.r * 0.2126 + mat.color.g * 0.7152 + mat.color.b * 0.0722;
+      const dark = lum < 0.22;
+      mat.metalness = dark ? 0.42 : 0.12;
+      mat.roughness = dark ? 0.34 : 0.62;
+      mat.emissive = mat.color.clone().multiplyScalar(dark ? 0.14 : 0.03);
+      mat.needsUpdate = true;
+    },
     resetView: resetView,
     isLoaded: function () { return loaded; },
     state: st

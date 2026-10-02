@@ -44,7 +44,7 @@ await p.evaluate(()=>pickColor('white'));
 await p.waitForTimeout(1200);
 const w1=await p.evaluate(()=>({hex:previewHex(), color:CART[0].color}));
 ok(w1.hex==='#e8eaed',`po wyborze bialy: previewHex=${w1.hex}`);
-ok(w1.color==='bialy',`it.color = "${w1.color}"`);
+ok(/^biały/.test(w1.color), 'it.color = "'+w1.color+'" (polskie diakrytyki)');
 // klik niebieski
 await p.evaluate(()=>pickColor('blue'));
 await p.waitForTimeout(1200);
