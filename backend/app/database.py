@@ -153,6 +153,7 @@ def _migrate_columns():
         try:
             existing_items = {c["name"] for c in insp.get_columns("order_items")}
             add_col(conn, "order_items", "surcharge_pln", "FLOAT DEFAULT 0", existing_items)
+            add_col(conn, "order_items", "multicolor_fee", "FLOAT DEFAULT 0", existing_items)
             add_col(conn, "order_items", "infill", "INTEGER DEFAULT 15", existing_items)
         except Exception as e:
             print(f"[3dfile] order_items migrate: {e}")

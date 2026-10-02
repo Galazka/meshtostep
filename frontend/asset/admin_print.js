@@ -90,6 +90,7 @@ window.adminSetSearch = function(v, f){ if(f) __adminQ.search=v; __adminQ.page=1
                    (it.quantity > 1 ? ' ×' + it.quantity : '') +
                    (it.infill && it.infill !== 15 ? ' <b style="color:#B45309;font-size:10px">' + it.infill + '% wypełn.</b>' : '') +
                    (it.volume_cm3 ? ' <span style="color:#9ca3af;font-size:10px">' + it.volume_cm3 + 'cm³</span>' : '') +
+                   (it.colors > 1 ? ' <span style="color:#7c3aed;font-size:10px;font-weight:600">' + it.colors + ' kolory · +' + (it.multicolor_fee || 0).toFixed(0) + 'zł</span>' : '') +
                    dl + '</div>';
           }).join('');
         })() + '</td>' +

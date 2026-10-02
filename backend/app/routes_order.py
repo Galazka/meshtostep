@@ -763,6 +763,7 @@ def list_orders(
                 "filament_grams": it.filament_grams, "subtotal": it.subtotal,
                 "margin_pln": it.margin_pln, "print_parts": it.print_parts,
                 "surcharge_pln": getattr(it, "surcharge_pln", 0.0) or 0.0,
+                "multicolor_fee": getattr(it, "multicolor_fee", 0.0) or 0.0,
                 "infill": getattr(it, "infill", 15) or 15,
                 "colors": max(1, len(str(it.color or "").split(" + "))),
             } for it in (o.items or [])],
@@ -1158,7 +1159,7 @@ def get_pricing(db: Session = Depends(get_db), admin=Depends(require_admin)):
         if key.startswith("throughput:"):
             return ("Przepustowość — " + key.split(":", 1)[1], "Ile mm³ drukuje na sekundę", "mm³/s", "Materiały")
         if key.startswith("color:"):
-            return ("Dopłata za kolor — " + key.split(":", 1)[1], "Premium za dodatkowy kolor", "zł", "Kolory")
+            return ("Rezerwa — " + key.split(":", 1)[1], "Nie używane: pierwszy kolor jest zawsze w cenie, dopłatę za kolejne liczy sekcja Wielokolor", "zł", "Kolory")
         if key.startswith("shipping_"):
             t = key.split(":", 1)[0]
             reg = key.split(":", 1)[1] if ":" in key else ""
@@ -1424,6 +1425,7 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db), 
             color_premium=internal["color_premium"],
             subtotal=round(internal["filament_cost"] + internal["electricity_cost"], 2),
             surcharge_pln=row_surcharge,
+            multicolor_fee=row_multi,
             margin_pln=internal["margin_pln"],
             print_parts=internal["print_parts"],
             infill=int(internal.get("infill_percent") or 15),

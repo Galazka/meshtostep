@@ -312,7 +312,8 @@ class OrderItem(Base):
     electricity_cost = Column(Float, default=0.0)
     color_premium = Column(Float, default=0.0)  # koszt pigmentu (zużycie) — NIE dopłata
     subtotal = Column(Float, default=0.0)  # KOSZT: filament + prąd
-    surcharge_pln = Column(Float, default=0.0)  # dopłata za pigment (jawna linia u klienta)
+    surcharge_pln = Column(Float, default=0.0)  # dopłata za pigment (jawna linia u klienta) — obecnie 0
+    multicolor_fee = Column(Float, default=0.0)  # dopłata za kolejne kolory w tym modelu
     margin_pln = Column(Float, default=0.0)
     print_parts = Column(Integer, default=1)
     infill = Column(Integer, default=15)  # wypelnienie % (15 = cena bazowa)
