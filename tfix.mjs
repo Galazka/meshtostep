@@ -11,15 +11,15 @@ p.on('console',m=>{if(m.type()==='error')errs.push('CONSOLE '+m.text().slice(0,1
 
 console.log('\n[A] podglad 3D — kolejne pliki');
 await p.goto(BASE+'/zamow',{waitUntil:'networkidle',timeout:90000});
-await p.setInputFiles('input[type=file]','C:/Users/galaz/Desktop/MeshToStep/frontend/_demo.stl');
+await p.setInputFiles('input[type=file]','C:/Users/galaz/Desktop/MeshToStep/frontend/_t1.stl');
 await p.waitForTimeout(11000);
 const c1=await p.evaluate(()=>document.querySelectorAll('#previewBox canvas').length);
 ok(c1===1,`po 1 pliku: canvas=${c1}`);
-await p.setInputFiles('input[type=file]','C:/Users/galaz/Downloads/222222222222222.stl');
+await p.setInputFiles('input[type=file]','C:/Users/galaz/Desktop/MeshToStep/frontend/_t2.stl');
 await p.waitForTimeout(11000);
 const c2=await p.evaluate(()=>document.querySelectorAll('#previewBox canvas').length);
 ok(c2===1,`po 2 pliku: canvas=${c2} (wczesniej 0 = pusty podglad)`);
-await p.setInputFiles('input[type=file]','C:/Users/galaz/Desktop/MeshToStep/frontend/_demo.stl');
+await p.setInputFiles('input[type=file]','C:/Users/galaz/Desktop/MeshToStep/frontend/_t1.stl');
 await p.waitForTimeout(11000);
 const c3=await p.evaluate(()=>document.querySelectorAll('#previewBox canvas').length);
 ok(c3===1,`po 3 pliku: canvas=${c3}`);

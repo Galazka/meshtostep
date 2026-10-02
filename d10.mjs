@@ -1,0 +1,21 @@
+import { chromium } from 'playwright-core';
+const b=await chromium.launch({channel:'chrome'});
+const p=await (await b.newContext({viewport:{width:1400,height:1200},serviceWorkers:'block',locale:'pl-PL'})).newPage();
+p.on('console',m=>console.log('LOG:',m.text().slice(0,300)));
+await p.goto('https://3dfile.link/zamow',{waitUntil:'networkidle',timeout:90000});
+await p.setInputFiles('input[type=file]','C:/Users/galaz/Desktop/MeshToStep/frontend/_demo.stl');
+await p.waitForTimeout(11000);
+console.log('1 plik canvas:',await p.evaluate(()=>document.querySelectorAll('#previewBox canvas').length));
+await p.setInputFiles('input[type=file]','C:/Users/galaz/Downloads/222222222222222.stl');
+await p.waitForTimeout(12000);
+console.log('2 plik canvas:',await p.evaluate(()=>document.querySelectorAll('#previewBox canvas').length));
+console.log('\n=== previewBox.innerHTML (353 znaki) ===');
+console.log(await p.evaluate(()=>document.getElementById('previewBox').innerHTML));
+console.log('\n=== stan CART ===');
+console.log(await p.evaluate(()=>CART.map((i,n)=>({n, name:i.model_name, bytes:!!i._bytes, byteLen:i._bytes?i._bytes.byteLength:0, job:!!i.job_id, vol:i.vol}))));
+console.log('\n=== pro ===');
+console.log(await p.evaluate(()=>{
+  const pro=document.getElementById('previewBox').__pro;
+  return pro?JSON.stringify({isLoaded:pro.isLoaded, grupa:pro.group.children.length, rendererW:pro.renderer.domElement.width}):'brak';
+}));
+await b.close();
