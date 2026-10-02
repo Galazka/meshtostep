@@ -86,6 +86,24 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 .mat span{display:block;font-size:11px;color:var(--muted);max-height:none}
 .summary-row{display:flex;justify-content:space-between;padding:6px 0;font-size:14px}
 .summary-total{display:flex;justify-content:space-between;padding:11px 0 4px;border-top:1px solid var(--border);font-weight:700;font-size:18px}
+/* ── Podsumowanie zamówienia: czytelne, dziecinne ── */
+.sumlist{display:flex;flex-direction:column;gap:10px;margin:4px 0 14px}
+.sumitem{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:15px}
+.sumblock{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-2px 0 4px;padding-left:2px}
+.summeta{display:flex;gap:6px;flex-wrap:wrap;flex:1;min-width:0}
+.chip{display:inline-flex;align-items:center;gap:5px;background:var(--card-soft,#f4f6fa);border:1px solid var(--border);border-radius:999px;padding:2px 9px;font-size:11.5px;color:var(--muted);font-family:var(--font-mono);white-space:nowrap}
+.chipcol{color:var(--foreground)}
+.chipmin{background:#fff7ed;border-color:#fed7aa;color:#b45309;font-weight:600}
+.sumunit{font-size:12px;color:var(--muted);font-family:var(--font-mono);white-space:nowrap}
+.sumedit{background:none;border:1px solid var(--border);border-radius:999px;padding:2px 10px;font-size:11.5px;color:var(--accent);cursor:pointer;font-weight:600}
+.sumedit:hover{background:var(--card-soft,#f4f6fa)}
+.sumcalc{border-top:1px solid var(--border);padding-top:10px}
+.sumsub{font-size:12.5px;color:var(--muted);font-style:italic;padding-left:10px}
+.sumsum{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0 0;margin-top:10px;border-top:2px solid var(--foreground);font-weight:800;font-size:22px}
+.paybtn{width:100%;margin-top:14px;padding:15px;border:none;border-radius:12px;background:var(--accent,#2B5CE6);color:#fff;font-size:17px;font-weight:700;cursor:pointer;letter-spacing:.2px}
+.paybtn:hover{filter:brightness(1.08)}
+.paybtn:disabled{opacity:.5;cursor:not-allowed}
+.sumnote{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.5}
 .vat{font-size:11px;color:var(--muted);padding-top:8px}
 .fx{font-size:11px;color:var(--muted);padding-top:2px}
 .cur-btn{padding:7px 13px;border:1px solid var(--border);background:var(--bg);border-radius:8px;font-size:13px;cursor:pointer}
@@ -677,6 +695,7 @@ document.getElementById('fileInput').addEventListener('change',function(){ var f
   this.value='';
 });
 
+function payFromSummary(){ var b=document.getElementById('submitBtn'); if(b&&!b.disabled) b.click(); }
 function calc(){
   var box=document.getElementById('sumBody'), empty=document.getElementById('sumEmpty'), btn=document.getElementById('submitBtn');
   if(!CART.length){ box.style.display='none'; empty.style.display='block'; btn.disabled=true; try{btn.textContent='Zamawiam \u2192';var cb0=document.getElementById('ctaTot');if(cb0)cb0.textContent='—';}catch(e){} return; }
@@ -690,10 +709,19 @@ function calc(){
     colorExt += (+it.mfee)||0;
     var c=it.colors||1; var colTag=(c>1)?' · '+c+' kol.':'';
     var infTag=(it.infill&&it.infill!==INFCFG.base)?' · '+it.infill+'% wypełn.':'';
-    rowsHTML+='<div class="summary-row" style="cursor:pointer" onclick="preview('+idx+');refreshCol()"><span style="font-weight:600">'+esc(it.model_name||('Model '+(idx+1)))+' ×'+it.qty+'</span><span>'+fmt(cx(prn*it.qty/rate))+'</span></div>';
-    var gl=''; if(it.grams){ gl=(+it.grams).toFixed(1).replace('.',',')+' g'; if(it.hours) gl+=' · ~'+(+it.hours).toFixed(1).replace('.',',')+' h'; if(it.atMin) gl+=' · cena min.'; }
-    if(gl){ rowsHTML+='<div class="summary-row" style="font-size:11.5px;color:var(--muted)"><span>'+esc(it.material||'PLA')+'</span><span>'+gl+'</span></div>'; }
-    rowsHTML+='<div class="summary-row" style="font-size:12px;color:var(--muted);cursor:pointer" onclick="preview('+idx+');refreshCol()"><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:12px;height:12px;border-radius:50%;background:'+_colHex(it.color)+';border:1px solid rgba(0,0,0,.15);display:inline-block"></span>'+esc(it.material||'PLA')+' · '+esc(it.color||'—')+colTag+infTag+'</span><span style="color:var(--accent);font-size:11px">edytuj</span></div>';
+    var unit = it.qty>1 ? ' × '+it.qty+' szt' : '';
+    rowsHTML+='<div class="summary-row sumitem" style="cursor:pointer" onclick="preview('+idx+');refreshCol()"><span style="font-weight:600">'+esc(it.model_name||('Model '+(idx+1)))+unit+'</span><span>'+fmt(cx(prn/rate))+'</span></div>';
+    var gl=''; if(it.grams){ gl=(+it.grams).toFixed(1).replace('.',',')+' g'; if(it.hours) gl+=' · ~'+(+it.hours).toFixed(1).replace('.',',')+' h'; }
+    var meta=[];
+    meta.push('<span class="chip">'+esc(it.material||'PLA')+'</span>');
+    meta.push('<span class="chip chipcol"><i style="width:9px;height:9px;border-radius:50%;background:'+_colHex(it.color)+';border:1px solid rgba(0,0,0,.18);display:inline-block"></i>'+esc(it.color||'—')+'</span>');
+    if(it.vol) meta.push('<span class="chip">'+it.vol.toFixed(1)+' cm³</span>');
+    if(it.dims) meta.push('<span class="chip">'+esc(it.dims)+' mm</span>');
+    if(gl) meta.push('<span class="chip">'+gl+'</span>');
+    if(it.atMin) meta.push('<span class="chip chipmin">cena minimalna</span>');
+    rowsHTML+='<div class="sumblock"><div class="summeta">'+meta.join('')+'</div>'+
+      '<div class="sumunit">'+ (it.qty>1 ? (cx(prn/it.qty/rate)).toFixed(2).replace('.',',')+' zł × '+it.qty+' szt' : '1 sztuka') +'</div>'+
+      '<button class="sumedit" onclick="event.stopPropagation();preview('+idx+');refreshCol()">Zmień</button></div>';
   });
   var shipBase=(CFG&&CFG.shipping_tiers)||{standard:{PL:16.49,EU:35,GLOBAL:55},express:{PL:33,EU:70,GLOBAL:110},pickup:{PL:0,EU:0,GLOBAL:0},pickup_express:{PL:19,EU:19,GLOBAL:19}};
   var PACK=(CFG&&CFG.packing_pln!=null)?+CFG.packing_pln:3;
@@ -715,19 +743,27 @@ function calc(){
   if(COUPON_PLN>adjPLN)COUPON_PLN=adjPLN;
     var totalPLN = adjPLN + shippingPLN - COUPON_PLN;
 var discLine = COUPON_PLN>0 ? '<div class="summary-row"><span>Rabat '+(window.__COUPON.code||'')+'</span><span style="color:#15803d;font-weight:700">−'+fmt(cx(COUPON_PLN/rate))+'</span></div>' : '';
-  var colorLine = colorExt>0 ? '<div class="summary-row"><span>Kolory ekstra</span><span style="color:#B45309">+'+fmt(colorExt/rate)+'</span></div>' : '';
+  // it.price from /api/calculate ALREADY includes multicolor_fee — never add it twice.
+  // Show it as a breakdown line inside the total, not as a separate charge.
+  var colorLine = colorExt>0 ? '<div class="summary-row sumsub"><span>w tym dopłata za kolory</span><span>'+fmt(colorExt/rate)+'</span></div>' : '';
   var shipLabel = isPickup ? 'Odbiór osobisty (Gdańsk Osowa)' : isPkExp ? 'Ekspres przy odbiorze (≤2 dni)' : freeShip ? 'Wysyłka — GRATIS (≥'+FREEMIN+' zł)' : smallOrder ? 'Wysyłka + pakowanie — małe zamówienie (flat '+fmt(SOFLAT)+')' : 'Wysyłka + pakowanie';
   var freeLine='';
   // cena ostateczna (bez dopłat po fakcie) — bez rozbicia netto/VAT
   var total=cx(totalPLN/rate);
   var brutto=total;
   var netHTML='<div class="summary-row" style="font-size:11.5px;color:var(--muted)"><span>Cena brutto = netto (osoba fizyczna, VAT zw.)</span><span>'+fmt(brutto)+'</span></div>';
-  box.innerHTML=rowsHTML+
-      '<div class="summary-row"><span>Druk ('+CART.length+' model'+(CART.length>1?'i':'')+')</span><span>'+fmt(cx(basePrint/rate))+'</span></div>'+
-    '<div class="summary-row"><span>'+shipLabel+'</span><span>'+(shippingPLN===0?'0,00 zł':fmt(shippingPLN/rate))+'</span></div>'+
-    colorLine+discLine+freeLine+
-    netHTML+
-    '<div class="summary-total"><span>Do zapłaty (brutto)</span><span>'+fmt(brutto)+'</span></div>';
+  var nModel=CART.length, nPcs=CART.reduce(function(a,it){return a+(+it.qty||1);},0);
+  var modelWord = nModel===1 ? '1 model' : (nModel===2||nModel===3||nModel===4 ? nModel+' modele' : nModel+' modeli');
+  var pcsWord = nPcs===nModel ? '' : ' ('+nPcs+' szt)';
+  box.innerHTML='<div class="sumlist">'+rowsHTML+'</div>'+
+    '<div class="sumcalc">'+
+      '<div class="summary-row"><span>Druk '+modelWord+pcsWord+'</span><span>'+fmt(cx(basePrint/rate))+'</span></div>'+
+      '<div class="summary-row"><span>'+shipLabel+'</span><span>'+(shippingPLN===0?'—':fmt(shippingPLN/rate))+'</span></div>'+
+      colorLine+discLine+
+      '<div class="summary-row sumsum"><span>Razem</span><span>'+fmt(brutto)+'</span></div>'+
+    '</div>'+
+    '<button class="paybtn" id="payBtnSum" onclick="payFromSummary()">Zapłać '+fmt(brutto)+'</button>'+
+    '<div class="sumnote">Cena ostateczna — rachunek dostaniesz e-mailem. Płatność: Stripe (karta lub BLIK).</div>';
   empty.style.display='none'; box.style.display='block'; btn.disabled=false;
   try{ var sym=(cur==='PLN'?'zł':cur); btn.textContent='Zamawiam · '+fmt(brutto)+' \u2192'; var cb=document.getElementById('ctaTot'); if(cb)cb.textContent=fmt(brutto); }catch(e){}
   var vn=document.getElementById('vatNote'); if(vn) vn.textContent='① Cena „do zapłaty" jest ostateczna — nie doliczamy nic później. Do zamówienia dołączamy rachunek.';
