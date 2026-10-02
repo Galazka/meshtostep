@@ -106,6 +106,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 .ctxt{text-shadow:0 1px 0 rgba(255,255,255,.18)}
 .cbadge+.cbadge{margin-left:2px}
 .chipmin.cbadge{border-width:2px}
+/* linia "jednostkowa x ilosc = razem" — mono, bo to liczby */
+.summath{display:block;margin-top:6px;font-family:var(--font-mono);font-size:11.5px;color:var(--muted);letter-spacing:-.01em}
+.summath b{color:var(--foreground);font-weight:700}
 .sumunit{font-size:12px;color:var(--muted);font-family:var(--font-mono);white-space:nowrap}
 .sumedit{background:none;border:1px solid var(--border);border-radius:999px;padding:2px 10px;font-size:11.5px;color:var(--accent);cursor:pointer;font-weight:600}
 .sumedit:hover{background:var(--card-soft,#f4f6fa)}
@@ -773,7 +776,19 @@ function calc(){
     if(it.dims) meta.push('<span class="chip">'+esc(it.dims)+' mm</span>');
     if(gl) meta.push('<span class="chip">'+gl+'</span>');
     if(it.atMin) meta.push('<span class="chip chipmin">cena minimalna</span>');
-    rowsHTML+='<div class="sumblock"><div class="summeta">'+meta.join('')+'</div>'+
+    // Jednostkowa liczona Z pozycji (prn/q), nigdy przez mnozenie — it.price
+    // z /api/calculate juz zawiera quantity. Pokazujemy "jedn x qty = razem"
+    // tylko gdy mnozenie faktycznie odtwarza pozycje; min_print potrafi ja
+    // przyciac, wowczas mnozenie by klamalo, wiec idzie "srednio ... / szt".
+    var q=it.qty||1, mathTxt='';
+    if(q>1){
+      var perR=Math.round((prn/q)*100)/100;
+      var recon=Math.abs(perR*q-prn)<0.005;
+      mathTxt = recon
+        ? '<span class="summath">'+fmt(cx(perR/rate))+' × '+q+' szt = <b>'+fmt(cx(prn/rate))+'</b></span>'
+        : '<span class="summath">średnio '+fmt(cx(perR/rate))+' / szt</span>';
+    }
+    rowsHTML+='<div class="sumblock"><div class="summeta">'+meta.join('')+'</div>'+mathTxt+
       '<button class="sumedit" onclick="event.stopPropagation();preview('+idx+');refreshCol()">Zmień</button></div>';
   });
   var shipBase=(CFG&&CFG.shipping_tiers)||{standard:{PL:16.49,EU:35,GLOBAL:55},express:{PL:33,EU:70,GLOBAL:110},pickup:{PL:0,EU:0,GLOBAL:0},pickup_express:{PL:19,EU:19,GLOBAL:19}};
