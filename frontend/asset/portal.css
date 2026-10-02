@@ -461,7 +461,8 @@ html[data-theme="dark"] .why-table td.us{background:rgba(143,180,255,.07)}
    Ukrywamy tylko w-theme, nie w-nav: użytkownik musi móc zmienić język. */
 @media(max-width:760px){
   .prt-actions .ghost{display:none}
-  .prt-actions .prt-lang{display:inline-flex !important}
+    .prt-actions .prt-lang{display:inline-flex !important}
+    #langToggle{display:inline-flex !important}   /* na indexie ma klasę .ghost — nie chowamy języka */
   .prt-actions{gap:6px}
   .prt-actions a.prt-btn{display:none}
   .nav-auth-mobile{display:none;flex-direction:column;gap:8px;padding-top:12px;margin-top:4px;border-top:1px solid rgba(255,255,255,.12)}
