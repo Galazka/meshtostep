@@ -97,6 +97,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 .chip{display:inline-flex;align-items:center;gap:5px;background:var(--card-soft,#f4f6fa);border:1px solid var(--border);border-radius:999px;padding:2px 9px;font-size:11.5px;color:var(--muted);font-family:var(--font-mono);white-space:nowrap}
 .chipcol{color:var(--foreground)}
 .chipmin{background:#fff7ed;border-color:#fed7aa;color:#b45309;font-weight:600}
+/* ── Plakietka koloru: tło = wybrany kolor, tekst czytelny na jasnych i ciemnych ── */
+.cbadge{display:inline-flex;align-items:center;gap:6px;border:2px solid;border-radius:999px;padding:2px 11px 2px 4px;font-size:11.5px;font-weight:700;letter-spacing:.01em;line-height:1.5;white-space:nowrap}
+.cdot{width:12px;height:12px;border-radius:50%;display:inline-block;flex:none}
+.ctxt{text-shadow:0 1px 0 rgba(255,255,255,.18)}
+.cbadge+.cbadge{margin-left:2px}
+.chipmin.cbadge{border-width:2px}
 .sumunit{font-size:12px;color:var(--muted);font-family:var(--font-mono);white-space:nowrap}
 .sumedit{background:none;border:1px solid var(--border);border-radius:999px;padding:2px 10px;font-size:11.5px;color:var(--accent);cursor:pointer;font-weight:600}
 .sumedit:hover{background:var(--card-soft,#f4f6fa)}
@@ -493,6 +499,41 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
     COL_PL[code]=pl||code; COL_PL['natural']='naturalny';
   });
   function colPl(list){ return list.map(function(c){return COL_PL[c]||c;}).join(' + '); }
+  // ── Plakietka koloru w podsumowaniu ──
+  // tło = wybrany kolor, ramka = ten sam kolor przyciemniony, tekst czytelny
+  // dla jasnych i ciemnych barw (luminacja), skrót PL na wierzchu.
+  // Wartości dostrojone pod tekst na plakietce: gray/orange/green przyciemnione,
+  // bo surowy odcień z białym tekstem dawał < 4.5:1 (WCAG AA). Środek kółka
+  // zostaje w oryginalnym odcieniu swatcha, więc kolor dalej wygląda na swatch.
+  var COL_HEX={black:'#1e293b',white:'#f8fafc',gray:'#6b7584',red:'#dc2626',orange:'#c94c0a',
+    yellow:'#eab308',green:'#12873d',blue:'#2563eb',purple:'#7c3aed',pink:'#db2777',
+    silver:'#cbd5e1',gold:'#facc15',carbon:'#0f172a',transparent:'#e2e8f0'};
+  var COL_SWATCH={gray:'#94a3b8',orange:'#ea580c',green:'#16a34a'};
+  function _lum(hex){ var c=hex.replace('#',''); if(c.length<6)c+=c;
+    var r=parseInt(c.substr(0,2),16)/255,g=parseInt(c.substr(2,2),16)/255,b=parseInt(c.substr(4,2),16)/255;
+    function f(v){ return v<=0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055,2.4); }
+    return 0.2126*f(r)+0.7152*f(g)+0.0722*f(b); }
+  function _darken(hex,amt){ var c=hex.replace('#',''); if(c.length<6)c+=c;
+    var p=function(x){ x=Math.max(0,Math.min(255,Math.round(x*(1-amt)))); return ('0'+x.toString(16)).slice(-2); };
+    return '#'+p(parseInt(c.substr(0,2),16))+p(parseInt(c.substr(2,2),16))+p(parseInt(c.substr(4,2),16)); }
+  function colorBadge(code,label){
+    var hex=COL_HEX[code]||'#cccccc';
+    var light=_lum(hex)>0.45;                 // jasne tło -> ciemny tekst
+    var txt=light?'#101828':'#ffffff';
+    var bd=_darken(hex,light?0.30:0.18);      // ramka = ten sam kolor, nie szara
+    var ring=code==='white'||code==='silver'||code==='transparent'?'box-shadow:inset 0 0 0 1px rgba(0,0,0,.18);':'';
+    var dot=COL_SWATCH[code]||hex;
+    return '<span class="cbadge" style="background:'+hex+';color:'+txt+';border-color:'+bd+';'+ring+'">'
+         +'<i class="cdot" style="background:'+dot+';border:1px solid '+bd+'"></i>'
+         +'<span class="ctxt">'+(label||COL_PL[code]||code)+'</span></span>';
+  }
+  // pozycja w koszyku: lista kodów _multi, a gdy pusta — kod z nazwy PL
+  function itemColorCodes(it){
+    if(it._multi&&it._multi.length) return it._multi.slice();
+    var first=String(it.color||'').split(' + ')[0].trim().toLowerCase();
+    var rev={}; for(var k in COL_PL){ rev[COL_PL[k]]=k; }
+    return [rev[first]||first||'natural'];
+  }
   function renderMulti(){
     var box=document.getElementById('multiInfo'); if(!box) return;
     if(selIdx<0){ box.innerHTML=''; return; }
@@ -717,7 +758,9 @@ function calc(){
     var gl=''; if(it.grams){ gl=(+it.grams).toFixed(1).replace('.',',')+' g'; if(it.hours) gl+=' · ~'+(+it.hours).toFixed(1).replace('.',',')+' h'; }
     var meta=[];
     meta.push('<span class="chip">'+esc(it.material||'PLA')+'</span>');
-    meta.push('<span class="chip chipcol"><i style="width:9px;height:9px;border-radius:50%;background:'+_colHex(it.color)+';border:1px solid rgba(0,0,0,.18);display:inline-block"></i>'+esc(it.color||'—')+'</span>');
+    var cCodes=itemColorCodes(it);
+    cCodes.forEach(function(c){ meta.push(colorBadge(c)); });
+    if(it.colors>1) meta.push('<span class="chip chipmin">'+it.colors+' kolory</span>');
     if(it.vol) meta.push('<span class="chip">'+it.vol.toFixed(1).replace('.',',')+' cm³</span>');
     if(it.dims) meta.push('<span class="chip">'+esc(it.dims)+' mm</span>');
     if(gl) meta.push('<span class="chip">'+gl+'</span>');
