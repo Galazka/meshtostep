@@ -6,7 +6,7 @@ case-insensitive filtra. Rozwiązanie: mapujemy popularne polskie miasta
 z pisowni bez polskich znaków (gdansk/gdynia) na poprawną formę i pytamy API
 z tą formą. Małe/duże litery nie mają znaczenia bo sami normalizujemy.
 """
-import json, unicodedata, urllib.error, urllib.parse, urllib.request
+import json, math, unicodedata, urllib.error, urllib.parse, urllib.request
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -55,10 +55,31 @@ def _fetch(url: str):
         return json.loads(r.read().decode("utf-8"))
 
 
+def _haversine(lat1, lon1, lat2, lon2):
+    """Metry w linii prostej. Wystarczy do sortowania 'najblizszy', a nie
+    drodze docelowej — InPost nie zwraca dystansu drogowego dla katalogu."""
+    r = 6371000.0
+    p1, p2 = math.radians(lat1), math.radians(lat2)
+    dp = math.radians(lat2 - lat1)
+    dl = math.radians(lon2 - lon1)
+    a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
+    return 2 * r * math.asin(min(1.0, math.sqrt(a)))
+
+
 @router.get("/api/inpost/points")
-def inpost_points(q: str = "Gdańsk", limit: int = 12):
+def inpost_points(q: str = "Gdańsk", limit: int = 0, street: str = "",
+                  lat: float = None, lon: float = None, sort: str = ""):
+    """Katalog paczkomatów.
+
+    limit=0 (domyslnie) zwraca CALY wynik dla miasta. Wczesniej front uzywal
+    limit=12 i sortowal alfabetycznie po kodzie (GDA01A < GDA125M), przez co
+    ulice z dalszej polowki alfabety — np. Raatza w Gdansku — byly niewidoczne,
+    mimo ze API je zwraca. Teraz katalog jest pelny, a sortowanie po odleglosci
+    od klienta (lat/lon) albo po ulicy.
+    """
     try:
         q = (q or "").strip()
+        street_n = _norm(street)
         nq = _norm(q)
         # poprawna forma dla API (diakrytyki) — z mapy lub oryginalnej pisowni
         api_city = _PL_CITIES.get(nq)
@@ -67,10 +88,10 @@ def inpost_points(q: str = "Gdańsk", limit: int = 12):
             first = nq.split()[0]
             api_city = _PL_CITIES.get(first)
         if not api_city and q:
-            # user mógł podać z diakrytykami (np. "Gdańsk") — użyj wprost
+            # user mogl podac z diakrytykami (np. "Gdańsk") — uzyj wprost
             api_city = q
 
-        hit_limit = max(1, min(30, limit))
+        # pelny katalog miasta — API oddaje wszystko naraz (total_pages=1)
         found = {}
 
         def _add_from(data):
@@ -79,23 +100,14 @@ def inpost_points(q: str = "Gdańsk", limit: int = 12):
                 if name and name not in found:
                     found[name] = it
 
-        # 1) najlepszy strzał: zapytanie z poprawną pisownią
         if api_city:
-            try:
-                url = "https://api-shipx-pl.easypack24.net/v1/points?per_page=%d&city=%s" % (
-                    max(hit_limit, 20), urllib.parse.quote(api_city))
-                _add_from(_fetch(url))
-            except Exception:
-                pass
-
-        # 2) fallback: jeśli 0 trafień i znamy miasto w mapie — spróbuj wariantów pisowni
-        if not found and api_city:
-            for cand in [api_city, api_city.upper(), _PL_CITIES.get(_norm(api_city), "")]:
-                if not cand or cand in (api_city,):
+            for cand in dict.fromkeys([api_city, api_city.upper(),
+                                       _PL_CITIES.get(_norm(api_city), "")]):
+                if not cand:
                     continue
                 try:
-                    url = "https://api-shipx-pl.easypack24.net/v1/points?per_page=%d&city=%s" % (
-                        max(hit_limit, 20), urllib.parse.quote(cand))
+                    url = ("https://api-shipx-pl.easypack24.net/v1/points?per_page=500&city=%s"
+                           % urllib.parse.quote(cand))
                     _add_from(_fetch(url))
                 except Exception:
                     pass
@@ -103,13 +115,14 @@ def inpost_points(q: str = "Gdańsk", limit: int = 12):
                     break
 
         out = []
-        for it in list(found.values()):
+        for it in found.values():
             loc = it.get("location", {}) or {}
             ad = it.get("address_details", {}) or {}
+            street_nm = (ad.get("street", "") or "").strip()
             out.append({
                 "name": it.get("name", ""),
                 "display_name": it.get("display_name", ""),
-                "street": ad.get("street", ""),
+                "street": street_nm,
                 "building_number": ad.get("building_number", ""),
                 "post_code": ad.get("post_code", ""),
                 "city": ad.get("city", ""),
@@ -117,17 +130,53 @@ def inpost_points(q: str = "Gdańsk", limit: int = 12):
                 "lat": loc.get("latitude"),
                 "lon": loc.get("longitude"),
             })
-        out = sorted(out, key=lambda x: x["display_name"])
-        return {"ok": True, "items": out[:hit_limit], "count": len(out)}
+
+        total = len(out)
+        # filtr ulicy — po polsku, case-insensitive, diakrytyki neutralne
+        if street_n:
+            out = [p for p in out if street_n in _norm(p["street"])]
+            total = len(out)
+
+        # sortowanie: najblizszy -> klienta, inaczej po ulicy (a nie po kodzie)
+        by_dist = lat is not None and lon is not None and all(
+            p["lat"] is not None and p["lon"] is not None for p in out)
+        if by_dist or sort == "distance":
+            anchor = (lat, lon) if by_dist else _city_anchor(out)
+            if anchor:
+                for p in out:
+                    if p["lat"] is not None and p["lon"] is not None:
+                        p["distance_m"] = int(_haversine(anchor[0], anchor[1], p["lat"], p["lon"]))
+                    else:
+                        p["distance_m"] = None
+                out.sort(key=lambda p: (p["distance_m"] is None, p["distance_m"] or 0))
+        else:
+            out.sort(key=lambda p: (_norm(p["street"]), _norm(p["display_name"])))
+
+        # grupowanie po ulicy dla czytelnej listy: "Raatza (2)"
+        streets = {}
+        for p in out:
+            streets.setdefault(p["street"], []).append(p["name"])
+        for p in out:
+            grp = streets.get(p["street"], [])
+            p["street_count"] = len(grp)
+            p["street_label"] = p["street"] + (" (%d)" % len(grp) if len(grp) > 1 else "")
+
+        if limit and limit > 0:
+            out = out[:limit]
+        return {"ok": True, "items": out, "count": len(out), "total": total,
+                "city": api_city or q}
     except Exception as e:
-        return {"ok": False, "error": str(e), "items": []}
+        return {"ok": False, "error": str(e), "items": [], "count": 0, "total": 0}
 
 
-# ---------------------------------------------------------------------------
-# InPost ShipX — nadawanie paczek bezpośrednio z panelu admina.
-# Bez klucza API (jeszcze przed założeniem działalności) admin dostaje
-# link-zastępczy do szybkiego nadania w apce InPost z prefillem adresu Toma.
-# ---------------------------------------------------------------------------
+def _city_anchor(points):
+    """Srednia wspolrzedna katalogu — zamiast zgadywac, gdzie jest miasto."""
+    pts = [(p["lat"], p["lon"]) for p in points
+           if p.get("lat") is not None and p.get("lon") is not None]
+    if not pts:
+        return None
+    return (sum(a for a, _ in pts) / len(pts), sum(b for _, b in pts) / len(pts))
+
 
 _SHIPX = "https://api-shipx-pl.easypack24.net/v1"
 _ML_PER_KG = 8000  # 6.6 cm³/kompakt zgodnie z pamięcią; InPost wymaga ~4 L/kg — luz.
