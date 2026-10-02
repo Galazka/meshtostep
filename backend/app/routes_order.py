@@ -77,6 +77,24 @@ DEFAULT_COLOR_PREMIUM = {
 MULTICOLOR_FIRST_EXTRA_PLN = 20.0
 MULTICOLOR_NEXT_EXTRA_PLN = 10.0
 
+# PL -> kod koloru. Kolor przychodzi z frontu jako lista połączona " + "
+# ("czarny + bialy"), a cennik w bazie jest po KODACH ("color:black").
+# Bez tego mapowania premia za pigment pierwszego koloru przepadała cicho.
+_PL_TO_CODE = {
+    "czarny": "black", "bialy": "white", "szary": "gray", "czerwony": "red",
+    "pomaranczowy": "orange", "zolty": "yellow", "zielony": "green",
+    "niebieski": "blue", "fioletowy": "purple", "rozowy": "pink",
+    "naturalny": "natural", "srebrny": "silver", "zloty": "gold",
+    "weglowy": "carbon", "drewno": "wood", "przezroczysty": "transparent",
+    "mosadz": "brass", "natural": "natural",
+}
+
+
+def _color_code_of(color: str) -> str:
+    """Pierwszy kolor z listy PL -> kod cennikowy. "czarny + bialy" -> "black"."""
+    first = str(color or "natural").split(" + ")[0].strip().lower()
+    return _PL_TO_CODE.get(first, first or "natural")
+
 
 def multicolor_fee(n_colors: int, db=None) -> float:
     """Dopłata kliencka za N kolorów w jednym wydruku (N=1 → 0).
@@ -383,10 +401,13 @@ def calculate_price(
     hours = hours * inf_factor
     cost_pln = filament_cost + power_cost
     color_premium = float(_cfg(db, f"color:{color}", DEFAULT_COLOR_PREMIUM.get(color, 0.0))) * quantity
-    # 1 WYBRANY KOLOR ZAWSZE W CENIE (reguła Toma): przy wydruku jednokolorowym
-    # żadna dopłata za pigment — klient wybiera dowolny darmowy kolor.
-    if int(colors or 1) <= 1:
-        color_premium = 0.0
+    # PIERWSZY KOLOR ZAWSZE W CENIE (reguła Toma): 1 bryła = 1 kolor za 0 zł.
+    # Nie tylko przy 1 kolorze — przy 2+ płaci się wyłącznie za multicolor.
+    # Bez tego /api/calculate doliczał premię za pigment pierwszego koloru, a
+    # /api/orders/multi jej nie liczył → klient widział inną kwotę niż Stripe.
+    # Premia za pigment dotyczy wyłącznie dodatkowych kolorów, które rozlicza
+    # multicolor_fee() poniżej.
+    color_premium = 0.0
     multi_fee = multicolor_fee(colors)
     surcharge_pln = round(color_premium + multi_fee, 2)
 
@@ -1375,8 +1396,14 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db), 
     items_rows = []
     for it in req.items:
         n_colors = max(1, getattr(it, "colors", 1) or 1)
+        # Kolor przychodzi jako lista PL połączona " + " (np. "czarny + bialy").
+        # Silnik szuka premii za pigment wg KODU koloru ("color:black"), więc bez
+        # translacji premia za pierwszy kolor cicho przepadała → /api/calculate
+        # pokazywał inną kwotę niż /api/orders/multi (różnica = premium czarnego).
+        # Wyprowadzamy kod pierwszego koloru — to samo co robi frontend order.html.
+        _first_color = _color_code_of(it.color)
         calc = calculate_price(
-            material=it.material, color=it.color, quantity=it.quantity,
+            material=it.material, color=_first_color, quantity=it.quantity,
             shipping=req.shipping, shipping_region=req.shipping_region,
             volume_cm3=it.volume_cm3 or 0, estimated_hours=it.estimated_hours or 0,
             dims=it.dims, discount_code=req.discount_code, db=db, currency="PLN",
