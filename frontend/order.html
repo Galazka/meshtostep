@@ -546,7 +546,10 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
     naturalny:'black',srebrny:'silver',zloty:'gold',grafitowy:'carbon',weglowy:'carbon',
     drewno:'carbon',przezroczysty:'transparent'};
   function previewHex(){ var it=(selIdx>=0)?CART[selIdx]:null; if(!it) return null;
-    var first=(it._multi&&it._multi.length)?it._multi[0]:String(it.color||'black').split(' ')[0].toLowerCase();
+    // Ostatnio klikniety kolor, nie pierwszy z listy — klient chce widziec
+    // w podgladzie wlasnie ten kolor, ktory teraz wybiera.
+    var first=(it._multi&&it._multi.length)?it._multi[it._multi.length-1]
+              :String(it.color||'black').split(' ')[0].toLowerCase();
     first=String(first).toLowerCase();
     // it.color trzyma tekst PL ("czarny + bialy"), _multi trzyma kody — sprowadzamy oba do kodu
     return PREVIEW_HEX[first]||PREVIEW_HEX[PL2CODE[first]]||'#151515'; }

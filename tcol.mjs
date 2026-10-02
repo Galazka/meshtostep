@@ -49,12 +49,12 @@ ok(w1.color==='bialy',`it.color = "${w1.color}"`);
 await p.evaluate(()=>pickColor('blue'));
 await p.waitForTimeout(1200);
 const b1=await p.evaluate(()=>({hex:previewHex(), color:CART[0].color}));
-ok(b1.hex==='#1d4ed8',`po wyborze niebieski: previewHex=${b1.hex}`);
+ok(b1.hex==='#1d4ed8',`po kliknieciu niebieskiego (dodany jako 2. kolor): podglad pokazuje klikniety = ${b1.hex}`);
 // wroc do czarnego
 await p.evaluate(()=>pickColor('black'));
 await p.waitForTimeout(1200);
 const k1=await p.evaluate(()=>({hex:previewHex(), color:CART[0].color}));
-ok(k1.hex==='#151515',`po powrocie na czarny: previewHex=${k1.hex}`);
+ok(k1.hex==='#151515',`po kliknieciu czarnego (3. kolor): podglad pokazuje klikniety = ${k1.hex}`);
 
 console.log('\n[C] przełączanie modeli zachowuje kolor per model');
 await p.setInputFiles('input[type=file]','C:/Users/galaz/Desktop/MeshToStep/frontend/_t2.stl');
@@ -65,7 +65,7 @@ const r1=await p.evaluate(()=>previewHex());
 ok(r1==='#c81e1e',`model 2 ustawiony na czerwony: ${r1}`);
 await p.evaluate(()=>preview(0)); await p.waitForTimeout(2500);
 const back=await p.evaluate(()=>previewHex());
-ok(back==='#151515',`powrot do modelu 1: nadal czarny (${back})`);
+ok(back==='#151515',`powrot do modelu 1: ostatni klikniety kolor tego modelu (${back})`);
 await p.evaluate(()=>preview(1)); await p.waitForTimeout(2500);
 const fwd=await p.evaluate(()=>previewHex());
 ok(fwd==='#c81e1e',`powrot do modelu 2: nadal czerwony (${fwd})`);
