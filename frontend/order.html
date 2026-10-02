@@ -9,7 +9,7 @@
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "ypigm7bngb");
 </script>
-<script>window.__APP_V='116';(function(){try{var k='appV',s=sessionStorage.getItem(k);if(s&&s!=='116'){sessionStorage.setItem(k,'116');if(window.caches&&caches.keys){caches.keys().then(function(a){return Promise.all(a.map(function(n){return caches.delete(n)}))}).then(function(){location.reload()});return}}sessionStorage.setItem(k,'110')}catch(e){}})();</script>
+<script>window.__APP_V='117';(function(){try{var k='appV',s=sessionStorage.getItem(k);if(s&&s!=='117'){sessionStorage.setItem(k,'117');if(window.caches&&caches.keys){caches.keys().then(function(a){return Promise.all(a.map(function(n){return caches.delete(n)}))}).then(function(){location.reload()});return}}sessionStorage.setItem(k,'110')}catch(e){}})();</script>
 <script>try{var _t=localStorage.getItem("mt_theme")||"light";if(_t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -163,12 +163,22 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 /* --- paczkomaty InPost --- */
 .pczrow{display:block;width:100%;text-align:left;padding:9px 12px;border:1px solid var(--border);border-radius:10px;background:var(--card);cursor:pointer;font-size:13px;color:var(--foreground);margin-bottom:5px}
 .pczrow:hover{border-color:#2563eb}
-.pczrow.sel{border-color:#1d4ed8;box-shadow:0 0 0 2px rgba(37,99,235,.18);background:var(--card)}
+.pczrow.sel{border-color:#15803d;box-shadow:0 0 0 2px rgba(21,128,61,.25);background:#f0fdf4;position:relative;padding-left:30px}
+.pczrow.sel::before{content:'✓';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-weight:700;color:#15803d;font-size:14px}
+.pczrow.sel b{color:#14532d}
+.pczrow.sel .pczcode{color:#15803d}
+html[data-theme=dark] .pczrow.sel{background:#052e16;border-color:#22c55e}
+html[data-theme=dark] .pczrow.sel::before{color:#4ade80}
+html[data-theme=dark] .pczrow.sel b{color:#bbf7d0}
+html[data-theme=dark] .pczrow.sel .pczcode{color:#4ade80}
 .pczcode{font-family:var(--font-mono,monospace);font-size:11px;color:var(--muted);font-weight:400}
 .pczsub{color:var(--muted);font-size:11.5px}
 .pczgroup{margin:12px 0 5px;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);border-bottom:1px solid var(--border);padding-bottom:3px}
 #pczMap{border-radius:10px}
 #pczMap .leaflet-popup-content{font-size:13px;line-height:1.45}
+
+.pczsel{float:right;margin-left:8px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#15803d;background:#dcfce7;border:1px solid #86efac;border-radius:4px;padding:2px 6px;white-space:nowrap}
+html[data-theme=dark] .pczsel{color:#4ade80;background:#052e16;border-color:#166534}
 @media(max-width:560px){ #pczMap{height:260px} .pczrow{font-size:12.5px} }
 </style>
 <script type="importmap">
@@ -752,7 +762,8 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
       ' <span class="pczcode">'+esc(String(p.name||''))+'</span>'+
       '<br><span class="pczsub">'+esc(String(p.post_code||''))+' '+esc(String(p.city||''))+
       (p.distance_m!=null?' · '+p.distance_m+' m':'')+'</span>';
-    return '<button type="button" class="pczrow" data-pczbk="'+esc(String(p.name||''))+'">'+h+'</button>';
+    var sel=(p.name===PCZ_SEL)?'<span class="pczsel">wybrany</span>':'';
+    return '<button type="button" class="pczrow'+(p.name===PCZ_SEL?' sel':'')+'" data-pczbk="'+esc(String(p.name||''))+'">'+h+sel+'</button>';
   }
   function selectPaczkomat(name){
     var p=null;
@@ -997,8 +1008,9 @@ function applyCoupon(silent){
 function preview(i){
   selIdx=i; drawCart(); refreshMatSel(); syncInfillUI(); if(typeof refreshCol==='function') refreshCol();
   var it=CART[i], box=document.getElementById('previewBox');
-  if(it && it._bytes && typeof window.__local3d!=='undefined'){ try{ window.__local3d.renderBytes(it.model_name,it._bytes,'previewBox'); return; }catch(e){ } }
+  if(it && it._bytes && typeof window.__local3d!=='undefined'){ try{ window.__local3d.renderBytes(it.model_name,it._bytes,'previewBox'); return; }catch(e){ if(e&&e.message)console.warn('renderBytes:',e.message); } }
   if(it.job_id){
+    if(box.__pro){ box.__pro.loadBytes(it.model_name||'model.stl', it._bytes||new ArrayBuffer(0)); return; }
     box.innerHTML='<iframe class="preview-iframe" src="/e/'+it.job_id+'" frameborder="0" allowfullscreen></iframe>';
   } else {
     box.innerHTML='<div style="padding:22px;text-align:center">📦 <b>'+esc(it.model_name||'Model')+'</b><br><span style="color:var(--muted);font-size:13px">'+(it.vol?it.vol.toFixed(1)+' cm³': '')+(it.dims?' · '+it.dims:'')+'</span><br><span style="color:#2563eb;font-size:12px">'+esc(it.material||'PLA')+' · kolor '+esc(it.color||'natural')+' · '+it.qty+' szt</span><br><br><span style="color:var(--muted);font-size:12px">Wgrywam podgląd 3D… (pozwól chwilę konwersji)</span></div>';
@@ -1124,7 +1136,8 @@ window.__local3d = {
     var box = document.getElementById(boxId || 'previewBox');
     if (!box) return;
     if (!box.__pro) {
-      box.innerHTML = '';
+      // NIE czyscimy boxa — canvas trzyma WebGL context, a wyczyszczenie
+      // go odlacza od DOM i viewer ginie na zawsze (pusty podglad od 2 pliku)
       box.style.minHeight = '420px';
       box.__pro = initViewerPro({
         container: box, stlUrl: '',
