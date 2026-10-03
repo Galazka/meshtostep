@@ -124,8 +124,13 @@ def create_checkout(order_id: int, request: Request, db: Session = Depends(get_d
 def sync_payment(o, db):
     """Czynna weryfikacja: pobieramy session z Stripe i sprawdzamy payment_status.
     Działa nawet gdy webhook nie doleciał (piaskownica, wyciszony endpoint, retry)."""
-    if not o or o.is_paid or not _stripe_enabled():
+    if not o or not _stripe_enabled():
         return bool(o and o.is_paid)
+    # Nie wychodz na o.is_paid — stare zamowienia moga byc falszywie oznaczone
+    # przez checkout.session.completed z payment_status="unpaid" (BLIK/3DS).
+    # sync musi je umiec cofnac.
+    if o.is_paid and o.stripe_session_id:
+        return True
     try:
         import stripe
         stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -151,6 +156,7 @@ def sync_payment(o, db):
             except Exception as e:
                 print(f"[stripe] sync list: {e}")
         if sess and sess.get("payment_status") == "paid":
+            was_unpaid = not o.is_paid
             o.is_paid = True
             o.payment_method = "stripe"
             if o.status == "nowy":
@@ -167,16 +173,19 @@ def sync_payment(o, db):
                 pass
             db.commit()
             db.refresh(o)
-            try:
-                from .routes_order import _notify_paid
-                _notify_paid(o)
-            except Exception as e:
-                print(f"[stripe] paid mail: {e}")
-            try:
-                from .routes_analytics import record_paid
-                record_paid(db, o)
-            except Exception:
-                pass
+            # was_unpaid: sync bywa woływany wielokrotnie (BLIK ekran / admin / webhook)
+            # — mail "oplacone" tylko przy pierwszym przejsciu na paid.
+            if was_unpaid:
+                try:
+                    from .routes_order import _notify_paid
+                    _notify_paid(o)
+                except Exception as e:
+                    print(f"[stripe] paid mail: {e}")
+                try:
+                    from .routes_analytics import record_paid
+                    record_paid(db, o)
+                except Exception:
+                    pass
             return True
     except Exception as e:
         print(f"[stripe] sync error: {e}")
@@ -222,8 +231,34 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Signature mismatch: {e}")
-    if event.get("type") == "checkout.session.completed":
+    # checkout.session.completed fires for EVERY session — also when the payment is
+    # still pending (BLIK, Przelewy24, karta oczekujaca na 3DS). Marking is_paid there
+    # shipped "oczekuje na platnosc" mails for orders that were never paid.
+    #   paid now      -> checkout.session.completed   + payment_status == "paid"
+    #   paid later    -> checkout.session.async_payment_succeeded
+    #   never paid    -> checkout.session.async_payment_failed
+    ev_type = event.get("type")
+    if ev_type in ("checkout.session.completed",
+                   "checkout.session.async_payment_succeeded",
+                   "checkout.session.async_payment_failed"):
         session = event.get("data", {}).get("object", {})
+        pstatus = session.get("payment_status")
+        if ev_type == "checkout.session.async_payment_failed":
+            o_id = session.get("client_reference_id") or (session.get("metadata") or {}).get("order_id")
+            try:
+                _fo = db.get(models.Order, int(o_id)) if o_id else None
+                if _fo is not None and not _fo.is_paid:
+                    _fo.status = "anulowane"
+                    db.commit()
+                    from .routes_order import _notify_order_status
+                    _notify_order_status(_fo, "nowy", "anulowane")
+            except Exception as e:
+                print(f"[stripe] async_payment_failed: {e}")
+            return {"ok": True, "handled": "async_payment_failed"}
+        # completed + async_payment_succeeded
+        if ev_type == "checkout.session.completed" and pstatus != "paid":
+            print(f"[stripe] completed but payment_status={pstatus} — czekamy na async_payment_succeeded")
+            return {"ok": True, "handled": "pending"}
         order_id = None
         try:
             order_id = int((session.get("client_reference_id") or session.get("metadata", {}).get("order_id", "0")) or 0)
