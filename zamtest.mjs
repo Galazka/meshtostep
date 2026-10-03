@@ -109,6 +109,20 @@ const overlap = await p.evaluate(() => {
            btn: [Math.round(b.left), Math.round(b.top), Math.round(b.right), Math.round(b.bottom)] };
 });
 console.log('Nakladanie toolbar vs CTA:', JSON.stringify(overlap));
+// admin: viewer_pro tez tam uzywany
+const adm = await ctx.newPage();
+await adm.goto('https://3dfile.link/admin?t=' + Date.now(), { waitUntil: 'domcontentloaded' });
+await adm.waitForTimeout(3000);
+const admBox = await adm.evaluate(() => {
+  const c = document.querySelector('canvas');
+  if (!c) return 'brak canvasa';
+  const host = c.parentElement;
+  const cr = c.getBoundingClientRect(), hr = host.getBoundingClientRect();
+  return { poza: cr.right > hr.right + 1 || cr.bottom > hr.bottom + 1 || cr.left < hr.left - 1,
+           canvas: [Math.round(cr.left), Math.round(cr.right)], host: [Math.round(hr.left), Math.round(hr.right)] };
+});
+console.log('ADMIN viewer canvas:', JSON.stringify(admBox));
+
 console.log('BLEDY JS (' + errs.length + '):');
 errs.slice(0, 8).forEach(e => console.log('  ' + e));
 await b.close();
