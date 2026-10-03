@@ -7,8 +7,9 @@ K1: auto-volume from uploaded STL → feeds pricing engine.
 No secrets / tokens stored on disk.
 """
 from __future__ import annotations
-import os, subprocess, json, tempfile, shutil, time as _time, zipfile
-from typing import Literal
+import os, subprocess, json, tempfile, shutil, time as _time, zipfile, uuid
+from pathlib import Path
+from typing import Literal, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, File, Form, UploadFile, status
 from fastapi.responses import JSONResponse
@@ -19,7 +20,10 @@ try:
 except ImportError:
     _HAS_TRIMESH = False
 
+from . import models
+from .auth import get_current_user
 from .database import get_db
+from .routes_convert import JOBS_DIR, _slugify
 from .routes_order import calculate_price, _split_into_parts, estimate_print_time_hours, estimate_filament_grams
 
 router = APIRouter()
@@ -354,17 +358,64 @@ async def estimate_model(
     mode: str = Form("auto"),
     currency: str = Form("PLN"),
     db=Depends(get_db),
+    user: Optional["models.User"] = Depends(get_current_user),
 ):
     """Upload STL/OBJ/PLY → get volume, dims, grams, print_hours.
 
     K1: Feeds /api/calculate and print order form.
+
+    Plik jest ZAPISYWANY jako Job (visibility=private, bez właściciela gdy gość).
+    Bez tego /zamow wysyłał do zamówienia job_uuid=null — panel admina nie miał
+    czego pobrać, a klient nie dostawał linku do swojego modelu. Job zostaje
+    załączony przez cleanup (visibility=private, user_id=None → nie wchodzi
+    do „Odkrywaj”, a sprzątanie go usuwa po terminie retencji).
     """
     raw = _validate_upload(file)
     m = mode if mode in ("light", "auto", "ultra") else "auto"
 
+    # —— zapis pliku do JOBS_DIR + rejestr w jobs ——
+    job_uuid = uuid.uuid4().hex[:12]
+    job_dir = JOBS_DIR / job_uuid
+    job_dir.mkdir(exist_ok=True)
+    src = job_dir / Path(file.filename).name  # path traversal guard
+    try:
+        with open(src, "wb") as f:
+            f.write(raw)
+    except Exception:
+        shutil.rmtree(job_dir, ignore_errors=True)
+        raise HTTPException(400, "Błąd zapisu pliku")
+
+    stem = Path(file.filename).stem
+    job = models.Job(
+        user_id=user.id if user else None,
+        uuid=job_uuid,
+        original_filename=file.filename,
+        file_size_bytes=len(raw),
+        mode=m,
+        status="done",          # geometria już policzona poniżej, konwersja nie jest tu potrzebna
+        slug=_slugify(stem),
+        title=stem[:200],
+        visibility="private",    # drukarnia: plik do pobrania przez admina, nie do odkrywania
+    )
+    db.add(job)
+    db.commit()
+    db.refresh(job)
+
     t0 = _time.monotonic()
     stats = _trimesh_stats(raw, m, material)
     dims_str = stats["dimensions"]
+
+    # Dane geometryczne do zapisanej bryły — panel admina pokazuje je przy
+    # zamówieniu, a /api/download/{uuid} musi oddać właściwy plik.
+    try:
+        _d = stats["dimensions_mm"]
+        job.dims_mm = f"{_d[0]} x {_d[1]} x {_d[2]} mm"
+        job.result_faces = stats.get("faces")
+        job.volume_cm3 = stats["volume_cm3"]
+        db.commit()
+    except Exception:
+        pass
+
     calc = calculate_price(
         material=material, color=color, quantity=1,
         shipping="standard", shipping_region="PL",
@@ -387,6 +438,10 @@ async def estimate_model(
 
     return JSONResponse({
         "ok": True,
+        # uuid zapisanej bryły — frontend wkłada je do zamówienia jako job_uuid,
+        # dzięki czemu panel admina może pobrać plik do druku, a klient
+        # dostaje link do swojego modelu.
+        "uuid": job_uuid,
         "volume_cm3": stats["volume_cm3"],
         "dimensions_mm": stats["dimensions_mm"],
         "dimensions": stats["dimensions"],

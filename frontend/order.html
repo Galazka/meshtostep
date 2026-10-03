@@ -463,9 +463,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
         <div><label style="margin-top:10px" data-i18n="fNotes">Uwagi dla drukarza (opcjonalnie)</label>
                   <textarea id="fNotes" class="note-field" rows="2" data-i18n-ph="fNotes" placeholder="np. podkreśl nacięcia, kolor docelowy itp."></textarea></div>
                 </details>
-                <button class="btn-main" id="submitBtn" onclick="submitOrder()" data-i18n="fSubmit">Zamawiam →</button>
+                <!-- JEDEN przycisk kończący cały proces — w panelu Podsumowanie.
+             Krok 4 ma tylko info o płatności; powtórzony tutaj przycisk
+             tworzył wrażenie dwóch różnych akcji i mylił klienta. -->
         <div style="font-size:11.5px;color:var(--muted);margin-top:10px">Płatność: Stripe (karta / BLIK). Podana cena jest ostateczna — nie doliczamy nic później.</div>
-      
+
         <p class="acc-stepnote">Odbiór osobisty w Gdańsku albo wysyłka InPost / kurier.</p>
       </div>
     </section>
@@ -992,7 +994,6 @@ document.getElementById('fileInput').addEventListener('change',function(){ var f
   this.value='';
 });
 
-function payFromSummary(){ var b=document.getElementById('submitBtn'); if(b&&!b.disabled) b.click(); }
 // Przycisk "Zmien" w podsumowaniu: otworz krok, w ktorym da sie realnie zmienic
 // wybor tego modelu, i przewin do niego. Osobna funkcja, bo preview() renderuje
 // koszyk przy kazdej zmianie — scrollowalibysmy klienta w nieskonczonosc.
@@ -1076,8 +1077,12 @@ function refreshSteps(){
 
 function calc(){
   if(typeof refreshSteps==='function') refreshSteps();
-  var box=document.getElementById('sumBody'), empty=document.getElementById('sumEmpty'), btn=document.getElementById('submitBtn');
-  if(!CART.length){ box.style.display='none'; empty.style.display='block'; btn.disabled=true; try{btn.textContent='Zamawiam \u2192';var cb0=document.getElementById('ctaTot');if(cb0)cb0.textContent='—';}catch(e){} return; }
+  var box=document.getElementById('sumBody'), empty=document.getElementById('sumEmpty');
+  var btn=document.getElementById('submitBtn');
+  // Przycisk "Zaplac" renderowany jest wewnatrz panelu podsumowania, wiec
+  // przy pierwszym wywolaniu calc() (przed renderem) nie istnieje jeszcze.
+  // Pobieramy go na nowo PO wstawieniu innerHTML, inaczej null.
+  if(!CART.length){ box.style.display='none'; empty.style.display='block'; if(btn){btn.disabled=true;btn.textContent='Zaplac';} var cb0=document.getElementById('ctaTot'); if(cb0)cb0.textContent='\u2014'; return; }
   var rate=RATES[cur]||1;
   var productsPLN=0, colorExt=0, rowsHTML='';
   var COUPON_PLN=0; try{COUPON_PLN=(window.__COUPON&&window.__COUPON.pln)||0;}catch(e){}
@@ -1159,10 +1164,12 @@ var discLine = COUPON_PLN>0 ? '<div class="summary-row"><span>Rabat '+(window.__
       colorLine+discLine+
       '<div class="summary-row sumsum"><span>Razem</span><span>'+fmt(brutto)+'</span></div>'+
     '</div>'+
-    '<button class="paybtn" id="payBtnSum" onclick="payFromSummary()">Zapłać '+fmt(brutto)+'</button>'+
+    '<button class="paybtn" id="submitBtn" onclick="submitOrder()">Zapłać '+fmt(brutto)+'</button>'+
     '<div class="sumnote">Cena ostateczna — rachunek dostaniesz e-mailem. Płatność: Stripe (karta lub BLIK).</div>';
-  empty.style.display='none'; box.style.display='block'; btn.disabled=false;
-  try{ var sym=(cur==='PLN'?'zł':cur); btn.textContent='Zamawiam · '+fmt(brutto)+' \u2192'; var cb=document.getElementById('ctaTot'); if(cb)cb.textContent=fmt(brutto); }catch(e){}
+  empty.style.display='none'; box.style.display='block';
+  btn=document.getElementById('submitBtn');
+  if(btn){ btn.disabled=false; btn.textContent='Zapłać '+fmt(brutto); }
+  try{ var cb=document.getElementById('ctaTot'); if(cb)cb.textContent=fmt(brutto); }catch(e){}
   var vn=document.getElementById('vatNote'); if(vn) vn.textContent='Do zamówienia dołączamy rachunek. Nie doliczamy żadnych opłat później.';
   var fn=document.getElementById('fxNote'); if(fn) fn.textContent = cur==='PLN'?'Waluta: PLN':'Waluta: '+cur+' · kurs 1 '+cur+' = '+(1/rate).toFixed(4)+' PLN';
 }
@@ -1245,7 +1252,7 @@ function submitOrder(){
   fetch('/api/orders/multi?t='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};});})
     .then(function(res){
-      if(!(res.ok&&res.d.ok)){ toast((res.d&&res.d.detail)||'Błąd zamówienia',''); btn.disabled=false; btn.textContent='Zamawiam \u2192'; return; }
+      if(!(res.ok&&res.d.ok)){ toast((res.d&&res.d.detail)||'Błąd zamówienia',''); btn.disabled=false; btn.textContent='Zapłać'; return; }
       var orderId=res.d.order_id;
       if(typeof saveProfileShip==='function') saveProfileShip();
       btn.textContent='Przygotowuję płatność…';
@@ -1279,7 +1286,7 @@ function submitOrder(){
           window.location.href='/platnosc?status=error&order='+orderId;
         });
     })
-    .catch(function(){toast('Błąd sieci','');btn.disabled=false;btn.textContent='Zamawiam \u2192';});
+    .catch(function(){toast('Błąd sieci','');btn.disabled=false;btn.textContent='Zapłać';});
 }
 
 buildCur(); loadMats(); drawCart(); calc(); autofillShipping();
@@ -1398,7 +1405,7 @@ window.__local3d = {
 
 <script src="/asset/theme.js?v=5"></script>
 <script src="/asset/reveal.js?v=5"></script>
-<div id="ctaBar"><span>Razem</span><b id="ctaTot">—</b><button onclick="submitOrder()">Zamawiam</button></div>
+<div id="ctaBar"><span>Razem</span><b id="ctaTot">—</b><button onclick="submitOrder()">Zapłać</button></div>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js?v=24').then(function(sw){sw&&sw.update&&setInterval(function(){sw.update()},3*60*60*1000)});navigator.serviceWorker.addEventListener('controllerchange',function(){location.reload()})}</script>
 <script src="/asset/ev.js?v=4" defer></script>
 <script src="/asset/nav-auth.js?v=2" defer></script>

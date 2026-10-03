@@ -1374,7 +1374,9 @@ class MultiOrderReq(BaseModel):
 
 
 @router.post("/api/orders/multi")
-def create_multi_order(req: MultiOrderReq, request: Request, db: Session = Depends(get_db)):
+def create_multi_order(req: MultiOrderReq, request: Request,
+                        db: Session = Depends(get_db),
+                        user: Optional[models.User] = Depends(get_current_user)):
     """Create an order with multiple models. Each item priced via calculate_price,
     one shared shipping + packing. Returns order_id, item_count, totals."""
     try:
@@ -1485,8 +1487,12 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db), 
 
 
     order = models.Order(
-        user_id=None,
-        customer_name=req.name[:100], customer_email=req.email[:255],
+            # Zamówienie zalogowanego użytkownika musi dostać user_id — inaczej
+            # /api/account/orders (zakładka „Moje zamówienia") filtruje po user_id
+            # i pokazuje pustkę mimo zapisu w panelu admina. Gość zostaje None,
+            # a /api/account/orders łapie go po customer_email.
+            user_id=user.id if user else None,
+            customer_name=req.name[:100], customer_email=req.email[:255],
         customer_phone=req.phone[:30] if req.phone else None,
         customer_address=req.address[:500] if req.address else None,
         customer_city=req.city[:100] if req.city else None,
