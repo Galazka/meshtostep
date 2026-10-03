@@ -285,7 +285,13 @@
     var totalTxt = zl(o.total) + ((o.currency || 'PLN') === 'PLN' ? '' : ' ' + (o.currency || 'PLN'));
     rev += cell('DO ZAPŁATY', totalTxt, { strong: true, color: '#2B5CE6' });
     rev += cell('ZYSK', zl(profit), { strong: true, color: profit >= 0 ? '#047857' : '#b91c1c' });
-    if (o.margin_pln) rev += cell('Narzut w cenie', zl(o.margin_pln), { color: '#64748b' });
+    // UWAGA: o.margin_pln to narzut KATALOGOWY (koszt * margin_percent z cennika).
+    // Przy malej objętości product_base jest przycinane do min_print, więc ten narzut
+    // nigdy nie trafia do ceny — realna marża to zysk / przychód.
+    var revBase = num(o.total);
+    if (revBase > 0) {
+      rev += cell('Marża realna', (profit / revBase * 100).toFixed(1) + '%', { mono: true, color: '#64748b' });
+    }
 
     g += '<div style="margin-top:10px;padding-top:8px;border-top:1px solid #e2e8f0;'
        + 'font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8">Przychód</div>'

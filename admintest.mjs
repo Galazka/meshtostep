@@ -82,8 +82,8 @@ const html = String(admin.body);
 ok('admin 200', admin.status === 200);
 ok('order_card.js podpiety', /order_card\.js\?v=\d+/.test(html));
 ok('admin_print.js v=103', /admin_print\.js\?v=103/.test(html));
-ok('cache guard APP_V=115', html.includes("window.__APP_V='118'"));
-ok('guard sessionStorage 115', html.includes("setItem(k,'118')") && html.includes("s!=='118'"));
+ok('cache guard APP_V=115', html.includes("window.__APP_V='119'"));
+ok('guard sessionStorage 115', html.includes("setItem(k,'119')") && html.includes("s!=='119'"));
 
 /* 6. notatki: PATCH admin_notes nie tyka notes */
 const target = list.find(o => !o.is_paid) || list[0];
