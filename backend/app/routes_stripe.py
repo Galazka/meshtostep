@@ -261,16 +261,10 @@ async def _stripe_webhook_impl(request: Request, db: Session):
             session = session.to_dict()
         pstatus = session.get("payment_status")
         if ev_type == "checkout.session.async_payment_failed":
-            o_id = session.get("client_reference_id") or (session.get("metadata") or {}).get("order_id")
-            try:
-                _fo = db.get(models.Order, int(o_id)) if o_id else None
-                if _fo is not None and not _fo.is_paid:
-                    _fo.status = "anulowane"
-                    db.commit()
-                    from .routes_order import _notify_order_status
-                    _notify_order_status(_fo, "nowy", "anulowane")
-            except Exception as e:
-                print(f"[stripe] async_payment_failed: {e}")
+            # Swiadomie NIE anulujemy: BLIK to 5 minut, klient czesto wychodzi z apki
+            # bankowej i wraca. Nieudana proba platny to nie utracona sprzedaz —
+            # zamowienie zostaje "nowy", is_paid=False, widoczne jako nieoplacone
+            # do recznego zamkniecia. Kazanie kosztuje klienta, nie zwala mu nic.
             return {"ok": True, "handled": "async_payment_failed"}
         # completed + async_payment_succeeded
         if ev_type == "checkout.session.completed" and pstatus != "paid":
