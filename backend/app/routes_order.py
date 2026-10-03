@@ -415,10 +415,14 @@ def calculate_price(
     margin_pln = round(cost_pln * (margin_pct / 100), 2)
     product_base = round(cost_pln + margin_pln, 2)  # baza klienta: koszt + marża
 
-    # MINIMUM ZAMÓWIENIA (druk): baza zawsze >= min_print_pln (hero/order mówią "od 10 zł")
+    # MINIMUM ZAMOWIENIA (druk): liczone NA SZTUKE, nie na cala pozycje.
+    # Regula Toma: cena jednostkowa nie moze spadac przy wiekszej ilosci.
+    # Wczesniej minimum 5 zl dzielono przez quantity, wiec 10 sztuk
+    # wychodzilo po 4,88 zl - gorsza cena za wieksze zamowienie.
+    # Teraz: baza JEDNEJ sztuki >= min_print_pln, a ilosc mnozy te kwote.
     min_print = float(_cfg(db, "min_print_pln", MIN_PRINT_PLN))
     if product_base < min_print:
-        product_base = min_print
+        product_base = round(min_print * quantity, 2)
 
     # co klient płaci za DRUK = baza + dopłaty (pigment, wielokolor)
     product_total = round(product_base + surcharge_pln, 2)

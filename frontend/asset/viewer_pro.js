@@ -85,7 +85,7 @@ export function initViewerPro(opts) {
   camera.position.set(28, 34, 44);
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-  renderer.setSize(w0, h0);
+  renderer.setSize(w0, h0, false);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.domElement.style.cssText = 'display:block;width:100%;height:100%;touch-action:none';
   host.appendChild(renderer.domElement);
@@ -489,12 +489,14 @@ export function initViewerPro(opts) {
     const w = Math.min(host.clientWidth || 640, 1600), h = host.clientHeight || 420;
     if (!w || !h) return;
     camera.aspect = w / h; camera.updateProjectionMatrix();
-    renderer.setSize(w, h);
+    // false = nie dotykaj stylu canvasa (width:100% z init) - inaczej
+    // Three.js wstawia inline width w px i canvas wychodzi poza viewport
+    renderer.setSize(w, h, false);
   });
   document.addEventListener('fullscreenchange', function () {
     setTimeout(function () {
       const w = host.clientWidth || 640, h = host.clientHeight || 420;
-      camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h);
+      camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h, false);
     }, 80);
   });
   (function loop() { requestAnimationFrame(loop); controls.update(); renderer.render(scene, camera); })();

@@ -107,7 +107,7 @@ html[data-theme=dark] .pczsel{color:#4ade80;background:#052e16;border-color:#166
 .item .qty span{font-weight:600;min-width:22px;text-align:center}
 .item .del{border:none;background:none;color:#dc2626;cursor:pointer;font-size:18px;line-height:1}
 .preview{position:sticky;top:76px}
-.preview-box{background:#f1f5f9;border:1px solid var(--border);border-radius:12px;min-height:320px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;}
+.preview-box{background:#f1f5f9;border:1px solid var(--border);border-radius:12px;min-height:320px;min-width:0;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;}
 .preview-iframe{width:100%;height:340px;border:none}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .fulfill-opt{padding:12px 14px;border:2px solid var(--border);border-radius:12px;background:var(--bg);cursor:pointer;text-align:left;display:flex;flex-direction:column;gap:3px;font-family:inherit;transition:border-color .15s}
@@ -1170,7 +1170,7 @@ function saveProfileShip(){
 </script>
 
 <script type="module">
-import { initViewerPro } from '/asset/viewer_pro.js?v=9';
+import { initViewerPro } from '/asset/viewer_pro.js?v=10';
 /* Podglad w koszyku = ten sam pelny konfigurator co wszedzie: toolbar
    (obrot/siatka/krawedzie/podloga/tlo/zoom/PNG/fullscreen) na scianie z konturem. */
 window.__local3d = {
