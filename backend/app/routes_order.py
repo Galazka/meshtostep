@@ -1547,6 +1547,24 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db), 
         except Exception:
             db.rollback()
 
+    # Przypisz wgrane pliki do wlasciciela. Plik wgrany w /zamow przed
+    # zalogowaniem ma user_id=None i nikt nie ma prawa go pobrac (admin wrecz
+    # musialby zgadywac uuid). Po zlozeniu zamowienia podpinamy user_id,
+    # a order.user_id wskazuje na wlasciciela -> pobieranie w panelu admina
+    # i „Moje pliki” dzialaja.
+    if user:
+        try:
+            for _it in req.items:
+                if not _it.job_uuid:
+                    continue
+                _j = db.query(models.Job).filter(models.Job.uuid == _it.job_uuid).first()
+                if _j is not None and _j.user_id is None:
+                    _j.user_id = user.id
+                    # zostaje private — nie trafia do „Odkrywaj” automatycznie
+                    db.commit()
+        except Exception:
+            db.rollback()
+
     return {
         "ok": True, "order_id": order.id,
         "total": total_cur, "currency": cur, "exchange_rate": rate,

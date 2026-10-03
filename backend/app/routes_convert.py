@@ -576,17 +576,26 @@ def download(
     if not job:
         raise HTTPException(404, "Job nie znaleziony")
     if job.visibility == "private":
-        # admin can grab private models to fulfil print orders (drukarnia); token= JWT fallback
-        # (frontend admin_print.js nie wysyla naglowka przez <a href>)
-        admin_ok = bool(creds and getattr(creds, "is_admin", False))
-        if not admin_ok and token:
+        # Prywatny model (np. plik wgrany w /zamow) — dostep dla:
+        #  a) wlasciciela (job.user_id == zalogowany user.id)
+        #  b) admina (drukarnia pobiera pliki do produkcji)
+        # Bez (a) klient nie mogl pobrac wlasnego wgranego modelu.
+        allowed = bool(creds is not None and getattr(creds, "is_admin", False))
+        if creds is not None and job.user_id and creds.id and job.user_id == creds.id:
+            allowed = True
+        if not allowed and token:
+            # admin_print.js otwiera <a href>, wiec naglowek Authorization
+            # nie leci — JWT leci w query.
             try:
                 from .auth import _decode_token
                 u = _decode_token(token)
-                admin_ok = bool(u and getattr(u, "is_admin", False))
+                if u is not None:
+                    allowed = bool(getattr(u, "is_admin", False)) or (
+                        job.user_id is not None and getattr(u, "id", None) == job.user_id
+                    )
             except Exception:
-                admin_ok = False
-        if not admin_ok:
+                allowed = False
+        if not allowed:
             raise HTTPException(403, "Prywatny model")
     # hosting-first: oryginał dostępny od razu niezależnie od statusu
     fmt = format.lower()
