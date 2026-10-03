@@ -587,7 +587,7 @@ function loadMats(){
 el.innerHTML='<b>'+k+'</b><span>'+desc+p100+'</span>';el.onclick=function(){selectMat(k);};box.appendChild(el);}); }
   });
 }
-function selectMat(k){ if(selIdx<0){toast('Najpierw kliknij model w koszyku','');return;} CART[selIdx].material=k; drawCart(); refreshMatSel(); reprice(selIdx); calc(); }
+function selectMat(k){ if(selIdx<0){toast('Najpierw kliknij model w koszyku','');return;} CART[selIdx].material=k; CART[selIdx]._matChosen=true; drawCart(); refreshMatSel(); reprice(selIdx); calc(); }
 function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document.querySelectorAll('.mat').forEach(function(x){x.classList.toggle('sel',x.dataset.mat===m);}); document.getElementById('matFor').textContent=(selIdx>=0)?('#'+(selIdx+1)+' · '+(CART[selIdx].model_name||'Model')):'—'; }
   // Podglad 3D ma pokazywac ten sam kolor co zamowienie. Kolor ma wplyw
   // na postrzegana wage bryly, wiec czarne PLA wyglada inaczej niz biale.
@@ -616,10 +616,10 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
     if(!it._multi||!it._multi.length){
       var firstPl=String(it.color||'').split(' + ')[0].trim().toLowerCase();
       var firstCode=Object.keys(COL_PL).find(function(k){return COL_PL[k]===firstPl;})||firstPl||'black';
-      it._multi=[firstCode];
+      it._multi=[firstCode]; it._colChosen=true;
     }
     while(it._multi.length>it.colors){ it._multi.pop(); }
-    it.color=colPl(it._multi);
+    it.color=colPl(it._multi); it._colChosen=true;
     drawCart(); reprice(selIdx); calc(); refreshCol(); renderMulti(); toast('Kolory: '+it.colors+'x',true); }
   var COL_PL={};
   document.querySelectorAll('#colSwatches .swatch').forEach(function(b){
@@ -686,7 +686,7 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
               // routes_order.py zeruje color_premium gdy colors<=1). Nie seedujemy
               // domyślnego koloru — inaczej pierwsze kliknięcie liczyłoby się jako
               // "drugi kolor" i klient płacił +20 zł za zmianę koloru.
-              it._multi=[];
+              it._multi=[]; it._colChosen=true;
             }
             // it.colors bywa undefined (item z koszyka nie ustawia tego pola) —
             // wyprowadzamy je z faktycznej liczby wybranych kolorów, inaczej
@@ -697,7 +697,7 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
               if(it._multi.length>1){
                 it._multi.splice(i,1);
                 if(it.colors>it._multi.length){ it.colors=Math.max(1,it._multi.length); var cc0=document.getElementById('colCount'); if(cc0) cc0.value=String(it.colors); }
-                it.color=colPl(it._multi);
+                it.color=colPl(it._multi); it._colChosen=true;
                 drawCart(); reprice(selIdx); calc(); refreshCol(); renderMulti(); toast('Odznaczono: '+colPl([c]),true);
                 return;
               } else { toast('Przynajmniej 1 kolor zostaje',''); return; }
@@ -710,7 +710,7 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
               toast('Ilość kolorów → '+it.colors+' (+'+extra+' zł)');
             }
       it._multi.push(c);
-      it.color=colPl(it._multi);
+      it.color=colPl(it._multi); it._colChosen=true;
       drawCart(); reprice(selIdx); calc(); refreshCol(); renderMulti(); toast('Kolory: '+it.color,true);
   }
   /* ===================================================================
@@ -1000,7 +1000,7 @@ else { _accStart(); }
 // Jedna sekcja otwarta naraz. Pozycja w stepach jest zawsze jawna,
 // wiec klient widzi gdzie jest i co juz zaznaczyl.
 function _accEls(n){ return {sec:document.getElementById('acc'+n), body:document.getElementById('accb'+n), head:document.querySelector('#acc'+n+' .acc-h')}; }
-function openStep(n){ var e=_accEls(n); if(!e.sec) return; e.sec.classList.add('open'); if(e.head) e.head.setAttribute('aria-expanded','true'); }
+function openStep(n){ for(var i=1;i<=4;i++){ if(i===n) continue; closeStep(i); } var e=_accEls(n); if(!e.sec) return; e.sec.classList.add('open'); if(e.head) e.head.setAttribute('aria-expanded','true'); }
 function closeStep(n){ var e=_accEls(n); if(!e.sec) return; e.sec.classList.remove('open'); if(e.head) e.head.setAttribute('aria-expanded','false'); }
 function stepIsOpen(n){ var e=_accEls(n); return !!(e.sec && e.sec.classList.contains('open')); }
 function toggleStep(n){ stepIsOpen(n)?closeStep(n):openStep(n); }
@@ -1009,8 +1009,8 @@ function toggleStep(n){ stepIsOpen(n)?closeStep(n):openStep(n); }
 var _lastStepDone={};
 function _stepDone(n){
   if(n===1) return CART.length>0;
-  if(n===2) return selIdx>=0 && !!CART[selIdx].material;
-  if(n===3){ if(selIdx<0) return false; var it=CART[selIdx]; return !!(it.color || (it._multi&&it._multi.length)); }
+  if(n===2){ if(selIdx<0) return false; var it=CART[selIdx]; return !!(it._matChosen && it.material); }
+  if(n===3){ if(selIdx<0) return false; var it=CART[selIdx]; return !!(it._colChosen && (it._multi&&it._multi.length)); }
   if(n===4) return false;
   return false;
 }
