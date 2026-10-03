@@ -564,6 +564,38 @@ def public_job_info(job_uuid: str, db: Session = Depends(get_db)):
     }
 
 
+def _convert_in_job(job_uuid: str, original_filename: str, fmt: str):
+    """Konwertuje dowolny plik w katalogu jobu do `fmt` przez trimesh.
+    Zwraca sciezke gotowego pliku albo None. cache'uje w katalogu jobu."""
+    src_dir = JOBS_DIR / job_uuid
+    if not src_dir.exists():
+        return None
+    out = src_dir / (Path(original_filename).stem + f".{fmt}")
+    if out.exists() and out.stat().st_size > 0:
+        return str(out)
+    # 3MF sciezka ma .3mf w katalogu; preferuj go niz wynik STEP
+    src = None
+    for suf in (".3mf", ".stl", ".obj", ".ply"):
+        for f in src_dir.iterdir():
+            if f.suffix.lower() == suf:
+                src = f
+                break
+        if src:
+            break
+    if not src:
+        return None
+    try:
+        import trimesh
+        mesh = trimesh.load(str(src), force="mesh")
+        if mesh is None or not hasattr(mesh, "vertices") or len(mesh.vertices) == 0:
+            return None
+        mesh.export(str(out))
+        return str(out) if out.exists() and out.stat().st_size > 0 else None
+    except Exception as e:
+        print(f"[convert] {job_uuid} -> {fmt}: {e}")
+        return None
+
+
 @router.get("/download/{job_uuid}")
 def download(
     job_uuid: str,
@@ -633,7 +665,14 @@ def download(
             for f in src_dir.iterdir():
                 if f.suffix.lower() == ".stl":
                     return FileResponse(str(f), filename=Path(job.original_filename).stem + ".stl", media_type="model/stl")
-        raise HTTPException(404, f"Plik {fmt.upper()} niedostępny")
+        conv = _convert_in_job(job_uuid, job.original_filename, fmt)
+        if conv:
+            return FileResponse(conv, filename=Path(job.original_filename).stem + f".{fmt}",
+                                media_type="application/octet-stream")
+        have = sorted({f.suffix.lstrip(".").lower() for f in (JOBS_DIR / job_uuid).iterdir()
+                       if f.suffix}) if (JOBS_DIR / job_uuid).exists() else []
+        raise HTTPException(404, f"Plik {fmt.upper()} niedostępny — na serwerze jest: "
+                                 f"{', '.join(h.upper() for h in have) or 'nic'}")
     if fmt == "stl":
         src_dir = JOBS_DIR / job_uuid
         if src_dir.exists():
@@ -642,7 +681,14 @@ def download(
                     return FileResponse(str(f), filename=Path(job.original_filename).stem + ".stl", media_type="model/stl")
         if job.result_stl_path and os.path.exists(job.result_stl_path):
             return FileResponse(job.result_stl_path, filename=Path(job.original_filename).stem + ".stl", media_type="model/stl")
-        raise HTTPException(404, "Plik STL niedostępny")
+        # Brak .stl na dysku, ale klient mogl wgrac 3MF/OBJ/PLY. Konwertujemy do STL,
+        # bo drukarnia i tak drukuje z STL — inaczej admin dostaje 404 na plik, ktory
+        # istnieje, tylko w innym formacie.
+        conv = _convert_in_job(job_uuid, job.original_filename, "stl")
+        if conv:
+            return FileResponse(conv, filename=Path(job.original_filename).stem + ".stl", media_type="model/stl")
+        raise HTTPException(404, "Plik STL niedostępny — wgrałem "
+                                 f"{Path(job.original_filename).suffix.lstrip('.').upper() or 'plik'}")
     # STEP: wymaga konwersji
     if fmt == "step":
         if job.status == "done" and job.result_step_path and os.path.exists(job.result_step_path):

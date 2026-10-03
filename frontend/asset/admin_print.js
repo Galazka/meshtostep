@@ -80,11 +80,21 @@ window.adminSetSearch = function(v, f){ if(f) __adminQ.search=v; __adminQ.page=1
           var items = (o.items && o.items.length) ? o.items : (o.material ? [{ model_name: (o.job_uuid ? '' : ''), material: o.material, color: o.color, quantity: o.quantity || 1, job_uuid: o.job_uuid }] : []);
           return items.map(function(it){
             var dl = '';
-            if (it.job_uuid) { var _tokq = (function(){ var t=localStorage.getItem('mt_token')||localStorage.getItem('token')||''; return t ? '&token=' + encodeURIComponent(t) : ''; })();
+            if (it.job_uuid) {
+              var _tokq = (function(){ var t=localStorage.getItem('mt_token')||localStorage.getItem('token')||''; return t ? '&token=' + encodeURIComponent(t) : ''; })();
+              // Tylko formaty ktore FAKTYCZNIE sa na dysku - panel nie zgadywal i wysywal
+              // 404 na linki do formatow, ktorych klient nie wyslal (3MF -> brak STL/OBJ).
+              var _ext = (it.filename || '').split('.').pop().toLowerCase();
+              var _has = (window.__jobFiles && window.__jobFiles[it.job_uuid]) || null;
+              var _avail = _has ? _has : (_ext ? [_ext] : ['stl']);
+              var _lbl = { stl:'STL', obj:'OBJ', '3mf':'3MF', ply:'PLY', step:'STEP', stp:'STP' };
               dl = '<div style="margin-top:2px;white-space:nowrap">' +
-              '<a href="/api/download/' + it.job_uuid + '?format=stl' + _tokq + '" target="_blank" style="font-size:11px" title="Pobierz STL">⬇ STL</a> ' +
-              '<a href="/api/download/' + it.job_uuid + '?format=3mf' + _tokq + '" target="_blank" style="font-size:11px" title="Pobierz oryginalny 3MF">⬇ 3MF</a> ' +
-              '<a href="/api/download/' + it.job_uuid + '?format=obj' + _tokq + '" target="_blank" style="font-size:11px" title="Pobierz OBJ">⬇ OBJ</a></div>'; }
+                _avail.map(function(f){
+                  var t = 'Pobierz ' + (_lbl[f] || f.toUpperCase());
+                  if (_has && _has.length > 1) t += ' (konwersja z ' + (_lbl[_ext]||_ext||'?') + ')';
+                  return '<a href="/api/download/' + it.job_uuid + '?format=' + f + _tokq + '" target="_blank" style="font-size:11px" title="' + t + '">⬇ ' + (_lbl[f] || f.toUpperCase()) + '</a>';
+                }).join(' ') + '</div>';
+            }
             return '<div style="font-size:11px">' + (it.model_name ? '📄 ' + esc(it.model_name) + ' ' : '📦 model ') +
                    (it.material ? '<span style="color:#6b7280">' + esc(it.material) + (it.color ? ' / ' + esc(it.color) : '') + '</span>' : '') +
                    (it.quantity > 1 ? ' ×' + it.quantity : '') +

@@ -931,6 +931,80 @@ _STATUS_MAIL = {
                   "Zamówienie #%s zostało anulowane. Ewentualna wpłata wróci na konto płatności do 14 dni."),
 }
 
+def _admin_order_email() -> str:
+    """Adres drukarni. Bez niego nie ma gdzie powiadomic — nie milczmy wtedy cicho."""
+    try:
+        from .config import settings
+        return (getattr(settings, "ADMIN_EMAIL_PRINTER", "") or "").strip().lower()
+    except Exception:
+        return ""
+
+
+def _notify_admin(o, kind: str):
+    """Powiadomienie dla drukarni (Tom). Wysylane TYLKO gdy modele sa zapisane —
+    bez pliku nie ma czego drukowac, a szum w skrzynce uczy ignorowac maile."""
+    try:
+        from pathlib import Path
+        if not o:
+            return
+        adm = _admin_order_email()
+        if not adm:
+            print("[order-notify] ADMIN_EMAIL_PRINTER pusty — brak maila do drukarni")
+            return
+        from .mail import send_mail
+        items = []
+        for it in (getattr(o, "items", None) or []):
+            nm = Path(getattr(it, "filename", "") or "model").stem
+            mat = getattr(it, "material", "") or "-"
+            qty = getattr(it, "quantity", 1) or 1
+            col = getattr(it, "color", "") or ""
+            fl = " TAK" if getattr(it, "job_uuid", None) else " BRAK PLIKU"
+            items.append(
+                "<tr><td style='padding:6px 10px;border-bottom:1px solid #eee'>%s x%s</td>"
+                "<td style='padding:6px 10px;border-bottom:1px solid #eee'>%s</td>"
+                "<td style='padding:6px 10px;border-bottom:1px solid #eee'>%s</td>"
+                "<td style='padding:6px 10px;border-bottom:1px solid #eee'>plik:%s</td></tr>"
+                % (nm[:40], qty, mat, (col or "-")[:30], fl))
+        rows = "".join(items) or "<tr><td colspan=4>brak pozycji</td></tr>"
+        pay = ("<b style='color:#0a7'>OPLACONE</b>" if o.is_paid
+               else "<b style='color:#c60'>NIEOPLACONE</b>")
+        total = float(getattr(o, "total", 0) or 0)
+        ship = getattr(o, "shipping_method", "") or ""
+        ship_txt = {"pickup": "odbiot osobisty (Gdansk Osowa)",
+                    "pickup_express": "odbiot ekspres (Gdansk Osowa)"}.get(ship, ship or "-")
+        addr = " / ".join(str(x) for x in [getattr(o, "customer_postal", ""),
+                                           getattr(o, "customer_city", ""),
+                                           getattr(o, "customer_address", ""),
+                                           getattr(o, "customer_phone", "")] if x)
+        link = ("https://3dfile.link/admin.html#orders" if kind == "created"
+                else "https://3dfile.link/admin")
+        subj = {
+            "created": f"[drukarnia] Nowe zamowienie #{o.id}" + ("" if o.is_paid else " (NIEOPLACONE)"),
+            "paid": f"[drukarnia] Zamowienie #{o.id} OPLACONE",
+        }.get(kind, f"[drukarnia] Zamowienie #{o.id} — {kind}")
+        html = (
+            "<div style='font-family:Arial,sans-serif;font-size:14px;color:#111'>"
+            "<h3 style='margin:0 0 10px'>Zamowienie #%s &nbsp; %s</h3>"
+            "<table style='border-collapse:collapse;margin-bottom:12px'>"
+            "<tr><td style='padding:4px 10px'><b>Klient</b></td><td style='padding:4px 10px'>%s</td></tr>"
+            "<tr><td style='padding:4px 10px'><b>Kwota</b></td><td style='padding:4px 10px'>%.2f PLN &nbsp; %s</td></tr>"
+            "<tr><td style='padding:4px 10px'><b>Dostawa</b></td><td style='padding:4px 10px'>%s</td></tr>"
+            "<tr><td style='padding:4px 10px'><b>Adres</b></td><td style='padding:4px 10px'>%s</td></tr>"
+            "</table>"
+            "<table style='border-collapse:collapse;width:100%%;font-size:13px'>"
+            "<tr style='background:#f4f4f4'><th style='padding:6px 10px;text-align:left'>Model</th>"
+            "<th style='padding:6px 10px;text-align:left'>Material</th>"
+            "<th style='padding:6px 10px;text-align:left'>Kolor</th>"
+            "<th style='padding:6px 10px;text-align:left'>Plik</th></tr>%s</table>"
+            "<p style='margin:14px 0'><a href='%s'>Otworz panel admina</a></p>"
+            "<p style='color:#888;font-size:12px'>Wyslane automatycznie przez 3dfile.link (L4RV4).</p>"
+            "</div>"
+        ) % (o.id, pay, o.customer_email, float(total), pay, ship_txt, addr, rows, link)
+        send_mail(adm, subj, html)
+    except Exception as e:
+        print(f"[order-notify] admin/{kind} failed: {e}")
+
+
 def _notify_created(o):
     """Mail potwierdzajacy przyjecie zamowienia (niezaleznie od platnosci)."""
     try:
@@ -943,6 +1017,7 @@ def _notify_created(o):
         send_mail(o.customer_email, f"Zamówienie #{o.id} przyjęte — 3dfile.link", html)
     except Exception as e:
         print(f"[order-notify] created failed: {e}")
+    _notify_admin(o, "created")
 
 
 def _notify_paid(o):
@@ -957,6 +1032,7 @@ def _notify_paid(o):
         send_mail(o.customer_email, f"Zamówienie #{o.id} opłacone — 3dfile.link", html)
     except Exception as e:
         print(f"[order-notify] paid failed: {e}")
+    _notify_admin(o, "paid")
 
 def _notify_order_status(o, old_status: str, new_status: str):
     try:
