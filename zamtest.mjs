@@ -63,9 +63,52 @@ const poKoszyku = await p.evaluate(() => {
   };
 });
 console.log('PO KOSZYKU (desktop):', JSON.stringify(poKoszyku, null, 1));
-await p.screenshot({ path: process.env.TMPDIR + '/zam_desk.png', fullPage: false });
-await m.screenshot({ path: process.env.TMPDIR + '/zam_mob.png', fullPage: false });
+await p.screenshot({ path: 'C:/Users/galaz/AppData/Local/hermes/cache/scratch/zam_full.png', fullPage: true });
+await m.screenshot({ path: 'C:/Users/galaz/AppData/Local/hermes/cache/scratch/zam_mobfull.png', fullPage: true });
 
+const przycisk = await p.evaluate(() => {
+  const b = document.getElementById('submitBtn');
+  const r = b ? b.getBoundingClientRect() : null;
+  return { istnieje: !!b, tekst: b ? b.textContent.trim() : null, disabled: b ? b.disabled : null,
+           wWidoku: r ? (r.top >= 0 && r.bottom <= innerHeight) : null, wysokosc: r ? Math.round(r.height) : null };
+});
+console.log('CTA w podsumowaniu:', JSON.stringify(przycisk));
+// pozycja vs toolbar w podgladzie
+// Czy JEST realnie tekst pod viewportem? Sprawdz elementy pod toolboxem
+const podTB = await p.evaluate(() => {
+  const tb = document.querySelector('.vptools, #vpTools, .vp-bar, .preview-box > div:first-child');
+  // znajdz wszystkie elementy tekstowe ktore moga byc pod canvasem
+  const box = document.querySelector('.preview-box');
+  if (!box) return 'brak preview-box';
+  const br = box.getBoundingClientRect();
+  const canvas = box.querySelector('canvas');
+  const cr = canvas ? canvas.getBoundingClientRect() : null;
+  const wynik = { box: [Math.round(br.left), Math.round(br.top), Math.round(br.right), Math.round(br.bottom)] };
+  if (cr) wynik.canvas = [Math.round(cr.left), Math.round(cr.top), Math.round(cr.right), Math.round(cr.bottom)];
+  wynik.canvasPozaBox = cr ? (cr.right > br.right + 1 || cr.bottom > br.bottom + 1) : null;
+  // elementy z overflow widoczne przy lewej krawedzi canvasa
+  wynik.overflowX = box.scrollWidth - box.clientWidth;
+  wynik.overflowY = box.scrollHeight - box.clientHeight;
+  // czy canvas ma tlo (nieprzezroczyste) - jak tak, tekst pod nim nie widac
+  wynik.canvasTlo = canvas ? getComputedStyle(canvas).backgroundColor : null;
+  wynik.boxOverflow = getComputedStyle(box).overflow;
+  // ile elementow z pozycja absolute wewnatrz box
+  wynik.absolutes = [...box.querySelectorAll('*')].filter(e => getComputedStyle(e).position === 'absolute')
+    .map(e => ({ cls: e.className, txt: (e.textContent||'').trim().slice(0,25) })).slice(0,12);
+  return wynik;
+});
+console.log('PODGLAD / overflow:', JSON.stringify(podTB, null, 1));
+
+const overlap = await p.evaluate(() => {
+  const tb = document.querySelector('.vp-tools, .preview-box .tools, [class*=tool]');
+  const sb = document.getElementById('submitBtn');
+  if (!tb || !sb) return 'brak elementu';
+  const a = tb.getBoundingClientRect(), b = sb.getBoundingClientRect();
+  const ov = !(b.right < a.left || b.left > a.right || b.bottom < a.top || b.top > a.bottom);
+  return { overlap: ov, tools: [Math.round(a.left), Math.round(a.top), Math.round(a.right), Math.round(a.bottom)],
+           btn: [Math.round(b.left), Math.round(b.top), Math.round(b.right), Math.round(b.bottom)] };
+});
+console.log('Nakladanie toolbar vs CTA:', JSON.stringify(overlap));
 console.log('BLEDY JS (' + errs.length + '):');
 errs.slice(0, 8).forEach(e => console.log('  ' + e));
 await b.close();

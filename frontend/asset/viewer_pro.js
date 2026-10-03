@@ -78,6 +78,7 @@ export function initViewerPro(opts) {
   const w0 = Math.min(host.clientWidth || 640, 1600);
   const h0 = host.clientHeight || 420;
   if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
+host.style.padding = '0';   // canvas jest absolute (inset:0) - padding rozpychal go
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(cfg.bg);
@@ -87,7 +88,7 @@ export function initViewerPro(opts) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
   renderer.setSize(w0, h0, false);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-  renderer.domElement.style.cssText = 'display:block;width:100%;height:100%;touch-action:none';
+  renderer.domElement.style.cssText = 'display:block;position:absolute;inset:0;width:100%;height:100%;touch-action:none';
   host.appendChild(renderer.domElement);
 
   const controls = new OrbitControls(camera, renderer.domElement);
