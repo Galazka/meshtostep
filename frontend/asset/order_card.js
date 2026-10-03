@@ -198,17 +198,19 @@
       }).join('');
 
       body += '<div style="display:flex;gap:13px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #f1f5f9">'
+        + '<div style="flex:0 0 68px;display:flex;flex-direction:column;align-items:center;gap:3px">'
         + '<button class="oc-thumb" type="button" data-preview="' + esc(it.job_uuid) + '"'
         + ' data-fmt="' + esc(ext) + '" data-name="' + esc(fname) + '"'
         + ' title="Podejrzij model przed pobraniem"'
-        + ' style="position:relative;width:68px;height:68px;flex:0 0 68px;border:1px solid #e2e8f0;'
+        + ' style="width:68px;height:68px;flex:0 0 68px;border:1px solid #e2e8f0;'
         + 'border-radius:8px;background:#f8fafc;cursor:pointer;overflow:hidden;padding:0">'
         + '<img src="/api/preview/' + encodeURIComponent(it.job_uuid) + '" alt="" loading="lazy"'
         + ' style="width:100%;height:100%;object-fit:contain;pointer-events:none"'
         + ' onerror="this.style.visibility=\'hidden\'">'
-        + '<span style="position:absolute;left:0;right:0;bottom:0;font-size:8px;letter-spacing:.05em;'
-        + 'color:#64748b;background:rgba(255,255,255,.9);text-transform:uppercase">podgląd 3D</span>'
         + '</button>'
+        + '<span style="font-size:9px;letter-spacing:.03em;color:#94a3b8;'
+        + 'text-transform:uppercase;text-align:center;line-height:1.25">podgląd 3D</span>'
+        + '</div>'
         + '<div style="min-width:0;flex:1">'
         + '<div style="font-size:13px;font-weight:600;word-break:break-all">' + esc(fname) + '</div>'
         + (spec.length ? '<div style="font-size:11.5px;color:#64748b;margin-top:2px">' + spec.join(' · ') + '</div>' : '')
@@ -247,28 +249,37 @@
   /* ---------- Koszty ---------- */
   function secMoney(o) {
     var g = '';
+    var num = function (v) { return parseFloat(v || 0); };
+
     if (o.filament_cost) g += cell('Filament', zl(o.filament_cost));
     if (o.electricity_cost) g += cell('Prąd', zl(o.electricity_cost));
     if (o.color_premium) g += cell('Pigment', zl(o.color_premium));
     if (o.multicolor_fee) g += cell('Wielokolor', zl(o.multicolor_fee));
     if (o.surcharge_pln) g += cell('Dopłata za pigment', zl(o.surcharge_pln));
     if (o.subtotal) g += cell('Koszt wytworzenia', zl(o.subtotal), { strong: true });
-    if (o.margin_pln) g += cell('Marża (narzut)', zl(o.margin_pln));
-    if (o.discount_pln) g += cell('Rabat', '−' + zl(o.discount_pln), { color: '#b91c1c' });
-    if (parseFloat(o.shipping_cost || 0) > 0) g += cell('Dostawa', zl(o.shipping_cost));
-    if (o.cost_pln) g += cell('Koszt całkowity', zl(o.cost_pln));
 
-    var profit = (o.profit_pln !== null && o.profit_pln !== undefined) ? o.profit_pln
-               : ((parseFloat(o.total || 0)) - (parseFloat(o.shipping_cost || 0)) - (parseFloat(o.cost_pln || 0)));
+    // backend liczy cost_pln = koszt wytworzenia + pakowanie; bez pozycji pakowania
+    // suma wyglądała na błęd (0.88 + 5.00 = 5.88 przy koszcie 0.88)
+    var pack = num(o.cost_pln) - num(o.subtotal);
+    if (pack > 0.005) g += cell('Pakowanie', zl(pack));
+    if (o.cost_pln) g += cell('Koszt całkowity', zl(o.cost_pln), { strong: true });
+
+    if (o.shipping_cost) g += cell('Dostawa', zl(o.shipping_cost));
+    if (o.discount_pln) g += cell('Rabat', '−' + zl(o.discount_pln), { color: '#b91c1c' });
+    if (o.margin_pln) g += cell('Marża (narzut)', zl(o.margin_pln));
+
+    var profit = (o.profit_pln !== null && o.profit_pln !== undefined)
+               ? num(o.profit_pln)
+               : (num(o.total) - num(o.shipping_cost) - num(o.cost_pln));
     g += cell('ZYSK', zl(profit), { strong: true, color: profit >= 0 ? '#047857' : '#b91c1c' });
-    g += cell('DO ZAPŁATY', zl(o.total) + ' ' + (o.currency || 'PLN'),
-              { strong: true, color: '#2B5CE6' });
+
+    var totalTxt = zl(o.total) + ((o.currency || 'PLN') === 'PLN' ? '' : ' ' + (o.currency || 'PLN'));
+    g += cell('DO ZAPŁATY', totalTxt, { strong: true, color: '#2B5CE6' });
 
     return section('k' + o.id, 'Koszty', zl(o.total, 2), g, false);
   }
 
-  /* ---------- Notatki admina ---------- */
-  function secNotes(o) {
+function secNotes(o) {
     var body = '<div style="padding:4px 0">'
       + '<textarea id="an_' + o.id + '" rows="4"'
       + ' placeholder="Notatka wewnętrzna — widoczna tylko w panelu. Np. preferowany kontakt, uwagi do druku, historia zmian."'
