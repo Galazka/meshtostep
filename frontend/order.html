@@ -632,7 +632,13 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
   var _plFallback={natural:'naturalny',silver:'srebrny',gold:'złoty',carbon:'grafitowy',
     transparent:'przezroczysty'};
   for(var _k in _plFallback){ if(!COL_PL[_k]) COL_PL[_k]=_plFallback[_k]; }
-  function colPl(list){ return list.map(function(c){return COL_PL[c]||c;}).join(' + '); }
+  // Przyjmuje tablice kodow kolorow ALBO gotowy string PL ("czarny + bialy").
+  // Bez tego zabezpieczenia wywolanie ze stringiem rzucalo "list.map is not
+  // a function" i gaslo caly refreshSteps() — naglowki krokow zostawaly puste.
+  function colPl(list){
+    if(Array.isArray(list)) return list.map(function(c){return COL_PL[c]||c;}).join(' + ');
+    return list||'';
+  }
   // ── Plakietka koloru w podsumowaniu ──
   // tło = wybrany kolor, ramka = ten sam kolor przyciemniony, tekst czytelny
   // dla jasnych i ciemnych barw (luminacja), skrót PL na wierzchu.
@@ -1049,10 +1055,15 @@ function refreshSteps(){
   vals[1]=CART.length?(CART.length+' × model'):'—';
   vals[2]=sel&&sel.material?sel.material:'—';
   if(sel){
-    var c=sel.colors||1;
-    var nm=(sel._multi&&sel._multi.length)?(c+' kolor'+(c>2?'y':(c>1?'y':''))):colPl(sel.color);
-    vals[3]=(nm||'—')+(sel.infill?(' · '+sel.infill+'% wypełn.'):'');
-  } else vals[3]='—';
+      var c=sel.colors||1;
+      // it.color to string PL ("czarny + bialy"), a colPl() oczekuje tablicy kodow.
+      // Uzywaj _multi (kody) jesli jest — inaczej colPl() rzuca TypeError
+      // "list.map is not a function" i cale refreshSteps() pada, zostawiajac
+      // wszystkie naglowki puste.
+      var nm=(sel._multi&&sel._multi.length)?colPl(sel._multi):(sel.color||'—');
+      if(c>1) nm=c+' kolory';
+      vals[3]=(nm||'—')+(sel.infill?(' · '+sel.infill+'% wypełn.'):'');
+    } else vals[3]='—';
   vals[4]='Dane i płatność';
   for(var i=1;i<=4;i++){
     var el=document.getElementById('accs'+i), sec=document.getElementById('acc'+i);

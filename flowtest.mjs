@@ -46,11 +46,13 @@ R.push(['krok 2 done po wyborze materialu', st.done.includes('acc2'), JSON.strin
 // 4. Krok 3 powinien byc otwarty po wyborze materialu
 R.push(['po materiale otwarty krok 3', st.open.includes('acc3'), JSON.stringify(st.open)]);
 
-// 5. Wybierz kolor (swatch) w kroku 3
+// 5. Wybierz kolor (swatch) w kroku 3 — najpierw otworz go jawnie,
+//    bo auto-otwarcie trzyma krok 2 otwarty az do momentu wyboru materialu jako "done".
+if (!(await page.locator('#accb3').isVisible())) { await page.click('#acc3 .acc-h'); await page.waitForTimeout(400); }
 const swCount = await page.locator('#accb3 .swatch').count();
 if (swCount > 0) { await page.locator('#accb3 .swatch').first().click(); await page.waitForTimeout(900); }
 const applyBtn = page.locator('#accb3 button[data-i18n="applyColor"]');
-if (await applyBtn.count()) { await applyBtn.click(); await page.waitForTimeout(2200); }
+if ((await applyBtn.count()) && await applyBtn.isVisible()) { await applyBtn.click(); await page.waitForTimeout(2200); }
 
 st = await state();
 R.push(['krok 3 ma swatche', swCount > 0, `${swCount}`]);
