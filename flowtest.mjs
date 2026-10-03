@@ -77,7 +77,10 @@ const api = await page.evaluate(async () => {
   return r.json();
 });
 console.log('  API: vol=' + api.volume_cm3 + ' g=' + api.filament_grams + ' cena=' + api.total + ' minimum=' + api.at_min_print);
-R.push(['API zwraca wolumosc > 20 cm3', api.volume_cm3 > 20, `${api.volume_cm3}`]);
+// /api/calculate nie zwraca volume_cm3 (liczymy z filament_grams),
+// ale gramsy sa zrodlem prawdy dla progu minimum.
+R.push(['API: masa filamentu > 25 g dla 23,9 cm3', api.filament_grams > 25, `${api.filament_grams} g`]);
+R.push(['API: realna wycena (at_min_print=false)', api.at_min_print === false, `minimum=${api.at_min_print}`]);
 R.push(['API: cena zgodna z UI', Math.abs(api.total - parseFloat(String(price).replace(/[^\d,]/g, '').replace(',', '.'))) < 1.5, `api=${api.total} ui=${price}`]);
 
 // 8. Kazdy krok da sie otworzyc i cofnac
@@ -88,12 +91,24 @@ for (const n of [1, 2, 3, 4]) {
 }
 R.push(['wszystkie 4 kroki otwieraja sie klikem', true, '']);
 
-// 9. Edycja koloru po wyborze — podglad zmienia kolor
-const meshHex = await page.evaluate(() => {
+// 9. Podglad 3D — mesh musi byc realnie wczytany (nie tylko canvas.isConnected).
+const mesh = await page.evaluate(() => {
   const p = window.__viewerPro;
-  try { return p && p.mesh && p.mesh.material.color.getHexString(); } catch { return null; }
+  if (!p) return { vp: false };
+  const m = p.mesh;
+  if (!m) return { vp: true, mesh: false };
+  const g = m.geometry;
+  g.computeBoundingBox?.();
+  const bb = g.boundingBox;
+  return {
+    vp: true, mesh: true,
+    verts: g.attributes?.position?.count || 0,
+    hex: m.material?.color?.getHexString?.() || null,
+    box: bb ? [bb.min.y.toFixed(2), bb.max.y.toFixed(2)] : null,
+  };
 });
-R.push(['mesh aktywny w podgladzie', !!meshHex, `${meshHex}`]);
+R.push(['viewer_pro dostepny', mesh.vp, JSON.stringify(mesh)]);
+R.push(['mesh ma wierzcholki', mesh.verts > 0, `${mesh.verts} wierzcholkow`]);
 
 // 10. Brak poziomego scrolla po wczytaniu modelu
 const ov = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);

@@ -561,6 +561,8 @@ export function initViewerPro(opts) {
 
   const api = {
     three: THREE, scene, camera, renderer, controls, group,
+    // aktywna bryła — do diagnostyki (testy podgladu, konsola przegladarki)
+    getMesh: function () { return mesh; },
     setMesh: function (geo, keepView) { setMesh(geo, keepView); loaded = true; },
     /* replacement mesh from an external loader (e.g. STEP via OCCT WASM) */
     attachMesh: function (geo) { setMesh(geo); loaded = true; if (barEl) refreshBar(); },
