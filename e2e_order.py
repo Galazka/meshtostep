@@ -122,10 +122,12 @@ if mine:
     chk("ma pozycje", len(its) > 0, "%d pozycji" % len(its))
     ju = its[0].get("job_uuid") if its else None
     chk("item ma job_uuid", bool(ju), str(ju))
+if ju:
+    st2, b2 = req("/api/download/%s?format=stl&t=%d" % (ju, time.time()), token=tok)
+    chk("wlasciciel pobiera swoj model", st2 == 200, "%s (%d B)" % (st2, len(b2)))
 
 print("=== 6. sprzatanie ===")
-st, _ = req("/api/orders/%d?t=%d" % (oid, time.time()), token=tok, body={})
-chk("zamowienie usuniete", st in (200, 204, 404), str(st))
+print("  (zamowienie zostaje w bazie jako zadanie dla drukarni - nie kasuje)")
 
 print()
 print("%d/%d PASS" % (ok, ok + fail))

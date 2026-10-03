@@ -1615,8 +1615,11 @@ def account_orders(user=Depends(require_user), db: Session = Depends(get_db)):
                     "tracking_url": _tracking_url(getattr(o, "tracking_code", None)),
                     "total": o.total, "currency": o.currency or "PLN",
                     "shipping_method": o.shipping_method,
+                    # job_uuid pozwala klientowi pobrac wlasny plik z „Moich zamowień”
+                    # (bez niego byl tylko komunikat „brak mozliwosci pobrania").
                     "items": [{"model_name": it.model_name, "material": it.material, "color": it.color,
-                               "quantity": it.quantity, "volume_cm3": it.volume_cm3} for it in (o.items or [])],
+                               "quantity": it.quantity, "volume_cm3": it.volume_cm3,
+                               "job_uuid": getattr(it, "job_uuid", None)} for it in (o.items or [])],
                     "receipt_url": f"/api/orders/{o.id}/receipt",
                     "stripe_receipt": o.stripe_receipt_url if getattr(o, "stripe_receipt_url", None) else None})
     return {"ok": True, "orders": out}
