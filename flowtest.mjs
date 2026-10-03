@@ -95,7 +95,7 @@ R.push(['wszystkie 4 kroki otwieraja sie klikem', true, '']);
 const mesh = await page.evaluate(() => {
   const p = window.__viewerPro;
   if (!p) return { vp: false };
-  const m = p.mesh;
+  const m = typeof p.getMesh === 'function' ? p.getMesh() : p.mesh;
   if (!m) return { vp: true, mesh: false };
   const g = m.geometry;
   g.computeBoundingBox?.();
