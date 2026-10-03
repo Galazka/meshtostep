@@ -206,11 +206,17 @@ export function initViewerPro(opts) {
   }
 
   function layoutGrid() {
-    if (grid) grid.position.set(0, -halfH - 1.5, 0);
+    /* Siatka dokladnie pod spodem bryly. Stara wersja odejmowala 1.5
+       jednostki "na odstep" — przy plaskim modelu (kapajka3: 234x175x4 mm
+       po skalowaniu do 30 = wysokosc 0.51) ta luka byla 6x wieksza niz
+       sama bryla, wiec model wygladal jak leciaca plyta, a dysk
+       kontaktowy zostawal zawieszony 1.5 jednostki nad siatka.
+       Dwie gale prostej epsilon wystarcza na anty-z-fighting. */
+    if (grid) grid.position.set(0, -halfH - 0.01, 0);
     if (contact) {
       /* dysk lezy DOKLADNIE na wysokosci minimalnej krawedzi bryly — zero
          odstepu, inaczej znowu wychodzi efekt wisienia */
-      contact.position.set(0, -halfH + 0.02, 0);
+      contact.position.set(0, -halfH - 0.005, 0);
       if (mesh) {
         mesh.updateMatrixWorld(true);
         const bb = new THREE.Box3().setFromObject(mesh);
@@ -594,6 +600,9 @@ export function initViewerPro(opts) {
         meshMinY: +bb.min.y.toFixed(3),
         meshMaxY: +bb.max.y.toFixed(3),
         gridY: g ? +g.position.y.toFixed(3) : null,
+        /* LUKA = odstep spodu bryly od siatki. 0 = model lezy. */
+        luka: g ? +(bb.min.y - g.position.y).toFixed(3) : null,
+        contactY: contact ? +contact.position.y.toFixed(3) : null,
         gridVisible: g ? !!g.visible : false,
         halfH: +halfH.toFixed(3)
       };
