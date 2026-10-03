@@ -987,6 +987,16 @@ document.getElementById('fileInput').addEventListener('change',function(){ var f
 });
 
 function payFromSummary(){ var b=document.getElementById('submitBtn'); if(b&&!b.disabled) b.click(); }
+// Przycisk "Zmien" w podsumowaniu: otworz krok, w ktorym da sie realnie zmienic
+// wybor tego modelu, i przewin do niego. Osobna funkcja, bo preview() renderuje
+// koszyk przy kazdej zmianie — scrollowalibysmy klienta w nieskonczonosc.
+function gotoEditStep(i){
+  var it=CART[i]; if(!it || typeof openStep!=='function') return;
+  var n=it._matChosen?3:2;
+  openStep(n);
+  var t=document.getElementById('accb'+n);
+  if(t) t.scrollIntoView({behavior:'smooth',block:'center'});
+}
 
 // ── START ACCORDION ────────────────────────────────────────────
 // Krok 1 otwarty na wejsciu; kolejny otwiera sie sam po wypelnieniu poprzedniego.
@@ -1096,7 +1106,7 @@ function calc(){
         : '<span class="summath">średnio '+fmt(perR)+' / szt</span>';
     }
     rowsHTML+='<div class="sumblock"><div class="summeta">'+meta.join('')+'</div>'+mathTxt+
-      '<button class="sumedit" onclick="event.stopPropagation();preview('+idx+');refreshCol()">Zmień</button></div>';
+      '<button class="sumedit" onclick="event.stopPropagation();preview('+idx+');refreshCol();gotoEditStep('+idx+')">Zmień</button></div>';
   });
   var shipBase=(CFG&&CFG.shipping_tiers)||{standard:{PL:16.49,EU:35,GLOBAL:55},express:{PL:33,EU:70,GLOBAL:110},pickup:{PL:0,EU:0,GLOBAL:0},pickup_express:{PL:19,EU:19,GLOBAL:19}};
   var PACK=(CFG&&CFG.packing_pln!=null)?+CFG.packing_pln:3;
@@ -1170,14 +1180,14 @@ function applyCoupon(silent){
 function preview(i){
   selIdx=i; drawCart(); refreshMatSel(); syncInfillUI(); if(typeof refreshCol==='function') refreshCol();
   // "Zmien" w podsumowaniu ma prowadzic do kroku, w ktorym da sie faktycznie
-  // zmienic wybor dla tego modelu — material (2) albo kolor (3).
-  var ed=document.getElementById('sumEditBtn');
-  if(typeof openStep==='function'){
-    var i1=CART[i];
-    openStep(i1 && i1.material ? 3 : 2);
-    var tgt=document.getElementById(i1 && i1.material ? 'accb3' : 'accb2');
-    if(tgt) tgt.scrollIntoView({behavior:'smooth',block:'center'});
-  }
+    // zmienic wybor dla tego modelu. Decyduje swiadomy wybor uzytkownika
+    // (_matChosen), nie samo istnienie pola material — inaczej kazde renderowanie
+    // koszyka otwieralo krok 3 i przewijalo do niego, omijajac krok 2.
+    // scrollIntoView tylko przy jawnym wywolaniu (button "Zmien"), nie przy renderze.
+    if(typeof openStep==='function'){
+      var i1=CART[i];
+      openStep(i1 && i1._matChosen ? 3 : 2);
+    }
   var it=CART[i], box=document.getElementById('previewBox');
   if(it && it._bytes && typeof window.__local3d!=='undefined'){ try{ window.__local3d.renderBytes(it.model_name,it._bytes,'previewBox'); syncPreviewColor(); return; }catch(e){ if(e&&e.message)console.warn('renderBytes:',e.message); } }
   if(it.job_id){

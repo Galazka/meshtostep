@@ -23,7 +23,9 @@ for (const t of [800, 1500, 2500, 4000]) {
     open: [...document.querySelectorAll('section.acc.open')].map(e => e.id),
     cart: typeof CART !== 'undefined' ? CART.length : -1,
     lastDone: typeof _lastStepDone !== 'undefined' ? JSON.parse(JSON.stringify(_lastStepDone)) : 'undef',
-    d1: _stepDone(1), d2: _stepDone(2),
+    d1: _stepDone(1), d2: _stepDone(2), d3: _stepDone(3), d4: _stepDone(4),
+    next: _stepNext(), matChosen: typeof CART!=='undefined'&&CART[0]?!!CART[0]._matChosen:null,
+    accClasses: [...document.querySelectorAll('section.acc')].map(e=>e.id+':'+(e.classList.contains('open')?'OPEN':'shut')).join(' '),
     sum1: (document.getElementById('accs1') || {}).textContent,
   }));
   console.log(`po ${t}ms: ` + JSON.stringify(st));
