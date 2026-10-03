@@ -1380,7 +1380,7 @@ def create_multi_order(req: MultiOrderReq, request: Request,
     """Create an order with multiple models. Each item priced via calculate_price,
     one shared shipping + packing. Returns order_id, item_count, totals."""
     try:
-        return _create_multi_order_impl(req, db, request)
+        return _create_multi_order_impl(req, db, request, user)
     except HTTPException:
         raise
     except Exception as e:
@@ -1389,7 +1389,8 @@ def create_multi_order(req: MultiOrderReq, request: Request,
         raise HTTPException(500, detail=f"multi order failed: {e}")
 
 
-def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db), request: Request = None):
+def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db), request: Request = None,
+                            user: "models.User" = None):
     if not req.items:
         raise HTTPException(400, detail="Brak modeli w zamówieniu")
     shipping_cost = round(_cfg_value(db, req.shipping, req.shipping_region), 2)
@@ -1548,10 +1549,9 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db), 
             db.rollback()
 
     # Przypisz wgrane pliki do wlasciciela. Plik wgrany w /zamow przed
-    # zalogowaniem ma user_id=None i nikt nie ma prawa go pobrac (admin wrecz
-    # musialby zgadywac uuid). Po zlozeniu zamowienia podpinamy user_id,
-    # a order.user_id wskazuje na wlasciciela -> pobieranie w panelu admina
-    # i „Moje pliki” dzialaja.
+    # zalogowaniem ma user_id=None — nikt nie ma wtedy prawa go pobrac (admin
+    # musialby zgadywac uuid), a uzytkownik nie widzi go w „Moich plikach".
+    # Po zlozeniu zamowienia podpinamy user_id.
     if user:
         try:
             for _it in req.items:
@@ -1560,7 +1560,6 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db), 
                 _j = db.query(models.Job).filter(models.Job.uuid == _it.job_uuid).first()
                 if _j is not None and _j.user_id is None:
                     _j.user_id = user.id
-                    # zostaje private — nie trafia do „Odkrywaj” automatycznie
                     db.commit()
         except Exception:
             db.rollback()
