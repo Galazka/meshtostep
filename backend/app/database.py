@@ -72,6 +72,18 @@ def _migrate_columns():
                 add_col(conn, "jobs", col, dtype, existing)
         except Exception as e:
             print(f"[3dfile] jobs migrate: {e}")
+        # orders - punkt odbioru InPost (osobne kolumny zamiast tekstu w adresie)
+        try:
+            existing = {c["name"] for c in insp.get_columns("orders")}
+            for col, dtype in [
+                ("shipping_point_name","VARCHAR(120)"),
+                ("shipping_point_addr","VARCHAR(300)"),
+                ("shipping_point_lat","FLOAT"),
+                ("shipping_point_lon","FLOAT"),
+            ]:
+                add_col(conn, "orders", col, dtype, existing)
+        except Exception as e:
+            print(f"[3dfile] orders shipping_point migrate: {e}")
         # share_links
         try:
             existing = {c["name"] for c in insp.get_columns("share_links")}

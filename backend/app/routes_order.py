@@ -714,6 +714,16 @@ def create_order(
     }
 
 
+def _order_item_filename(db, it):
+    """Nazwa pliku pozycji zamowienia. Z Job (bo tam jest oryginalny upload),
+    w razie awarii z model_name. Panel uzywa rozszerzenia do listy formatow."""
+    if getattr(it, "job_uuid", None):
+        j = db.query(models.Job).filter(models.Job.uuid == it.job_uuid).first()
+        if j and j.original_filename:
+            return j.original_filename
+    return getattr(it, "model_name", None)
+
+
 @router.get("/api/orders")
 def list_orders(
     request: Request,
@@ -764,6 +774,8 @@ def list_orders(
             "id": o.id, "job_id": o.job_id, "job_uuid": o.job_uuid,
             "items": [{
                 "id": it.id, "model_name": it.model_name, "job_uuid": it.job_uuid,
+                # prawdziwy plik z JOBS_DIR — panel musi wiedziec jaki format jest na dysku
+                "filename": _order_item_filename(db, it),
                 "material": it.material, "color": it.color, "quantity": it.quantity,
                 "volume_cm3": it.volume_cm3, "dims_mm": it.dims_mm,
                 "filament_grams": it.filament_grams, "subtotal": it.subtotal,
@@ -776,6 +788,8 @@ def list_orders(
             "customer_name": o.customer_name, "customer_email": o.customer_email,
             "customer_phone": o.customer_phone, "customer_city": o.customer_city,
             "customer_country": o.customer_country,
+            # adres i kod pocztowy BIALY wczesniej — panel nie mogl pokazac gdzie wysylac
+            "customer_address": o.customer_address, "customer_postal": o.customer_postal,
             "material": o.material, "color": o.color, "quantity": o.quantity,
             "shipping_method": o.shipping_method, "shipping_region": o.shipping_region,
             "filament_grams": o.filament_grams, "printing_hours": o.printing_hours,
@@ -794,6 +808,11 @@ def list_orders(
             "notes": o.notes, "admin_notes": getattr(o, "admin_notes", None),
             "created_at": _iso(o.created_at),
             "tracking_code": getattr(o, "tracking_code", None),
+            # punkt odbioru — osobno, żeby panel nie musiał parsować "Paczkomat: ..." z adresu
+            "shipping_point_name": getattr(o, "shipping_point_name", None),
+            "shipping_point_addr": getattr(o, "shipping_point_addr", None),
+            "shipping_point_lat": getattr(o, "shipping_point_lat", None),
+            "shipping_point_lon": getattr(o, "shipping_point_lon", None),
         })
     return {"ok": True, "orders": rows, "total": total_count, "returned": len(rows), "page": page, "limit": limit}
 
@@ -1067,6 +1086,11 @@ def update_order(
     admin_notes: str = Form(None),
 
     tracking_code: str = Form(None),
+    # korekta punktu odbioru recznie (gdy klient wybral punkt, ktory juz nie istnieje)
+    shipping_point_name: str = Form(None),
+    shipping_point_addr: str = Form(None),
+    shipping_point_lat: float = Form(None),
+    shipping_point_lon: float = Form(None),
 
     admin=Depends(require_admin),
     db: Session = Depends(get_db),
@@ -1095,6 +1119,14 @@ def update_order(
         o.admin_notes = admin_notes[:2000] if admin_notes else None
     if tracking_code is not None:
         o.tracking_code = tracking_code[:120].strip() or None
+    if shipping_point_name is not None:
+        o.shipping_point_name = shipping_point_name[:120].strip() or None
+    if shipping_point_addr is not None:
+        o.shipping_point_addr = shipping_point_addr[:300].strip() or None
+    if shipping_point_lat is not None:
+        o.shipping_point_lat = shipping_point_lat
+    if shipping_point_lon is not None:
+        o.shipping_point_lon = shipping_point_lon
     o.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(o)
@@ -1442,6 +1474,11 @@ class MultiOrderReq(BaseModel):
 
     shipping: str = "standard"
     shipping_region: str = "PL"
+    # Wybrany paczkomat InPost - osobne pola, nie tekst doklejony do address.
+    point_name: str = None      # kod punktu, np. "APU01"
+    point_addr: str = None      # ulica, kod, miasto
+    point_lat: float = None
+    point_lon: float = None
     discount_code: str = None
     notes: str = None
     payment_method: str = "blik"
@@ -1578,6 +1615,9 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db), 
         material="MIX", color="mixed",
         quantity=sum(i.quantity for i in req.items),
         shipping_method=req.shipping[:20], shipping_region=req.shipping_region[:20],
+        shipping_point_name=req.point_name[:120] if req.point_name else None,
+        shipping_point_addr=req.point_addr[:300] if req.point_addr else None,
+        shipping_point_lat=req.point_lat, shipping_point_lon=req.point_lon,
         estimated_hours=0.0, volume_cm3=round(sum(i.volume_cm3 or 0 for i in req.items), 2),
         filament_grams=round(sum(i.filament_grams for i in items_rows), 2),
         filament_cost=round(sum(i.filament_cost for i in items_rows), 2),

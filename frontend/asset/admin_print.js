@@ -66,59 +66,14 @@ window.adminSetSearch = function(v, f){ if(f) __adminQ.search=v; __adminQ.page=1
         var res = await fetch(q, { headers: headers });
       var data = await res.json();
       if (res.ok && data.ok && data.orders) {
-        var tbody = '';
-        var ms = ['nowy', 'wycena', 'realizacja', 'drukowane', 'gotowe', 'wysłane', 'dostarczone', 'anulowane'];
-        var statusColor = { 'nowy': '#ef4444', 'wycena': '#f59e0b', 'realizacja': '#7c3aed', 'drukowane': '#f59e0b', 'gotowe': '#3b82f6', 'wysłane': '#06b6d4', 'dostarczone': '#10b981', 'anulowane': '#6b7280' };
-        data.orders.forEach(function(o) {
-          var st = o.status || 'nowy';
-          var opts = ms.map(function(m) { return '<option value="' + m + '"' + (m === st ? ' selected' : '') + '>' + m + '</option>'; }).join('');
-          tbody += '<tr style="border-bottom:1px solid #e5e7eb;vertical-align:top">' +
-            '<td style="padding:8px;font-weight:600">#' + o.id + '</td>' +
-            '<td style="padding:8px;white-space:nowrap">' + (o.created_at ? new Date(o.created_at).toLocaleString('pl-PL', {timeZone:'Europe/Warsaw'}) : '') + '</td>' +
-            '<td style="padding:8px"><strong>' + (o.customer_name || '') + '</strong><br><span style="color:#6b7280;font-size:11px">' + (o.customer_email || '') + (o.customer_phone ? '<br>' + o.customer_phone : '') + '</span><br><span style="color:#9ca3af;font-size:11px">' + (o.customer_city || '') + ' ' + (o.customer_country || '') + '</span></td>' +
-            '<td style="padding:8px">' + (function(){
-          var items = (o.items && o.items.length) ? o.items : (o.material ? [{ model_name: (o.job_uuid ? '' : ''), material: o.material, color: o.color, quantity: o.quantity || 1, job_uuid: o.job_uuid }] : []);
-          return items.map(function(it){
-            var dl = '';
-            if (it.job_uuid) {
-              var _tokq = (function(){ var t=localStorage.getItem('mt_token')||localStorage.getItem('token')||''; return t ? '&token=' + encodeURIComponent(t) : ''; })();
-              // Tylko formaty ktore FAKTYCZNIE sa na dysku - panel nie zgadywal i wysywal
-              // 404 na linki do formatow, ktorych klient nie wyslal (3MF -> brak STL/OBJ).
-              var _ext = (it.filename || '').split('.').pop().toLowerCase();
-              var _has = (window.__jobFiles && window.__jobFiles[it.job_uuid]) || null;
-              var _avail = _has ? _has : (_ext ? [_ext] : ['stl']);
-              var _lbl = { stl:'STL', obj:'OBJ', '3mf':'3MF', ply:'PLY', step:'STEP', stp:'STP' };
-              dl = '<div style="margin-top:2px;white-space:nowrap">' +
-                _avail.map(function(f){
-                  var t = 'Pobierz ' + (_lbl[f] || f.toUpperCase());
-                  if (_has && _has.length > 1) t += ' (konwersja z ' + (_lbl[_ext]||_ext||'?') + ')';
-                  return '<a href="/api/download/' + it.job_uuid + '?format=' + f + _tokq + '" target="_blank" style="font-size:11px" title="' + t + '">⬇ ' + (_lbl[f] || f.toUpperCase()) + '</a>';
-                }).join(' ') + '</div>';
-            }
-            return '<div style="font-size:11px">' + (it.model_name ? '📄 ' + esc(it.model_name) + ' ' : '📦 model ') +
-                   (it.material ? '<span style="color:#6b7280">' + esc(it.material) + (it.color ? ' / ' + esc(it.color) : '') + '</span>' : '') +
-                   (it.quantity > 1 ? ' ×' + it.quantity : '') +
-                   (it.infill && it.infill !== 15 ? ' <b style="color:#B45309;font-size:10px">' + it.infill + '% wypełn.</b>' : '') +
-                   (it.volume_cm3 ? ' <span style="color:#9ca3af;font-size:10px">' + it.volume_cm3 + 'cm³</span>' : '') +
-                   (it.colors > 1 ? ' <span style="color:#7c3aed;font-size:10px;font-weight:600">' + it.colors + ' kolory · +' + (it.multicolor_fee || 0).toFixed(0) + 'zł</span>' : '') +
-                   dl + '</div>';
-          }).join('');
-        })() + '</td>' +
-            '<td style="padding:8px">' + (o.filament_grams || 0) + 'g<br><span style="color:#9ca3af;font-size:11px">' + (o.printing_hours || 0) + 'h</span></td>' +
-            '<td style="padding:8px" title="Koszt całkowity ' + ((o.cost_pln||0).toFixed(2)) + ' zł (filament+prąd+pakowanie) · wielokolor ' + ((o.multicolor_fee||0).toFixed(2)) + ' zł"><span style="color:#6b7280;font-size:11px">Fil ' + (o.filament_cost || 0).toFixed(0) + 'zł | Marża ' + (o.margin_pln || 0).toFixed(0) + 'zł' + ((o.surcharge_pln || 0) > 0 ? ' | Dopłaty ' + (o.surcharge_pln || 0).toFixed(0) + 'zł' : '') + '</span><br><strong>' + (o.total || 0).toFixed(2) + ' ' + (o.currency || 'PLN') + '</strong><br><span style="color:#10b981;font-size:11px">Profit ' + (o.profit_pln != null ? o.profit_pln : ((o.total || 0) - (o.filament_cost || 0) - (o.electricity_cost || 0) - (o.shipping_cost || 0))).toFixed(0) + 'zł</span></td>' +
-            '<td style="padding:8px;white-space:nowrap"><select id="st_' + o.id + '" onchange="pendingStatus(' + o.id + ')" style="padding:4px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;color:' + (statusColor[st] || '#6b7280') + '">' + opts + '</select>' +
-              '<span id="stbtn_' + o.id + '" style="display:none;margin-left:4px">' +
-              '<button onclick="confirmStatus(' + o.id + ')" title="Zatwierdź zmianę statusu (wyśle maila do klienta)" style="padding:2px 7px;border:1px solid #10b981;background:#10b981;color:#fff;border-radius:4px;cursor:pointer;font-size:12px">✓</button>' +
-              '<button onclick="cancelStatus(' + o.id + ',\'' + st + '\')" title="Cofnij" style="padding:2px 7px;border:1px solid #d1d5db;background:#fff;border-radius:4px;cursor:pointer;font-size:12px">✗</button></span>' +
-              (o.tracking_code ? '<div style="font-size:10px;color:#0369a1;margin-top:2px">🚚 ' + esc(o.tracking_code) + '</div>' : '') + '</td>' +
-            '<td style="padding:8px;text-align:center"><input type="checkbox" ' + (o.is_paid ? 'checked' : '') + ' onchange="toggleOrderPaid(' + o.id + ', this.checked)" title="Zapłacone">' +
-              (!o.is_paid ? '<br><button onclick="syncPayment(' + o.id + ',this)" title="Odśwież status płatności ze Stripe" style="font-size:10px;border:1px solid #d1d5db;background:#fff;border-radius:4px;cursor:pointer;margin-top:3px;padding:1px 6px">↻ Stripe</button>' : '') + '</td>' +
-            '<td style="padding:8px"><button data-action="exportOrder" data-id="' + o.id + '" style="padding:4px 8px;border:1px solid #d1d5db;border-radius:4px;cursor:pointer">CSV</button><br>' +
-                        (o.job_id ? '<button onclick="window.open(\'/e/' + o.job_id + '\',\'_blank\')" style="padding:4px 8px;border:1px solid #3b82f6;color:#3b82f6;border-radius:4px;background:none;cursor:pointer;margin-top:4px">3D</button><br>' : '') +
-                        '<button onclick="showOrderNotes(' + o.id + ')" style="padding:4px 8px;border:1px solid #d1d5db;border-radius:4px;cursor:pointer;margin-top:4px">Uwagi</button>' +
-                        ((o.is_paid && (o.shipping_method==='standard'||o.shipping_method==='express')) ? '<br><button onclick="createShipment(' + o.id + ')" title="Nadaj paczkomatem InPost (ShipX)" style="padding:4px 8px;border:1px solid #f97316;color:#f97316;border-radius:4px;background:none;cursor:pointer;margin-top:4px">📦 InPost</button>' : '') +
-                        '<button onclick="deleteOrder(' + o.id + ')" style="padding:4px 8px;border:1px solid #ef4444;color:#ef4444;border-radius:4px;background:none;cursor:pointer;margin-top:4px">Usuń</button></td>' +
-            '</tr>';
+        // Karty zamiast gęstej tabeli — pelne dane w rozwijanych grupach.
+        // order_card.js renderuje pojedyncze zamowienie (Klient/Dostawa/Modele/Koszty/Notatki).
+        var cards = '';
+        data.orders.forEach(function (o) {
+          try { cards += window.orderCard(o); }
+          catch (e) { cards += '<div style="padding:10px;border:1px solid #fecaca;border-radius:8px;'
+                            + 'background:#fef2f2;color:#b91c1c;font-size:12px">Zamówienie #' + o.id
+                            + ' — błąd renderowania: ' + esc(e && e.message ? e.message : e) + '</div>'; }
         });
         document.getElementById('adminOrders').innerHTML =
                   '<div class="admin-toolbar" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px">' +
@@ -133,7 +88,7 @@ window.adminSetSearch = function(v, f){ if(f) __adminQ.search=v; __adminQ.page=1
                   '<button onclick="exportAllOrders()" style="padding:8px 16px;border:1px solid #1d4ed8;background:#1d4ed8;color:#fff;border-radius:8px;cursor:pointer">Export Excel</button>' +
                   '</div>' +
                   '<div style="display:flex;gap:8px;align-items:center;margin:0 0 8px"><button onclick="resetOrderSeq()" title="Kolejne zamówienie dostanie ID = max+1 (bez luk po usuniętych). Istniejące numory się nie zmieniają." style="padding:4px 10px;border:1px solid #d1d5db;border-radius:6px;background:#fff;cursor:pointer;font-size:12px">⟲ Reset kolejności ID</button><span style="font-size:11px;color:#9ca3af">— gdy testowe zamówienia rozjechały numerację</span></div>' +
-              '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:2px solid #e5e7eb;text-align:left"><th style="padding:8px">ID</th><th style="padding:8px">Data</th><th style="padding:8px">Klient</th><th style="padding:8px">Model</th><th style="padding:8px">Fil.</th><th style="padding:8px">Cena</th><th style="padding:8px">Status</th><th style="padding:8px;text-align:center">Zapł.</th><th style="padding:8px">Akcje</th></tr></thead><tbody>' + tbody + '</tbody></table></div>' +
+              '<div class="oc-list">' + cards + '</div>' +
                   '<div style="margin-top:10px;display:flex;gap:8px;align-items:center">' +
                     '<button onclick="adminPage(-1)" ' + (__adminQ.page<=1?'disabled':'') + ' style="padding:6px 12px;border:1px solid #d1d5db;border-radius:8px;cursor:pointer">← Poprzednia</button>' +
                     '<span style="font-size:13px;color:#6b7280">Strona ' + __adminQ.page + '</span>' +
@@ -801,4 +756,5 @@ window.loadAdminGallery = function() {
   window.loadAdminCodes = loadAdminCodes;
 
   // ── init: (przez switchPrintTab) ─────────────────────────────────
+
 })();

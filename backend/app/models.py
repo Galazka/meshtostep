@@ -261,6 +261,13 @@ class Order(Base):
     quantity = Column(Integer, default=1)
     shipping_method = Column(String(20), default="standard")
     shipping_region = Column(String(20), default="PL")
+    # Wybrany punkt odbioru InPost. Wczesniej paczkomat doklejany jako tekst do
+    # customer_address ("Paczkomat: X"), przez co nie dało sie go ods egretowac ani
+    # przekazac do ShipX. Teraz osobne kolumny - panel pokazuje je w rubryczce.
+    shipping_point_name = Column(String(120), nullable=True)   # np. "APU01"
+    shipping_point_addr = Column(String(300), nullable=True)   # ulica, kod, miasto
+    shipping_point_lat = Column(Float, nullable=True)
+    shipping_point_lon = Column(Float, nullable=True)
     estimated_hours = Column(Float, default=2.0)
     volume_cm3 = Column(Float, nullable=True)
     filament_grams = Column(Float, nullable=True)

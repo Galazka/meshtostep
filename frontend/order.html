@@ -1236,18 +1236,26 @@ function submitOrder(){
     var nip=FIRM_ORDERS_ENABLED?((document.getElementById('fNip')||{}).value||''):'';
     var comp=FIRM_ORDERS_ENABLED?((document.getElementById('fCompany')||{}).value||''):'';
     var shipAddr=document.getElementById('fAddr').value.trim();
+    // Punkt odbioru leci OSOBNYMI polami (point_name/point_addr/lat/lon), a nie jako
+    // tekst w adresie — inaczej panel admina musiał parsowac "Paczkomat: ..." z stringa,
+    // a ShipX nie dostawał kodu punktu.
+    var pcz={name:'',addr:'',lat:null,lon:null};
     if(shipSel==='address'){
       var dest=(document.getElementById('fCompanyShip')||{}).value.trim();
       if(dest){ shipAddr=(shipAddr?shipAddr+', ':'')+'DOSTAWA NA ADRES: '+dest; }
       else { shipAddr=(shipAddr?shipAddr+', ':'')+'DOSTAWA KURIEREM NA ADRES'; }
     } else {
-      var pczk=(document.getElementById('fPaczkomatName')||{}).value||document.getElementById('fPaczkomat').value.trim();
-      if(pczk){ shipAddr=(shipAddr?shipAddr+', ':'')+'Paczkomat: '+pczk; }
+      pcz.name=(document.getElementById('fPaczkomatName')||{}).value||'';
+      pcz.addr=(document.getElementById('fPaczkomatAddr')||{}).value||'';
+      var _la=(document.getElementById('fPaczkomatLat')||{}).value,
+          _lo=(document.getElementById('fPaczkomatLon')||{}).value;
+      pcz.lat=_la?parseFloat(_la):null;
+      pcz.lon=_lo?parseFloat(_lo):null;
     }
     if(nip){ shipAddr=(shipAddr?shipAddr+', ':'')+'NIP: '+nip; if(comp) shipAddr+=', ' + comp; }
   if(FULFILL==='pickup'){ shipAddr='ODBIÓR OSOBISTY — Gdańsk, ul. Międzygwiezdna 31/2 (Osowa), 80-299'; }
   var _fa=FIRM_ORDERS_ENABLED?(((document.getElementById('fFirmAddr')||{}).value)||''):''; if(_fa.trim()) shipAddr=(shipAddr?shipAddr+' | ':'')+'FAKTURA: '+_fa.trim();
-  var body={name:nm,email:em,phone:document.getElementById('fPhone').value.trim(),address:shipAddr,city:(FULFILL==='pickup'?'80-299 Gdańsk':document.getElementById('fCity').value.trim()),country:(FULFILL==='pickup'?'PL':document.getElementById('fRegion').value),shipping:document.getElementById('fShipping').value,shipping_region:document.getElementById('fRegion').value,discount_code:document.getElementById('fCode').value.trim(),notes:document.getElementById('fNotes').value.trim(),payment_method:'stripe',currency:cur,items:CART.map(function(it){return {job_uuid:it.job_uuid,job_id:it.job_id,model_name:it.model_name,material:it.material,color:it.color,colors:it.colors||1,quantity:it.qty,volume_cm3:it.vol,estimated_hours:0,dims:it.dims,infill:it.infill||INFCFG.base};})};
+  var body={name:nm,email:em,phone:document.getElementById('fPhone').value.trim(),address:shipAddr,city:(FULFILL==='pickup'?'80-299 Gdańsk':document.getElementById('fCity').value.trim()),country:(FULFILL==='pickup'?'PL':document.getElementById('fRegion').value),shipping:document.getElementById('fShipping').value,shipping_region:document.getElementById('fRegion').value,point_name:pcz.name,point_addr:pcz.addr,point_lat:pcz.lat,point_lon:pcz.lon,discount_code:document.getElementById('fCode').value.trim(),notes:document.getElementById('fNotes').value.trim(),payment_method:'stripe',currency:cur,items:CART.map(function(it){return {job_uuid:it.job_uuid,job_id:it.job_id,model_name:it.model_name,material:it.material,color:it.color,colors:it.colors||1,quantity:it.qty,volume_cm3:it.vol,estimated_hours:0,dims:it.dims,infill:it.infill||INFCFG.base};})};
 var btn=document.getElementById('submitBtn'); if(btn){btn.disabled=true; btn.textContent='Tworzę zamówienie…';}
   fetch('/api/orders/multi?t='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};});})
