@@ -248,11 +248,16 @@ async def _stripe_webhook_impl(request: Request, db: Session):
     #   paid now      -> checkout.session.completed   + payment_status == "paid"
     #   paid later    -> checkout.session.async_payment_succeeded
     #   never paid    -> checkout.session.async_payment_failed
+    # stripe.Event to NIE dict — .get() rzuca AttributeError i webhook padał z 500
+    # przy KAZDYM zdarzeniu. Stąd: żadna płatność nigdy nie została oznaczona.
+    event = event.to_dict() if hasattr(event, "to_dict") else dict(event)
     ev_type = event.get("type")
     if ev_type in ("checkout.session.completed",
                    "checkout.session.async_payment_succeeded",
                    "checkout.session.async_payment_failed"):
         session = event.get("data", {}).get("object", {})
+        if hasattr(session, "to_dict"):
+            session = session.to_dict()
         pstatus = session.get("payment_status")
         if ev_type == "checkout.session.async_payment_failed":
             o_id = session.get("client_reference_id") or (session.get("metadata") or {}).get("order_id")
