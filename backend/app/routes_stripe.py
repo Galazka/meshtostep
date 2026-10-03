@@ -218,11 +218,12 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
     """Verify Stripe signature and mark order paid on 'checkout.session.completed'."""
     try:
         return await _stripe_webhook_impl(request, db)
-    except Exception as e:
+    except HTTPException:
+        raise
+    except Exception:
+        # Stripe nie pokazuje body w logach panelu — logujemy sami, a 500 zmusza do retry.
         import traceback
-        # Stripe nie pokazuje body w logach panelu — bez tego wyjatek jest niewidoczny.
-        print("[stripe webhook] %s: %s" % (type(e).__name__, e))
-        traceback.print_exc()
+        print("[stripe webhook] " + traceback.format_exc().replace("\n", " | "))
         raise
 
 
