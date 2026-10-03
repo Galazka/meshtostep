@@ -1,0 +1,1 @@
+window.__APP_V='119';(function(){try{var k='appV',s=sessionStorage.getItem(k);if(s&&s!=='118'){sessionStorage.setItem(k,'117');if(window.caches&&caches.keys){caches.keys().then(function(a){return Promise.all(a.map(function(n){return caches.delete(n)}))}).then(function(){location.reload()});return}}sessionStorage.setItem(k,'110')}catch(e){}})();
