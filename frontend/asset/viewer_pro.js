@@ -533,6 +533,20 @@ export function initViewerPro(opts) {
       mat.needsUpdate = true;
     },
     resetView: resetView,
+    /* pomiar diagnostyczny: czy siatka lezy pod bryla */
+    probe: function () {
+      if (!mesh) return null;
+      mesh.updateMatrixWorld(true);
+      const bb = new THREE.Box3().setFromObject(mesh);
+      const g = grid;
+      return {
+        meshMinY: +bb.min.y.toFixed(3),
+        meshMaxY: +bb.max.y.toFixed(3),
+        gridY: g ? +g.position.y.toFixed(3) : null,
+        gridVisible: g ? !!g.visible : false,
+        halfH: +halfH.toFixed(3)
+      };
+    },
     isLoaded: function () { return loaded; },
     state: st
   };
