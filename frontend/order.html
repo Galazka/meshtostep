@@ -9,7 +9,7 @@
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "ypigm7bngb");
 </script>
-<script>window.__APP_V='121';(function(){try{var k='appV',s=sessionStorage.getItem(k);if(s&&s!=='121'){sessionStorage.setItem(k,'121');if(window.caches&&caches.keys){caches.keys().then(function(a){return Promise.all(a.map(function(n){return caches.delete(n)}))}).then(function(){location.reload()});return}}sessionStorage.setItem(k,'121')}catch(e){}})();</script>
+<script>window.__APP_V='122';(function(){try{var k='appV',s=sessionStorage.getItem(k);if(s&&s!=='122'){sessionStorage.setItem(k,'122');if(window.caches&&caches.keys){caches.keys().then(function(a){return Promise.all(a.map(function(n){return caches.delete(n)}))}).then(function(){location.reload()});return}}sessionStorage.setItem(k,'122')}catch(e){}})();</script>
 <script>try{var _t=localStorage.getItem("mt_theme")||"light";if(_t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -433,7 +433,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
                                       <div id="pczMap" style="height:320px;border:1px solid var(--border);border-radius:10px;margin-top:8px;display:none;overflow:hidden"></div>
                                       <div id="paczkomatList" style="display:grid;gap:6px;margin-top:8px;max-height:320px;overflow:auto"></div>
                                       <div style="font-size:11px;color:var(--muted);margin-top:6px">Lista zawiera <b>wszystkie</b> paczkomaty w mieście — kliknij punkt na mapie albo na liście.</div>
-                                      <input type="hidden" id="fPaczkomatName"><input type="hidden" id="fPaczkomatAddr"><input type="hidden" id="fPaczkomatLat"><input type="hidden" id="fPaczkomatLon">
+                                      <input type="hidden" id="fPaczkomatName"><input type="hidden" id="fPaczkomatAddr">
+<input type="hidden" id="fPaczkomatCity"><input type="hidden" id="fPaczkomatLat"><input type="hidden" id="fPaczkomatLon">
                                     </div>
                                     <div id="companyShipRow" style="display:none;margin-top:10px">
                                       <label>🏢 Wysyłka na adres firmy</label>
@@ -873,7 +874,9 @@ function refreshMatSel(){ var m=(selIdx>=0)?CART[selIdx].material:null; document
     if(!p) return;
     PCZ_SEL=name;
     document.getElementById('fPaczkomatName').value=p.name;
-    document.getElementById('fPaczkomatAddr').value=String(p.street||'')+' '+String(p.building_number||'')+', '+String(p.post_code||'')+' '+String(p.city||'');
+    // adres i miasto osobno — panel pokazuje je w dwóch rubryczkach
+    document.getElementById('fPaczkomatAddr').value=String(p.street||'')+' '+String(p.building_number||'')+', '+String(p.post_code||'');
+    document.getElementById('fPaczkomatCity').value=String(p.city||'');
     document.getElementById('fPaczkomatLat').value=(p.lat==null?'':p.lat);
     document.getElementById('fPaczkomatLon').value=(p.lon==null?'':p.lon);
     document.getElementById('fPaczkomat').value=p.street+' '+String(p.building_number||'')+' ('+p.name+')';
@@ -1239,7 +1242,7 @@ function submitOrder(){
     // Punkt odbioru leci OSOBNYMI polami (point_name/point_addr/lat/lon), a nie jako
     // tekst w adresie — inaczej panel admina musiał parsowac "Paczkomat: ..." z stringa,
     // a ShipX nie dostawał kodu punktu.
-    var pcz={name:'',addr:'',lat:null,lon:null};
+    var pcz={name:'',addr:'',city:'',lat:null,lon:null};
     if(shipSel==='address'){
       var dest=(document.getElementById('fCompanyShip')||{}).value.trim();
       if(dest){ shipAddr=(shipAddr?shipAddr+', ':'')+'DOSTAWA NA ADRES: '+dest; }
@@ -1247,6 +1250,7 @@ function submitOrder(){
     } else {
       pcz.name=(document.getElementById('fPaczkomatName')||{}).value||'';
       pcz.addr=(document.getElementById('fPaczkomatAddr')||{}).value||'';
+      pcz.city=(document.getElementById('fPaczkomatCity')||{}).value||'';
       var _la=(document.getElementById('fPaczkomatLat')||{}).value,
           _lo=(document.getElementById('fPaczkomatLon')||{}).value;
       pcz.lat=_la?parseFloat(_la):null;
@@ -1255,7 +1259,7 @@ function submitOrder(){
     if(nip){ shipAddr=(shipAddr?shipAddr+', ':'')+'NIP: '+nip; if(comp) shipAddr+=', ' + comp; }
   if(FULFILL==='pickup'){ shipAddr='ODBIÓR OSOBISTY — Gdańsk, ul. Międzygwiezdna 31/2 (Osowa), 80-299'; }
   var _fa=FIRM_ORDERS_ENABLED?(((document.getElementById('fFirmAddr')||{}).value)||''):''; if(_fa.trim()) shipAddr=(shipAddr?shipAddr+' | ':'')+'FAKTURA: '+_fa.trim();
-  var body={name:nm,email:em,phone:document.getElementById('fPhone').value.trim(),address:shipAddr,city:(FULFILL==='pickup'?'80-299 Gdańsk':document.getElementById('fCity').value.trim()),country:(FULFILL==='pickup'?'PL':document.getElementById('fRegion').value),shipping:document.getElementById('fShipping').value,shipping_region:document.getElementById('fRegion').value,point_name:pcz.name,point_addr:pcz.addr,point_lat:pcz.lat,point_lon:pcz.lon,discount_code:document.getElementById('fCode').value.trim(),notes:document.getElementById('fNotes').value.trim(),payment_method:'stripe',currency:cur,items:CART.map(function(it){return {job_uuid:it.job_uuid,job_id:it.job_id,model_name:it.model_name,material:it.material,color:it.color,colors:it.colors||1,quantity:it.qty,volume_cm3:it.vol,estimated_hours:0,dims:it.dims,infill:it.infill||INFCFG.base};})};
+  var body={name:nm,email:em,phone:document.getElementById('fPhone').value.trim(),address:shipAddr,city:(FULFILL==='pickup'?'80-299 Gdańsk':document.getElementById('fCity').value.trim()),country:(FULFILL==='pickup'?'PL':document.getElementById('fRegion').value),shipping:document.getElementById('fShipping').value,shipping_region:document.getElementById('fRegion').value,point_name:pcz.name,point_addr:pcz.addr,point_city:pcz.city,point_lat:pcz.lat,point_lon:pcz.lon,discount_code:document.getElementById('fCode').value.trim(),notes:document.getElementById('fNotes').value.trim(),payment_method:'stripe',currency:cur,items:CART.map(function(it){return {job_uuid:it.job_uuid,job_id:it.job_id,model_name:it.model_name,material:it.material,color:it.color,colors:it.colors||1,quantity:it.qty,volume_cm3:it.vol,estimated_hours:0,dims:it.dims,infill:it.infill||INFCFG.base};})};
 var btn=document.getElementById('submitBtn'); if(btn){btn.disabled=true; btn.textContent='Tworzę zamówienie…';}
   fetch('/api/orders/multi?t='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};});})

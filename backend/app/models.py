@@ -265,7 +265,8 @@ class Order(Base):
     # customer_address ("Paczkomat: X"), przez co nie dało sie go ods egretowac ani
     # przekazac do ShipX. Teraz osobne kolumny - panel pokazuje je w rubryczce.
     shipping_point_name = Column(String(120), nullable=True)   # np. "APU01"
-    shipping_point_addr = Column(String(300), nullable=True)   # ulica, kod, miasto
+    shipping_point_addr = Column(String(300), nullable=True)   # ulica + numer
+    shipping_point_city = Column(String(100), nullable=True)   # miasto punktu (nie klientowe)
     shipping_point_lat = Column(Float, nullable=True)
     shipping_point_lon = Column(Float, nullable=True)
     estimated_hours = Column(Float, default=2.0)

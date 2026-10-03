@@ -121,6 +121,10 @@
     if (m.eta) meta += ' · ' + m.eta;
 
     var g = cell('Sposób dostawy', m.label, { strong: true });
+    var prio = (o.shipping_method === 'pickup_express' || o.shipping_method === 'express'
+             || o.shipping_method === 'priority') ? 'priorytet' : '';
+    if (prio) g += cell('Priorytet', 'PRIORYTET — realizacja priorytetowa', { strong: true, color: '#b45309' });
+    else g += cell('Priorytet', 'standard');
 
     if (o.shipping_method === 'pickup' || o.shipping_method === 'pickup_express') {
       g += cell('Punkt odbioru', PICKUP_ADDR, { mono: true });
@@ -135,6 +139,7 @@
 
       if (o.shipping_point_name) g += cell('Paczkomat (kod)', o.shipping_point_name, { mono: true, strong: true });
       if (o.shipping_point_addr) g += cell('Paczkomat (adres)', o.shipping_point_addr, { mono: true });
+      if (o.shipping_point_city) g += cell('Miasto paczkomatu', o.shipping_point_city);
       if (legacy && !o.shipping_point_name) g += cell('Paczkomat (z adresu)', legacy, { mono: true });
       if (o.shipping_point_lat && o.shipping_point_lon) {
         g += cell('Mapa punktu',
@@ -261,9 +266,12 @@
 
     // backend liczy cost_pln = koszt wytworzenia + pakowanie; bez pozycji pakowania
     // suma wyglądała na błęd (0.88 + 5.00 = 5.88 przy koszcie 0.88)
+    g += '<div style="font-size:10px;letter-spacing:.06em;text-transform:uppercase;'
+       + 'color:#94a3b8;padding:2px 0 1px">Koszt</div>';
+
     var pack = num(o.cost_pln) - num(o.subtotal);
     if (pack > 0.005) g += cell('Pakowanie', zl(pack));
-    if (o.cost_pln) g += cell('Koszt całkowity', zl(o.cost_pln), { strong: true });
+    if (o.cost_pln) g += cell('Koszt produkcji', zl(o.cost_pln), { strong: true });
     if (o.shipping_cost) g += cell('Dostawa', zl(o.shipping_cost));
     if (o.discount_pln) g += cell('Rabat', '−' + zl(o.discount_pln), { color: '#b91c1c' });
 
@@ -277,7 +285,7 @@
     var totalTxt = zl(o.total) + ((o.currency || 'PLN') === 'PLN' ? '' : ' ' + (o.currency || 'PLN'));
     rev += cell('DO ZAPŁATY', totalTxt, { strong: true, color: '#2B5CE6' });
     rev += cell('ZYSK', zl(profit), { strong: true, color: profit >= 0 ? '#047857' : '#b91c1c' });
-    if (o.margin_pln) rev += cell('w tym narzut', zl(o.margin_pln), { color: '#64748b' });
+    if (o.margin_pln) rev += cell('Narzut w cenie', zl(o.margin_pln), { color: '#64748b' });
 
     g += '<div style="margin-top:10px;padding-top:8px;border-top:1px solid #e2e8f0;'
        + 'font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:#94a3b8">Przychód</div>'

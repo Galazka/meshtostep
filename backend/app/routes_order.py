@@ -811,6 +811,7 @@ def list_orders(
             # punkt odbioru — osobno, żeby panel nie musiał parsować "Paczkomat: ..." z adresu
             "shipping_point_name": getattr(o, "shipping_point_name", None),
             "shipping_point_addr": getattr(o, "shipping_point_addr", None),
+        "shipping_point_city": getattr(o, "shipping_point_city", None),
             "shipping_point_lat": getattr(o, "shipping_point_lat", None),
             "shipping_point_lon": getattr(o, "shipping_point_lon", None),
         })
@@ -1089,6 +1090,7 @@ def update_order(
     # korekta punktu odbioru recznie (gdy klient wybral punkt, ktory juz nie istnieje)
     shipping_point_name: str = Form(None),
     shipping_point_addr: str = Form(None),
+    shipping_point_city: str = Form(None),
     shipping_point_lat: float = Form(None),
     shipping_point_lon: float = Form(None),
 
@@ -1123,6 +1125,8 @@ def update_order(
         o.shipping_point_name = shipping_point_name[:120].strip() or None
     if shipping_point_addr is not None:
         o.shipping_point_addr = shipping_point_addr[:300].strip() or None
+    if shipping_point_city is not None:
+        o.shipping_point_city = shipping_point_city[:100].strip() or None
     if shipping_point_lat is not None:
         o.shipping_point_lat = shipping_point_lat
     if shipping_point_lon is not None:
@@ -1476,7 +1480,8 @@ class MultiOrderReq(BaseModel):
     shipping_region: str = "PL"
     # Wybrany paczkomat InPost - osobne pola, nie tekst doklejony do address.
     point_name: str = None      # kod punktu, np. "APU01"
-    point_addr: str = None      # ulica, kod, miasto
+    point_addr: str = None      # ulica + numer budynku
+    point_city: str = None      # miasto paczkomatu
     point_lat: float = None
     point_lon: float = None
     discount_code: str = None
@@ -1617,6 +1622,7 @@ def _create_multi_order_impl(req: MultiOrderReq, db: Session = Depends(get_db), 
         shipping_method=req.shipping[:20], shipping_region=req.shipping_region[:20],
         shipping_point_name=req.point_name[:120] if req.point_name else None,
         shipping_point_addr=req.point_addr[:300] if req.point_addr else None,
+    shipping_point_city=req.point_city[:100] if req.point_city else None,
         shipping_point_lat=req.point_lat, shipping_point_lon=req.point_lon,
         estimated_hours=0.0, volume_cm3=round(sum(i.volume_cm3 or 0 for i in req.items), 2),
         filament_grams=round(sum(i.filament_grams for i in items_rows), 2),

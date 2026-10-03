@@ -78,6 +78,7 @@ def _migrate_columns():
             for col, dtype in [
                 ("shipping_point_name","VARCHAR(120)"),
                 ("shipping_point_addr","VARCHAR(300)"),
+                ("shipping_point_city","VARCHAR(100)"),
                 ("shipping_point_lat","FLOAT"),
                 ("shipping_point_lon","FLOAT"),
             ]:
