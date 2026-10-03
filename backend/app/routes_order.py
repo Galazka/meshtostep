@@ -415,13 +415,15 @@ def calculate_price(
     margin_pln = round(cost_pln * (margin_pct / 100), 2)
     product_base = round(cost_pln + margin_pln, 2)  # baza klienta: koszt + marża
 
-    # MINIMUM ZAMOWIENIA (druk): liczone NA SZTUKE, nie na cala pozycje.
-    # Regula Toma: cena jednostkowa nie moze spadac przy wiekszej ilosci.
-    # Wczesniej minimum 5 zl dzielono przez quantity, wiec 10 sztuk
-    # wychodzilo po 4,88 zl - gorsza cena za wieksze zamowienie.
-    # Teraz: baza JEDNEJ sztuki >= min_print_pln, a ilosc mnozy te kwote.
+    # MINIMUM ZAMÓWIENIA (druk) — NA SZTUKĘ, nie na całą pozycję.
+    # Reguła Toma: cena jednostkowa NIE MOŻE spadać przy większej ilości.
+    # product_base to już koszt × marża × ilość, więc minimum porównujemy
+    # z bazą jednej sztuki, a wynik mnożymy przez ilość.
+    # Bez tego: 6,6 cm³ kosztuje 1,40 zł/szt, więc 10 sztuk wychodziło
+    # po 1,40 zł zamiast 5,00 zł — gorsza cena za większe zamówienie.
     min_print = float(_cfg(db, "min_print_pln", MIN_PRINT_PLN))
-    if product_base < min_print:
+    per_unit_base = product_base / quantity if quantity > 0 else product_base
+    if per_unit_base < min_print:
         product_base = round(min_print * quantity, 2)
 
     # co klient płaci za DRUK = baza + dopłaty (pigment, wielokolor)
