@@ -145,9 +145,20 @@ export function initViewerPro(opts) {
     geo.scale(k, k, k);
     geo.computeVertexNormals();
     geo.computeBoundingBox();
-    const s2 = new THREE.Vector3(); geo.boundingBox.getSize(s2);
-    halfH = (s2.y / 2) || 15;
     return geo;
+  }
+
+  /* Wysokosc bryly W SWIECIE, po obrocie. Stara wersja brala s2.y z surowej
+     geometrii, ale mesh jest obracany -90° wokol X — w swiecie to geometria Z.
+     Regresja dawala halfH = 15 (fallback), czyli siatke 6 jednostek pod
+     modelem i wrazenie ze model wisi w powietrzu. */
+  function measureHalfHeight() {
+    if (!mesh) return halfH;
+    mesh.updateMatrixWorld(true);
+    const bb = new THREE.Box3().setFromObject(mesh);
+    const h = (bb.max.y - bb.min.y) / 2;
+    halfH = (isFinite(h) && h > 0) ? h : 15;
+    return halfH;
   }
 
   function setMesh(geo, keepView) {
@@ -166,6 +177,7 @@ export function initViewerPro(opts) {
       edgeLines.rotation.x = -Math.PI / 2;
       group.add(edgeLines);
     }
+    measureHalfHeight();
     if (!keepView) resetView();
     else { layoutGrid(); }
   }
@@ -189,6 +201,7 @@ export function initViewerPro(opts) {
     camera.updateProjectionMatrix();
     controls.target.set(0, 0, 0);
     controls.update();
+    measureHalfHeight();
     layoutGrid();
   }
 
