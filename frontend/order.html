@@ -9,7 +9,7 @@
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "ypigm7bngb");
 </script>
-<script>window.__APP_V='118';(function(){try{var k='appV',s=sessionStorage.getItem(k);if(s&&s!=='117'){sessionStorage.setItem(k,'117');if(window.caches&&caches.keys){caches.keys().then(function(a){return Promise.all(a.map(function(n){return caches.delete(n)}))}).then(function(){location.reload()});return}}sessionStorage.setItem(k,'110')}catch(e){}})();</script>
+<script>window.__APP_V='119';(function(){try{var k='appV',s=sessionStorage.getItem(k);if(s&&s!=='118'){sessionStorage.setItem(k,'117');if(window.caches&&caches.keys){caches.keys().then(function(a){return Promise.all(a.map(function(n){return caches.delete(n)}))}).then(function(){location.reload()});return}}sessionStorage.setItem(k,'110')}catch(e){}})();</script>
 <script>try{var _t=localStorage.getItem("mt_theme")||"light";if(_t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -203,7 +203,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);
 #ctaBar span{color:#bcc9de;font-family:'JetBrains Mono',monospace;font-size:12.5px}
 #ctaBar b{color:#fff;font-size:14.5px}
 #ctaBar button{flex:1;background:#2B5CE6;color:#fff;border:0;border-radius:8px;padding:12px 14px;font-weight:700;font-size:14px;cursor:pointer}
-@media(max-width:860px){#ctaBar{display:flex}.ordwrap,#cart,#sumBody{padding-bottom:74px!important}}
+@media(max-width:860px){#submitBtn{display:none!important}#ctaBar{display:flex}.ordwrap,#cart,#sumBody{padding-bottom:74px!important}}
 
 .note-field{border:1px solid var(--border);border-radius:10px;padding:9px;margin:6px 0;font-size:13px}
 .thanks{max-width:640px;margin:60px auto;text-align:center;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:36px;box-shadow:var(--shadow-lg)}
@@ -1164,7 +1164,7 @@ var discLine = COUPON_PLN>0 ? '<div class="summary-row"><span>Rabat '+(window.__
       colorLine+discLine+
       '<div class="summary-row sumsum"><span>Razem</span><span>'+fmt(brutto)+'</span></div>'+
     '</div>'+
-    '<button class="paybtn" id="submitBtn" onclick="submitOrder()">Zapłać '+fmt(brutto)+'</button>'+
+    '<button class="paybtn" id="submitBtn" onclick="submitOrder()">Zamów i zapłać '+fmt(brutto)+'</button>'+
     '<div class="sumnote">Cena ostateczna — rachunek dostaniesz e-mailem. Płatność: Stripe (karta lub BLIK).</div>';
   empty.style.display='none'; box.style.display='block';
   btn=document.getElementById('submitBtn');
@@ -1248,7 +1248,7 @@ function submitOrder(){
   if(FULFILL==='pickup'){ shipAddr='ODBIÓR OSOBISTY — Gdańsk, ul. Międzygwiezdna 31/2 (Osowa), 80-299'; }
   var _fa=FIRM_ORDERS_ENABLED?(((document.getElementById('fFirmAddr')||{}).value)||''):''; if(_fa.trim()) shipAddr=(shipAddr?shipAddr+' | ':'')+'FAKTURA: '+_fa.trim();
   var body={name:nm,email:em,phone:document.getElementById('fPhone').value.trim(),address:shipAddr,city:(FULFILL==='pickup'?'80-299 Gdańsk':document.getElementById('fCity').value.trim()),country:(FULFILL==='pickup'?'PL':document.getElementById('fRegion').value),shipping:document.getElementById('fShipping').value,shipping_region:document.getElementById('fRegion').value,discount_code:document.getElementById('fCode').value.trim(),notes:document.getElementById('fNotes').value.trim(),payment_method:'stripe',currency:cur,items:CART.map(function(it){return {job_uuid:it.job_uuid,job_id:it.job_id,model_name:it.model_name,material:it.material,color:it.color,colors:it.colors||1,quantity:it.qty,volume_cm3:it.vol,estimated_hours:0,dims:it.dims,infill:it.infill||INFCFG.base};})};
-  var btn=document.getElementById('submitBtn'); btn.disabled=true; btn.textContent='Tworzę zamówienie…';
+var btn=document.getElementById('submitBtn'); if(btn){btn.disabled=true; btn.textContent='Tworzę zamówienie…';}
   fetch('/api/orders/multi?t='+Date.now(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){return r.json().then(function(d){return {ok:r.ok,d:d};});})
     .then(function(res){
@@ -1405,7 +1405,7 @@ window.__local3d = {
 
 <script src="/asset/theme.js?v=5"></script>
 <script src="/asset/reveal.js?v=5"></script>
-<div id="ctaBar"><span>Razem</span><b id="ctaTot">—</b><button onclick="submitOrder()">Zapłać</button></div>
+<div id="ctaBar"><span>Razem</span><b id="ctaTot">—</b><button onclick="submitOrder()">Zamów i zapłać</button></div>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js?v=24').then(function(sw){sw&&sw.update&&setInterval(function(){sw.update()},3*60*60*1000)});navigator.serviceWorker.addEventListener('controllerchange',function(){location.reload()})}</script>
 <script src="/asset/ev.js?v=4" defer></script>
 <script src="/asset/nav-auth.js?v=2" defer></script>

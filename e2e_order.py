@@ -68,8 +68,9 @@ chk("estimate ma wolumenc", d.get("volume_cm3", 0) > 0, str(d.get("volume_cm3"))
 
 print("=== 2. /api/download/{uuid} oddaje plik ===")
 st, b = req("/api/download/%s?format=stl&t=%d" % (job_uuid, time.time()))
-chk("download 200", st == 200, "%s (%d B)" % (st, len(b)))
-chk("download zwrocil STL", b[:5] in (b"solid", b"\x00\x01\x00\x00") or len(b) > 1000, "%d B" % len(b))
+# 403 dla anonima na PRYWATNYM pliku = poprawne (testujemy to nizej jako wartosc)
+chk("anonim NIE pobiera prywatnego", st == 403, "%s (oczekiwane 403)" % st)
+chk("blad czytelny", b"Prywatny" in b or b"rywatn" in b, b[:40].decode("utf8","replace"))
 
 print("=== 3. nowy uzytkownik + logowanie ===")
 email = "e2e-%s@test.pl" % _u.uuid4().hex[:10]
@@ -124,6 +125,11 @@ if mine:
     chk("item ma job_uuid", bool(ju), str(ju))
 if ju:
     st2, b2 = req("/api/download/%s?format=stl&t=%d" % (ju, time.time()), token=tok)
+    chk("download naglowkiem", st2 == 200, "%s (%d B)" % (st2, len(b2)))
+    import urllib.parse as _up
+    st3, b3 = req("/api/download/%s?format=stl&token=%s&t=%d" % (ju, _up.quote(tok), time.time()))
+    chk("download tokenem w query (jak panel admina)", st3 == 200, "%s (%d B)" % (st3, len(b3)))
+    b2 = b3
     chk("wlasciciel pobiera swoj model", st2 == 200, "%s (%d B)" % (st2, len(b2)))
 
 print("=== 6. sprzatanie ===")
