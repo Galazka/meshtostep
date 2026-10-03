@@ -130,7 +130,7 @@ export function initViewerPro(opts) {
 
   const group = new THREE.Group();
   scene.add(group);
-  let mesh = null, edgeLines = null, grid = null, halfH = 15;
+  let mesh = null, edgeLines = null, grid = null, contact = null, halfH = 15;
   let mat = new THREE.MeshStandardMaterial({
     color: new THREE.Color(cfg.meshHex), metalness: 0.12, roughness: 0.62, flatShading: true
   });
@@ -206,8 +206,23 @@ export function initViewerPro(opts) {
   }
 
   function layoutGrid() {
-    if (!grid) return;
-    grid.position.set(0, -halfH - 1.5, 0);
+    if (grid) grid.position.set(0, -halfH - 1.5, 0);
+    if (contact) {
+      /* dysk lezy DOKLADNIE na wysokosci minimalnej krawedzi bryly — zero
+         odstepu, inaczej znowu wychodzi efekt wisienia */
+      contact.position.set(0, -halfH + 0.02, 0);
+      if (mesh) {
+        mesh.updateMatrixWorld(true);
+        const bb = new THREE.Box3().setFromObject(mesh);
+        const sx = bb.max.x - bb.min.x, sz = bb.max.z - bb.min.z;
+        const span = Math.max(sx, sz);
+        if (isFinite(span) && span > 0) {
+          contact.scale.set(span * 2.05, span * 2.05, 1);
+        } else {
+          contact.scale.set(40, 40, 1);
+        }
+      }
+    }
   }
 
   /* floor grid: built once, visibility driven by cfg.grid + toolbar button */
@@ -219,7 +234,36 @@ export function initViewerPro(opts) {
       scene.add(grid);
     }
     if (grid) { grid.visible = !!show; if (show) layoutGrid(); }
+    if (show && !contact) contact = buildContactShadow();
+    if (contact) contact.visible = !!show;
     return grid;
+  }
+
+  /* Dysk kontaktowy pod bryla. Swiatlo w podgladzie jest czysto ambientowe
+     (HemisphereLight + 3 DirectionalLight bez cieni), wiec mimo ze siatka
+     jest juz pod modelem, brak cienia kontaktowego czynil go widocznym
+     jakby wisial w powietrzu. Radialny gradient — jeden MeshBasicMaterial
+     z alphaMap, jeden draw call, zero kosztu raytracji. */
+  function buildContactShadow() {
+    const R = 128;
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = R;
+    const cx = cv.getContext('2d');
+    const g = cx.createRadialGradient(R/2, R/2, 0, R/2, R/2, R/2);
+    g.addColorStop(0.00, 'rgba(0,0,0,0.62)');
+    g.addColorStop(0.42, 'rgba(0,0,0,0.30)');
+    g.addColorStop(0.72, 'rgba(0,0,0,0.09)');
+    g.addColorStop(1.00, 'rgba(0,0,0,0)');
+    cx.fillStyle = g; cx.fillRect(0, 0, R, R);
+    const tex = new THREE.CanvasTexture(cv);
+    const disc = new THREE.Mesh(
+      new THREE.PlaneGeometry(1, 1),
+      new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 1 })
+    );
+    disc.rotation.x = -Math.PI / 2;
+    disc.renderOrder = -1;
+    scene.add(disc);
+    return disc;
   }
 
   // ---------- toolbar ----------
@@ -260,13 +304,7 @@ export function initViewerPro(opts) {
     toolbar.appendChild(tbBtn('▤', L.grid, b => {
       state.grid = !state.grid;
       if (state.grid) {
-        if (!grid) {
-          grid = new THREE.GridHelper(90, 36, 0x94a3b8, 0xcbd5e1);
-          const gm = Array.isArray(grid.material) ? grid.material : [grid.material];
-          gm.forEach(m => { m.transparent = true; m.opacity = 0.5; });
-          scene.add(grid);
-        }
-        grid.visible = true; layoutGrid();
+        ensureGrid(true);
       } else if (grid) grid.visible = false;
       b.style.background = state.grid ? '#eaf0ff' : 'rgba(255,255,255,.94)';
       b.style.borderColor = state.grid ? '#2B5CE6' : '#e2e8f0';
