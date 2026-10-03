@@ -171,7 +171,7 @@ if (tok()) { load(); } else { showGate(); }
   '<a href="/#hiw">Jak to działa</a><a href="/blog.html">Blog</a><a href="/kontakt">Kontakt</a></nav>' +
   '<div class="prt-actions" style="margin-left:auto;display:flex;gap:10px;align-items:center">' +
   (logged ? '<span class="odate">Moje zamówienia</span>' : '') +
-  '<button class="prt-lang" id="langToggle" onclick="window.__pi18n&&window.__pi18n.toggle&&window.__pi18n.toggle()">' + window.__pi18n.label() + '</button>' +
+  '<button class="prt-lang" id="langToggle" onclick="window.__pi18n&&window.__pi18n.toggle&&window.__pi18n.toggle()">' + (window.__pi18n&&window.__pi18n.label?window.__pi18n.label():'EN') + '</button>' +
   '<a class="prt-btn ghost" href="/">' + (logged ? '← Strona główna' : 'Zaloguj') + '</a></div></header>';
 })();
 </script>
